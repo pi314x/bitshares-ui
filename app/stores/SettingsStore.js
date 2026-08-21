@@ -126,7 +126,12 @@ class SettingsStore {
             },
             rememberMe: true,
             viewOnlyMode: true,
-            showProposedTx: false
+            showProposedTx: false,
+            // Where transactions get signed. Defaults to the local wallet even when the
+            // browser extension is installed: having it available is not consent to route
+            // signing through it, and moving that without being asked is a surprise a
+            // wallet should never spring on someone.
+            signer: "signer_local"
         };
     }
 
@@ -169,7 +174,11 @@ class SettingsStore {
                 }
             },
             rememberMe: [true, false],
-            viewOnlyMode: [{translate: "show"}, {translate: "hide"}]
+            viewOnlyMode: [{translate: "show"}, {translate: "hide"}],
+            signer: [
+                {translate: "signer_local"},
+                {translate: "signer_extension"}
+            ]
         };
     }
 

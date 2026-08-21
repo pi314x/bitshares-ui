@@ -4,6 +4,7 @@ import {Table, Select} from "bitshares-ui-style-guide";
 import Immutable from "immutable";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
+import PoolCreateForm from "../Pools/PoolCreateForm";
 import {ChainStore} from "bitsharesjs";
 import {debounce} from "lodash-es";
 import Translate from "react-translate-component";
@@ -239,8 +240,8 @@ class LiquidityPools extends React.Component {
                     a.share_asset_str > b.share_asset_str
                         ? 1
                         : a.share_asset_str < b.share_asset_str
-                            ? -1
-                            : 0
+                        ? -1
+                        : 0
             },
             {
                 key: "asset_a_str",
@@ -259,8 +260,8 @@ class LiquidityPools extends React.Component {
                     a.asset_a_str > b.asset_a_str
                         ? 1
                         : a.asset_a_str < b.asset_a_str
-                            ? -1
-                            : 0
+                        ? -1
+                        : 0
             },
             {
                 key: "asset_a_qty",
@@ -287,8 +288,8 @@ class LiquidityPools extends React.Component {
                     a.asset_b_str > b.asset_b_str
                         ? 1
                         : a.asset_b_str < b.asset_b_str
-                            ? -1
-                            : 0
+                        ? -1
+                        : 0
             },
             {
                 key: "asset_b_qty",
@@ -297,6 +298,22 @@ class LiquidityPools extends React.Component {
                     "poolmart.liquidity_pools.asset_b_qty"
                 ),
                 sorter: (a, b) => a.asset_b_qty - b.asset_b_qty
+            },
+            {
+                // Which curve prices this pool. Without it a StableSwap pool is
+                // indistinguishable from a constant-product one in this table, even though
+                // they quote completely different prices for the same balances.
+                key: "curve",
+                dataIndex: "curve_str",
+                title: counterpart.translate("pools.curve"),
+                render: (text, row) =>
+                    row.is_stable ? (
+                        <span className="futures-tag futures-tag--blue">
+                            {text}
+                        </span>
+                    ) : (
+                        <span className="futures-tag">{text}</span>
+                    )
             },
             {
                 key: "taker_fee_percent",
@@ -362,6 +379,15 @@ class LiquidityPools extends React.Component {
                 ? pool.balance_b /
                   Math.pow(10, pool.asset_b_obj.get("precision"))
                 : 0;
+            // pool_type is absent on every pool created before StableSwap existed, and
+            // absent means constant product -- so treat only an explicit 1 as stable
+            // rather than testing for truthiness of something that is usually undefined.
+            const poolType = pool.pool_type !== undefined ? pool.pool_type : 0;
+            row.is_stable = poolType === 1 || poolType === "stable";
+            row.curve_str = row.is_stable
+                ? counterpart.translate("pools.stableswap") +
+                  (pool.amplification ? " A=" + pool.amplification : "")
+                : counterpart.translate("pools.constant_product_short");
             row.taker_fee_percent_str = `${pool.taker_fee_percent / 100}%`;
             row.withdrawal_fee_percent_str = `${pool.withdrawal_fee_percent /
                 100}%`;
@@ -448,6 +474,19 @@ class LiquidityPools extends React.Component {
                         pool={this.state.selectedPool.share_asset}
                     />
                 )}
+                <PoolCreateForm
+                    account={(() => {
+                        // Same name-vs-id trap as the other pages: liquidity_pool_create's
+                        // `account` field is a protocol_id_type and will not take a name.
+                        const name =
+                            AccountStore.getState().currentAccount ||
+                            AccountStore.getState().passwordAccount;
+                        if (!name) return null;
+                        if (/^1\.2\.\d+$/.test(name)) return name;
+                        const acct = ChainStore.getAccount(name);
+                        return acct ? acct.get("id") : null;
+                    })()}
+                />
             </div>
         );
     }
@@ -460,19 +499,16 @@ class LiquidityPoolsStoreWrapper extends React.Component {
     }
 }
 
-export default connect(
-    LiquidityPoolsStoreWrapper,
-    {
-        listenTo() {
-            return [PoolmartStore];
-        },
-        getProps() {
-            return {
-                liquidityPools: PoolmartStore.getState().liquidityPools,
-                liquidityPoolsLoading: PoolmartStore.getState()
-                    .liquidityPoolsLoading,
-                lastPoolId: PoolmartStore.getState().lastPoolId
-            };
-        }
+export default connect(LiquidityPoolsStoreWrapper, {
+    listenTo() {
+        return [PoolmartStore];
+    },
+    getProps() {
+        return {
+            liquidityPools: PoolmartStore.getState().liquidityPools,
+            liquidityPoolsLoading: PoolmartStore.getState()
+                .liquidityPoolsLoading,
+            lastPoolId: PoolmartStore.getState().lastPoolId
+        };
     }
-);
+});

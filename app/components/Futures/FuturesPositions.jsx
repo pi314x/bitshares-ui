@@ -1,10 +1,18 @@
 import React from "react";
-import {Table, Tooltip} from "bitshares-ui-style-guide";
+import {
+    Table,
+    Tooltip,
+    Button,
+    Modal,
+    Input,
+    Alert
+} from "bitshares-ui-style-guide";
 import {Apis} from "bitsharesjs-ws";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import AssetName from "../Utility/AssetName";
 import LoadingIndicator from "../LoadingIndicator";
+import FuturesActions from "actions/FuturesActions";
 
 /**
  * An account's open futures positions.
@@ -23,7 +31,15 @@ import LoadingIndicator from "../LoadingIndicator";
 class FuturesPositions extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {positions: [], markets: {}, loading: true};
+        this.state = {
+            positions: [],
+            markets: {},
+            loading: true,
+            adjusting: null, // the position whose margin is being changed
+            delta: "",
+            busy: false,
+            error: null
+        };
     }
 
     componentDidMount() {
@@ -73,8 +89,62 @@ class FuturesPositions extends React.Component {
         return pos.size * market.mark_price - pos.entry_value;
     }
 
+    _applyMargin = () => {
+        const {adjusting, delta} = this.state;
+        // Signed integer: positive adds collateral, negative withdraws it. Anything else is
+        // a typo, and sending a truncated float would move an amount nobody chose.
+        if (!/^-?\d+$/.test(delta) || parseInt(delta, 10) === 0) {
+            this.setState({
+                error: counterpart.translate("futures.err_delta_integer")
+            });
+            return;
+        }
+        this.setState({busy: true, error: null});
+        FuturesActions.adjustMargin({
+            owner: this.props.account,
+            position_id: adjusting.id,
+            delta
+        })
+            .then(() => {
+                this.setState({busy: false, adjusting: null, delta: ""});
+                this._fetch();
+            })
+            .catch(err => {
+                this.setState({
+                    busy: false,
+                    error: err && err.message ? err.message : String(err)
+                });
+            });
+    };
+
+    _settle = row => {
+        this.setState({busy: true, error: null});
+        FuturesActions.settle({
+            owner: this.props.account,
+            position_id: row.id
+        })
+            .then(() => {
+                this.setState({busy: false});
+                this._fetch();
+            })
+            .catch(err => {
+                this.setState({
+                    busy: false,
+                    error: err && err.message ? err.message : String(err)
+                });
+            });
+    };
+
     render() {
-        const {positions, markets, loading} = this.state;
+        const {
+            positions,
+            markets,
+            loading,
+            adjusting,
+            delta,
+            busy,
+            error
+        } = this.state;
         if (loading) return <LoadingIndicator />;
 
         const columns = [
@@ -179,16 +249,94 @@ class FuturesPositions extends React.Component {
             }
         ];
 
+        if (this.props.account) {
+            columns.push({
+                title: "",
+                key: "actions",
+                render: row => {
+                    const m = markets[row.market_id];
+                    // Settlement only exists for a dated market that has already settled.
+                    // Offering the button before then produces a guaranteed rejection.
+                    const canSettle = !!(m && m.settled);
+                    return (
+                        <span className="futures-row-actions">
+                            <Button
+                                size="small"
+                                disabled={busy}
+                                onClick={() =>
+                                    this.setState({
+                                        adjusting: row,
+                                        delta: "",
+                                        error: null
+                                    })
+                                }
+                            >
+                                <Translate content="futures.adjust_margin" />
+                            </Button>
+                            {canSettle && (
+                                <Button
+                                    size="small"
+                                    type="primary"
+                                    disabled={busy}
+                                    onClick={() => this._settle(row)}
+                                >
+                                    <Translate content="futures.settle" />
+                                </Button>
+                            )}
+                        </span>
+                    );
+                }
+            });
+        }
+
         return (
-            <Table
-                rowKey="id"
-                columns={columns}
-                dataSource={positions}
-                pagination={false}
-                locale={{
-                    emptyText: counterpart.translate("futures.no_positions")
-                }}
-            />
+            <div>
+                {error && (
+                    <Alert
+                        type="error"
+                        message={error}
+                        className="futures-alert"
+                    />
+                )}
+                <Table
+                    rowKey="id"
+                    columns={columns}
+                    dataSource={positions}
+                    pagination={false}
+                    locale={{
+                        emptyText: counterpart.translate("futures.no_positions")
+                    }}
+                />
+                <Modal
+                    visible={!!adjusting}
+                    title={counterpart.translate("futures.adjust_margin")}
+                    onCancel={() =>
+                        this.setState({adjusting: null, error: null})
+                    }
+                    onOk={this._applyMargin}
+                    okButtonProps={{disabled: busy}}
+                >
+                    <Translate
+                        component="p"
+                        content="futures.adjust_margin_explain"
+                    />
+                    <Input
+                        value={delta}
+                        onChange={e =>
+                            this.setState({delta: e.target.value, error: null})
+                        }
+                        placeholder="-5000"
+                    />
+                    {adjusting && (
+                        <p className="futures-margin-hint">
+                            <Translate
+                                content="futures.current_margin"
+                                margin={adjusting.margin}
+                            />
+                        </p>
+                    )}
+                </Modal>
+            </div>
         );
     }
 }

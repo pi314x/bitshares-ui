@@ -3,6 +3,7 @@ import {Apis} from "bitsharesjs-ws";
 import utils from "common/utils";
 import WalletApi from "api/WalletApi";
 import WalletDb from "stores/WalletDb";
+import Signer from "../lib/common/Signer";
 import {ChainStore} from "bitsharesjs";
 import big from "bignumber.js";
 import {gatewayPrefixes} from "common/gateways";
@@ -98,14 +99,63 @@ class PoolActions {
         };
     }
 
+    /**
+     * Create a liquidity pool.
+     *
+     * Two curves are possible. Leaving `pool_type` unset gives the original constant-product
+     * pool and produces exactly the bytes it always did -- the StableSwap fields live in the
+     * operation's typed extension for that reason, so old pools and old nodes are unaffected.
+     *
+     * A stable pool needs an amplification coefficient A, and it is required for and only
+     * valid with pool_type = stable; the chain rejects either half without the other. A is
+     * what sets how flat the curve is: small A behaves like constant product, large A holds
+     * a near 1:1 peg until the pool runs badly out of balance.
+     *
+     * Note asset_a must be the LOWER asset id. The chain fixes the ordering so a pair has
+     * one canonical pool rather than two, and swapping them here is rejected on chain.
+     */
     create_liquidity_pool(
-        my_username,
-        asset_a,
-        asset_b,
-        share_asset,
-        taker_fee_percent,
-        withdrawal_fee_percent
-    ) {}
+        {
+            account,
+            asset_a,
+            asset_b,
+            share_asset,
+            taker_fee_percent = 0,
+            withdrawal_fee_percent = 0,
+            pool_type = null,
+            amplification = null,
+            fee_asset = "1.3.0"
+        },
+        options
+    ) {
+        const op = {
+            fee: {amount: 0, asset_id: fee_asset},
+            account,
+            asset_a,
+            asset_b,
+            share_asset,
+            taker_fee_percent,
+            withdrawal_fee_percent,
+            extensions: {}
+        };
+        if (pool_type !== null && pool_type !== undefined) {
+            op.extensions.pool_type = pool_type;
+            op.extensions.amplification = String(amplification);
+        }
+
+        const tr = WalletApi.new_transaction();
+        tr.add_type_operation("liquidity_pool_create", op);
+        return dispatch =>
+            Signer.process(tr, options)
+                .then(res => {
+                    dispatch({transaction: res});
+                    return res;
+                })
+                .catch(error => {
+                    dispatch({transaction: null, error});
+                    throw error;
+                });
+    }
 }
 
 export default alt.createActions(PoolActions);

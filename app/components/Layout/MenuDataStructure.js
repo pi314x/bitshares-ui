@@ -232,7 +232,9 @@ class MenuDataStructure {
             oracles: state => ({
                 includePattern: "/oracles",
                 target: "/oracles",
-                icon: "deployment-unit",
+                // Distinct from futures on purpose: two entries sharing an icon are two
+                // entries nobody can tell apart at a glance, which is the whole job of one.
+                icon: "server",
                 text: "header.oracles",
                 inHeaderBehavior: MenuItemType.WhenNotInDropdown,
                 inDropdownBehavior: MenuItemType.Always
@@ -240,7 +242,7 @@ class MenuDataStructure {
             futures: state => ({
                 includePattern: "/futures",
                 target: "/futures",
-                icon: "deployment-unit",
+                icon: "arrow-up-down",
                 text: "header.futures",
                 inHeaderBehavior: MenuItemType.WhenNotInDropdown,
                 inDropdownBehavior: MenuItemType.Always

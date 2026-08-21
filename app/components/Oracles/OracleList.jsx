@@ -1,5 +1,5 @@
 import React from "react";
-import {Table, Tooltip, Card} from "bitshares-ui-style-guide";
+import {Table, Tooltip, Card, Button, Alert} from "bitshares-ui-style-guide";
 import {Apis} from "bitsharesjs-ws";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
@@ -7,6 +7,8 @@ import AssetName from "../Utility/AssetName";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import FormattedAsset from "../Utility/FormattedAsset";
 import LoadingIndicator from "../LoadingIndicator";
+import OracleActions from "actions/OracleActions";
+import {OraclePublishModal} from "./OracleForms";
 
 /**
  * Oracles: named price series that live in their own right rather than as an attribute of an
@@ -23,7 +25,9 @@ class OracleList extends React.Component {
         this.state = {
             oracles: [],
             loading: true,
-            error: null
+            error: null,
+            publishing: null, // the oracle a value is being published to
+            busy: null
         };
     }
 
@@ -83,8 +87,35 @@ class OracleList extends React.Component {
         );
     }
 
+    /// Whether `account` may publish to this oracle. The chain rejects a publish from any
+    /// account not on the producer list, owner included, so the button follows that rule
+    /// rather than offering an action that is certain to fail.
+    _canPublish(oracle) {
+        const {account} = this.props;
+        if (!account) return false;
+        return (oracle.options.producers || []).some(p => p[0] === account);
+    }
+
+    _delete(oracle) {
+        this.setState({busy: oracle.id, error: null});
+        OracleActions.delete({
+            owner: this.props.account,
+            oracle_id: oracle.id
+        })
+            .then(() => {
+                this.setState({busy: null});
+                this._fetch();
+            })
+            .catch(err =>
+                this.setState({
+                    busy: null,
+                    error: err && err.message ? err.message : String(err)
+                })
+            );
+    }
+
     render() {
-        const {oracles, loading, error} = this.state;
+        const {oracles, loading, error, publishing, busy} = this.state;
 
         if (loading) return <LoadingIndicator />;
 
@@ -164,16 +195,65 @@ class OracleList extends React.Component {
             }
         ];
 
+        if (this.props.account) {
+            columns.push({
+                title: "",
+                key: "actions",
+                render: row => (
+                    <span className="futures-row-actions">
+                        {this._canPublish(row) && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                disabled={busy === row.id}
+                                onClick={() => this.setState({publishing: row})}
+                            >
+                                <Translate content="oracles.publish" />
+                            </Button>
+                        )}
+                        {row.owner === this.props.account && (
+                            <Button
+                                size="small"
+                                type="danger"
+                                disabled={busy === row.id}
+                                onClick={() => this._delete(row)}
+                            >
+                                <Translate content="oracles.delete" />
+                            </Button>
+                        )}
+                    </span>
+                )
+            });
+        }
+
         return (
-            <Table
-                rowKey="id"
-                columns={columns}
-                dataSource={oracles}
-                pagination={{pageSize: 20, hideOnSinglePage: true}}
-                locale={{
-                    emptyText: counterpart.translate("oracles.none")
-                }}
-            />
+            <div>
+                {error && (
+                    <Alert
+                        type="error"
+                        message={error}
+                        className="futures-alert"
+                    />
+                )}
+                <Table
+                    rowKey="id"
+                    columns={columns}
+                    dataSource={oracles}
+                    pagination={{pageSize: 20, hideOnSinglePage: true}}
+                    locale={{
+                        emptyText: counterpart.translate("oracles.none")
+                    }}
+                />
+                <OraclePublishModal
+                    visible={!!publishing}
+                    oracle={publishing}
+                    account={this.props.account}
+                    onDone={changed => {
+                        this.setState({publishing: null});
+                        if (changed) this._fetch();
+                    }}
+                />
+            </div>
         );
     }
 }
