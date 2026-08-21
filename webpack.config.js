@@ -244,6 +244,15 @@ module.exports = function(env) {
         sanitize$: "xss",
         moment$: path.resolve(root_dir, "node_modules/moment/moment.js"),
         bitsharesjs$: path.resolve(root_dir, "node_modules/bitsharesjs/"),
+        // Apis is a singleton. When bitsharesjs is npm-linked from outside this tree, webpack
+        // resolves the symlink to its real path and finds that package's OWN nested copy of
+        // bitsharesjs-ws -- so the app initialises one Apis instance and ChainStore reads a
+        // different, empty one ("Api not found ... before calling the ChainStore"). Pinning
+        // the specifier here keeps exactly one copy in the bundle.
+        "bitsharesjs-ws$": path.resolve(
+            root_dir,
+            "node_modules/bitsharesjs-ws/"
+        ),
         "bitshares-ui-style-guide$": path.resolve(
             root_dir,
             "node_modules/bitshares-ui-style-guide/dist/main.js"

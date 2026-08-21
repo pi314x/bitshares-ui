@@ -1,0 +1,89 @@
+/* Oracles and futures.
+ *
+ * Colours come from the theme's own variables rather than literals, so the tables read the
+ * same in every theme the wallet ships. Numbers are tabular so columns of contracts, margin
+ * and PnL line up when scanned.
+ */
+
+.oracle-intro {
+    max-width: 68ch;
+    opacity: 0.8;
+    margin-bottom: 1.25rem;
+}
+
+.oracle-name {
+    font-weight: 600;
+}
+
+.oracle-id,
+.oracle-quorum-need {
+    opacity: 0.55;
+    font-size: 0.85em;
+}
+
+/* Absent, not zero: a value the chain is deliberately not asserting. */
+.oracle-no-value {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.oracle-quorum,
+.futures-num,
+.futures-mark,
+.futures-gain,
+.futures-loss {
+    font-variant-numeric: tabular-nums;
+}
+
+.futures-gain {
+    color: #2e7d5b;
+}
+
+.futures-loss {
+    color: #a33a3a;
+}
+
+.futures-subhead {
+    margin-top: 2rem;
+}
+
+.oracle-error {
+    font-weight: 600;
+}
+
+.oracle-error-detail {
+    opacity: 0.7;
+    font-size: 0.9em;
+    word-break: break-word;
+}
+
+/* Small status pills. Deliberately plain spans rather than the style guide's Tag, which
+   this build does not export -- importing it yields undefined and React then refuses to
+   render the entire page. Colours are semantic (state), not decorative. */
+.futures-tag {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    color: inherit;
+    white-space: nowrap;
+
+    &--green {
+        border-color: #389e0d;
+        color: #389e0d;
+    }
+    &--red {
+        border-color: #cf1322;
+        color: #cf1322;
+    }
+    &--blue {
+        border-color: #096dd9;
+        color: #096dd9;
+    }
+    &--orange {
+        border-color: #d46b08;
+        color: #d46b08;
+    }
+}

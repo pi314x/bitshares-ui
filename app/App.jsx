@@ -52,6 +52,22 @@ const CreditOfferPage = Loadable({
     loading: LoadingIndicator
 });
 
+const OraclesPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "explorer" */ "./components/Oracles/OraclesPage"
+        ),
+    loading: LoadingIndicator
+});
+
+const FuturesPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "explorer" */ "./components/Futures/FuturesPage"
+        ),
+    loading: LoadingIndicator
+});
+
 const Explorer = Loadable({
     loader: () =>
         import(
@@ -647,6 +663,14 @@ class App extends React.Component {
                                     component={QuickTrade}
                                 />
                                 <Route path="/pools" component={PoolmartPage} />
+                                <Route
+                                    path="/oracles"
+                                    component={OraclesPage}
+                                />
+                                <Route
+                                    path="/futures"
+                                    component={FuturesPage}
+                                />
                                 <Route path="*" component={Page404} />
                             </Switch>
                         </div>

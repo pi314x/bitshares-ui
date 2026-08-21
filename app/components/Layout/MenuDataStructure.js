@@ -121,6 +121,8 @@ class MenuDataStructure {
             allItems.market,
             allItems.lending,
             allItems.poolmart,
+            allItems.oracles,
+            allItems.futures,
             allItems.explorer,
             allItems.divider,
             allItems.transfer,
@@ -225,6 +227,22 @@ class MenuDataStructure {
                 icon: {name: "poolmart", title: "icons.poolmart.title"},
                 text: "header.poolmart",
                 inHeaderBehavior: MenuItemType.Always,
+                inDropdownBehavior: MenuItemType.Always
+            }),
+            oracles: state => ({
+                includePattern: "/oracles",
+                target: "/oracles",
+                icon: "deployment-unit",
+                text: "header.oracles",
+                inHeaderBehavior: MenuItemType.WhenNotInDropdown,
+                inDropdownBehavior: MenuItemType.Always
+            }),
+            futures: state => ({
+                includePattern: "/futures",
+                target: "/futures",
+                icon: "deployment-unit",
+                text: "header.futures",
+                inHeaderBehavior: MenuItemType.WhenNotInDropdown,
                 inDropdownBehavior: MenuItemType.Always
             }),
             lending: state => ({
