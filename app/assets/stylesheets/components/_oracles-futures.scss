@@ -87,3 +87,14 @@
         color: #d46b08;
     }
 }
+
+/* Dates and de-emphasised placeholders in the futures tables. Tabular figures so the
+   date and ratio columns line up rather than jittering row to row. */
+.futures-date {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.futures-muted {
+    opacity: 0.45;
+}

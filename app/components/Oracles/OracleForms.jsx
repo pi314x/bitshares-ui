@@ -133,7 +133,7 @@ export class OracleCreateForm extends React.Component {
                     <label>
                         <Translate content="oracles.name" />
                     </label>
-                    {field("name", "XBT.USD")}
+                    {field("name", "IDX-BTC-BTS")}
                 </div>
                 <div className="futures-form-row">
                     <label>

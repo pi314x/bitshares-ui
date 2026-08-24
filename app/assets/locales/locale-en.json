@@ -3240,7 +3240,15 @@
         "adjust_margin_explain": "Positive adds collateral to the position, negative withdraws it. Funding is charged first, so the resulting margin may differ slightly from the figure you enter.",
         "current_margin": "Current margin: %(margin)s",
         "settle": "Settle",
-        "contract": "Contract"
+        "contract": "Contract",
+        "expiry": "Expiry",
+        "no_expiry": "None",
+        "mark_updated": "Mark updated",
+        "contract_size": "Size",
+        "margin_ratios": "Margin init / maint",
+        "funding": "Funding max / interval",
+        "funding_explain": "Funding is capped at %(rate)s%% per interval and charged every %(hours)s hours. Perpetual contracts only.",
+        "liq_penalty": "Liq. penalty"
     },
     "pools": {
         "create": "Create pool",
