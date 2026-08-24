@@ -271,6 +271,54 @@ class FuturesMarkets extends React.Component {
                 }
             },
             {
+                // Zero means the mark tracks the oracle exactly. That is the default, and it
+                // is worth showing as a state rather than a blank: a market with no limit is
+                // one where a single oracle print moves the price every position is measured
+                // against, which a trader should be able to see before taking a position.
+                title: counterpart.translate("futures.mark_limit"),
+                key: "mark_limit",
+                render: row => {
+                    const ppm = row.options.max_mark_move_ppm;
+                    if (!ppm)
+                        return (
+                            <Tooltip
+                                title={counterpart.translate(
+                                    "futures.mark_limit_none_explain"
+                                )}
+                            >
+                                <span className="futures-muted">
+                                    <Translate content="futures.mark_limit_none" />
+                                </span>
+                            </Tooltip>
+                        );
+                    return (
+                        <Tooltip
+                            title={counterpart.translate(
+                                "futures.mark_limit_explain",
+                                {pct: (ppm / 10000).toFixed(4)}
+                            )}
+                        >
+                            <span className="futures-num">
+                                {(ppm / 10000).toFixed(3)}
+                                {"%/s"}
+                            </span>
+                        </Tooltip>
+                    );
+                }
+            },
+            {
+                // The buffer that absorbs a bankruptcy before the winning side is asked to.
+                title: counterpart.translate("futures.insurance_fund"),
+                dataIndex: "insurance_fund",
+                render: (value, row) => (
+                    <span
+                        className={value < 0 ? "futures-loss" : "futures-num"}
+                    >
+                        {value} <AssetName name={row.collateral_asset} />
+                    </span>
+                )
+            },
+            {
                 title: counterpart.translate("futures.liq_penalty"),
                 key: "penalty",
                 render: row => (

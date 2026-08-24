@@ -3248,7 +3248,12 @@
         "margin_ratios": "Margin init / maint",
         "funding": "Funding max / interval",
         "funding_explain": "Funding is capped at %(rate)s%% per interval and charged every %(hours)s hours. Perpetual contracts only.",
-        "liq_penalty": "Liq. penalty"
+        "liq_penalty": "Liq. penalty",
+        "mark_limit": "Mark limit",
+        "mark_limit_none": "none",
+        "mark_limit_none_explain": "No limit is set, so the mark price follows the oracle exactly — a single published price moves what every position is measured against.",
+        "mark_limit_explain": "The mark may move at most %(pct)s%% per second, so a spike is absorbed over time rather than repricing every position at once.",
+        "insurance_fund": "Insurance fund"
     },
     "pools": {
         "create": "Create pool",
