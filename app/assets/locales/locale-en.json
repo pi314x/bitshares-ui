@@ -3277,6 +3277,18 @@
         "err_same_asset": "A pool needs two different assets.",
         "err_share_asset": "Enter the share asset as an id, e.g. 1.3.2",
         "err_amplification": "A stable pool needs an amplification greater than zero.",
-        "constant_product_short": "Constant product"
+        "constant_product_short": "Constant product",
+        "withdraw": "Withdraw",
+        "withdraw_mode": "Withdraw as",
+        "mode_proportional": "Both assets, proportionally",
+        "mode_single": "One asset only",
+        "share_amount": "Share tokens to burn",
+        "share_amount_hint": "Amount, in the pool share asset",
+        "which_asset": "Pay out in",
+        "which_asset_hint": "Choose one side of the pool",
+        "withdrawn": "Withdrawal broadcast.",
+        "err_amount": "Enter a share amount greater than zero.",
+        "err_which_asset": "Choose which asset to be paid in.",
+        "single_fee_note": "Taking the whole payout in one asset moves the pool along its curve, so the imbalance fee applies — half the %(pct)s swap fee for a two-asset pool. A proportional withdrawal avoids it."
     }
 }

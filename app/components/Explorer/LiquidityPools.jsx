@@ -5,6 +5,7 @@ import Immutable from "immutable";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
 import PoolCreateForm from "../Pools/PoolCreateForm";
+import PoolWithdrawForm from "../Pools/PoolWithdrawForm";
 import {ChainStore} from "bitsharesjs";
 import {debounce} from "lodash-es";
 import Translate from "react-translate-component";
@@ -42,7 +43,8 @@ class LiquidityPools extends React.Component {
             total: 0,
             isExchangeModalVisible: false,
             isStakeModalVisible: false,
-            selectedPool: null
+            selectedPool: null,
+            withdrawPool: null
         };
 
         this.timer = null;
@@ -183,6 +185,23 @@ class LiquidityPools extends React.Component {
             isExchangeModalVisible: false,
             selectedPool: null
         });
+    }
+
+    /**
+     * The signing account as an id, not a name.
+     *
+     * Same name-vs-id trap as the other pages: the `account` field on the liquidity pool
+     * operations is a protocol_id_type and will not take a name, so a logged-in user
+     * identified by name has to be resolved before the operation is built.
+     */
+    _currentAccountId() {
+        const name =
+            AccountStore.getState().currentAccount ||
+            AccountStore.getState().passwordAccount;
+        if (!name) return null;
+        if (/^1\.2\.\d+$/.test(name)) return name;
+        const acct = ChainStore.getAccount(name);
+        return acct ? acct.get("id") : null;
     }
 
     _showStakeModal(pool) {
@@ -344,6 +363,20 @@ class LiquidityPools extends React.Component {
                     )
             },
             {
+                // Burning share tokens back out. Selecting a pool here is what gives the
+                // withdraw form below something to act on; it renders nothing until then.
+                key: "withdraw",
+                title: counterpart.translate("pools.withdraw"),
+                render: item =>
+                    hasLoggedIn ? (
+                        <a onClick={() => this.setState({withdrawPool: item})}>
+                            <Icon name="withdraw" />
+                        </a>
+                    ) : (
+                        <Icon name="withdraw" />
+                    )
+            },
+            {
                 key: "stake_unstake",
                 title: counterpart.translate(
                     "poolmart.liquidity_pools.stake_unstake"
@@ -474,19 +507,12 @@ class LiquidityPools extends React.Component {
                         pool={this.state.selectedPool.share_asset}
                     />
                 )}
-                <PoolCreateForm
-                    account={(() => {
-                        // Same name-vs-id trap as the other pages: liquidity_pool_create's
-                        // `account` field is a protocol_id_type and will not take a name.
-                        const name =
-                            AccountStore.getState().currentAccount ||
-                            AccountStore.getState().passwordAccount;
-                        if (!name) return null;
-                        if (/^1\.2\.\d+$/.test(name)) return name;
-                        const acct = ChainStore.getAccount(name);
-                        return acct ? acct.get("id") : null;
-                    })()}
+                <PoolWithdrawForm
+                    pool={this.state.withdrawPool}
+                    account={this._currentAccountId()}
+                    onWithdrawn={() => this.setState({withdrawPool: null})}
                 />
+                <PoolCreateForm account={this._currentAccountId()} />
             </div>
         );
     }

@@ -156,6 +156,53 @@ class PoolActions {
                     throw error;
                 });
     }
+
+    /**
+     * Withdraw from a liquidity pool by burning share tokens.
+     *
+     * Leaving `withdraw_one_asset` unset takes a proportional slice of both assets, which is
+     * what a withdrawal has always done, and produces exactly the bytes it always did.
+     *
+     * Naming an asset instead takes the whole payout in that one asset. The pool has to move
+     * along its own curve to get there, so the imbalance fee applies -- for a two-asset pool
+     * that is half the swap fee, because withdrawing one side is economically half a swap.
+     * Stable pools only: the chain rejects a single-sided withdrawal on a constant-product
+     * pool, where it would have no bounded price.
+     */
+    withdraw_from_pool(
+        {
+            account,
+            pool,
+            share_amount,
+            withdraw_one_asset = null,
+            fee_asset = "1.3.0"
+        },
+        options
+    ) {
+        const op = {
+            fee: {amount: 0, asset_id: fee_asset},
+            account,
+            pool,
+            share_amount,
+            extensions: {}
+        };
+        if (withdraw_one_asset) {
+            op.extensions.withdraw_one_asset = withdraw_one_asset;
+        }
+
+        const tr = WalletApi.new_transaction();
+        tr.add_type_operation("liquidity_pool_withdraw", op);
+        return dispatch =>
+            Signer.process(tr, options)
+                .then(res => {
+                    dispatch({transaction: res});
+                    return res;
+                })
+                .catch(error => {
+                    dispatch({transaction: null, error});
+                    throw error;
+                });
+    }
 }
 
 export default alt.createActions(PoolActions);
