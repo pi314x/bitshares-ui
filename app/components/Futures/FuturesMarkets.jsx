@@ -254,7 +254,8 @@ class FuturesMarkets extends React.Component {
                                     rate: (
                                         row.options.max_funding_rate_ppm / 10000
                                     ).toFixed(4),
-                                    hours
+                                    hours,
+                                    impact: row.options.impact_size
                                 }
                             )}
                         >
@@ -302,6 +303,34 @@ class FuturesMarkets extends React.Component {
                                 {(ppm / 10000).toFixed(3)}
                                 {"%/s"}
                             </span>
+                        </Tooltip>
+                    );
+                }
+            },
+            {
+                // How much depth the funding rate is priced over. Sits beside the mark limit
+                // because both answer the same question: how hard is it to move the numbers
+                // every position in this market is measured against.
+                title: counterpart.translate("futures.impact_depth"),
+                key: "impact_depth",
+                render: row => {
+                    // Dated contracts never fund, so the depth the rate is priced over is
+                    // not a number that means anything for them.
+                    if (row.expiry)
+                        return <span className="futures-muted">-</span>;
+                    // An API node older than the field reports nothing rather than a value.
+                    // Rendering the raw undefined would print "undefined" in the column.
+                    const impact = row.options.impact_size;
+                    if (!impact)
+                        return <span className="futures-muted">-</span>;
+                    return (
+                        <Tooltip
+                            title={counterpart.translate(
+                                "futures.impact_depth_explain",
+                                {impact}
+                            )}
+                        >
+                            <span className="futures-num">{impact}</span>
                         </Tooltip>
                     );
                 }
