@@ -234,7 +234,11 @@ class WalletUnlockModal extends React.Component {
             WalletUnlockActions.change();
             if (stopAskingForBackup) WalletActions.setBackupDate();
             else if (this.shouldUseBackupLogin()) this.backup();
-            resolve();
+            // resolve ist null, sobald kein Entsperr-Wunsch mehr aussteht -- etwa nach
+            // einem zwischenzeitlichen cancel(). Der ungeschuetzte Aufruf warf dann
+            // mitten im Erfolgsfall und liess das nachfolgende cancel() aus, sodass der
+            // Dialog haengen blieb, obwohl die Wallet laengst offen war.
+            if (typeof resolve === "function") resolve();
             WalletUnlockActions.cancel();
         }
     };

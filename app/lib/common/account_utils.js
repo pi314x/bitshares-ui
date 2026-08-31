@@ -113,9 +113,20 @@ export default class AccountUtils {
     ) {
         // user can set a default in the settings
         let default_fee_asset_symbol = SettingsStore.getSetting("fee_asset");
-        let default_fee_asset = ChainStore.getAsset(
+        // ChainStore.getAsset() liefert null, solange das Asset noch nicht im Cache liegt --
+        // es stoesst die Abfrage nur an. Diese Methode laeuft aus UNSAFE_componentWillMount,
+        // also regelmaessig VOR dem ersten Treffer, und das ungeschuetzte .toJS() liess dann
+        // die ganze Seite weiss. Auf einer eingelaufenen Kette faellt das kaum auf, weil das
+        // Asset meist schon da ist; auf einer frischen Verbindung jedes Mal.
+        const default_fee_asset_obj = ChainStore.getAsset(
             default_fee_asset_symbol
-        ).toJS();
+        );
+        if (!default_fee_asset_obj) {
+            // Der Kern-Asset ist der einzige, der immer existiert. Beim naechsten Rendern,
+            // wenn der Cache gefuellt ist, kommt ohnehin die richtige Antwort.
+            return feeAssetId;
+        }
+        let default_fee_asset = default_fee_asset_obj.toJS();
         let {assets: feeAssets} = this.getPossibleFees(
             account,
             operation,
