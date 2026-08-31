@@ -82,7 +82,11 @@ class WalletDb extends BaseStore {
             "importKeysWorker",
             "resetBrainKeySequence",
             "decrementBrainKeySequence",
-            "generateKeyFromPassword"
+            "generateKeyFromPassword",
+            // Ohne diesen Eintrag ist die Methode auf dem Store schlicht nicht vorhanden:
+            // alt reicht nur weiter, was hier steht. Der Aufruf ergab dann still undefined,
+            // und das PQ-Panel hielt eine entsperrte Wallet fuer gesperrt.
+            "_rootSecret"
         );
         this.generatingKey = false;
     }
@@ -167,6 +171,11 @@ class WalletDb extends BaseStore {
                     tr.update_head_block()
                 ]).then(() => {
                     let signer_pubkeys_added = {};
+                    // BitShares weist eine Transaktion mit ueberfluessigen Signaturen ab
+                    // ("irrelevant signature included"). Die PQ-Signatur darf also nur
+                    // dazukommen, wenn die klassischen Signaturen die Autoritaet noch
+                    // nicht erfuellen -- sonst macht sie eine gueltige Transaktion kaputt.
+                    let classic_signed = false;
                     if (signer_pubkeys) {
                         // Balance claims are by address, only the private
                         // key holder can know about these additional
@@ -181,6 +190,7 @@ class WalletDb extends BaseStore {
                             let private_key = this.getPrivateKey(pubkey_string);
                             tr.add_signer(private_key, pubkey_string);
                             signer_pubkeys_added[pubkey_string] = true;
+                            classic_signed = true;
                         }
                     }
 
@@ -219,6 +229,7 @@ class WalletDb extends BaseStore {
                                             private_key,
                                             pubkey_string
                                         );
+                                        classic_signed = true;
                                     }
                                 });
                         })
@@ -236,7 +247,7 @@ class WalletDb extends BaseStore {
                                     AccountStore.getState().passwordAccount;
                                 const secret = this._rootSecret();
                                 const pq =
-                                    name && secret
+                                    !classic_signed && name && secret
                                         ? pqSignerFor(name, secret)
                                         : null;
                                 if (pq) tr.add_pq_signer(pq);

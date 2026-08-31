@@ -1,5 +1,5 @@
-import {PQPrivateKey} from "bitsharesjs/es/ecc";
-import {ChainStore, key} from "bitsharesjs";
+import {PQPrivateKey, hash} from "bitsharesjs/es/ecc";
+import {ChainStore} from "bitsharesjs";
 import {Apis} from "bitsharesjs-ws";
 
 /**
@@ -43,7 +43,7 @@ export function derivePQKey(accountName, rootSecret) {
 
     // sha256 of the same "account + role + secret" shape the classic keys use, so the PQ key
     // is one more derived key rather than a separate secret.
-    const seed = key.sha256(
+    const seed = hash.sha256(
         Buffer.from(accountName + "pq" + rootSecret, "utf-8")
     );
     const pq = PQPrivateKey.fromSeed(seed);
