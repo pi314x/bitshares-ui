@@ -121,6 +121,8 @@ class MenuDataStructure {
             allItems.market,
             allItems.lending,
             allItems.poolmart,
+            allItems.oracles,
+            allItems.futures,
             allItems.explorer,
             allItems.divider,
             allItems.transfer,
@@ -225,6 +227,24 @@ class MenuDataStructure {
                 icon: {name: "poolmart", title: "icons.poolmart.title"},
                 text: "header.poolmart",
                 inHeaderBehavior: MenuItemType.Always,
+                inDropdownBehavior: MenuItemType.Always
+            }),
+            oracles: state => ({
+                includePattern: "/oracles",
+                target: "/oracles",
+                // Distinct from futures on purpose: two entries sharing an icon are two
+                // entries nobody can tell apart at a glance, which is the whole job of one.
+                icon: "server",
+                text: "header.oracles",
+                inHeaderBehavior: MenuItemType.WhenNotInDropdown,
+                inDropdownBehavior: MenuItemType.Always
+            }),
+            futures: state => ({
+                includePattern: "/futures",
+                target: "/futures",
+                icon: "arrow-up-down",
+                text: "header.futures",
+                inHeaderBehavior: MenuItemType.WhenNotInDropdown,
                 inDropdownBehavior: MenuItemType.Always
             }),
             lending: state => ({
