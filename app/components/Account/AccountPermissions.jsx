@@ -1,6 +1,7 @@
 import React from "react";
 import Immutable from "immutable";
 import Translate from "react-translate-component";
+import AccountPQKey from "./AccountPQKey";
 import counterpart from "counterpart";
 import utils from "common/utils";
 import accountUtils from "common/account_utils";
@@ -42,6 +43,11 @@ class AccountPermissions extends React.Component {
         let accounts = account_auths.map(a => a.get(0));
         let keys = key_auths.map(a => a.get(0));
         let addresses = address_auths.map(a => a.get(0));
+        // Post-quantum Schluessel zaehlen zur Autoritaet, werden hier aber nicht
+        // bearbeitet -- das tut das PQ-Panel. Mitgefuehrt werden sie trotzdem, sonst
+        // stimmt weder die Gewichtssumme noch das, was beim Speichern herausgeht.
+        const pq_auths = auths.get("pq_key_auths");
+        let pq_keys = pq_auths ? pq_auths.map(a => a.get(0)) : null;
 
         let weights = account_auths.reduce((res, a) => {
             res[a.get(0)] = a.get(1);
@@ -56,10 +62,23 @@ class AccountPermissions extends React.Component {
             return res;
         }, weights);
 
-        return {threshold, accounts, keys, addresses, weights};
+        if (pq_keys) {
+            weights = pq_auths.reduce((res, a) => {
+                res[a.get(0)] = a.get(1);
+                return res;
+            }, weights);
+        }
+
+        return {threshold, accounts, keys, addresses, pq_keys, weights};
     }
 
-    permissionsToJson(threshold, accounts, keys, addresses, weights) {
+    /**
+     * @param role "active" oder "owner" -- gebraucht, um die post-quantum Schluessel der
+     *        Autoritaet unveraendert mitzufuehren. Diese Seite bearbeitet sie nicht; ohne
+     *        das Mitfuehren fielen sie beim naechsten Speichern still aus der Autoritaet,
+     *        weil ein account_update die Autoritaet immer vollstaendig ersetzt.
+     */
+    permissionsToJson(threshold, accounts, keys, addresses, weights, role) {
         let res = {weight_threshold: threshold};
         res["account_auths"] = accounts
             .sort(utils.sortID)
@@ -73,6 +92,11 @@ class AccountPermissions extends React.Component {
             .sort(utils.sortID)
             .map(a => [a, weights[a]])
             .toJS();
+
+        const pq = this.state[role + "_pq_keys"];
+        if (pq && pq.size)
+            res["pq_key_auths"] = pq.map(k => [k, weights[k]]).toJS();
+
         return res;
     }
 
@@ -83,9 +107,11 @@ class AccountPermissions extends React.Component {
         let state = {
             active_accounts: active.accounts,
             active_keys: active.keys,
+            active_pq_keys: active.pq_keys,
             active_addresses: active.addresses,
             owner_accounts: owner.accounts,
             owner_keys: owner.keys,
+            owner_pq_keys: owner.pq_keys,
             owner_addresses: owner.addresses,
             active_weights: active.weights,
             owner_weights: owner.weights,
@@ -161,7 +187,8 @@ class AccountPermissions extends React.Component {
                 s.active_accounts,
                 s.active_keys,
                 s.active_addresses,
-                s.active_weights
+                s.active_weights,
+                "active"
             );
         }
         if (this.didChange("owner")) {
@@ -170,7 +197,8 @@ class AccountPermissions extends React.Component {
                 s.owner_accounts,
                 s.owner_keys,
                 s.owner_addresses,
-                s.owner_weights
+                s.owner_weights,
+                "owner"
             );
         }
         if (
@@ -250,10 +278,30 @@ class AccountPermissions extends React.Component {
         return null;
     }
 
-    sumUpWeights(accounts, keys, addresses, weights) {
+    /// Kurzer Hinweis, dass die Autoritaet post-quantum Schluessel enthaelt. Die Liste
+    /// darunter zeigt sie nicht, und ohne diesen Satz sieht eine rein post-quantum
+    /// Autoritaet aus wie eine leere.
+    _pqNote(role) {
+        const pq = this.state[role + "_pq_keys"];
+        if (!pq || !pq.size) return null;
+        return (
+            <p className="pq-authority-note" style={{marginTop: "0.5em"}}>
+                {counterpart.translate("account.perm.pq_note", {
+                    count: pq.size
+                })}
+            </p>
+        );
+    }
+
+    sumUpWeights(accounts, keys, addresses, weights, pq_keys) {
         let sum = accounts.reduce((sum, a) => sum + weights[a], 0);
         sum = keys.reduce((sum, a) => sum + weights[a], sum);
-        return addresses.reduce((sum, a) => sum + weights[a], sum);
+        sum = addresses.reduce((sum, a) => sum + weights[a], sum);
+        // Ohne diesen Teil sieht eine rein post-quantum Autoritaet wie Gewicht 0 aus,
+        // und die Seite verweigert jede Aenderung mit "Gewicht unter der Schwelle",
+        // obwohl die Autoritaet auf der Kette voll erfuellt ist.
+        if (pq_keys) sum = pq_keys.reduce((sum, a) => sum + weights[a], sum);
+        return sum;
     }
 
     onMemoKeyChanged(memo_key) {
@@ -296,7 +344,8 @@ class AccountPermissions extends React.Component {
             active_accounts,
             active_keys,
             active_addresses,
-            active_weights
+            active_weights,
+            this.state.active_pq_keys
         );
         if (this.didChange("active") && weights_total < threshold)
             error1 = counterpart.translate("account.perm.warning1", {
@@ -310,7 +359,8 @@ class AccountPermissions extends React.Component {
             owner_accounts,
             owner_keys,
             owner_addresses,
-            owner_weights
+            owner_weights,
+            this.state.owner_pq_keys
         );
         if (this.didChange("owner") && weights_total < threshold)
             error2 = counterpart.translate("account.perm.warning2", {
@@ -333,6 +383,12 @@ class AccountPermissions extends React.Component {
 
         return (
             <div className="grid-content app-tables no-padding" ref="appTables">
+                {/* Der PQ-Schluessel gehoert zu den Autoritaeten und damit hierher, nicht
+                    in die globalen Einstellungen: er ist kontospezifisch und wird genau
+                    neben den klassischen Schluesseln verwaltet, die er ergaenzt. */}
+                <div className="content-block small-12">
+                    <AccountPQKey account={this.props.account} />
+                </div>
                 <div className="content-block small-12">
                     <div className="tabs-container generic-bordered-box">
                         <Tabs
@@ -418,6 +474,7 @@ class AccountPermissions extends React.Component {
                                     )}
                                     tabIndex={2}
                                 />
+                                {this._pqNote("active")}
                                 <br />
                                 {error1 ? (
                                     <div className="content-block has-error">
@@ -469,6 +526,7 @@ class AccountPermissions extends React.Component {
                                     )}
                                     tabIndex={5}
                                 />
+                                {this._pqNote("owner")}
                                 <br />
                                 {error2 ? (
                                     <div className="content-block has-error">

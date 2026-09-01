@@ -681,7 +681,17 @@ class SendModal extends React.Component {
                                         options: ["price_per_kbyte"],
                                         data: {
                                             type: "memo",
-                                            content: memo
+                                            content: memo,
+                                            // The memo grows by an ML-KEM ciphertext when
+                                            // the recipient has published a memo key, and
+                                            // this fee is per kilobyte.
+                                            pq: !!(
+                                                to_account &&
+                                                to_account.getIn([
+                                                    "options",
+                                                    "pq_memo_key"
+                                                ])
+                                            )
                                         }
                                     }}
                                     onChange={this.onFeeChanged.bind(this)}

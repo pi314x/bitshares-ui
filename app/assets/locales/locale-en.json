@@ -479,6 +479,28 @@
             "white_by": "Whitelisted by",
             "whitelist_authorities": "Whitelist authority",
             "whitelist_market_fee_sharing": "Market fee sharing whitelist"
+        },
+        "pq": {
+            "title": "Post-quantum key",
+            "explain": "An ML-DSA key that signs alongside your existing keys. It is derived from the same secret that restores this account, so there is nothing extra to write down. Adding it here appends to your active authority — your current keys keep working.",
+            "your_key": "Your key",
+            "locked": "Unlock your wallet to see this account’s post-quantum key.",
+            "attach": "Add to active authority",
+            "attached": "Key added. It signs alongside your existing keys from now on.",
+            "attached_already": "This key is already in the active authority.",
+            "foreign_key": "The active authority names %(count)s post-quantum key(s) this wallet cannot reproduce. Signing with them is not possible here.",
+            "not_activated": "This chain has not enabled post-quantum serialization yet, so the key cannot be attached. That is a committee decision, not a wallet setting.",
+            "transaction_size": "This chain limits a transaction to %(limit)s bytes. A post-quantum signature is 3309 bytes and carries its 1952-byte key, so a signed transfer needs about 5.5 kB — attaching the key here would give you one you could never sign with. The committee must raise maximum_transaction_size to at least 8192 first.",
+            "unreachable": "Could not reach the chain to check whether the key can be attached.",
+            "cannot_attach": "This chain cannot accept a post-quantum key yet.",
+            "unlock": "Unlock wallet",
+            "memo_title": "Post-quantum memo key",
+            "memo_explain": "Publishing this lets senders encrypt memos to you with ML-KEM-768 as well as classical ECDH, so an attacker has to break both. Memos are the part of the chain that cannot be fixed later: they are encrypted once and stored forever, so anything recorded today becomes readable the day the classical curve falls. Note that you will not be able to re-read memos you send to others under this scheme — encapsulation is one-way, and only the recipient holds the key.",
+            "memo_attach": "Publish memo key",
+            "memo_attached": "Memo key published.",
+            "memo_attached_already": "Memo key published",
+            "memo_foreign": "This account already publishes a different memo key. Replacing it will make memos sent to the old key unreadable for whoever holds it.",
+            "memo_unverified": "The derived memo key did not verify against itself; nothing was published."
         }
     },
     "account_browsing_mode": {
@@ -2857,7 +2879,10 @@
         "send": "Send",
         "to": "To",
         "total": "Total: ",
-        "warn_name_unable_read_memo": "Proposed sender will be unable to read this memo!"
+        "warn_name_unable_read_memo": "Proposed sender will be unable to read this memo!",
+        "memo_pq_sender": "Post-quantum memo — only the recipient can read this. Encapsulation is one-way, so the sender cannot recover it from the chain.",
+        "memo_pq_no_key": "Encrypted to a post-quantum memo key this wallet does not hold.",
+        "memo_pq_failed": "Could not decrypt this post-quantum memo."
     },
     "trx_error": {
         "expire": "Your transaction has expired without being confirmed, please try again later."

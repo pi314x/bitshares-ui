@@ -7,6 +7,8 @@ import {cloneDeep} from "lodash-es";
 
 import PrivateKeyStore from "stores/PrivateKeyStore";
 import SettingsStore from "stores/SettingsStore";
+import AccountStore from "stores/AccountStore";
+import {pqSignerFor, forgetPQKeys} from "lib/common/PQKeys";
 import {WalletTcomb} from "./tcomb_structs";
 import TransactionConfirmActions from "actions/TransactionConfirmActions";
 import WalletUnlockActions from "actions/WalletUnlockActions";
@@ -21,6 +23,16 @@ import counterpart from "counterpart";
 
 let aes_private = null;
 let _passwordKey = null;
+/**
+ * Das Wurzelgeheimnis, aus dem der PQ-Schluessel abgeleitet wird.
+ *
+ * Gleiche Lebensdauer wie die entschluesselten privaten Schluessel darueber: gesetzt beim
+ * Entsperren, geloescht beim Sperren. Das ist keine neue Preisgabe -- eine entsperrte Wallet
+ * haelt ohnehin die privaten Schluessel im Speicher -- aber es ist der einzige Weg, einen
+ * PQ-Schluessel fuer ein Konto abzuleiten, dessen active-Autoritaet KEINEN klassischen
+ * Schluessel mehr enthaelt. Genau dieser Fall ist der Zweck der PQ-Unterstuetzung.
+ */
+let _rootSecretValue = null;
 // let transaction;
 
 let TRACE = false;
@@ -70,7 +82,11 @@ class WalletDb extends BaseStore {
             "importKeysWorker",
             "resetBrainKeySequence",
             "decrementBrainKeySequence",
-            "generateKeyFromPassword"
+            "generateKeyFromPassword",
+            // Ohne diesen Eintrag ist die Methode auf dem Store schlicht nicht vorhanden:
+            // alt reicht nur weiter, was hier steht. Der Aufruf ergab dann still undefined,
+            // und das PQ-Panel hielt eine entsperrte Wallet fuer gesperrt.
+            "_rootSecret"
         );
         this.generatingKey = false;
     }
@@ -99,6 +115,8 @@ class WalletDb extends BaseStore {
 
     onLock() {
         _passwordKey = null;
+        _rootSecretValue = null;
+        forgetPQKeys();
         aes_private = null;
     }
 
@@ -153,6 +171,11 @@ class WalletDb extends BaseStore {
                     tr.update_head_block()
                 ]).then(() => {
                     let signer_pubkeys_added = {};
+                    // BitShares weist eine Transaktion mit ueberfluessigen Signaturen ab
+                    // ("irrelevant signature included"). Die PQ-Signatur darf also nur
+                    // dazukommen, wenn die klassischen Signaturen die Autoritaet noch
+                    // nicht erfuellen -- sonst macht sie eine gueltige Transaktion kaputt.
+                    let classic_signed = false;
                     if (signer_pubkeys) {
                         // Balance claims are by address, only the private
                         // key holder can know about these additional
@@ -167,6 +190,7 @@ class WalletDb extends BaseStore {
                             let private_key = this.getPrivateKey(pubkey_string);
                             tr.add_signer(private_key, pubkey_string);
                             signer_pubkeys_added[pubkey_string] = true;
+                            classic_signed = true;
                         }
                     }
 
@@ -205,8 +229,33 @@ class WalletDb extends BaseStore {
                                             private_key,
                                             pubkey_string
                                         );
+                                        classic_signed = true;
                                     }
                                 });
+                        })
+                        .then(() => {
+                            // Post-quantum authorities are invisible to the node's signing
+                            // API: get_potential_signatures returns set<public_key_type> and
+                            // has no PQ variant, so nothing above can ever propose a PQ key.
+                            // The account's own pq_key_auths is the only place to look.
+                            //
+                            // Silently skipped when the account has none, which is every
+                            // account today -- this must not disturb classic signing.
+                            try {
+                                const name =
+                                    AccountStore.getState().currentAccount ||
+                                    AccountStore.getState().passwordAccount;
+                                const secret = this._rootSecret();
+                                const pq =
+                                    !classic_signed && name && secret
+                                        ? pqSignerFor(name, secret)
+                                        : null;
+                                if (pq) tr.add_pq_signer(pq);
+                            } catch (e) {
+                                // A failure here must not block a transaction that the
+                                // classic signatures already satisfy.
+                                console.error("PQ signing skipped:", e);
+                            }
                         })
                         .then(() => {
                             if (broadcast) {
@@ -384,6 +433,17 @@ class WalletDb extends BaseStore {
     }
 
     /** This also serves as 'unlock' */
+    /// Das Wurzelgeheimnis fuer die PQ-Ableitung: das Passwort bei Cloud-Login, sonst der
+    /// Brainkey der lokalen Wallet. Null, solange die Wallet gesperrt ist.
+    _rootSecret() {
+        if (_rootSecretValue) return _rootSecretValue;
+        try {
+            return this.isLocked() ? null : this.getBrainKey();
+        } catch (e) {
+            return null; // lokale Wallet ohne Brainkey
+        }
+    }
+
     validatePassword(
         password,
         unlock = false,
@@ -482,6 +542,8 @@ class WalletDb extends BaseStore {
                 }
             }
 
+            // Nur bei Erfolg merken, und nur so lange die Wallet entsperrt ist.
+            if (_passwordKey) _rootSecretValue = password;
             return {success: !!_passwordKey, cloudMode: true};
         } else {
             let wallet = this.state.wallet;

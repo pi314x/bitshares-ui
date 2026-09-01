@@ -1,4 +1,5 @@
 import Immutable from "immutable";
+import counterpart from "counterpart";
 import alt from "alt-instance";
 import BaseStore from "./BaseStore";
 import idb_helper from "idb-helper";
@@ -9,6 +10,7 @@ import PrivateKeyActions from "actions/PrivateKeyActions";
 import CachedPropertyActions from "actions/CachedPropertyActions";
 import AddressIndex from "stores/AddressIndex";
 import {PublicKey, ChainStore, Aes} from "bitsharesjs";
+import {derivePQMemoKey} from "lib/common/PQKeys";
 
 /** No need to wait on the promises returned by this store as long as
     this.state.privateKeyStorage_error == false and
@@ -215,6 +217,41 @@ class PrivateKeyStore extends BaseStore {
         this.setState(state);
     }
 
+    /**
+     * The ML-KEM secret key that opens a hybrid memo addressed to `memoPubKey`, or null.
+     *
+     * The memo itself names only classical keys, so the account behind the memo key has to be
+     * looked up before its post-quantum key can be derived. The derived key is then checked
+     * against what that account actually published: a memo was encrypted to the published key
+     * specifically, so a key that does not match it cannot open the memo, and trying it anyway
+     * would only turn a clear "not your key" into a checksum failure.
+     */
+    _pqMemoKeyFor(memoPubKey) {
+        const refs = ChainStore.getAccountRefsOfKey(memoPubKey);
+        if (!refs || refs.size === 0) return null;
+        const secret = WalletDb._rootSecret && WalletDb._rootSecret();
+        if (!secret) return null; // locked, or a wallet with no root secret
+
+        let found = null;
+        refs.forEach(id => {
+            if (found) return;
+            const acct = ChainStore.getAccount(id, false);
+            if (!acct) return;
+            const published = acct.getIn(["options", "pq_memo_key"]);
+            if (!published) return;
+            const kem = derivePQMemoKey(acct.get("name"), secret);
+            if (!kem) return;
+            try {
+                if (kem.toPublicKey().toPublicKeyString() === published) {
+                    found = kem;
+                }
+            } catch (e) {
+                /* a malformed key on chain is not this function's problem */
+            }
+        });
+        return found;
+    }
+
     decodeMemo(memo) {
         let lockedWallet = false;
         let memo_text,
@@ -232,6 +269,41 @@ class PrivateKeyStore extends BaseStore {
             lockedWallet = true;
             private_key = null;
             isMine = true;
+        }
+
+        // A hybrid memo needs the recipient's ML-KEM key as well, and only the recipient
+        // has it. ML-KEM encapsulation is one-way: the sender produced the shared secret at
+        // encryption time and kept nothing that reproduces it, so a sender genuinely cannot
+        // read back their own post-quantum memo the way they can a classical one.
+        if (private_key && memo.pq_ciphertext) {
+            const kem = this._pqMemoKeyFor(memo.to);
+            if (!kem) {
+                return {
+                    text: from_private_key
+                        ? counterpart.translate("transfer.memo_pq_sender")
+                        : counterpart.translate("transfer.memo_pq_no_key"),
+                    isMine: !!from_private_key
+                };
+            }
+            try {
+                return {
+                    text: Aes.decrypt_with_checksum_pq(
+                        private_key,
+                        public_key,
+                        memo.nonce,
+                        memo.message,
+                        memo.pq_ciphertext,
+                        kem
+                    ).toString("utf-8"),
+                    isMine
+                };
+            } catch (e) {
+                console.log("post-quantum memo exception ...", e);
+                return {
+                    text: counterpart.translate("transfer.memo_pq_failed"),
+                    isMine
+                };
+            }
         }
 
         if (private_key) {

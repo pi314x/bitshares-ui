@@ -1,5 +1,6 @@
 import {Apis, Manager} from "bitsharesjs-ws";
 import {ChainStore} from "bitsharesjs";
+import {pq_format} from "bitsharesjs/es/serializer";
 import hirestime from "hirestime";
 
 // Stores
@@ -698,6 +699,32 @@ class RouterTransitioner {
     }
 
     /**
+     * Bringt das Serialisierungsformat mit der verbundenen Kette in Einklang.
+     *
+     * Fehler werden geschluckt und auf LEGACY zurueckgefallen: ein Knoten, der die
+     * Kettenparameter nicht liefert, ist mit hoher Wahrscheinlichkeit ein alter, und
+     * alt heisst legacy. Eine Ausnahme hier darf den Verbindungsaufbau nicht abbrechen.
+     * @private
+     */
+    _syncPQFormat() {
+        return Apis.instance()
+            .db_api()
+            .exec("get_global_properties", [])
+            .then(gp => {
+                const active = !!(
+                    gp &&
+                    gp.parameters &&
+                    gp.parameters.extensions &&
+                    gp.parameters.extensions.pq_serialization_active
+                );
+                pq_format.set(active ? pq_format.CURRENT : pq_format.LEGACY);
+            })
+            .catch(() => {
+                pq_format.set(pq_format.LEGACY);
+            });
+    }
+
+    /**
      * Called when a connection has been established
      *
      * @returns
@@ -728,6 +755,22 @@ class RouterTransitioner {
         const currentChain = Apis.instance().chain_id;
         const chainChanged = this._oldChain !== currentChain;
         this._oldChain = currentChain;
+
+        // Das Serialisierungsformat MUSS zu der Kette passen, mit der wir gerade sprechen.
+        //
+        // pq_format steht standardmaessig auf LEGACY. Auf einer Kette, deren Komitee
+        // pq_serialization_active gesetzt hat, packt die Kette Transaktionen anders --
+        // und da der Signatur-Digest ueber die gepackten Bytes laeuft, signiert eine
+        // Wallet im falschen Format ueber eine andere Byte-Folge. Die Signatur erholt
+        // sich dann zu einem fremden Schluessel, und JEDE Transaktion scheitert mit
+        // "Missing Active Authority" -- nicht nur post-quantum-bezogene.
+        //
+        // Deshalb bei jeder Verbindung neu abfragen statt einmal zu raten: derselbe
+        // Wallet-Build muss sowohl vor als auch nach der Aktivierung funktionieren.
+        // In die Verbindungskette eingehaengt statt nebenherlaufen zu lassen: wuerde die
+        // erste Transaktion vor der Antwort signiert, ginge sie mit dem falschen Format
+        // heraus und scheiterte an "Missing Active Authority".
+        const pqFormatPromise = this._syncPQFormat();
         var dbPromise = Promise.resolve();
         try {
             if (chainChanged) {
@@ -741,7 +784,7 @@ class RouterTransitioner {
             return this._transitionDone(reject);
         }
 
-        return Promise.all([dbPromise, SettingsStore.init()])
+        return Promise.all([dbPromise, SettingsStore.init(), pqFormatPromise])
             .then(() => {
                 let chainStoreResetPromise = chainChanged
                     ? ChainStore.resetCache(false)
