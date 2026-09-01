@@ -5,6 +5,7 @@ import Immutable from "immutable";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
 import PoolCreateForm from "../Pools/PoolCreateForm";
+import PoolDepositForm from "../Pools/PoolDepositForm";
 import PoolWithdrawForm from "../Pools/PoolWithdrawForm";
 import {ChainStore} from "bitsharesjs";
 import {debounce} from "lodash-es";
@@ -507,6 +508,10 @@ class LiquidityPools extends React.Component {
                         pool={this.state.selectedPool.share_asset}
                     />
                 )}
+                <PoolDepositForm
+                    pool={this.state.withdrawPool}
+                    account={this._currentAccountId()}
+                />
                 <PoolWithdrawForm
                     pool={this.state.withdrawPool}
                     account={this._currentAccountId()}

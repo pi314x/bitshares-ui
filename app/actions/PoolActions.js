@@ -158,6 +158,52 @@ class PoolActions {
     }
 
     /**
+     * Deposit into a liquidity pool.
+     *
+     * `min_to_receive` bounds the share units the deposit may mint. An imbalanced deposit
+     * pays a fee that depends on how far it pushes the pool out of balance -- so on the
+     * pool's state at the instant it executes, and whoever builds the block decides what
+     * happens immediately before that. Leaving it unset accepts whatever comes back, which
+     * is what this wallet did unconditionally until the field existed.
+     */
+    deposit_to_pool(
+        {
+            account,
+            pool,
+            amount_a,
+            amount_b,
+            min_to_receive = null,
+            fee_asset = "1.3.0"
+        },
+        options
+    ) {
+        const op = {
+            fee: {amount: 0, asset_id: fee_asset},
+            account,
+            pool,
+            amount_a,
+            amount_b,
+            extensions: {}
+        };
+        if (min_to_receive !== null && min_to_receive !== undefined) {
+            op.extensions.min_to_receive = min_to_receive;
+        }
+
+        const tr = WalletApi.new_transaction();
+        tr.add_type_operation("liquidity_pool_deposit", op);
+        return dispatch =>
+            Signer.process(tr, options)
+                .then(res => {
+                    dispatch({transaction: res});
+                    return res;
+                })
+                .catch(error => {
+                    dispatch({transaction: null, error});
+                    throw error;
+                });
+    }
+
+    /**
      * Withdraw from a liquidity pool by burning share tokens.
      *
      * Leaving `withdraw_one_asset` unset takes a proportional slice of both assets, which is

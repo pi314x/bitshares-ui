@@ -3312,6 +3312,12 @@
         "min_receive_a": "Minimum to receive (asset A)",
         "min_receive_b": "Minimum to receive (asset B)",
         "min_receive_single": "Minimum to receive",
-        "min_receive_hint": "optional — leave empty to accept any price"
+        "min_receive_hint": "optional — leave empty to accept any price",
+        "deposit_title": "Deposit into pool",
+        "deposit": "Deposit",
+        "deposited": "Deposited.",
+        "amount_hint": "amount in chain units",
+        "min_shares": "Minimum shares to receive",
+        "err_deposit_amounts": "Both amounts must be positive whole numbers."
     }
 }
