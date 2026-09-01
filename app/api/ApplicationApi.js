@@ -1017,6 +1017,12 @@ const ApplicationApi = {
         }
     },
 
+    /**
+     * @param minToReceive fewest share units the deposit may mint, or null for no bound.
+     *        An imbalanced deposit pays a fee that depends on the pool's state when it
+     *        executes, and whoever builds the block decides what happens immediately
+     *        before that. Without this the depositor accepts whatever they are given.
+     */
     async liquidityPoolDeposit(
         account,
         liquidityPoolId,
@@ -1025,7 +1031,8 @@ const ApplicationApi = {
         amountA,
         amountB,
         feeAsset = null,
-        broadcast = true
+        broadcast = true,
+        minToReceive = null
     ) {
         // account must be unlocked
         await WalletUnlockActions.unlock();
@@ -1064,7 +1071,10 @@ const ApplicationApi = {
                     amount: amountB,
                     asset_id: objects.assetB.get("id")
                 },
-                extensions: {}
+                extensions:
+                    minToReceive === null || minToReceive === undefined
+                        ? {}
+                        : {min_to_receive: minToReceive}
             }
         );
 
@@ -1075,16 +1085,42 @@ const ApplicationApi = {
         }
     },
 
+    /**
+     * @param withdrawOneAsset asset id to take the whole payout in, or null for a
+     *        proportional slice of both. Stable pools only; the chain rejects it elsewhere.
+     * @param minA fewest units of the pool's asset_a the withdrawal may pay out, or null.
+     * @param minB the same for asset_b.
+     *
+     * Both sides get their own bound because a proportional withdrawal pays out both, and a
+     * bound on one leg says nothing about the other. For a single-sided exit only the bound
+     * on the asset being withdrawn is meaningful -- the other side pays nothing, so a bound
+     * on it could never be met, and the chain rejects that rather than letting it look like
+     * protection.
+     */
     async liquidityPoolWithdraw(
         account,
         liquidityPoolId,
         shareAsset,
         shareAmount,
         feeAsset = null,
-        broadcast = true
+        broadcast = true,
+        withdrawOneAsset = null,
+        minA = null,
+        minB = null
     ) {
         // account must be unlocked
         await WalletUnlockActions.unlock();
+
+        const withdrawExtensions = {};
+        if (withdrawOneAsset !== null && withdrawOneAsset !== undefined) {
+            withdrawExtensions.withdraw_one_asset = withdrawOneAsset;
+        }
+        if (minA !== null && minA !== undefined) {
+            withdrawExtensions.min_a = minA;
+        }
+        if (minB !== null && minB !== undefined) {
+            withdrawExtensions.min_b = minB;
+        }
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -1115,7 +1151,7 @@ const ApplicationApi = {
                     amount: shareAmount,
                     asset_id: objects.shareAsset.get("id")
                 },
-                extensions: {}
+                extensions: withdrawExtensions
             }
         );
 
