@@ -3305,6 +3305,10 @@
         "withdrawn": "Withdrawal broadcast.",
         "err_amount": "Enter a share amount greater than zero.",
         "err_which_asset": "Choose which asset to be paid in.",
-        "single_fee_note": "Taking the whole payout in one asset moves the pool along its curve, so the imbalance fee applies — half the %(pct)s swap fee for a two-asset pool. A proportional withdrawal avoids it."
+        "single_fee_note": "Taking the whole payout in one asset moves the pool along its curve, so the imbalance fee applies — half the %(pct)s swap fee for a two-asset pool. A proportional withdrawal avoids it.",
+        "min_receive_a": "Minimum to receive (asset A)",
+        "min_receive_b": "Minimum to receive (asset B)",
+        "min_receive_single": "Minimum to receive",
+        "min_receive_hint": "optional — leave empty to accept any price"
     }
 }

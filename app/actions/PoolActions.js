@@ -175,6 +175,8 @@ class PoolActions {
             pool,
             share_amount,
             withdraw_one_asset = null,
+            min_a = null,
+            min_b = null,
             fee_asset = "1.3.0"
         },
         options
@@ -188,6 +190,16 @@ class PoolActions {
         };
         if (withdraw_one_asset) {
             op.extensions.withdraw_one_asset = withdraw_one_asset;
+        }
+        // Untergrenzen je Seite. Eine Auszahlung preist an den Poolstaenden im Augenblick
+        // der Ausfuehrung, und was unmittelbar davor geschieht, bestimmt derjenige, der den
+        // Block baut. Ohne diese Felder konnte der Auszahlende nicht sagen, wieviel
+        // Abweichung er hinnimmt -- die Kette liess es zu, diese Wallet fragte nie danach.
+        if (min_a !== null && min_a !== undefined) {
+            op.extensions.min_a = min_a;
+        }
+        if (min_b !== null && min_b !== undefined) {
+            op.extensions.min_b = min_b;
         }
 
         const tr = WalletApi.new_transaction();

@@ -26,6 +26,8 @@ class PoolWithdrawForm extends React.Component {
         mode: MODE_PROPORTIONAL,
         amount: "",
         which_asset: "",
+        min_a: "",
+        min_b: "",
         busy: false,
         error: null,
         done: null
@@ -39,10 +41,35 @@ class PoolWithdrawForm extends React.Component {
                 mode: MODE_PROPORTIONAL,
                 amount: "",
                 which_asset: "",
+                min_a: "",
+                min_b: "",
                 error: null,
                 done: null
             });
         }
+    }
+
+    /**
+     * Die Untergrenzen, die mitgeschickt werden.
+     *
+     * Bei einer einseitigen Auszahlung zahlt nur eine Seite etwas aus; eine Grenze auf der
+     * anderen koennte nie erfuellt werden, und die Kette lehnt sie ausdruecklich ab. Also
+     * wird der eingegebene Wert derjenigen Seite zugeordnet, die tatsaechlich ausgezahlt
+     * wird, und die andere bleibt leer.
+     */
+    _floors(single) {
+        const {pool} = this.props;
+        const num = v => {
+            const n = parseInt(v, 10);
+            return Number.isFinite(n) && n > 0 ? n : null;
+        };
+        if (single) {
+            const value = num(this.state.min_a);
+            return this.state.which_asset === pool.asset_a
+                ? {min_a: value, min_b: null}
+                : {min_a: null, min_b: value};
+        }
+        return {min_a: num(this.state.min_a), min_b: num(this.state.min_b)};
     }
 
     _submit = () => {
@@ -68,7 +95,8 @@ class PoolWithdrawForm extends React.Component {
                 amount: String(amount),
                 asset_id: pool.share_asset
             },
-            withdraw_one_asset: single ? this.state.which_asset : null
+            withdraw_one_asset: single ? this.state.which_asset : null,
+            ...this._floors(single)
         })
             .then(() => {
                 this.setState({
@@ -159,6 +187,51 @@ class PoolWithdrawForm extends React.Component {
                                 {pool.asset_b_str || pool.asset_b}
                             </Select.Option>
                         </Select>
+                    </div>
+                )}
+
+                {/* Untergrenzen. Was eine Auszahlung ausgibt, haengt am Poolstand im
+                    Augenblick der Ausfuehrung, und was unmittelbar davor geschieht,
+                    bestimmt derjenige, der den Block baut. Leer lassen heisst: jeden Preis
+                    hinnehmen -- was diese Wallet bisher als einzige Moeglichkeit anbot. */}
+                <div className="futures-form-row">
+                    <label>
+                        <Translate
+                            content={
+                                single
+                                    ? "pools.min_receive_single"
+                                    : "pools.min_receive_a"
+                            }
+                        />
+                    </label>
+                    <Input
+                        value={this.state.min_a}
+                        placeholder={counterpart.translate(
+                            "pools.min_receive_hint"
+                        )}
+                        onChange={e =>
+                            this.setState({min_a: e.target.value, error: null})
+                        }
+                    />
+                </div>
+
+                {!single && (
+                    <div className="futures-form-row">
+                        <label>
+                            <Translate content="pools.min_receive_b" />
+                        </label>
+                        <Input
+                            value={this.state.min_b}
+                            placeholder={counterpart.translate(
+                                "pools.min_receive_hint"
+                            )}
+                            onChange={e =>
+                                this.setState({
+                                    min_b: e.target.value,
+                                    error: null
+                                })
+                            }
+                        />
                     </div>
                 )}
 
