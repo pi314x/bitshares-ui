@@ -167,9 +167,17 @@ export async function canPublish() {
         if (!ext.pq_serialization_active) {
             return {ok: false, reason: "not_activated", limit};
         }
-        // 1952 bytes of key plus the rest of an account_update. Under about 4 kB there is no
-        // useful headroom; the historical default of 2048 cannot fit the key alone.
-        if (limit < 4096) return {ok: false, reason: "transaction_size", limit};
+        // The binding constraint is not attaching the key, it is USING it afterwards.
+        //
+        // Measured against the serializer: attaching a 1952-byte key with a classical
+        // signature is about 2.1 kB, so 4 kB would be enough for that one transaction. But
+        // every transaction the key then signs carries the key AND a 3309-byte ML-DSA
+        // signature -- a bare transfer comes to 5.4 kB, and 6.5 kB with a hybrid memo.
+        //
+        // Allowing the attach at 4 kB would hand the user a key that cannot sign anything,
+        // and if they went on to drop their classical keys the account would be locked out
+        // entirely. So the bar is what it takes to use the key, not to publish it.
+        if (limit < 8192) return {ok: false, reason: "transaction_size", limit};
         return {ok: true, reason: null, limit};
     } catch (e) {
         return {ok: false, reason: "unreachable", limit: 0};

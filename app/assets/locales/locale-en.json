@@ -491,7 +491,7 @@
             "attached_already": "This key is already in the active authority.",
             "foreign_key": "The active authority names %(count)s post-quantum key(s) this wallet cannot reproduce. Signing with them is not possible here.",
             "not_activated": "This chain has not enabled post-quantum serialization yet, so the key cannot be attached. That is a committee decision, not a wallet setting.",
-            "transaction_size": "This chain limits a transaction to %(limit)s bytes. A post-quantum key is 1952 bytes and does not fit — the limit has to be raised before any account can carry one.",
+            "transaction_size": "This chain limits a transaction to %(limit)s bytes. A post-quantum signature is 3309 bytes and carries its 1952-byte key, so a signed transfer needs about 5.5 kB — attaching the key here would give you one you could never sign with. The committee must raise maximum_transaction_size to at least 8192 first.",
             "unreachable": "Could not reach the chain to check whether the key can be attached.",
             "cannot_attach": "This chain cannot accept a post-quantum key yet.",
             "unlock": "Unlock wallet",
