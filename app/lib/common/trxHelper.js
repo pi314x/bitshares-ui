@@ -211,6 +211,9 @@ const nonce = TransactionHelper.unique_nonce_uint64();
 let _privKey;
 let _cachedMessage, _prevContent;
 
+/// FIPS 203, ML-KEM-768. Fixed by the parameter set, so a constant rather than a lookup.
+const ML_KEM_768_CIPHERTEXT_BYTES = 1088;
+
 let _feeCache = {};
 function estimateFee(op_type, options, globalObject, data = {}) {
     // console.time("estimateFee");
@@ -291,6 +294,17 @@ function estimateFee(op_type, options, globalObject, data = {}) {
                         nonce,
                         message
                     };
+
+                    // A hybrid memo carries an ML-KEM ciphertext as well, and this fee is
+                    // charged per kilobyte. Leaving it out of the measurement understates the
+                    // fee by roughly 1088 bytes' worth, and the transfer is then rejected for
+                    // paying too little. The content is irrelevant here -- only the length is
+                    // measured -- so a zero-filled buffer of the right size is enough.
+                    if (data.pq) {
+                        memo_object.pq_ciphertext = Buffer.alloc(
+                            ML_KEM_768_CIPHERTEXT_BYTES
+                        ).toString("hex");
+                    }
 
                     let serialized = ops.memo_data.fromObject(memo_object);
                     const stringified = JSON.stringify(

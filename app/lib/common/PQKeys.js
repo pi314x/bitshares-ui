@@ -1,4 +1,4 @@
-import {PQPrivateKey, hash} from "bitsharesjs/es/ecc";
+import {PQPrivateKey, PQKemPrivateKey, hash} from "bitsharesjs/es/ecc";
 import {ChainStore} from "bitsharesjs";
 import {Apis} from "bitsharesjs-ws";
 
@@ -49,6 +49,65 @@ export function derivePQKey(accountName, rootSecret) {
     const pq = PQPrivateKey.fromSeed(seed);
     _cache.set(cacheKey, pq);
     return pq;
+}
+
+/**
+ * Derive the account's post-quantum MEMO key.
+ *
+ * Separate from the signing key above, and deliberately so. A signing key only has to resist
+ * forgery until its transaction confirms, and an account can re-key at any time. A memo is
+ * encrypted once and stays on the chain forever, so anyone archiving traffic today reads it
+ * the day secp256k1 falls -- and nothing done afterwards makes it unreadable again. Of
+ * everything post-quantum here, this is the part that cannot be fixed later.
+ *
+ * sha512, not sha256: ML-KEM keygen takes a 64-byte seed. The role string differs from the
+ * signing key's so the two are independent even though both come from the one root secret.
+ *
+ * @returns PQKemPrivateKey, or null if either argument is missing
+ */
+export function derivePQMemoKey(accountName, rootSecret) {
+    if (!accountName || !rootSecret) return null;
+    const cacheKey = "memo|" + accountName + "|" + rootSecret;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
+
+    const seed = hash.sha512(
+        Buffer.from(accountName + "pqmemo" + rootSecret, "utf-8")
+    );
+    const kem = PQKemPrivateKey.fromSeed(seed);
+    _cache.set(cacheKey, kem);
+    return kem;
+}
+
+/**
+ * The memo key an account has published, as a base58 string, or null.
+ *
+ * Its absence is what tells a sender to use the classical memo path, so "no key" has to be
+ * distinguishable from "could not load the account" -- both return null here, and callers
+ * must have the account loaded before asking.
+ */
+export function accountPQMemoKey(accountName) {
+    const acct = ChainStore.getAccount(accountName, false);
+    if (!acct) return null;
+    return acct.getIn(["options", "pq_memo_key"]) || null;
+}
+
+/**
+ * Whether this wallet can read memos sent to the account's published memo key.
+ *
+ * Used before publishing: a memo key that senders can encrypt to but the recipient cannot
+ * decapsulate with is worse than none at all, because it silently converts readable memos
+ * into unreadable ones.
+ */
+export function canReadPQMemos(accountName, rootSecret) {
+    const published = accountPQMemoKey(accountName);
+    if (!published) return false;
+    const kem = derivePQMemoKey(accountName, rootSecret);
+    if (!kem) return false;
+    try {
+        return kem.toPublicKey().toPublicKeyString() === published;
+    } catch (e) {
+        return false;
+    }
 }
 
 /// Forget cached keys. Called on lock, so a locked wallet holds no PQ secret in memory.
@@ -119,6 +178,9 @@ export async function canPublish() {
 
 export default {
     derivePQKey,
+    derivePQMemoKey,
+    accountPQMemoKey,
+    canReadPQMemos,
     forgetPQKeys,
     accountPQKeys,
     pqSignerFor,

@@ -8,7 +8,13 @@ import accountUtils from "common/account_utils";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import WalletUnlockStore from "stores/WalletUnlockStore";
 import {connect} from "alt-react";
-import {derivePQKey, accountPQKeys, canPublish} from "lib/common/PQKeys";
+import {
+    derivePQKey,
+    derivePQMemoKey,
+    accountPQKeys,
+    accountPQMemoKey,
+    canPublish
+} from "lib/common/PQKeys";
 
 /**
  * The account's post-quantum key: show it, say whether the chain accepts it, and attach it.
@@ -25,6 +31,8 @@ import {derivePQKey, accountPQKeys, canPublish} from "lib/common/PQKeys";
 class AccountPQKey extends React.Component {
     state = {
         derived: null,
+        derivedMemo: null,
+        memoOnChain: null,
         deriveError: null,
         onChain: [],
         publishable: null,
@@ -56,6 +64,7 @@ class AccountPQKey extends React.Component {
         const name = account.get("name");
         const secret = WalletDb._rootSecret && WalletDb._rootSecret();
         let derived = null;
+        let derivedMemo = null;
         let deriveError = null;
         if (secret) {
             // Ein Fehler hier ist ein Fehler im Code, keine gesperrte Wallet. Frueher
@@ -64,14 +73,20 @@ class AccountPQKey extends React.Component {
             try {
                 const pq = derivePQKey(name, secret);
                 derived = pq ? pq.toPublicKey().toPublicKeyString() : null;
+                const kem = derivePQMemoKey(name, secret);
+                derivedMemo = kem
+                    ? kem.toPublicKey().toPublicKeyString()
+                    : null;
             } catch (e) {
                 deriveError = e && e.message ? e.message : String(e);
             }
         }
         this.setState({
             derived,
+            derivedMemo,
             deriveError,
-            onChain: accountPQKeys(name)
+            onChain: accountPQKeys(name),
+            memoOnChain: accountPQMemoKey(name)
         });
         canPublish().then(p => this.setState({publishable: p}));
     }
@@ -126,11 +141,67 @@ class AccountPQKey extends React.Component {
             );
     };
 
+    /**
+     * Publish the account's ML-KEM memo key.
+     *
+     * The check before sending is not a formality. Once this key is on chain, senders start
+     * encrypting to it immediately -- so publishing a key this wallet cannot decapsulate with
+     * does not leave things as they were, it turns memos that would have been readable into
+     * memos nobody can open. The derived key is therefore compared against itself through the
+     * chain's own base58 form first, and anything unexpected aborts rather than publishes.
+     */
+    _attachMemo = () => {
+        const {account} = this.props;
+        const {derivedMemo} = this.state;
+        if (!derivedMemo) return;
+
+        const secret = WalletDb._rootSecret && WalletDb._rootSecret();
+        const kem = derivePQMemoKey(account.get("name"), secret);
+        if (!kem || kem.toPublicKey().toPublicKeyString() !== derivedMemo) {
+            this.setState({
+                error: counterpart.translate("account.pq.memo_unverified")
+            });
+            return;
+        }
+
+        this.setState({busy: true, error: null, done: null});
+
+        const options = account.get("options").toJS();
+        options.pq_memo_key = derivedMemo;
+
+        ApplicationApi.updateAccount({
+            account: account.get("id"),
+            new_options: options,
+            fee: {
+                amount: 0,
+                asset_id: accountUtils.getFinalFeeAsset(
+                    account.get("id"),
+                    "account_update"
+                )
+            }
+        })
+            .then(() => {
+                this.setState({
+                    busy: false,
+                    done: counterpart.translate("account.pq.memo_attached")
+                });
+                this._refresh();
+            })
+            .catch(err =>
+                this.setState({
+                    busy: false,
+                    error: err && err.message ? err.message : String(err)
+                })
+            );
+    };
+
     render() {
         const {account} = this.props;
         if (!account) return null;
         const {
             derived,
+            derivedMemo,
+            memoOnChain,
             deriveError,
             onChain,
             publishable,
@@ -139,6 +210,11 @@ class AccountPQKey extends React.Component {
             done
         } = this.state;
         const alreadyAttached = derived && onChain.indexOf(derived) >= 0;
+        const memoAttached = derivedMemo && memoOnChain === derivedMemo;
+        // A memo key belonging to some other wallet. Republishing over it would make every
+        // memo sent to the old key unreadable for whoever does hold it, so this warns rather
+        // than quietly offering the button.
+        const memoForeign = memoOnChain && memoOnChain !== derivedMemo;
 
         return (
             <Card
@@ -191,6 +267,70 @@ class AccountPQKey extends React.Component {
                         >
                             {derived}
                         </div>
+                    </div>
+                )}
+
+                {derivedMemo && (
+                    <div className="futures-form-row">
+                        <label>
+                            <Translate content="account.pq.memo_title" />
+                        </label>
+                        <Translate
+                            component="p"
+                            content="account.pq.memo_explain"
+                        />
+                        <div
+                            className="pq-key-block"
+                            style={{
+                                wordBreak: "break-all",
+                                fontFamily: "monospace",
+                                fontSize: "0.85em",
+                                lineHeight: 1.4,
+                                maxHeight: "9em",
+                                overflowY: "auto",
+                                padding: "0.5em",
+                                border: "1px solid rgba(128,128,128,0.35)",
+                                borderRadius: "3px"
+                            }}
+                        >
+                            {derivedMemo}
+                        </div>
+
+                        {memoForeign && (
+                            <Alert
+                                type="warning"
+                                message={counterpart.translate(
+                                    "account.pq.memo_foreign"
+                                )}
+                            />
+                        )}
+
+                        <Tooltip
+                            title={
+                                publishable && !publishable.ok
+                                    ? counterpart.translate(
+                                          "account.pq.cannot_attach"
+                                      )
+                                    : null
+                            }
+                        >
+                            <Button
+                                disabled={
+                                    busy ||
+                                    memoAttached ||
+                                    !(publishable && publishable.ok)
+                                }
+                                onClick={this._attachMemo}
+                            >
+                                <Translate
+                                    content={
+                                        memoAttached
+                                            ? "account.pq.memo_attached_already"
+                                            : "account.pq.memo_attach"
+                                    }
+                                />
+                            </Button>
+                        </Tooltip>
                     </div>
                 )}
 

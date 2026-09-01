@@ -2,7 +2,6 @@ import WalletUnlockActions from "actions/WalletUnlockActions";
 import accountUtils from "common/account_utils";
 import WalletDb from "stores/WalletDb";
 import {
-    Aes,
     ChainValidation,
     TransactionBuilder,
     TransactionHelper,
@@ -10,6 +9,7 @@ import {
     ChainStore,
     ChainTypes
 } from "bitsharesjs";
+import PQMemo from "common/PQMemo";
 import counterpart from "counterpart";
 import {Notification} from "bitshares-ui-style-guide";
 
@@ -90,6 +90,9 @@ const ApplicationApi = {
             private_key: null
         };
         memo.public_key = account.getIn(["options", "memo_key"]);
+        // The recipient's published ML-KEM key, when they have one. Absent is the normal
+        // case and means the memo stays classical.
+        memo.pq_memo_key = account.getIn(["options", "pq_memo_key"]) || null;
         // The 1s are base58 for all zeros (null)
         if (/111111111111111111111/.test(memo.public_key)) {
             memo.public_key = null;
@@ -141,7 +144,11 @@ const ApplicationApi = {
             FetchChain("getAccount", memo_sender_account),
             FetchChain("getAsset", asset),
             FetchChain("getAsset", fee_asset_id),
-            unlock_promise
+            unlock_promise,
+            // Asked here rather than at the memo, so the answer is in hand before anything
+            // is encrypted. Writing a hybrid memo on a chain that strips the ciphertext
+            // produces a confirmed, permanently unreadable memo.
+            PQMemo.isPQActive()
         ])
             .then(res => {
                 let [
@@ -149,7 +156,9 @@ const ApplicationApi = {
                     chain_to,
                     chain_memo_sender,
                     chain_asset,
-                    chain_fee_asset
+                    chain_fee_asset,
+                    ,
+                    pq_active
                 ] = res;
 
                 let chain_propose_account = null;
@@ -169,21 +178,24 @@ const ApplicationApi = {
                             optional_nonce == null
                                 ? TransactionHelper.unique_nonce_uint64()
                                 : optional_nonce;
-                        memo_object = {
-                            from: memo_sender.public_key,
-                            to: memo_to.public_key,
-                            nonce,
-                            message: encrypt_memo
-                                ? Aes.encrypt_with_checksum(
-                                      memo_sender.private_key,
-                                      memo_to.public_key,
-                                      nonce,
-                                      memo
-                                  )
-                                : Buffer.isBuffer(memo)
-                                ? memo.toString("utf-8")
-                                : memo
-                        };
+                        memo_object = encrypt_memo
+                            ? PQMemo.buildMemo({
+                                  fromPrivate: memo_sender.private_key,
+                                  fromPublic: memo_sender.public_key,
+                                  toPublic: memo_to.public_key,
+                                  nonce,
+                                  message: memo,
+                                  toMemoKey: memo_to.pq_memo_key,
+                                  pqActive: pq_active
+                              })
+                            : {
+                                  from: memo_sender.public_key,
+                                  to: memo_to.public_key,
+                                  nonce,
+                                  message: Buffer.isBuffer(memo)
+                                      ? memo.toString("utf-8")
+                                      : memo
+                              };
                     }
                 }
 
@@ -364,9 +376,10 @@ const ApplicationApi = {
         return Promise.all([
             FetchChain("getAccount", from_account),
             FetchChain("getAccount", to_account),
-            unlock_promise
+            unlock_promise,
+            PQMemo.isPQActive()
         ]).then(res => {
-            let [chain_memo_sender, chain_to] = res;
+            let [chain_memo_sender, chain_to, , pq_active] = res;
 
             let memo_from_public, memo_to_public;
             if (memo && encrypt_memo) {
@@ -404,21 +417,26 @@ const ApplicationApi = {
                         ? TransactionHelper.unique_nonce_uint64()
                         : optional_nonce;
 
-                memo_object = {
-                    from: memo_from_public,
-                    to: memo_to_public,
-                    nonce,
-                    message: encrypt_memo
-                        ? Aes.encrypt_with_checksum(
-                              memo_from_privkey,
-                              memo_to_public,
-                              nonce,
-                              memo
-                          )
-                        : Buffer.isBuffer(memo)
-                        ? memo.toString("utf-8")
-                        : memo
-                };
+                memo_object = encrypt_memo
+                    ? PQMemo.buildMemo({
+                          fromPrivate: memo_from_privkey,
+                          fromPublic: memo_from_public,
+                          toPublic: memo_to_public,
+                          nonce,
+                          message: memo,
+                          toMemoKey:
+                              chain_to.getIn(["options", "pq_memo_key"]) ||
+                              null,
+                          pqActive: pq_active
+                      })
+                    : {
+                          from: memo_from_public,
+                          to: memo_to_public,
+                          nonce,
+                          message: Buffer.isBuffer(memo)
+                              ? memo.toString("utf-8")
+                              : memo
+                      };
             }
 
             let tr = new TransactionBuilder();
@@ -721,7 +739,6 @@ const ApplicationApi = {
         };
         let memo_object;
         let optional_nonce = null;
-        let encrypt_memo = true;
 
         if (memo) {
             let memo_sender = this._get_memo_keys(objects.to, true);
@@ -731,21 +748,15 @@ const ApplicationApi = {
                     optional_nonce == null
                         ? TransactionHelper.unique_nonce_uint64()
                         : optional_nonce;
-                memo_object = {
-                    from: memo_sender.public_key,
-                    to: memo_to.public_key,
+                memo_object = PQMemo.buildMemo({
+                    fromPrivate: memo_sender.private_key,
+                    fromPublic: memo_sender.public_key,
+                    toPublic: memo_to.public_key,
                     nonce,
-                    message: encrypt_memo
-                        ? Aes.encrypt_with_checksum(
-                              memo_sender.private_key,
-                              memo_to.public_key,
-                              nonce,
-                              memo
-                          )
-                        : Buffer.isBuffer(memo)
-                        ? memo.toString("utf-8")
-                        : memo
-                };
+                    message: memo,
+                    toMemoKey: memo_to.pq_memo_key,
+                    pqActive: await PQMemo.isPQActive()
+                });
             }
         }
 

@@ -494,7 +494,14 @@
             "transaction_size": "This chain limits a transaction to %(limit)s bytes. A post-quantum key is 1952 bytes and does not fit — the limit has to be raised before any account can carry one.",
             "unreachable": "Could not reach the chain to check whether the key can be attached.",
             "cannot_attach": "This chain cannot accept a post-quantum key yet.",
-            "unlock": "Unlock wallet"
+            "unlock": "Unlock wallet",
+            "memo_title": "Post-quantum memo key",
+            "memo_explain": "Publishing this lets senders encrypt memos to you with ML-KEM-768 as well as classical ECDH, so an attacker has to break both. Memos are the part of the chain that cannot be fixed later: they are encrypted once and stored forever, so anything recorded today becomes readable the day the classical curve falls. Note that you will not be able to re-read memos you send to others under this scheme — encapsulation is one-way, and only the recipient holds the key.",
+            "memo_attach": "Publish memo key",
+            "memo_attached": "Memo key published.",
+            "memo_attached_already": "Memo key published",
+            "memo_foreign": "This account already publishes a different memo key. Replacing it will make memos sent to the old key unreadable for whoever holds it.",
+            "memo_unverified": "The derived memo key did not verify against itself; nothing was published."
         }
     },
     "account_browsing_mode": {
@@ -2881,7 +2888,10 @@
         "send": "Send",
         "to": "To",
         "total": "Total: ",
-        "warn_name_unable_read_memo": "Proposed sender will be unable to read this memo!"
+        "warn_name_unable_read_memo": "Proposed sender will be unable to read this memo!",
+        "memo_pq_sender": "Post-quantum memo — only the recipient can read this. Encapsulation is one-way, so the sender cannot recover it from the chain.",
+        "memo_pq_no_key": "Encrypted to a post-quantum memo key this wallet does not hold.",
+        "memo_pq_failed": "Could not decrypt this post-quantum memo."
     },
     "trx_error": {
         "expire": "Your transaction has expired without being confirmed, please try again later."
