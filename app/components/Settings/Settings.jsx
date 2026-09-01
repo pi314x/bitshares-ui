@@ -1,5 +1,6 @@
 import React from "react";
 import counterpart from "counterpart";
+import Signer from "lib/common/Signer";
 import IntlActions from "actions/IntlActions";
 import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
@@ -40,6 +41,10 @@ class Settings extends React.Component {
             "viewOnlyMode",
             "showProposedTx"
         ];
+        // Only offer the signing choice when there is a choice to make. Listing an option
+        // the user cannot select reads as something being broken, and picking it would
+        // strand them with no way to sign.
+        if (Signer.extensionAvailable()) general.push("signer");
         // disable that the user can change login method if only one is allowed
         if (getAllowedLogins().length > 1) general.push("passwordLogin");
         general.push("reset");
