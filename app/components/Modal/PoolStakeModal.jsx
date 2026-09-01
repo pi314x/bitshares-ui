@@ -25,6 +25,12 @@ class PoolStakeModal extends React.Component {
             assetAAmount: null,
             assetBAmount: null,
             shareAssetAmount: null,
+            // Untergrenzen. Was eine Ein- oder Auszahlung ergibt, haengt am Poolstand im
+            // Augenblick der Ausfuehrung, und was unmittelbar davor geschieht, bestimmt
+            // derjenige, der den Block baut. Leer heisst: jeden Preis hinnehmen.
+            minShares: null,
+            minA: null,
+            minB: null,
             assetAErr: {
                 msg: null,
                 status: null
@@ -91,7 +97,10 @@ class PoolStakeModal extends React.Component {
                 pool.getIn(["asset_a", "symbol"]),
                 pool.getIn(["asset_b", "symbol"]),
                 Math.floor(Number(assetAAmount) * Number(assetAPrecision)),
-                Math.floor(Number(assetBAmount) * Number(assetBPrecision))
+                Math.floor(Number(assetBAmount) * Number(assetBPrecision)),
+                null,
+                true,
+                this._floor(this.state.minShares, sharedAssetPrecision)
             )
                 .then(res => {
                     console.log("exchange:", res);
@@ -107,7 +116,12 @@ class PoolStakeModal extends React.Component {
                 pool.getIn(["share_asset", "symbol"]),
                 Math.floor(
                     Number(shareAssetAmount) * Number(sharedAssetPrecision)
-                )
+                ),
+                null,
+                true,
+                null,
+                this._floor(this.state.minA, assetAPrecision),
+                this._floor(this.state.minB, assetBPrecision)
             )
                 .then(res => {
                     console.log("exchange:", res);
@@ -478,6 +492,23 @@ class PoolStakeModal extends React.Component {
         }
     }
 
+    /**
+     * Eine eingegebene Untergrenze in Kettenbetraege umrechnen.
+     *
+     * Leer, null oder nicht positiv heisst "keine Grenze" -- und das muss null ergeben, nicht
+     * 0: eine Grenze von 0 waere immer erfuellt und laese sich doch wie Schutz.
+     */
+    _floor(value, precision) {
+        if (
+            value === null ||
+            value === undefined ||
+            String(value).trim() === ""
+        )
+            return null;
+        const n = Math.floor(Number(value) * Number(precision));
+        return Number.isFinite(n) && n > 0 ? n : null;
+    }
+
     render() {
         const {TabPane} = Tabs;
         const {pool, account} = this.props;
@@ -636,6 +667,25 @@ class PoolStakeModal extends React.Component {
                                 </Col>
                             </Row>
                         </Form>
+                        <div className="pool-floor">
+                            <h4>
+                                {counterpart.translate(
+                                    "poolmart.liquidity_pools.min_shares"
+                                )}
+                            </h4>
+                            {/* Leer heisst: jeden Preis hinnehmen. Was eine
+                                        unausgewogene Einzahlung praegt, haengt am Poolstand
+                                        im Augenblick der Ausfuehrung, und was unmittelbar
+                                        davor geschieht, bestimmt der Blockbauer. */}
+                            <AmountSelector
+                                assets={[shareAsset.get("symbol")]}
+                                asset={shareAsset.get("symbol")}
+                                amount={this.state.minShares}
+                                onChange={v =>
+                                    this.setState({minShares: v.amount})
+                                }
+                            />
+                        </div>
                     </TabPane>
                     <TabPane
                         tab={counterpart.translate(
@@ -756,6 +806,33 @@ class PoolStakeModal extends React.Component {
                                 </Col>
                             </Row>
                         </Form>
+                        <div className="pool-floor">
+                            <h4>
+                                {counterpart.translate(
+                                    "poolmart.liquidity_pools.min_a"
+                                )}
+                            </h4>
+                            <AmountSelector
+                                assets={[assetA.get("symbol")]}
+                                asset={assetA.get("symbol")}
+                                amount={this.state.minA}
+                                onChange={v => this.setState({minA: v.amount})}
+                            />
+                            <h4>
+                                {counterpart.translate(
+                                    "poolmart.liquidity_pools.min_b"
+                                )}
+                            </h4>
+                            {/* Zwei Grenzen, weil eine proportionale Auszahlung
+                                        beide Seiten auszahlt und eine Grenze auf einem Bein
+                                        ueber das andere nichts sagt. */}
+                            <AmountSelector
+                                assets={[assetB.get("symbol")]}
+                                asset={assetB.get("symbol")}
+                                amount={this.state.minB}
+                                onChange={v => this.setState({minB: v.amount})}
+                            />
+                        </div>
                     </TabPane>
                 </Tabs>
             </Modal>
