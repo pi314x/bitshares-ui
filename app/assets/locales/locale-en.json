@@ -228,7 +228,8 @@
             "warning2": "Owner permissions weights total of %(weights_total)s should be equal or exceed threshold of %(threshold)s",
             "warning3": "Account is already in the list",
             "warning4": "Key is already in the list",
-            "weight": "Weight"
+            "weight": "Weight",
+            "pq_note": "This authority also contains %(count)s post-quantum key(s). They count toward the threshold and are managed in the Post-quantum key panel above."
         },
         "permissions": "Permissions",
         "please_create_account": "Please create an account",
