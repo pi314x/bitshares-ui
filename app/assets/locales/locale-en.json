@@ -1996,7 +1996,10 @@
             "taker_fee_percent_rate": "Taker Fee Rate",
             "title": "Pools",
             "unstake": "Unstake",
-            "withdrawal_fee_percent": "Withdrawal Fee"
+            "withdrawal_fee_percent": "Withdrawal Fee",
+            "min_a": "Minimum of asset A to receive (optional)",
+            "min_b": "Minimum of asset B to receive (optional)",
+            "min_shares": "Minimum shares to receive (optional)"
         }
     },
     "prediction": {
