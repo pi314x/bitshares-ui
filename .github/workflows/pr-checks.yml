@@ -1,0 +1,58 @@
+# Der bestehende Workflow baut und veroeffentlicht erst BEI EINEM PUSH auf develop, staging
+# oder master. Ein Pull Request bekommt damit ueberhaupt keine Pruefung -- was schiefliegt,
+# faellt erst auf, nachdem es gemergt ist.
+#
+# Hier gibt es keine ausfuehrbare Testsuite: test:market laeuft mit --watch und kehrt nie
+# zurueck. Die aussagekraeftige Pruefung ist deshalb der echte Produktionsbau. Er ist keine
+# Formalitaet: webpack loest jeden Import auf, und ein Verweis auf eine Datei, die es auf
+# DIESEM Zweig nicht gibt, faellt nirgends sonst auf -- statische Pruefung sieht ihn nicht.
+name: PR-Pruefungen
+
+on: [push, pull_request]
+
+jobs:
+    check:
+        name: Formatierung und Produktionsbau
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # Die Formatierungspruefung unten vergleicht gegen den Zielzweig, dafuer braucht
+                  # es dessen Historie.
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v4
+              with:
+                  # Dieselbe Fassung, die der Deploy-Workflow faehrt. Zwei verschiedene Versionen
+                  # ergaeben eine gruene Pruefung und einen roten Deploy.
+                  node-version: "16.13.1"
+
+            - run: corepack enable
+            - run: yarn install --network-concurrency 1 --frozen-lockfile
+
+            # NUR die geaenderten Dateien, und das ist wichtig: 113 der 547 Quelldateien im
+            # Bestand entsprechen der Prettier-Konfiguration nicht. Eine repoweite Pruefung waere
+            # vom ersten Tag an rot, und eine CI, die ohne Zutun rot ist, wird ignoriert -- dann
+            # ist sie schlechter als keine.
+            #
+            # Das entspricht auch dem lokalen pre-commit-Haken, der mit pretty-quick --staged
+            # ebenfalls nur anfasst, was man selbst angefasst hat.
+            - name: Formatierung der geaenderten Dateien
+              run: |
+                  base="${{ github.event.pull_request.base.sha || github.event.before }}"
+                  if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+                    echo "Keine brauchbare Vergleichsbasis -- Pruefung uebersprungen."
+                    exit 0
+                  fi
+                  files=$(git diff --name-only --diff-filter=ACMR "$base" HEAD \
+                          | grep -E '^app/.*\.(js|jsx|json|scss)$' || true)
+                  if [ -z "$files" ]; then
+                    echo "Keine passenden Dateien geaendert."
+                    exit 0
+                  fi
+                  echo "$files"
+                  npx prettier --check $files
+
+            - name: Produktionsbau
+              run: yarn build
