@@ -167,6 +167,7 @@
         }
     },
     "dependencies": {
+        "@fontsource/archivo": "^5.0.20",
         "@fontsource/ibm-plex-mono": "^5.0.19",
         "@fontsource/ibm-plex-sans": "^5.0.20",
         "@hiveio/hive-js": "^2.0.5",

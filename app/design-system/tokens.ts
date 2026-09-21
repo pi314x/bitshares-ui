@@ -79,14 +79,15 @@ export const themes: Record<ThemeName, ThemeTokens> = {
 export const DEFAULT_THEME: ThemeName = "dark";
 export const THEME_STORAGE_KEY = "bts-ui-theme";
 
-// IBM Plex (Sans + Mono): IBM's own type family, SIL Open Font License 1.1
-// — fully open source, no attribution/royalty requirement. Used for both
-// body text and headings (one family, not paired with a separate display
-// face) so the whole UI reads as one system. Loaded via `theme.scss`;
-// self-hosting the font files (rather than the Google Fonts CDN) is worth
-// revisiting once this ships in the real app shell, for Electron's offline
-// use case.
+// The three type families from the reference "BitShares Desk" mockup, all
+// open source (SIL Open Font License 1.1): Archivo for headings/display,
+// IBM Plex Sans for body text, IBM Plex Mono for numbers/code. Self-hosted
+// via @fontsource/* (imported in app/next/NextShell.tsx) rather than the
+// Google Fonts CDN the mockup used: the Electron build has no business
+// depending on network access to render its own UI font.
 export const typography = {
+    fontDisplay:
+        'Archivo, "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
     fontSans:
         '"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
     fontMono:

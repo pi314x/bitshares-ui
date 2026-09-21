@@ -6,18 +6,18 @@
 // `[data-theme="light"]` on the root element, never derived from
 // `prefers-color-scheme`.
 
-// IBM Plex Sans + IBM Plex Mono: IBM's own type family, SIL Open Font
-// License 1.1 (open source, no attribution/royalty requirement). One
-// family for both body text and headings, so the UI reads as one system
-// rather than pairing in a separate display face.
+// The three type families from the reference "BitShares Desk" mockup, all
+// open source (SIL Open Font License 1.1): Archivo for headings/display,
+// IBM Plex Sans for body text, IBM Plex Mono for numbers/code.
 //
-// Self-hosted via the @fontsource/ibm-plex-sans / @fontsource/ibm-plex-mono
-// packages (imported in app/next/NextShell.tsx, not here — SCSS `@import`
-// can't reliably resolve npm package paths the way JS imports can through
-// webpack) rather than a Google Fonts CDN link: the Electron build has no
-// business depending on network access just to render its own UI font, and
-// this sandboxed environment's proxy doesn't reach fonts.googleapis.com
-// either, which is exactly the failure mode self-hosting avoids.
+// Self-hosted via the @fontsource/archivo, @fontsource/ibm-plex-sans and
+// @fontsource/ibm-plex-mono packages (imported in app/next/NextShell.tsx,
+// not here — SCSS `@import` can't reliably resolve npm package paths the
+// way JS imports can through webpack) rather than a Google Fonts CDN link,
+// like the mockup used: the Electron build has no business depending on
+// network access just to render its own UI font, and this sandboxed
+// environment's proxy doesn't reach fonts.googleapis.com either, which is
+// exactly the failure mode self-hosting avoids.
 
 :root {
     --ground: #0e1218;
@@ -39,6 +39,8 @@
     --warn: #d9a227;
     --on-accent: #06222c;
 
+    --font-display: Archivo, "IBM Plex Sans", ui-sans-serif, system-ui,
+        -apple-system, "Segoe UI", sans-serif;
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
         "Segoe UI", sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
@@ -78,8 +80,9 @@ body {
 
 h1,
 h2,
-h3 {
-    font-family: var(--font-sans);
+h3,
+.display {
+    font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: -0.015em;
     margin: 0;
