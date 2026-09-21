@@ -6,6 +6,7 @@
     gap: 2px;
     padding: 18px 12px;
     width: 232px;
+    flex: none;
     min-height: 100vh;
 }
 
@@ -17,16 +18,8 @@
 }
 
 .brandMark {
-    width: 26px;
-    height: 26px;
-    border-radius: 7px;
-    background: var(--accent);
-    display: grid;
-    place-items: center;
-    color: var(--on-accent);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 13px;
+    height: 28px;
+    width: auto;
     flex: none;
 }
 
@@ -36,6 +29,7 @@
     font-size: 15px;
     letter-spacing: -0.01em;
     color: var(--ink);
+    white-space: nowrap;
 }
 
 .group {
@@ -64,6 +58,7 @@
     font: inherit;
     font-weight: 500;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .navItem:hover {
@@ -75,4 +70,40 @@
     background: var(--accent-wash);
     color: var(--accent);
     font-weight: 600;
+}
+
+// Below this width (the reference mockup's own breakpoint) the rail
+// becomes a horizontal, scrollable strip instead of a fixed-height side
+// column, and group labels/brand name drop to keep it compact — a
+// two-line-tall sidebar makes no sense once it's this narrow.
+@media (max-width: 860px) {
+    .rail {
+        width: auto;
+        min-height: 0;
+        flex-direction: row;
+        align-items: center;
+        overflow-x: auto;
+        padding: 8px 12px;
+        gap: 4px;
+    }
+
+    .brandName,
+    .groupLabel {
+        display: none;
+    }
+
+    .brand {
+        padding: 4px 8px;
+    }
+
+    .group {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-top: 0;
+    }
+
+    .navItem {
+        width: auto;
+    }
 }

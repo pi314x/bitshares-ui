@@ -181,6 +181,15 @@ in CI and the legacy code it replaces is deleted.
   Unit-tested (`Rail-test`, `Topbar-test`, `useAltStore-test`,
   `NextShell-test`); full app build verified clean (webpack, real stores,
   real route) beyond the pre-existing `charting_library` gap.
+- Also done: the rail's brand mark is the real BitShares logo
+  (`assets/logo-ico-blue.png`, the same asset `branding.js`'s `getLogo()`
+  serves to the legacy Header), not a placeholder letter. Both the rail and
+  topbar are responsive: below 860px (the reference mockup's own
+  breakpoint) the rail collapses from a fixed-width side column into a
+  horizontal, scrollable strip — brand name and group labels drop, nav
+  items stay tappable — and the shell stacks vertically instead of side by
+  side; the topbar wraps its chips instead of overflowing. Verified at
+  1200px and 420px viewports, not just assumed from the CSS.
 - Not done yet, and exit criteria isn't met until it is: the shell is only
   reachable at `/next`, not wrapping the other real routes yet; legacy
   `Layout/Header.jsx` (785 lines) and `Layout/Footer.jsx` (832 lines) are

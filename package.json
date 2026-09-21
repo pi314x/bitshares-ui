@@ -104,12 +104,14 @@
         ],
         "moduleNameMapper": {
             "\\.(scss|css)$": "identity-obj-proxy",
+            "\\.(png|jpe?g|gif|svg|woff2?)$": "<rootDir>/app/__tests__/__mocks__/fileMock.js",
             "^lodash-es/(.*)$": "lodash/$1",
             "^lodash-es$": "lodash"
         },
         "testPathIgnorePatterns": [
             "/node_modules/",
-            "/utils/"
+            "/utils/",
+            "/__mocks__/"
         ]
     },
     "browsersList": "electron 1.7",

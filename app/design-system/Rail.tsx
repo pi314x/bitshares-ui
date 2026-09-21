@@ -1,6 +1,9 @@
 import * as React from "react";
 import {NavLink, NavLinkProps} from "react-router-dom";
 import styles from "./Rail.module.scss";
+// The real BitShares brand mark (also used by the legacy Header via
+// branding.js's getLogo()), not a placeholder letter.
+import logo from "assets/logo-ico-blue.png";
 
 // @types/react-router-dom v5's NavLink predates a `ReactElement`/JSX.Element
 // `key` type tightening in newer TypeScript, so using it directly as a JSX
@@ -32,9 +35,11 @@ export function Rail({groups, footer}: RailProps): JSX.Element {
     return (
         <nav className={styles.rail} aria-label="Main">
             <div className={styles.brand}>
-                <div className={styles.brandMark} aria-hidden="true">
-                    B
-                </div>
+                <img
+                    className={styles.brandMark}
+                    src={logo}
+                    alt="BitShares"
+                />
                 <span className={styles.brandName}>BitShares</span>
             </div>
 

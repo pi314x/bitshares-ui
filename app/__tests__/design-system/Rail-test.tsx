@@ -51,4 +51,14 @@ describe("design-system/Rail", () => {
             "/market/BTS_CNY"
         );
     });
+
+    it("renders the real BitShares logo, not a placeholder letter", () => {
+        const {getByAltText, queryByText} = render(
+            <MemoryRouter initialEntries={["/"]}>
+                <Rail groups={groups} />
+            </MemoryRouter>
+        );
+        expect(getByAltText("BitShares").tagName).toBe("IMG");
+        expect(queryByText("B")).toBeNull();
+    });
 });

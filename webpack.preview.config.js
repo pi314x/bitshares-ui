@@ -20,6 +20,13 @@ module.exports = {
         clean: true
     },
     resolve: {
+        // Just enough of webpack.config.js's resolve.modules to resolve
+        // bare `assets/foo.png` imports (e.g. the brand logo) the same way
+        // the legacy app does — not the full app/lib alias set, since
+        // pulling in legacy store/action modules here drags in
+        // bitsharesjs's Node-polyfill requirements (see NextShellContainer
+        // vs. NextShell's comment for why those stay out of this config).
+        modules: [path.resolve(root_dir, "app"), "node_modules"],
         extensions: [".ts", ".tsx", ".js", ".jsx"]
     },
     module: {
@@ -80,6 +87,10 @@ module.exports = {
             },
             {
                 test: /\.woff2?$/,
+                type: "asset/inline"
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)$/,
                 type: "asset/inline"
             }
         ]

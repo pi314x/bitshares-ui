@@ -8,6 +8,7 @@ import {ThemeProvider, useTheme} from "../design-system/ThemeProvider";
 import {Button} from "../design-system/Button";
 import {Rail, RailNavGroup} from "../design-system/Rail";
 import {Topbar} from "../design-system/Topbar";
+import styles from "./NextShell.module.scss";
 import "../design-system/theme.scss";
 import "@fontsource/archivo/500.css";
 import "@fontsource/archivo/600.css";
@@ -37,15 +38,15 @@ function ThemeToggle() {
 
 function ShellChrome({navGroups, connectionStatus, accountName}: NextShellProps) {
     return (
-        <div style={{display: "flex", minHeight: "100vh"}}>
+        <div className={styles.shell}>
             <Rail groups={navGroups} />
-            <div style={{flex: 1, minWidth: 0}}>
+            <div className={styles.main}>
                 <Topbar
                     crumb="Phase 1 shell preview"
                     connectionStatus={connectionStatus}
                     accountName={accountName}
                 />
-                <div style={{padding: 24}}>
+                <div className={styles.content}>
                     <h1>BitShares — new UI shell</h1>
                     <p style={{color: "var(--muted)"}}>
                         Phase 1 slice: the rail and topbar above read live
@@ -54,7 +55,8 @@ function ShellChrome({navGroups, connectionStatus, accountName}: NextShellProps)
                         <code>stores/BlockchainStore</code>) the legacy
                         Header/Footer use, via{" "}
                         <code>NextShellContainer</code> — not a mock. Nav
-                        links go to real routes. See{" "}
+                        links go to real routes, and the rail collapses to a
+                        horizontal strip below 860px. See{" "}
                         <code>docs/UI_MIGRATION_PLAN.md</code>.
                     </p>
                     <ThemeToggle />
