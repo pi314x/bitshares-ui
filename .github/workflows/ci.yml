@@ -10,7 +10,13 @@ on:
 
 jobs:
     lint-typecheck-test:
-        runs-on: ubuntu-latest
+        # Pinned to explicit Ubuntu LTS versions (not `ubuntu-latest`, which
+        # drifts silently) per requirement: must run on 24.04 and 26.04.
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-24.04, ubuntu-26.04]
+        runs-on: ${{ matrix.os }}
 
         steps:
             - uses: actions/checkout@v4

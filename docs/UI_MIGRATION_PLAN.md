@@ -164,6 +164,38 @@ in CI and the legacy code it replaces is deleted.
   while still using old internals); old `Layout/Header`, `Layout/Footer`,
   `Layout/Menu` deleted.
 
+**Progress:**
+- Done: `design-system/Rail` (left nav) and `design-system/Topbar` (crumb +
+  connection + account chips) built and reviewed at `/next`
+  (`NextShellContainer`), reading real data from the legacy
+  `stores/AccountStore` / `stores/BlockchainStore` via the new
+  `next/hooks/useAltStore` adapter — the same stores
+  `Layout/Header.jsx`/`Layout/Footer.jsx` read today, not a parallel mock.
+  Nav links are real react-router paths (Dashboard/Accounts/Settings,
+  Trade/Liquidity pools/Explorer), not the reference mockup's fake in-page
+  view toggle. Split into a presentational `NextShell` (props in, no store
+  imports) + `NextShellContainer` (reads the stores) specifically so the
+  `yarn build-preview` harness can keep rendering screens without pulling
+  in `bitsharesjs` and its Node-polyfill requirements — that split is worth
+  keeping as the pattern for every later screen, not just this one.
+  Unit-tested (`Rail-test`, `Topbar-test`, `useAltStore-test`,
+  `NextShell-test`); full app build verified clean (webpack, real stores,
+  real route) beyond the pre-existing `charting_library` gap.
+- Not done yet, and exit criteria isn't met until it is: the shell is only
+  reachable at `/next`, not wrapping the other real routes yet; legacy
+  `Layout/Header.jsx` (785 lines) and `Layout/Footer.jsx` (832 lines) are
+  untouched and still render for every other route — they hold real
+  functionality (node switcher, account dropdown, notifications, wallet
+  lock/unlock, latency/block-height display) that a straight swap would
+  need to fully account for first, so cutting the app over to the new
+  shell and deleting these is its own follow-up slice, not rushed into the
+  same commit as building the shell.
+- Theme toggle is intentionally still local-only (see `NextShellContainer`
+  vs. `NextShell`'s comments): wiring it to `SettingsActions.changeSetting`
+  needs a decision on mapping the legacy 3-theme setting
+  (dark/light/midnight) onto the new 2-theme system first, since firing
+  that action changes the legacy theme for the whole app immediately.
+
 ### Phase 2 — Read-only / low-risk screens
 - Migrate: Portfolio/balances list, account explorer, transaction/block
   explorer (`Blockchain/Transaction.jsx`, `Blockchain/Asset.jsx`), settings.

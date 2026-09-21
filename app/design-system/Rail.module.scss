@@ -1,0 +1,78 @@
+.rail {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 18px 12px;
+    width: 232px;
+    min-height: 100vh;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 18px;
+}
+
+.brandMark {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--accent);
+    display: grid;
+    place-items: center;
+    color: var(--on-accent);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    flex: none;
+}
+
+.brandName {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.group {
+    margin-top: 14px;
+}
+
+.groupLabel {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    padding: 0 8px 6px;
+    display: block;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.navItem:hover {
+    background: var(--line-soft);
+    color: var(--ink);
+}
+
+.navItemActive {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}

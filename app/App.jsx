@@ -31,7 +31,9 @@ import Page404 from "./components/Page404/Page404";
 // Strangler-fig rewrite entry point (docs/UI_MIGRATION_PLAN.md, Phase 0/1).
 const NextShell = Loadable({
     loader: () =>
-        import(/* webpackChunkName: "next-shell" */ "./next/NextShell"),
+        import(
+            /* webpackChunkName: "next-shell" */ "./next/NextShellContainer"
+        ),
     loading: LoadingIndicator
 });
 

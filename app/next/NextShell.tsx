@@ -1,12 +1,13 @@
-// Entry point for the strangler-fig rewrite (docs/UI_MIGRATION_PLAN.md,
-// Phase 0/1). Mounted at /next behind the legacy app's router so the new
-// design system can be built out and reviewed screen-by-screen without
-// touching any existing route. Routes migrate out of `app/next` and into
-// the normal route table (replacing their legacy counterpart) as each one
-// reaches parity; nothing here is meant to stay at `/next` long-term.
+// Presentational shell for the strangler-fig rewrite
+// (docs/UI_MIGRATION_PLAN.md, Phase 0/1): Rail + Topbar + content area.
+// Takes its data as props rather than reading stores itself, on purpose —
+// see NextShellContainer.tsx for why (it's the one that reads the real
+// Alt.js stores and is what App.jsx actually mounts at /next).
 import * as React from "react";
 import {ThemeProvider, useTheme} from "../design-system/ThemeProvider";
 import {Button} from "../design-system/Button";
+import {Rail, RailNavGroup} from "../design-system/Rail";
+import {Topbar} from "../design-system/Topbar";
 import "../design-system/theme.scss";
 import "@fontsource/archivo/500.css";
 import "@fontsource/archivo/600.css";
@@ -18,6 +19,13 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "@fontsource/ibm-plex-mono/600.css";
 
+export interface NextShellProps {
+    navGroups: RailNavGroup[];
+    /** BlockchainStore's `rpc_connection_status`, or null before it's known. */
+    connectionStatus: string | null;
+    accountName: string | null;
+}
+
 function ThemeToggle() {
     const {theme, toggleTheme} = useTheme();
     return (
@@ -27,20 +35,39 @@ function ThemeToggle() {
     );
 }
 
-export default function NextShell(): JSX.Element {
+function ShellChrome({navGroups, connectionStatus, accountName}: NextShellProps) {
+    return (
+        <div style={{display: "flex", minHeight: "100vh"}}>
+            <Rail groups={navGroups} />
+            <div style={{flex: 1, minWidth: 0}}>
+                <Topbar
+                    crumb="Phase 1 shell preview"
+                    connectionStatus={connectionStatus}
+                    accountName={accountName}
+                />
+                <div style={{padding: 24}}>
+                    <h1>BitShares — new UI shell</h1>
+                    <p style={{color: "var(--muted)"}}>
+                        Phase 1 slice: the rail and topbar above read live
+                        data from the same Alt.js stores
+                        (<code>stores/AccountStore</code>,{" "}
+                        <code>stores/BlockchainStore</code>) the legacy
+                        Header/Footer use, via{" "}
+                        <code>NextShellContainer</code> — not a mock. Nav
+                        links go to real routes. See{" "}
+                        <code>docs/UI_MIGRATION_PLAN.md</code>.
+                    </p>
+                    <ThemeToggle />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function NextShell(props: NextShellProps): JSX.Element {
     return (
         <ThemeProvider>
-            <div style={{minHeight: "100vh", padding: 24}}>
-                <h1>BitShares — new UI shell</h1>
-                <p style={{color: "var(--muted)"}}>
-                    Phase 0 scaffold: design-system tokens, theme switching
-                    and a typed component (
-                    <code>design-system/Button</code>) rendering through the
-                    strangler-fig route at <code>/next</code>. See{" "}
-                    <code>docs/UI_MIGRATION_PLAN.md</code>.
-                </p>
-                <ThemeToggle />
-            </div>
+            <ShellChrome {...props} />
         </ThemeProvider>
     );
 }
