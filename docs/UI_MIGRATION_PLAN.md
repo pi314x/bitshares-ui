@@ -416,6 +416,52 @@ in CI and the legacy code it replaces is deleted.
     remaining `.jsx`→`.tsx` work are still deferred — this slice only
     covered Dashboard, since that's where the live-data blocker was
     called out explicitly in the prior two slices.
+- Fourth slice: `Explorer/Blocks.jsx` (the "/explorer/blocks" tab — stats
+  row, block-time/tx-per-second charts, recent blocks/transactions
+  tables) and its trivial `BlocksContainer.jsx` wrapper both got the real
+  `.jsx`→`.tsx` rewrite, continuing the live-data unblock from the third
+  slice. Lower risk category than Dashboard's balance math — read-only
+  public chain-explorer data, no account balances or signing — so this
+  didn't get a separate pure-function module or a committed fixture
+  test; instead the block-time/tx-per-second arithmetic (copied
+  verbatim from the legacy component) was manually verified against 20
+  real consecutive mainnet blocks fetched live from `wss://node.xbts.io/ws`:
+  the computed average block interval came out to exactly 3.0s, matching
+  BitShares' known block time exactly.
+  - `TransactionChart.jsx`, `BlocktimeChart.jsx`, `Operation.jsx`,
+    `LinkToWitnessById.jsx`, `TimeAgo.jsx`, `FormattedAsset.jsx`, and
+    `TransitionWrapper.jsx` are reused exactly as before, not touched.
+  - Same tradeoffs as the Dashboard slice: `BindToChainState`/
+    `AssetWrapper` replaced with `useChainStoreTick` + direct
+    `ChainStore` reads; the legacy `shouldComponentUpdate`'s re-render
+    gating isn't replicated (perf tradeoff, not correctness). One
+    additional simplification here: the legacy
+    `UNSAFE_componentWillReceiveProps` re-fetched blocks by reading
+    `this.props` (the *old*, pre-update props) from inside a
+    props-change handler — a subtle class-lifecycle quirk. The port's
+    `useEffect` reads current props consistently instead, which
+    converges to fetching the same blocks in practice.
+  - Also dropped `animateEnter`, a piece of legacy component state that
+    was set but never read anywhere in `render()` — confirmed by
+    re-reading the whole render method, not just grepping the state
+    name.
+  - Infra: added `react-intl` to `app/types/vendor-shims.d.ts` (same
+    untyped-legacy-package treatment as the third slice), and reused the
+    existing `TypedNavLink`-style cast (`design-system/Rail.tsx`) for
+    `react-router-dom` v5's `Link`, which hits the same
+    `@types/react-router-dom` + modern TypeScript incompatibility
+    `NavLink` did in Phase 1.
+  - Verified: `eslint` clean (0 errors, `any`-only warnings); `yarn
+    typecheck` clean; full Jest suite still green (49/49 — this slice
+    added no new test file, per the lower-risk reasoning above); full
+    webpack build still shows only the 2 known pre-existing
+    `charting_library` errors.
+  - Same live-browser-screenshot gap as the third slice, same reason
+    (the sandbox's TLS-intercepting proxy doesn't reliably survive this
+    app's multi-node connection dance) — not re-attempted here.
+  - Still deferred: Explorer's other sub-tables (`Assets.jsx`,
+    `Witnesses.jsx`, `CommitteeMembers.jsx`, `LiquidityPools.jsx`,
+    `Accounts.jsx`) and Settings' `.jsx`→`.tsx` work.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
