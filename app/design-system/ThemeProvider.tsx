@@ -21,35 +21,58 @@ function readStoredTheme(): ThemeName {
 
 interface ThemeProviderProps {
     children: React.ReactNode;
+    /**
+     * Controlled mode: pass both `value` and `onChange` to have some outer
+     * source of truth drive the theme (e.g. `NextShellContainer` mapping it
+     * onto the legacy SettingsStore's `themes` setting) instead of this
+     * component's own local/localStorage state. Omit both for the
+     * uncontrolled default, used by the standalone preview harness, which
+     * has no such outer store to defer to.
+     */
+    value?: ThemeName;
+    onChange?: (theme: ThemeName) => void;
 }
 
-export function ThemeProvider({children}: ThemeProviderProps) {
-    const [theme, setThemeState] = React.useState<ThemeName>(readStoredTheme);
+export function ThemeProvider({children, value, onChange}: ThemeProviderProps) {
+    const isControlled = value !== undefined;
+    const [uncontrolledTheme, setUncontrolledTheme] = React.useState<ThemeName>(
+        readStoredTheme
+    );
+    const theme = isControlled ? (value as ThemeName) : uncontrolledTheme;
 
     React.useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
-        try {
-            window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-        } catch (e) {
-            // Ignore: theme still applies for this session, just not persisted.
+        if (!isControlled) {
+            try {
+                window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+            } catch (e) {
+                // Ignore: theme still applies for this session, just not persisted.
+            }
         }
-    }, [theme]);
+    }, [theme, isControlled]);
 
-    const setTheme = React.useCallback((next: ThemeName) => {
-        setThemeState(next);
-    }, []);
+    const setTheme = React.useCallback(
+        (next: ThemeName) => {
+            if (isControlled) {
+                if (onChange) onChange(next);
+            } else {
+                setUncontrolledTheme(next);
+            }
+        },
+        [isControlled, onChange]
+    );
 
     const toggleTheme = React.useCallback(() => {
-        setThemeState(current => (current === "dark" ? "light" : "dark"));
-    }, []);
+        setTheme(theme === "dark" ? "light" : "dark");
+    }, [theme, setTheme]);
 
-    const value = React.useMemo(
+    const contextValue = React.useMemo(
         () => ({theme, setTheme, toggleTheme}),
         [theme, setTheme, toggleTheme]
     );
 
     return (
-        <ThemeContext.Provider value={value}>
+        <ThemeContext.Provider value={contextValue}>
             {children}
         </ThemeContext.Provider>
     );

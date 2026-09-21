@@ -7,6 +7,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {MemoryRouter} from "react-router-dom";
 import NextShell from "./NextShell";
+import {Button} from "../design-system/Button";
+import {useTheme} from "../design-system/ThemeProvider";
 
 // Static preview data: deliberately NOT NextShellContainer, which reads the
 // real Alt.js stores and pulls in bitsharesjs's whole dependency graph (see
@@ -32,6 +34,30 @@ const PREVIEW_NAV_GROUPS = [
     }
 ];
 
+function PreviewThemeToggle() {
+    const {theme, toggleTheme} = useTheme();
+    return (
+        <Button variant="accent" onClick={toggleTheme}>
+            Switch to {theme === "dark" ? "light" : "dark"} theme
+        </Button>
+    );
+}
+
+function PreviewContent() {
+    return (
+        <>
+            <h1>BitShares — new UI shell</h1>
+            <p style={{color: "var(--muted)"}}>
+                Standalone preview with static fixture data (see
+                preview-entry.tsx) — the real app renders this shell through{" "}
+                <code>NextShellContainer</code> with live store data instead.
+                See <code>docs/UI_MIGRATION_PLAN.md</code>.
+            </p>
+            <PreviewThemeToggle />
+        </>
+    );
+}
+
 // MemoryRouter, not BrowserRouter: this preview never navigates for real
 // (no legacy route components are mounted here), it just needs a Router
 // ancestor for Rail's <NavLink> to read the current location from.
@@ -41,7 +67,25 @@ ReactDOM.render(
         <NextShell
             navGroups={PREVIEW_NAV_GROUPS}
             connectionStatus="open"
-            accountName="init0"
+            activeNode="wss://node.xbts.io/ws"
+            nodeSelector={
+                <div style={{fontSize: 12, color: "var(--faint)"}}>
+                    (real node selector — components/Utility/NodeSelector —
+                    omitted here, see NextShellContainer)
+                </div>
+            }
+            currentAccount="init0"
+            accounts={["init0", "init1", "committee-account"]}
+            onSelectAccount={() => {}}
+            locked={true}
+            onToggleLock={() => {}}
+            currentLocale="en"
+            locales={["en", "de", "fr", "ja"]}
+            onSelectLocale={() => {}}
+            onShowSend={() => {}}
+            onShowDeposit={() => {}}
+            onShowWithdraw={() => {}}
+            content={<PreviewContent />}
         />
     </MemoryRouter>,
     mountNode

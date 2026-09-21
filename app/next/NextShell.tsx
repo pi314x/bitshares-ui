@@ -4,8 +4,8 @@
 // see NextShellContainer.tsx for why (it's the one that reads the real
 // Alt.js stores and is what App.jsx actually mounts at /next).
 import * as React from "react";
-import {ThemeProvider, useTheme} from "../design-system/ThemeProvider";
-import {Button} from "../design-system/Button";
+import {ThemeProvider} from "../design-system/ThemeProvider";
+import {ThemeName} from "../design-system/tokens";
 import {Rail, RailNavGroup} from "../design-system/Rail";
 import {Topbar} from "../design-system/Topbar";
 import styles from "./NextShell.module.scss";
@@ -24,19 +24,51 @@ export interface NextShellProps {
     navGroups: RailNavGroup[];
     /** BlockchainStore's `rpc_connection_status`, or null before it's known. */
     connectionStatus: string | null;
-    accountName: string | null;
+    /** SettingsStore's `activeNode` setting. */
+    activeNode: string | null;
+    /** The legacy Utility/NodeSelector component — see NodePicker's comment. */
+    nodeSelector: React.ReactNode;
+    currentAccount: string | null;
+    accounts: string[];
+    onSelectAccount: (accountName: string) => void;
+    /** WalletUnlockStore's `locked`, or null before it's known. */
+    locked: boolean | null;
+    onToggleLock: () => void;
+    currentLocale: string | null;
+    locales: string[];
+    onSelectLocale: (locale: string) => void;
+    onShowSend: () => void;
+    onShowDeposit: () => void;
+    onShowWithdraw: () => void;
+    content: React.ReactNode;
+    /**
+     * Controlled theme (mapped from the legacy SettingsStore's 3-theme
+     * `themes` setting onto this design system's 2 themes — see
+     * NextShellContainer). Omit both for the standalone preview harness's
+     * uncontrolled default.
+     */
+    themeValue?: ThemeName;
+    onThemeChange?: (theme: ThemeName) => void;
 }
 
-function ThemeToggle() {
-    const {theme, toggleTheme} = useTheme();
-    return (
-        <Button variant="accent" onClick={toggleTheme}>
-            Switch to {theme === "dark" ? "light" : "dark"} theme
-        </Button>
-    );
-}
-
-function ShellChrome({navGroups, connectionStatus, accountName}: NextShellProps) {
+function ShellChrome({
+    navGroups,
+    connectionStatus,
+    activeNode,
+    nodeSelector,
+    currentAccount,
+    accounts,
+    onSelectAccount,
+    locked,
+    onToggleLock,
+    currentLocale,
+    locales,
+    onSelectLocale,
+    onShowSend,
+    onShowDeposit,
+    onShowWithdraw,
+    content
+}: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     return (
         <div className={styles.shell}>
             <Rail groups={navGroups} />
@@ -44,32 +76,34 @@ function ShellChrome({navGroups, connectionStatus, accountName}: NextShellProps)
                 <Topbar
                     crumb="Phase 1 shell preview"
                     connectionStatus={connectionStatus}
-                    accountName={accountName}
+                    activeNode={activeNode}
+                    nodeSelector={nodeSelector}
+                    currentAccount={currentAccount}
+                    accounts={accounts}
+                    onSelectAccount={onSelectAccount}
+                    locked={locked}
+                    onToggleLock={onToggleLock}
+                    currentLocale={currentLocale}
+                    locales={locales}
+                    onSelectLocale={onSelectLocale}
+                    onShowSend={onShowSend}
+                    onShowDeposit={onShowDeposit}
+                    onShowWithdraw={onShowWithdraw}
                 />
-                <div className={styles.content}>
-                    <h1>BitShares — new UI shell</h1>
-                    <p style={{color: "var(--muted)"}}>
-                        Phase 1 slice: the rail and topbar above read live
-                        data from the same Alt.js stores
-                        (<code>stores/AccountStore</code>,{" "}
-                        <code>stores/BlockchainStore</code>) the legacy
-                        Header/Footer use, via{" "}
-                        <code>NextShellContainer</code> — not a mock. Nav
-                        links go to real routes, and the rail collapses to a
-                        horizontal strip below 860px. See{" "}
-                        <code>docs/UI_MIGRATION_PLAN.md</code>.
-                    </p>
-                    <ThemeToggle />
-                </div>
+                <div className={styles.content}>{content}</div>
             </div>
         </div>
     );
 }
 
-export default function NextShell(props: NextShellProps): JSX.Element {
+export default function NextShell({
+    themeValue,
+    onThemeChange,
+    ...rest
+}: NextShellProps): JSX.Element {
     return (
-        <ThemeProvider>
-            <ShellChrome {...props} />
+        <ThemeProvider value={themeValue} onChange={onThemeChange}>
+            <ShellChrome {...rest} />
         </ThemeProvider>
     );
 }

@@ -190,20 +190,45 @@ in CI and the legacy code it replaces is deleted.
   items stay tappable — and the shell stacks vertically instead of side by
   side; the topbar wraps its chips instead of overflowing. Verified at
   1200px and 420px viewports, not just assumed from the CSS.
+- Done: theme, decided and wired. 2 themes, not 3 — `NextShellContainer`
+  reads the legacy `themes` setting and collapses `midnightTheme` into
+  `dark` for display; writing from the new toggle only ever picks
+  `darkTheme`/`lightTheme` via the real `SettingsActions.changeSetting`, so
+  it changes the legacy theme for the whole app immediately (by design —
+  `ThemeProvider` supports both controlled and uncontrolled modes now, see
+  its own comment). Midnight is retired going forward for anyone who
+  touches this toggle; screens not yet migrated are otherwise unaffected.
+- Done: the 5 concrete gaps between the new shell and legacy Header/Footer
+  identified when scoping the cutover are closed, each by *reusing* the
+  legacy component/action rather than reimplementing it:
+  - Wallet lock/unlock: `NextShellContainer`'s `onToggleLock` replicates
+    `Header.jsx`'s `_toggleLock` exactly (same `WalletDb.isLocked()` check,
+    same `rememberMe` / `setPasswordAccount(null)` path on lock) rather
+    than a simplified rewrite — security-sensitive per AGENTS.md.
+  - Node switching: the legacy `components/Utility/NodeSelector` (166
+    lines, self-contained, already connects to `SettingsStore` itself) is
+    rendered as-is inside the new `NodePicker` popover, not reimplemented.
+  - Send/Deposit/Withdraw: the legacy `SendModal`/`DepositModal`/
+    `WithdrawModalNew` are rendered as-is by `NextShellContainer`, with new
+    trigger buttons in the topbar replacing their old location (hidden in
+    Header's account dropdown) — visible buttons instead of a hidden menu
+    item is a deliberate UX improvement, not just a port.
+  - Language: new `LocaleSwitcher`, wired to the real
+    `IntlActions.switchLocale` / `IntlStore.currentLocale` /
+    `SettingsStore`'s `defaults.locale` list.
+  - Browsing-mode banner: the legacy `Account/AccountBrowsingMode` is
+    rendered as-is (via `useLocation()` for the `location` prop it needs).
+  All verified: full app webpack build still only has the 2 known
+  pre-existing `charting_library` errors (proving every new legacy
+  import — `NodeSelector`, the 3 modals, `AccountBrowsingMode`,
+  `IntlActions`/`IntlStore`, `GatewayStore` — resolves correctly), unit
+  tests for every new component, and the preview harness screenshotted
+  with the node picker and locale picker open.
 - Not done yet, and exit criteria isn't met until it is: the shell is only
   reachable at `/next`, not wrapping the other real routes yet; legacy
   `Layout/Header.jsx` (785 lines) and `Layout/Footer.jsx` (832 lines) are
-  untouched and still render for every other route — they hold real
-  functionality (node switcher, account dropdown, notifications, wallet
-  lock/unlock, latency/block-height display) that a straight swap would
-  need to fully account for first, so cutting the app over to the new
-  shell and deleting these is its own follow-up slice, not rushed into the
-  same commit as building the shell.
-- Theme toggle is intentionally still local-only (see `NextShellContainer`
-  vs. `NextShell`'s comments): wiring it to `SettingsActions.changeSetting`
-  needs a decision on mapping the legacy 3-theme setting
-  (dark/light/midnight) onto the new 2-theme system first, since firing
-  that action changes the legacy theme for the whole app immediately.
+  still the ones actually rendered for every other route. Cutting the app
+  over to the new shell and deleting these is the next slice.
 
 ### Phase 2 — Read-only / low-risk screens
 - Migrate: Portfolio/balances list, account explorer, transaction/block
