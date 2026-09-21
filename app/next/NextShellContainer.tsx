@@ -1,11 +1,12 @@
 // Real data wiring for NextShell (docs/UI_MIGRATION_PLAN.md, Phase 1). This
-// is what App.jsx actually mounts at /next — reads the same legacy Alt.js
-// stores/actions Layout/Header.jsx and Layout/Footer.jsx read (the adapter
-// pattern from §6.2), then hands the results to the presentational
-// NextShell as props. Kept separate from NextShell itself so the standalone
-// preview harness (app/next/preview-entry.tsx, webpack.preview.config.js)
-// can render NextShell with static data without pulling in bitsharesjs and
-// the rest of the legacy store graph.
+// is what App.jsx mounts as the app's actual chrome, wrapping every route —
+// it reads the same legacy Alt.js stores/actions Layout/Header.jsx and
+// Layout/Footer.jsx used to read (the adapter pattern from §6.2), then
+// hands the results to the presentational NextShell as props. Kept
+// separate from NextShell itself so the standalone preview harness
+// (app/next/preview-entry.tsx, webpack.preview.config.js) can render
+// NextShell with static data without pulling in bitsharesjs and the rest
+// of the legacy store graph.
 //
 // Anything with real existing behavior (node selection, send/deposit/
 // withdraw, account browsing-mode banner) is reused from its legacy
@@ -103,10 +104,10 @@ const NAV_GROUPS: RailNavGroup[] = [
 // midnightTheme); this design system has 2. Reading collapses midnight
 // into dark (closest visual match); writing from here only ever picks
 // "darkTheme" or "lightTheme" — a deliberate product decision to retire
-// the midnight option going forward, not an oversight. Legacy screens
-// that still read `themes` directly (most of them, until they're migrated)
-// are unaffected either way; they just stop offering midnight once a user
-// touches this toggle.
+// the midnight option going forward, not an oversight. The legacy
+// Settings page's own theme control (app/components/Settings/Settings.jsx)
+// writes the same setting and still offers midnight; that's unaffected
+// until Settings itself gets migrated.
 function legacyThemeToThemeName(legacyTheme: unknown): ThemeName {
     return legacyTheme === "lightTheme" ? "light" : "dark";
 }
@@ -115,40 +116,34 @@ function themeNameToLegacyTheme(theme: ThemeName): string {
     return theme === "light" ? "lightTheme" : "darkTheme";
 }
 
-function ThemeToggle() {
+function RailThemeToggle() {
     const {theme, toggleTheme} = useTheme();
     return (
-        <Button variant="accent" onClick={toggleTheme}>
-            Switch to {theme === "dark" ? "light" : "dark"} theme
+        <Button onClick={toggleTheme} style={{width: "100%"}}>
+            {theme === "dark" ? "Light theme" : "Dark theme"}
         </Button>
     );
 }
 
-function DemoContent() {
-    const location = useLocation();
-    return (
-        <>
-            <AccountBrowsingMode location={location} />
-            <h1>BitShares — new UI shell</h1>
-            <p style={{color: "var(--muted)"}}>
-                Phase 1 slice: rail, topbar, account switcher, node picker,
-                locale switcher, wallet lock and send/deposit/withdraw all
-                read/write the same legacy Alt.js stores, actions and
-                components (<code>stores/AccountStore</code>,{" "}
-                <code>stores/BlockchainStore</code>,{" "}
-                <code>stores/WalletUnlockStore</code>,{" "}
-                <code>stores/SettingsStore</code>,{" "}
-                <code>components/Utility/NodeSelector</code>,{" "}
-                <code>components/Modal/SendModal</code>, etc.) the legacy
-                Header/Footer use, via <code>NextShellContainer</code> — not
-                a mock. See <code>docs/UI_MIGRATION_PLAN.md</code>.
-            </p>
-            <ThemeToggle />
-        </>
-    );
+export interface NextShellContainerProps {
+    /** The real route content (App.jsx's <Switch>...</Switch>). */
+    content: React.ReactNode;
 }
 
-export default function NextShellContainer(): JSX.Element {
+// Capitalized first path segment as a stand-in breadcrumb (e.g. "/market/
+// BTS_CNY" -> "Market"). Real per-route breadcrumbs/titles are a Phase 2
+// concern (each migrated screen can pass its own); this just keeps the
+// topbar from lying with a hardcoded "Phase 1 shell preview" label now
+// that the shell wraps every route, not just /next.
+function crumbFromPath(pathname: string): string {
+    const segment = pathname.split("/").filter(Boolean)[0];
+    if (!segment) return "Dashboard";
+    return segment.charAt(0).toUpperCase() + segment.slice(1);
+}
+
+export default function NextShellContainer({
+    content
+}: NextShellContainerProps): JSX.Element {
     const account = useAltStore<AccountStoreState>(AccountStore);
     const blockchain = useAltStore<BlockchainStoreState>(BlockchainStore);
     const walletUnlock = useAltStore<WalletUnlockStoreState>(
@@ -157,6 +152,7 @@ export default function NextShellContainer(): JSX.Element {
     const settings = useAltStore<SettingsStoreState>(SettingsStore);
     const gateway = useAltStore<GatewayStoreState>(GatewayStore);
     const intl = useAltStore<IntlStoreState>(IntlStore);
+    const location = useLocation();
 
     const currentAccount = account.currentAccount || account.passwordAccount;
     const accounts = account.myActiveAccounts.toArray();
@@ -169,8 +165,8 @@ export default function NextShellContainer(): JSX.Element {
     const [withdrawVisible, setWithdrawVisible] = React.useState(false);
     const [withdrawEverShown, setWithdrawEverShown] = React.useState(false);
 
-    // Same logic as Layout/Header.jsx's _toggleLock — replicated exactly
-    // rather than restated, per AGENTS.md: wallet-unlock code is
+    // Same logic as the legacy Layout/Header.jsx's _toggleLock — replicated
+    // exactly rather than restated, per AGENTS.md: wallet-unlock code is
     // security-sensitive, prefer minimal, well-tested diffs over refactors.
     const onToggleLock = React.useCallback(() => {
         if (WalletDb.isLocked()) {
@@ -195,6 +191,8 @@ export default function NextShellContainer(): JSX.Element {
         <>
             <NextShell
                 navGroups={NAV_GROUPS}
+                crumb={crumbFromPath(location.pathname)}
+                railFooter={<RailThemeToggle />}
                 currentAccount={currentAccount}
                 accounts={accounts}
                 onSelectAccount={name =>
@@ -224,7 +222,12 @@ export default function NextShellContainer(): JSX.Element {
                         value: themeNameToLegacyTheme(theme)
                     })
                 }
-                content={<DemoContent />}
+                content={
+                    <>
+                        <AccountBrowsingMode location={location} />
+                        {content}
+                    </>
+                }
             />
             <SendModal
                 id="send_modal_next_shell"

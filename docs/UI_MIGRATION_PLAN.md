@@ -154,7 +154,7 @@ in CI and the legacy code it replaces is deleted.
 - Exit criteria: CI enforces lint+typecheck+test on PRs; a "hello world"
   route renders through the new shell in both web and Electron builds.
 
-### Phase 1 — App shell & chrome
+### Phase 1 — App shell & chrome — done
 - Migrate: top nav/rail, theme switcher (dark default, light opt-in),
   connected-node indicator, account switcher, layout/footer.
 - These are the highest-visibility, lowest-financial-risk components — good
@@ -224,11 +224,32 @@ in CI and the legacy code it replaces is deleted.
   `IntlActions`/`IntlStore`, `GatewayStore` — resolves correctly), unit
   tests for every new component, and the preview harness screenshotted
   with the node picker and locale picker open.
-- Not done yet, and exit criteria isn't met until it is: the shell is only
-  reachable at `/next`, not wrapping the other real routes yet; legacy
-  `Layout/Header.jsx` (785 lines) and `Layout/Footer.jsx` (832 lines) are
-  still the ones actually rendered for every other route. Cutting the app
-  over to the new shell and deleting these is the next slice.
+- **Done: cutover complete, exit criteria met.** `App.jsx`'s render()
+  now wraps every route's `<Switch>` in `AppShell` (renamed from the
+  `/next`-only `NextShell` Loadable — it's no longer a special case)
+  instead of `Layout/Header` + a `mainContainer` div + `Layout/Footer`.
+  `Layout/Header.jsx` (785 lines), `Layout/Footer.jsx` (832 lines), and
+  Header's exclusive supporting files (`HeaderDropdown.jsx`,
+  `HeaderMenuItem.jsx`, `MenuDataStructure.js`, `MenuItemType.js`,
+  `DropdownMenuItem.jsx`, `DividerMenuItem.jsx`, `SubmenuItem.jsx` —
+  verified unused anywhere else first) are deleted. The `/next` demo route
+  is gone too; there's no separate demo now that the real shell wraps
+  everything.
+  `NextShellContainer` takes the real `<Switch>` as its `content` prop
+  (previously hardcoded demo text); the topbar's crumb is derived from the
+  route path instead of a hardcoded "Phase 1 shell preview" label; the
+  theme toggle moved to the rail's footer slot (matching the reference
+  mockup's own "Appearance" placement), replacing `React.createRef()` for
+  the two remaining string refs (`react/no-string-refs`) that this file's
+  changes brought into `yarn lint:changed`'s scope.
+  Verified: full app webpack build still only has the 2 known pre-existing
+  `charting_library` errors — with `Header.jsx`/`Footer.jsx` deleted and
+  the entire render tree restructured, this is the strongest signal this
+  phase's tooling has produced so far. A live-browser screenshot of the
+  cutover itself isn't possible in this sandbox (`AppInit.jsx` blocks all
+  rendering on a real blockchain connection, same limitation noted since
+  Phase 0); the preview harness and the 37 unit tests across 12 suites are
+  what stand in for it, same as every other slice this phase.
 
 ### Phase 2 — Read-only / low-risk screens
 - Migrate: Portfolio/balances list, account explorer, transaction/block

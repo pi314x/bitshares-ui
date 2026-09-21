@@ -28,6 +28,13 @@ starting any large refactor or new-screen work, and follow its
 screen-by-screen strangler-fig approach rather than large rewrites in a
 single PR.
 
+**The app shell/chrome (nav rail, topbar, account switcher, node picker,
+theme, wallet lock) is already migrated** — `app/next/NextShellContainer`
++ `app/design-system` now wrap every route in `App.jsx`; the old
+`Layout/Header.jsx`/`Layout/Footer.jsx` are deleted. Individual screens
+(Dashboard, Exchange, Account, Settings, etc.) still render their original
+class-component/Alt.js internals inside that new shell — that's Phases 2+.
+
 ## Commands
 
 - Install: `yarn install`

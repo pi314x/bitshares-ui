@@ -22,6 +22,8 @@ import "@fontsource/ibm-plex-mono/600.css";
 
 export interface NextShellProps {
     navGroups: RailNavGroup[];
+    crumb: string;
+    railFooter?: React.ReactNode;
     /** BlockchainStore's `rpc_connection_status`, or null before it's known. */
     connectionStatus: string | null;
     /** SettingsStore's `activeNode` setting. */
@@ -53,6 +55,8 @@ export interface NextShellProps {
 
 function ShellChrome({
     navGroups,
+    crumb,
+    railFooter,
     connectionStatus,
     activeNode,
     nodeSelector,
@@ -71,10 +75,10 @@ function ShellChrome({
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     return (
         <div className={styles.shell}>
-            <Rail groups={navGroups} />
+            <Rail groups={navGroups} footer={railFooter} />
             <div className={styles.main}>
                 <Topbar
-                    crumb="Phase 1 shell preview"
+                    crumb={crumb}
                     connectionStatus={connectionStatus}
                     activeNode={activeNode}
                     nodeSelector={nodeSelector}

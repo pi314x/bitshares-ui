@@ -6,13 +6,11 @@ import {withRouter} from "react-router-dom";
 import SyncError from "./components/SyncError";
 import LoadingIndicator from "./components/LoadingIndicator";
 import BrowserNotifications from "./components/BrowserNotifications/BrowserNotificationsContainer";
-import Header from "components/Layout/Header";
 import ReactTooltip from "react-tooltip";
 import NotificationSystem from "react-notification-system";
 import TransactionConfirm from "./components/Blockchain/TransactionConfirm";
 import WalletUnlockModal from "./components/Wallet/WalletUnlockModal";
 import BrowserSupportModal from "./components/Modal/BrowserSupportModal";
-import Footer from "./components/Layout/Footer";
 import Deprecate from "./Deprecate";
 import Incognito from "./components/Layout/Incognito";
 import {isIncognito} from "feature_detect";
@@ -28,11 +26,14 @@ import {Route, Switch, Redirect} from "react-router-dom";
 // Nested route components
 import Page404 from "./components/Page404/Page404";
 
-// Strangler-fig rewrite entry point (docs/UI_MIGRATION_PLAN.md, Phase 0/1).
-const NextShell = Loadable({
+// The new app shell (docs/UI_MIGRATION_PLAN.md, Phase 1): replaces
+// Layout/Header + Layout/Footer as the chrome wrapping every route below.
+// It renders its own data-wired Rail/Topbar and takes the actual route
+// <Switch> as its `content` prop (see the render() method).
+const AppShell = Loadable({
     loader: () =>
         import(
-            /* webpackChunkName: "next-shell" */ "./next/NextShellContainer"
+            /* webpackChunkName: "app-shell" */ "./next/NextShellContainer"
         ),
     loading: LoadingIndicator
 });
@@ -229,6 +230,9 @@ import {allowedGateway} from "./branding";
 class App extends React.Component {
     constructor() {
         super();
+
+        this.tooltipRef = React.createRef();
+        this.notificationSystemRef = React.createRef();
 
         let syncFail =
             ChainStore.subError &&
@@ -429,8 +433,8 @@ class App extends React.Component {
         ReactTooltip.hide();
 
         this.rebuildTimeout = setTimeout(() => {
-            if (this.refs.tooltip) {
-                this.refs.tooltip.globalRebuild();
+            if (this.tooltipRef.current) {
+                this.tooltipRef.current.globalRebuild();
             }
             this.rebuildTimeout = null;
         }, 1500);
@@ -463,8 +467,8 @@ class App extends React.Component {
         if (notification.autoDismiss === void 0) {
             notification.autoDismiss = 10;
         }
-        if (this.refs.notificationSystem)
-            this.refs.notificationSystem.addNotification(notification);
+        if (this.notificationSystemRef.current)
+            this.notificationSystemRef.current.addNotification(notification);
     }
 
     _getWindowHeight() {
@@ -479,7 +483,7 @@ class App extends React.Component {
 
     render() {
         let {incognito, incognitoWarningDismissed} = this.state;
-        let {walletMode, theme, location, match, ...others} = this.props;
+        let {walletMode, theme} = this.props;
         let content = null;
 
         if (this.state.syncFail) {
@@ -505,9 +509,8 @@ class App extends React.Component {
             content = (
                 <div className="grid-frame vertical">
                     <NewsHeadline />
-                    <Header height={this.state.height} {...others} />
-                    <div id="mainContainer" className="grid-block">
-                        <div className="grid-block vertical">
+                    <AppShell
+                        content={
                             <Switch>
                                 <Route
                                     path="/"
@@ -656,17 +659,12 @@ class App extends React.Component {
                                     component={QuickTrade}
                                 />
                                 <Route path="/pools" component={PoolmartPage} />
-                                <Route path="/next" component={NextShell} />
                                 <Route path="*" component={Page404} />
                             </Switch>
-                        </div>
-                    </div>
-                    <Footer
-                        synced={this.state.synced}
-                        history={this.props.history}
+                        }
                     />
                     <ReactTooltip
-                        ref="tooltip"
+                        ref={this.tooltipRef}
                         place="top"
                         type={theme === "lightTheme" ? "dark" : "light"}
                         effect="solid"
@@ -691,7 +689,7 @@ class App extends React.Component {
                     <div id="content-wrapper">
                         {content}
                         <NotificationSystem
-                            ref="notificationSystem"
+                            ref={this.notificationSystemRef}
                             allowHTML={true}
                             style={{
                                 Containers: {

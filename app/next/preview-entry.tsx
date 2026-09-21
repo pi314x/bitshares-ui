@@ -37,8 +37,8 @@ const PREVIEW_NAV_GROUPS = [
 function PreviewThemeToggle() {
     const {theme, toggleTheme} = useTheme();
     return (
-        <Button variant="accent" onClick={toggleTheme}>
-            Switch to {theme === "dark" ? "light" : "dark"} theme
+        <Button onClick={toggleTheme} style={{width: "100%"}}>
+            {theme === "dark" ? "Light theme" : "Dark theme"}
         </Button>
     );
 }
@@ -50,10 +50,9 @@ function PreviewContent() {
             <p style={{color: "var(--muted)"}}>
                 Standalone preview with static fixture data (see
                 preview-entry.tsx) — the real app renders this shell through{" "}
-                <code>NextShellContainer</code> with live store data instead.
-                See <code>docs/UI_MIGRATION_PLAN.md</code>.
+                <code>NextShellContainer</code> with live store data instead,
+                wrapping every route. See <code>docs/UI_MIGRATION_PLAN.md</code>.
             </p>
-            <PreviewThemeToggle />
         </>
     );
 }
@@ -66,6 +65,8 @@ ReactDOM.render(
     <MemoryRouter initialEntries={["/"]}>
         <NextShell
             navGroups={PREVIEW_NAV_GROUPS}
+            crumb="Dashboard"
+            railFooter={<PreviewThemeToggle />}
             connectionStatus="open"
             activeNode="wss://node.xbts.io/ws"
             nodeSelector={

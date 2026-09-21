@@ -12,6 +12,8 @@ function renderShell(overrides: Partial<React.ComponentProps<typeof NextShell>> 
         <MemoryRouter initialEntries={["/"]}>
             <NextShell
                 navGroups={navGroups}
+                crumb="Test Crumb"
+                railFooter={<div>rail footer</div>}
                 connectionStatus="open"
                 activeNode="wss://node.xbts.io/ws"
                 nodeSelector={<div>node selector</div>}
@@ -39,6 +41,15 @@ describe("next/NextShell", () => {
         expect(getByText("Dashboard")).toBeTruthy();
         expect(getByText("Connected")).toBeTruthy();
         expect(getByText("init0")).toBeTruthy();
+    });
+
+    it("shows the given crumb and rail footer, not a hardcoded label", () => {
+        const {getByText} = renderShell({
+            crumb: "Market · BTS_CNY",
+            railFooter: <div>theme toggle goes here</div>
+        });
+        expect(getByText("Market · BTS_CNY")).toBeTruthy();
+        expect(getByText("theme toggle goes here")).toBeTruthy();
     });
 
     it("renders the content prop inside the shell", () => {
