@@ -259,6 +259,35 @@ in CI and the legacy code it replaces is deleted.
 - Exit criteria: these routes fully removed from `app/components` (legacy
   versions deleted), test coverage in place per §8.
 
+**Progress:**
+- First slice, deliberately narrower than a full migration:
+  `Dashboard/DashboardList.jsx` (reached via `/accounts`, the balances/
+  contacts table) got a **visual-only** pass to the new design tokens —
+  `app/components/Dashboard/DashboardList.scss`, classes added *alongside*
+  every existing class/inline style, nothing removed. The diff touches
+  only `className` attributes and one `import`; every line that computes
+  balances/collateral/debt/open-orders, and all sort/filter/star logic, is
+  byte-for-byte unchanged (verified via the diff itself, not just review).
+  This is intentionally **not** a full Phase 2 migration: the file is
+  still `.jsx`, still class-based, still not deleted — that's real
+  financial-calculation code (`TotalBalanceValue`, live `ChainStore`
+  aggregation) this sandbox cannot verify against a live node, so a full
+  rewrite wasn't attempted without that verification available. A genuine
+  TS/React rewrite of this screen, reusing `TotalBalanceValue` and the
+  aggregation logic as-is rather than reimplementing the math (the "reuse,
+  don't rewrite" principle), is the next step here — done by whoever can
+  verify it against real account data, or once this sandbox can.
+- Also fixed, because this file's changes brought it into
+  `yarn lint:changed`'s scope: two unused `forEach` callback parameters
+  (`no-unused-vars`) — dropped, not renamed, since nothing read them.
+- Verified: full app webpack build still only has the 2 known pre-existing
+  `charting_library` errors; confirmed via `git diff --stat` that no other
+  file sharing the legacy `dashboard-table`/`table-hover` classes (15+
+  files: `AccountPortfolioList.jsx`, `VotingAccountsList.jsx`,
+  `MarketsTable.jsx`, etc.) was touched — the new styling is scoped to a
+  new `dash-*` class family, not an override of the shared classes those
+  files also use.
+
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
   voting, asset creation/update (`AccountAssetCreate.jsx`,

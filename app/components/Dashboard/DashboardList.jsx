@@ -16,6 +16,7 @@ import AccountStore from "stores/AccountStore";
 import counterpart from "counterpart";
 import WalletDb from "stores/WalletDb";
 import {withRouter} from "react-router-dom";
+import "./DashboardList.scss";
 
 const starSort = function(a, b, inverse, starredAccounts) {
     let aName = a.get("name");
@@ -191,7 +192,7 @@ class DashboardList extends React.Component {
                         account.get("lifetime_referrer_name") === accountName;
 
                     if (account.get("orders")) {
-                        account.get("orders").forEach((orderID, key) => {
+                        account.get("orders").forEach(orderID => {
                             let order = ChainStore.getObject(orderID);
                             if (order) {
                                 let orderAsset = order.getIn([
@@ -217,7 +218,7 @@ class DashboardList extends React.Component {
                     // console.log("openOrders:", openOrders);
 
                     if (account.get("call_orders")) {
-                        account.get("call_orders").forEach((callID, key) => {
+                        account.get("call_orders").forEach(callID => {
                             let position = ChainStore.getObject(callID);
                             if (position) {
                                 let collateralAsset = position.getIn([
@@ -427,12 +428,16 @@ class DashboardList extends React.Component {
         let hasLocalWallet = !!WalletDb.getWallet();
 
         return (
-            <div style={this.props.style}>
+            <div style={this.props.style} className="dash-panel">
                 {!this.props.compact ? (
-                    <section style={{paddingTop: "1rem", paddingLeft: "2rem"}}>
+                    <section
+                        style={{paddingTop: "1rem", paddingLeft: "2rem"}}
+                        className="dash-toolbar"
+                    >
                         <input
                             placeholder={filterText}
                             style={{maxWidth: "20rem", display: "inline-block"}}
+                            className="dash-filter-input"
                             type="text"
                             value={dashboardFilter}
                             onChange={this._onFilter.bind(this)}
@@ -445,7 +450,7 @@ class DashboardList extends React.Component {
                                     marginLeft: 5,
                                     marginBottom: "1rem"
                                 }}
-                                className="button small"
+                                className="button small dash-btn"
                             >
                                 <Translate content="header.create_account" />
                             </div>
@@ -458,7 +463,7 @@ class DashboardList extends React.Component {
                                     float: "right",
                                     marginRight: "20px"
                                 }}
-                                className="button small"
+                                className="button small dash-btn"
                             >
                                 <Translate
                                     content={`account.${
@@ -472,7 +477,7 @@ class DashboardList extends React.Component {
                     </section>
                 ) : null}
                 <table
-                    className="table table-hover dashboard-table"
+                    className="table table-hover dashboard-table dash-table"
                     style={{fontSize: "0.85rem"}}
                 >
                     {!this.props.compact ? (
