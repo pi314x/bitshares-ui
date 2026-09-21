@@ -14,7 +14,13 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "baseUrl": "app"
+        "baseUrl": "app",
+        "paths": {
+            "common/*": ["lib/common/*"],
+            "chain/*": ["lib/chain/*"],
+            "feature_detect/*": ["lib/feature_detect/*"],
+            "workers/*": ["lib/workers/*"]
+        }
     },
     "include": ["app/**/*.ts", "app/**/*.tsx"],
     "exclude": ["node_modules", "build", "charting_library"]

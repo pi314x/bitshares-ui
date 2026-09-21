@@ -329,6 +329,93 @@ in CI and the legacy code it replaces is deleted.
     Assets, Witnesses, ...), and Dashboard's balance/collateral math stay
     out of scope until they can be verified against a live node or by
     someone who can run one.
+- Third slice: the live-node verification the previous two slices were
+  blocked on became available (this environment's egress allowlist got
+  `node.xbts.io` added), so `Dashboard/DashboardList.jsx` and
+  `Utility/TotalBalanceValue.jsx` got the real `.jsx`→`.tsx` rewrite
+  those slices deferred — both `.jsx` files deleted, not just reskinned.
+  - New: `app/next/dashboard/balanceCalculations.ts` — the actual
+    balance/collateral/debt/open-orders math, ported line-for-line from
+    the two legacy files (not reinterpreted), as typed pure(ish)
+    functions taking a `getObject` lookup instead of reaching into
+    `ChainStore` directly, so they're unit-testable without a live
+    connection. Verified in
+    `app/__tests__/next/dashboard/balanceCalculations-test.ts` against a
+    static fixture captured from a real mainnet account (`alt-org`,
+    `1.2.1813080` — picked for having real limit orders, call orders, and
+    balances) fetched live from `wss://node.xbts.io/ws`; the fixture's
+    "expected" values were computed independently from the raw JSON-RPC
+    response, not through the code under test. 12/12 assertions pass
+    against real numbers (open orders, collateral, debt aggregation,
+    price conversion, total-value summation). The fixture is static JSON
+    committed to the repo, so this test needs no network access and runs
+    in CI like any other.
+  - New: `app/next/hooks/useChainStoreTick.ts` — replaces
+    `BindToChainState`'s propType-driven resolution machinery with the
+    minimal equivalent for function components: subscribe to
+    `ChainStore` on mount, re-render on every chain event, unsubscribe on
+    unmount. `ChainStore.getObject`/`getAccount`/`getAsset` are still
+    called directly from render (same as the legacy HOC did internally),
+    not reimplemented.
+  - New: `app/next/hooks/useMarketStatsSubscription.ts` — ports
+    `MarketStatsCheck`'s direct-vs-indirect-market routing logic (which
+    asset pairs need their price polled, and through which market) to a
+    hook. The actual polling/order-book-derived price stats are reused
+    as-is through the existing `MarketsActions`/`MarketsStore`, not
+    reimplemented.
+  - `DashboardList.tsx`/`TotalBalanceValue.tsx` reuse `ChainStore`,
+    `marketUtils`, `SettingsStore`/`AccountStore`/`WalletUnlockStore`/
+    `MarketsStore`, `SettingsActions`/`AccountActions`, and `WalletDb`
+    exactly as the legacy files did — none of that is rewritten, only the
+    React/component layer around it.
+  - Known, accepted tradeoff: neither new component replicates the
+    legacy `shouldComponentUpdate`/`MarketStatsCheck` fine-grained
+    re-render gating (which market's stats changing should trigger a
+    re-render). The hooks re-render more liberally instead. This can
+    only make the display *more* up to date, never wrong — it's a perf
+    tradeoff, not a correctness one — but if `DashboardList` feels
+    noticeably slower on accounts with many rows, that gating is the
+    place to add back, scoped narrowly.
+  - `TotalBalanceValue.AccountWrapper`, an exported-but-unused static
+    property on the legacy component, was dropped — confirmed via
+    repo-wide grep it had zero consumers anywhere outside its own file.
+  - Infra fixes needed to make this possible at all: `tsconfig.json`
+    didn't mirror webpack's `resolve.modules` (`app/lib` isn't on TS's
+    module path, so `common/market_utils` etc. didn't resolve) — added a
+    `paths` mapping for `common/*`, `chain/*`, `feature_detect/*`,
+    `workers/*`. `bitsharesjs`, `bitsharesjs-ws`,
+    `react-translate-component`, `counterpart`, and
+    `bitshares-ui-style-guide` ship no type declarations — added ambient
+    `declare module` shims in the new `app/types/vendor-shims.d.ts`
+    (same "treat as `any`, like the rest of the codebase already does
+    via `allowJs`" approach the existing design-system `.d.ts` shims
+    use).
+  - `MarginPosition.jsx` and `AccountOverview.jsx` (the other two
+    `TotalBalanceValue` consumers) were **not** touched — they import it
+    by its unqualified path, so the `.tsx` swap is transparent to them;
+    verified via a full webpack build that both still compile and no
+    other file was touched (`git status` shows only the files listed
+    above).
+  - Verified: `eslint` clean (0 errors; pre-existing-style `any` warnings
+    only, consistent with how the rest of the new-TS code treats
+    untyped chain objects); `yarn typecheck` clean; full Jest suite
+    green (49/49 across 13 suites, up from 37/12); full app webpack
+    build still shows only the 2 known pre-existing `charting_library`
+    errors.
+  - Not done: a live-browser screenshot of the real running app against
+    `node.xbts.io`. This sandbox's egress proxy intercepts and re-signs
+    TLS, which Chromium doesn't trust by default (fixed with
+    `ignoreHTTPSErrors`), but the proxy's WebSocket handling doesn't
+    reliably survive this app's own multi-node latency-race/fallback
+    connection dance — concurrent handshake attempts to the same host
+    through the proxy intermittently fail with `400`/timeout. The
+    underlying data and math are verified directly (see above); a real
+    screenshot is still worth getting from an environment without this
+    proxy constraint before calling this phase's exit criteria met.
+  - Explorer's sub-tables (Blocks, Assets, Witnesses, ...) and Settings'
+    remaining `.jsx`→`.tsx` work are still deferred — this slice only
+    covered Dashboard, since that's where the live-data blocker was
+    called out explicitly in the prior two slices.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
