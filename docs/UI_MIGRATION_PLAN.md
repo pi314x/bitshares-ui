@@ -287,6 +287,48 @@ in CI and the legacy code it replaces is deleted.
   `MarketsTable.jsx`, etc.) was touched — the new styling is scoped to a
   new `dash-*` class family, not an override of the shared classes those
   files also use.
+- Second slice, same additive-visual-only discipline, three screens:
+  - `Settings/Settings.jsx`: new `Settings.scss` with `set-nav`/
+    `set-nav-item`/`set-nav-item-active`/`set-content` classes layered onto
+    the existing settings-nav list and content pane; the original `active`
+    class on the selected nav item is kept (not replaced), so any other
+    code or styling depending on it is unaffected. Also removed a dead
+    method, `triggerModal(e, ...args) { this.refs.ws_modal.show(e, ...args); }`
+    — confirmed via grep it was called from nowhere in the codebase and
+    referenced a `ws_modal` ref that doesn't exist anywhere in the file, so
+    this isn't a functional change, just deleting unreachable code.
+  - `Explorer/Explorer.jsx`: a single `exp-panel` class added to the
+    existing `bitshares-ui-style-guide` (antd) `<Tabs>` wrapper, for a
+    panel background/border only. Deliberately minimal, documented in a
+    comment at the top of the new `Explorer.scss`: this `<Tabs>` component
+    is shared by many other screens (`VotingAccountsList`, `Settings`'
+    `Form`/`Input`, `NodeSelector`'s `TreeSelect`, etc.), so restyling its
+    internal classes would leak into all of them. The actual data tables
+    inside each tab (`Blocks.jsx`, `Assets.jsx`, `Witnesses.jsx`, etc. —
+    3,400+ lines total, all reading live chain data) stay out of scope for
+    the same live-data-verification reason as `DashboardList.jsx` above.
+  - `Dashboard/DashboardPage.jsx` (the `/` route's Starred/Featured Markets
+    tabs) and `Dashboard/DashboardAccountsOnly.jsx` (the `/accounts`
+    wrapper around `DashboardList`): both get the `dash-panel` class added
+    onto their existing `tabs-container generic-bordered-box` wrapper divs,
+    for visual consistency with the `DashboardList.jsx` pass above. No
+    calculation or data-fetching code touched.
+  - While in scope for `yarn lint:changed`, also removed three dead string
+    refs surfaced by `react/no-string-refs`: `ref="appTables"` in
+    `DashboardPage.jsx`, and `ref="wrapper"` / `ref="container"` in
+    `DashboardAccountsOnly.jsx`. Confirmed via grep that none of these were
+    ever read via `this.refs.*` anywhere in either file — unreachable dead
+    code, same as `Settings.jsx`'s `triggerModal` above, not a behavior
+    change.
+  - Verified: `yarn lint:changed`-equivalent (`eslint` on all four changed
+    files) clean; `yarn typecheck` clean; full Jest suite green (37/37
+    across 12 suites); full app webpack build still shows only the 2 known
+    pre-existing `charting_library` errors.
+  - Deferred, same reasoning as the `DashboardList.jsx` slice: the real
+    `.jsx`→`.tsx` rewrites of Settings, Explorer's sub-tables (Blocks,
+    Assets, Witnesses, ...), and Dashboard's balance/collateral math stay
+    out of scope until they can be verified against a live node or by
+    someone who can run one.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,

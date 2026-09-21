@@ -141,11 +141,8 @@ class Accounts extends React.Component {
 
         const contacts = this.props.contacts.toArray();
         return (
-            <div ref="wrapper" className="grid-block page-layout vertical">
-                <div
-                    ref="container"
-                    className="tabs-container generic-bordered-box"
-                >
+            <div className="grid-block page-layout vertical">
+                <div className="tabs-container generic-bordered-box dash-panel">
                     <Tabs
                         setting="accountTab"
                         className="account-tabs"

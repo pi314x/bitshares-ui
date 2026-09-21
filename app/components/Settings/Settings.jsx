@@ -15,6 +15,7 @@ import AccessSettings from "./AccessSettings";
 import {set} from "lodash-es";
 import {getAllowedLogins, getFaucet} from "../../branding";
 import {Input, Form} from "bitshares-ui-style-guide";
+import "./Settings.scss";
 
 class Settings extends React.Component {
     constructor(props) {
@@ -158,10 +159,6 @@ class Settings extends React.Component {
         menuEntries.push("reset");
 
         return menuEntries;
-    }
-
-    triggerModal(e, ...args) {
-        this.refs.ws_modal.show(e, ...args);
     }
 
     _handleNotificationChange(path, value) {
@@ -422,14 +419,15 @@ class Settings extends React.Component {
                                 className={"panel-bg-color"}
                             />
 
-                            <ul>
+                            <ul className="set-nav">
                                 {menuEntries.map((entry, index) => {
                                     return (
                                         <li
                                             className={
-                                                index === activeSetting
-                                                    ? "active"
-                                                    : ""
+                                                "set-nav-item" +
+                                                (index === activeSetting
+                                                    ? " active set-nav-item-active"
+                                                    : "")
                                             }
                                             onClick={this._redirectToEntry.bind(
                                                 this,
@@ -447,7 +445,7 @@ class Settings extends React.Component {
                         </div>
 
                         <div
-                            className="grid-content"
+                            className="grid-content set-content"
                             style={{
                                 height: "100%"
                             }}

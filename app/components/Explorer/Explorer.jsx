@@ -9,6 +9,7 @@ import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
 import MarketsContainer from "../Exchange/MarketsContainer";
 import {Tabs} from "bitshares-ui-style-guide";
+import "./Explorer.scss";
 
 class Explorer extends React.Component {
     constructor(props) {
@@ -78,6 +79,7 @@ class Explorer extends React.Component {
                 activeKey={this.props.location.pathname}
                 animated={false}
                 style={{display: "table", height: "100%", width: "100%"}}
+                className="exp-panel"
                 onChange={onChange}
             >
                 {this.state.tabs.map(tab => {
