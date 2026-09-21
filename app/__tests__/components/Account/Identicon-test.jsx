@@ -1,41 +1,24 @@
-import React from "react/addons"; 
-var TestUtils = React.addons.TestUtils;
-jest.dontMock("../../../app/components/Account/Identicon.jsx");
+// jdenticon.updateById() draws into a real 2D canvas context, which jsdom
+// (the Jest test environment) doesn't implement without the native `canvas`
+// package. Mock it out — this test is about Identicon's own render output
+// (the <canvas> element and its sizing), not jdenticon's drawing.
+jest.mock("jdenticon", () => ({updateById: jest.fn()}));
+
+import * as React from "react";
+import {render} from "@testing-library/react";
+
+const Identicon = require("../../../components/Account/Identicon.jsx")
+    .default;
 
 describe("<Identicon>", function() {
-    var Identicon = require("../../../app/components/Account/Identicon.jsx");
-    //var identicon, result;
-    //var size = {height: 100, width: 100};
-    //
-    //beforeEach(function() {
-    //    identicon = TestUtils.renderIntoDocument(
-    //        <Identicon account="Identicon" size={size}/>
-    //    );
-    //    result = TestUtils.findRenderedDOMComponentWithTag(
-    //        identicon, "canvas");
-    //});
-    //
-    //it("renders a canvas when given an account name", function() {
-    //    expect(typeof result).toBe("object");
-    //});
-    //
-    //it("only renders divs when given undefined account name", function() {
-    //    var divicon = TestUtils.renderIntoDocument(
-    //        <Identicon account={undefined} size={size}/>
-    //    );
-    //    var divs = TestUtils.scryRenderedDOMComponentsWithTag(
-    //        divicon, "div");
-    //    var canvas = TestUtils.scryRenderedDOMComponentsWithTag(
-    //        divicon, "canvas");
-    //    expect(divs.length === 2 && canvas.length === 0).toBeTruthy();
-    //});
-    //
-    //it("has props style of width/height equal to size", function() {
-    //    expect(result.props.style.width === size.width && result.props.style.height === size.height).toBeTruthy();
-    //});
-    //
-    //it("has props of width/height equal to 2 * size", function() {
-    //    expect(result.props.width === size.width * 2 && result.props.height === size.height * 2).toBeTruthy();
-    //});
-});
+    it("renders a canvas sized to 2x the given width/height", function() {
+        const {container} = render(
+            <Identicon account="init0" size={{height: 30, width: 40}} />
+        );
+        const canvas = container.querySelector("canvas");
+        expect(canvas).not.toBeNull();
+        expect(canvas.getAttribute("width")).toBe("80");
+        expect(canvas.getAttribute("height")).toBe("60");
+    });
 
+});

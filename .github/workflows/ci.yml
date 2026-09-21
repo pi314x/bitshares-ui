@@ -1,0 +1,36 @@
+# Phase 0 of docs/UI_MIGRATION_PLAN.md: this repository previously had no
+# lint/test gate on pull requests (only build+deploy and release-binary
+# workflows). This workflow is that gate.
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches: [develop]
+
+jobs:
+    lint-typecheck-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Use Node.js 16.13.1
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 16.13.1
+            - run: corepack enable
+            - name: Install dependencies
+              run: yarn install --network-concurrency 1 --frozen-lockfile --ignore-scripts
+            - name: Lint changed files
+              run: yarn run lint:changed
+            - name: Typecheck
+              run: yarn run typecheck
+            - name: Unit tests
+              run: yarn run test
+            # `test:market:ci` (order-matching/margin-call math) is not yet
+            # wired in here: it currently has 5 known pre-existing failures
+            # unrelated to this Phase 0 change (see the note above the
+            # CallOrder describe block in app/test/marketTests.js). Add it
+            # once that's resolved, per docs/UI_MIGRATION_PLAN.md Phase 4.

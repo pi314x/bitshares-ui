@@ -28,6 +28,13 @@ import {Route, Switch, Redirect} from "react-router-dom";
 // Nested route components
 import Page404 from "./components/Page404/Page404";
 
+// Strangler-fig rewrite entry point (docs/UI_MIGRATION_PLAN.md, Phase 0/1).
+const NextShell = Loadable({
+    loader: () =>
+        import(/* webpackChunkName: "next-shell" */ "./next/NextShell"),
+    loading: LoadingIndicator
+});
+
 const Invoice = Loadable({
     loader: () =>
         import(
@@ -647,6 +654,7 @@ class App extends React.Component {
                                     component={QuickTrade}
                                 />
                                 <Route path="/pools" component={PoolmartPage} />
+                                <Route path="/next" component={NextShell} />
                                 <Route path="*" component={Page404} />
                             </Switch>
                         </div>

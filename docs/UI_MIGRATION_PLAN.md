@@ -39,10 +39,16 @@ carefully and raising test coverage from "almost none" to "real" as we go.
 
 The reference mockup ("BitShares Desk") establishes the visual target:
 dark-first trading-desk theme (light mode as an explicit opt-in, not a
-`prefers-color-scheme` default), IBM Plex Sans/Mono + Archivo type, a fixed
-left rail with Account/Markets navigation, tabular-numeral price/amount
-formatting, and a clear separation between the brand accent color and the
-semantic up/down (price direction) colors.
+`prefers-color-scheme` default), a fixed left rail with Account/Markets
+navigation, tabular-numeral price/amount formatting, and a clear separation
+between the brand accent color and the semantic up/down (price direction)
+colors. Typography is IBM Plex Sans + IBM Plex Mono throughout (the
+mockup's original Archivo display face was dropped in favor of a single
+IBM-only family — Plex is IBM's own type family, SIL Open Font License 1.1,
+fully open source), self-hosted via `@fontsource/ibm-plex-sans` /
+`@fontsource/ibm-plex-mono` rather than the Google Fonts CDN: the Electron
+build has no business depending on network access to render its own UI
+font.
 
 It also implies a product-level decision the current codebase does not
 support today: **signing via an external wallet extension** ("keys never
@@ -119,6 +125,18 @@ order and effort estimate below.
    actions/stores and `*StyleGuide.jsx` duplicates. The plan explicitly
    budgets time for this — "migrate" means net-negative line count, not two
    copies living forever.
+5. **Screenshot every phase.** Every phase's exit criteria includes
+   screenshots of what it shipped, in both dark and light theme, attached to
+   its PR/report — not just "tests pass." The legacy app blocks its entire
+   render tree on a live blockchain connection during startup (`AppInit.jsx`),
+   which makes screenshotting a `/next`-mounted screen through the full app
+   shell impractical in a sandboxed/offline environment; `app/next/preview-entry.tsx`
+   + `webpack.preview.config.js` (`yarn build-preview`) mount a single
+   `app/next` screen standalone, without the legacy shell/chain-connection
+   bootstrap, specifically so it can be screenshotted (Playwright or
+   equivalent) in isolation. Use it for design review each phase; it's not a
+   replacement for testing the real, fully-wired route once a phase reaches
+   the app shell (Phase 1+).
 
 ## 7. Phases
 
@@ -173,7 +191,14 @@ in CI and the legacy code it replaces is deleted.
   automated tests below) signed off before legacy `Exchange/*` deletion;
   `MarketClasses.js` math logic reused as-is (do not rewrite proven order-
   matching math — port its existing Mocha tests to the new test runner
-  unchanged).
+  unchanged). **Known finding from Phase 0 CI bring-up:** `test:market:ci`
+  (`app/test/marketTests.js`) was not actually runnable before Phase 0 — its
+  `CallOrder` tests crashed on a missing constructor argument. That's fixed,
+  but 5 of those tests still fail: 2 on values that don't match a plausible
+  `mcr` guess, and 3 on a BigNumber.js "more than 15 significant digits"
+  error inside `CallOrder.assignMaxDebtAndCollateral`. Root-cause and fix
+  these — with a second reviewer, per the risk register below — before
+  relying on this suite as a regression net for the Exchange rewrite.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
@@ -188,13 +213,26 @@ in CI and the legacy code it replaces is deleted.
 - Exit criteria: legacy `Wallet/*`, `Modal/*Withdraw*`, `Modal/HtlcModal.jsx`
   deleted; full send/receive/backup/restore test suite green.
 
-### Phase 6 — Extension-based signing (gated on §7 decision)
-- Only starts once the browser-extension wallet has its own approved
-  design. Adds an additive signing path (mockup's "Signed by: Extension")
-  alongside — not replacing — Phase 5's in-browser signing, until adoption
-  data justifies deprecating the latter.
+### Phase 6 — Extension-based signing: the BitShares wallet browser extension
+- Adds the BitShares wallet browser extension (e.g. Beet, or a
+  purpose-built "BitShares" extension — **name/repo/injected-API needs
+  confirming with the requester before implementation starts**; nothing
+  here assumes a specific protocol) as an **additional** signing method,
+  alongside — not replacing — Phase 5's in-browser `WalletDb` signing, per
+  the reference mockup's "Signed by: Extension" flow. Users keep the
+  in-browser wallet unless they opt into the extension.
+- A generic `ExternalSigner` interface (see
+  `app/wallet-extension/types.ts`, added in Phase 0 as a placeholder) is
+  the seam: connect/detect, request public keys for an account, and
+  sign-and-broadcast a built transaction. The concrete adapter for the
+  chosen extension is implemented once its real message protocol
+  (injected `window` object vs. `postMessage`, request/response shape) is
+  confirmed — do not guess at a wire protocol for a wallet that moves
+  funds.
 - Exit criteria: extension signing available as an opt-in method on
-  Send/Trade; no regression to existing in-browser signing.
+  Send/Trade; no regression to existing in-browser signing; the same
+  fixed-test-vector + second-reviewer bar as Phase 5 applies here too,
+  since this is still money-moving code.
 
 ### Phase 7 — Gateways & deposit/withdraw bridges
 - Migrate the 7 gateway integrations (BlockTrades, Citadel, RuDex, Gdex,

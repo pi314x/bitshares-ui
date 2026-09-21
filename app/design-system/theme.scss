@@ -1,0 +1,95 @@
+// CSS custom properties for the new design system. Values must be kept in
+// sync with `tokens.ts` (the typed reference used by TS/JS code) until the
+// design system generates one from the other.
+//
+// Dark is the default theme (`:root`); light is opted into explicitly via
+// `[data-theme="light"]` on the root element, never derived from
+// `prefers-color-scheme`.
+
+// IBM Plex Sans + IBM Plex Mono: IBM's own type family, SIL Open Font
+// License 1.1 (open source, no attribution/royalty requirement). One
+// family for both body text and headings, so the UI reads as one system
+// rather than pairing in a separate display face.
+//
+// Self-hosted via the @fontsource/ibm-plex-sans / @fontsource/ibm-plex-mono
+// packages (imported in app/next/NextShell.tsx, not here — SCSS `@import`
+// can't reliably resolve npm package paths the way JS imports can through
+// webpack) rather than a Google Fonts CDN link: the Electron build has no
+// business depending on network access just to render its own UI font, and
+// this sandboxed environment's proxy doesn't reach fonts.googleapis.com
+// either, which is exactly the failure mode self-hosting avoids.
+
+:root {
+    --ground: #0e1218;
+    --surface: #151a22;
+    --raised: #1a212b;
+    --line: #262e3a;
+    --line-soft: #1f262f;
+    --ink: #e7ecf3;
+    --ink-2: #b6c0ce;
+    --muted: #8792a4;
+    --faint: #646e7e;
+    --accent: #16b8f3;
+    --accent-2: #4cc5f0;
+    --accent-wash: #0f2029;
+    --up: #46b487;
+    --down: #e0666e;
+    --up-wash: #14271f;
+    --down-wash: #2a1719;
+    --warn: #d9a227;
+    --on-accent: #06222c;
+
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+        "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+        monospace;
+}
+
+:root[data-theme="light"] {
+    --ground: #f4f6f9;
+    --surface: #ffffff;
+    --raised: #fbfcfd;
+    --line: #dfe4ec;
+    --line-soft: #ebeff5;
+    --ink: #131820;
+    --ink-2: #3c4657;
+    --muted: #6b7688;
+    --faint: #98a2b3;
+    --accent: #0079ad;
+    --accent-2: #04719f;
+    --accent-wash: #e3f4fc;
+    --up: #2e8f65;
+    --down: #c24a52;
+    --up-wash: #e6f2ec;
+    --down-wash: #f8e9ea;
+    --warn: #b07b14;
+    --on-accent: #ffffff;
+}
+
+// Base styles shared by every screen that imports this file, so individual
+// components don't each re-declare body font/background/focus styling.
+body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0;
+}
+
+// Visible on keyboard focus only, not on mouse click — matches the
+// reference design and keeps the accent color meaningful as a focus
+// signal rather than decoration.
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+}

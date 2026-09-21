@@ -34,14 +34,25 @@ single PR.
 - Dev server: `yarn start`
 - Production build: `yarn build`
 - Electron dev: `yarn start-electron` (after `yarn prestart-electron`)
-- Market/wallet-action tests (Mocha): `yarn test:market`
-- Unit tests (Jest): `npx jest` — coverage is currently minimal; add tests
-  for anything you touch rather than relying on existing coverage.
+- Unit tests (Jest): `yarn test`
+- Market/wallet-action tests (Mocha): `yarn test:market` (local, watch mode)
+  / `yarn test:market:ci` (one-shot; has 5 known pre-existing failures in
+  `CallOrder` math, see the note in `app/test/marketTests.js` — not yet
+  wired into CI)
+- Typecheck (new TS code): `yarn typecheck`
+- Lint changed files (what CI actually gates on): `yarn lint:changed`. Full
+  legacy-inclusive lint (`yarn lint`) currently has ~800 pre-existing
+  errors and is not a useful signal yet — don't try to fix those as a side
+  effect of an unrelated change.
+- Standalone preview of an `app/next` screen, without booting the full
+  legacy app shell (which blocks on a live blockchain connection): `yarn
+  build-preview`, then serve `build/preview/`. Use this to screenshot new
+  screens for phase sign-off (see `docs/UI_MIGRATION_PLAN.md` §6.5).
 - Format check (pre-commit hook): `pretty-quick --staged` (via husky)
 
-There is currently no lint/test CI gate (see `.github/workflows/`) — run
-`npx jest`, `yarn test:market`, and a production build locally before
-proposing changes, since CI will not catch regressions for you yet.
+`.github/workflows/ci.yml` runs lint:changed + typecheck + test on every
+PR — this is new as of the Phase 0 migration work; before it, there was no
+lint/test CI gate at all.
 
 ## Conventions
 

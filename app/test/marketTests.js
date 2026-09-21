@@ -952,6 +952,26 @@ describe("LimitOrder", function() {
     });
 });
 
+// NOTE (Phase 0 CI bring-up, docs/UI_MIGRATION_PLAN.md): CallOrder's
+// constructor gained a required 5th `mcr` (maintenance_collateral_ratio)
+// argument at some point after these fixtures were written; every call
+// below was throwing "CallOrder missing inputs" until `1750` (the mcr value
+// already used elsewhere in this file's `target_collateral_ratio` fixtures)
+// was added. That fixed construction and most assertions, but left 5
+// pre-existing failures unrelated to the missing argument:
+//   - "Returns the call price of the order" / "Returns margin call status":
+//     expected values don't match with mcr=1750, suggesting the original
+//     fixtures assumed a different (unrecorded) per-asset mcr.
+//   - "Calculates collateral to sell using target_collateral_ratio" /
+//     "Can be summed using target_cr" / "Can sum a large amount of call
+//     orders": BigNumber.js now throws "more than 15 significant digits" in
+//     CallOrder.assignMaxDebtAndCollateral (MarketClasses.js), which looks
+//     like a real precision bug in that method, not a test fixture issue.
+// This is core order-matching/margin-call math — exactly the kind of logic
+// docs/UI_MIGRATION_PLAN.md's risk register calls out as needing fixed test
+// vectors and a second reviewer before changing, so it's flagged here for
+// dedicated follow-up (Phase 4) rather than patched blind. `test:market:ci`
+// is therefore not yet wired into CI as a blocking gate.
 describe("CallOrder", function() {
     let base = {
         amount: 8127,
@@ -1036,20 +1056,20 @@ describe("CallOrder", function() {
     };
 
     it("Instantiates", function() {
-        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         assert.equal(order.id, o.id, "Id should be 1.8.2317");
         assert.equal(order.collateral, o.collateral);
         assert.equal(order.debt, o.debt);
     });
 
     it("Returns the call price of the order", function() {
-        let order = new CallOrder(o, assets, "1.3.113", settlePrice_113);
+        let order = new CallOrder(o, assets, "1.3.113", settlePrice_113, 1750);
         assert.equal(
             order.getPrice(false),
             38.8149792,
             "Price should equal 38.8149792"
         );
-        let order2 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let order2 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         assert.equal(
             order2.getPrice(false),
             0.02576325,
@@ -1058,16 +1078,16 @@ describe("CallOrder", function() {
     });
 
     it("Returns the order type", function() {
-        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         assert.equal(order.isBid(), false, "Order type should be ASK/false");
 
-        let order2 = new CallOrder(o, assets, "1.3.113", settlePrice_113);
+        let order2 = new CallOrder(o, assets, "1.3.113", settlePrice_113, 1750);
         assert.equal(order2.isBid(), true, "Order type should be BID/true");
     });
 
     it("Returns margin call status", function() {
-        let order = new CallOrder(o, assets, "1.3.113", settlePrice_113);
-        let order2 = new CallOrder(o2, assets, "1.3.113", settlePrice_113);
+        let order = new CallOrder(o, assets, "1.3.113", settlePrice_113, 1750);
+        let order2 = new CallOrder(o2, assets, "1.3.113", settlePrice_113, 1750);
 
         assert.equal(
             order.isMarginCalled(),
@@ -1086,8 +1106,8 @@ describe("CallOrder", function() {
                 settlePrice_113.toReal()
         );
 
-        let order3 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
-        let order4 = new CallOrder(o2, assets, "1.3.0", settlePrice_0);
+        let order3 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
+        let order4 = new CallOrder(o2, assets, "1.3.0", settlePrice_0, 1750);
 
         assert.equal(
             order3.isMarginCalled(),
@@ -1108,7 +1128,7 @@ describe("CallOrder", function() {
     });
 
     it("Returns the amount for sale as an asset based on squeeze price", function() {
-        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         let forSale = order.amountForSale();
 
         assert.equal(
@@ -1124,7 +1144,7 @@ describe("CallOrder", function() {
     });
 
     it("Returns the amount to receive as an asset", function() {
-        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let order = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         let toReceive = order.amountToReceive();
 
         assert.equal(
@@ -1140,8 +1160,8 @@ describe("CallOrder", function() {
     });
 
     it("Can be summed with another order", function() {
-        let o1 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
-        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let o1 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
+        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         const o3 = o1.sum(o2);
 
         assert(o3.isSum);
@@ -1159,20 +1179,21 @@ describe("CallOrder", function() {
     });
 
     it("Can be compared to another order with equals / ne", function() {
-        let o1 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
-        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let o1 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
+        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
 
         assert.equal(o1.ne(o2), false, "Orders are the same");
         assert.equal(o1.equals(o2), true, "Orders are the same");
     });
 
     it("Calculates collateral to sell using target_collateral_ratio", function() {
-        let o = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0);
+        let o = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0, 1750);
         let o2 = new CallOrder(
             o3_target_cr,
             assets,
             "1.3.113",
-            settlePrice_113
+            settlePrice_113,
+            1750
         );
 
         /* check non-rounded values first */
@@ -1212,7 +1233,8 @@ describe("CallOrder", function() {
             },
             assets,
             "1.3.113",
-            settlePrice_113
+            settlePrice_113,
+            1750
         );
 
         assert.equal(
@@ -1223,8 +1245,8 @@ describe("CallOrder", function() {
     });
 
     it("Can be summed using target_cr", function() {
-        let o1 = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0);
-        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0);
+        let o1 = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0, 1750);
+        let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         const o3 = o1.sum(o2);
 
         assert(o3.isSum);
@@ -1269,7 +1291,7 @@ describe("CallOrder", function() {
 
     it("Can sum a large amount of call orders", function() {
         let cos = usdMarginCalls.map(
-            o => new CallOrder(o, assets, "1.3.0", feedPrice)
+            o => new CallOrder(o, assets, "1.3.0", feedPrice, 1750)
         );
         for (var i = cos.length - 2; i >= 0; i--) {
             cos[i] = cos[i].sum(cos[i + 1]);
