@@ -462,6 +462,49 @@ in CI and the legacy code it replaces is deleted.
   - Still deferred: Explorer's other sub-tables (`Assets.jsx`,
     `Witnesses.jsx`, `CommitteeMembers.jsx`, `LiquidityPools.jsx`,
     `Accounts.jsx`) and Settings' `.jsx`→`.tsx` work.
+- Fifth slice: `Settings/Settings.jsx` (the screen's tab menu and
+  routing shell) and its trivial `SettingsContainer.jsx` wrapper got the
+  real `.jsx`→`.tsx` rewrite. No account balances, signing, or live
+  chain-data verification needed here — this is orchestration (which
+  tab is active, syncing that with the URL) around already-working
+  subcomponents (`AccountsSettings`, `WalletSettings`,
+  `PasswordSettings`, `RestoreSettings`, `BackupSettings`,
+  `AccessSettings`, `ResetSettings`, `SettingsEntry`,
+  `WebsocketAddModal`), none of which were touched.
+  - Three confirmed-dead things dropped, each verified by reading every
+    consuming file, not just grepping the declaring one: `onReset()`
+    (defined, never called/bound/referenced anywhere); the
+    `apiLatencies` prop `SettingsContainer.jsx` injected into
+    `Settings.jsx` (never read — `AccessSettings.jsx` fetches its own
+    copy independently); and the `locales` prop plus the `{...this.state}`
+    spread both passed to `SettingsEntry.jsx` (it only destructures
+    `defaults`/`setting`/`settings` from its props, confirmed by reading
+    its full render method).
+  - Same infra pattern as the earlier slices: `react-router-dom`'s
+    `useParams`/`useHistory` hooks replace the `match`/`history` props
+    react-router injected into the class component; `useAltStore`
+    replaces `SettingsContainer`'s `AltContainer`. Local component state
+    (which tab is active, the add/remove-node modal visibility, etc.)
+    is `useState`, with the two `UNSAFE_component*` lifecycle methods
+    ported to `useEffect`s that mirror their original trigger
+    conditions (documented inline in `Settings.tsx`).
+  - Infra: added `lodash-es` to `app/types/vendor-shims.d.ts`. Also
+    fixed a stale JSDoc `@returns` comment on `branding.js`'s
+    `getFaucet()` — it was missing the `editable` field the function
+    actually returns and that `Settings.tsx` reads, which TypeScript
+    picks up from JSDoc on plain JS files even with `checkJs: false`.
+    While in scope for `yarn lint:changed`, also turned a genuinely
+    unused `testnet` chain-id variable in `branding.js`'s `_isTestnet()`
+    into a comment (its own inline comment already said "just for the
+    record" — clearly meant as a documentation reference, not accidental
+    dead code, so it's kept as one instead of deleted outright).
+  - Verified: `eslint` clean (0 errors, `any`-only warnings) on all
+    touched files; `yarn typecheck` clean; full Jest suite still green
+    (49/49); full webpack build still shows only the 2 known
+    pre-existing `charting_library` errors.
+  - Still deferred: Explorer's other sub-tables and the Settings
+    *subcomponents* themselves (`AccountsSettings.jsx` etc. are still
+    legacy `.jsx` — only the shell around them moved).
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,

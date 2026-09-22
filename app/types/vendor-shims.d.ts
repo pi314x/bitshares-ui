@@ -8,3 +8,4 @@ declare module "react-translate-component";
 declare module "counterpart";
 declare module "bitshares-ui-style-guide";
 declare module "react-intl";
+declare module "lodash-es";
