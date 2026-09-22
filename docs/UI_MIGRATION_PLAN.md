@@ -810,6 +810,22 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, 0 warnings), `yarn typecheck`
     clean, full Jest suite green (50/50), full webpack build shows only
     the 2 known pre-existing `charting_library` errors.
+- Fifteenth slice: `Settings/WebsocketAddModal.jsx` (the "add node" /
+  "remove node" modal pair used by the Settings screen's node picker) got
+  the real `.jsx`→`.tsx` rewrite. Only touches which RPC node the app
+  talks to, not wallet/signing state.
+  - Confirmed dead, dropped (verified by reading the whole file — no
+    other file references these): the `type`/`remove` state fields,
+    never read anywhere after being set in the constructor; the `close()`
+    method and the `isModalVisible` state field it wrote, never called or
+    read by anything (visibility is entirely controlled by the
+    `isAddNodeModalVisible`/`isRemoveNodeModalVisible` props); and the
+    string ref `ref="ws_modal_add"` on the add modal, never read via
+    `this.refs` anywhere (kept the `id="ws_modal_add"` in case anything
+    external targets it by DOM id).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
