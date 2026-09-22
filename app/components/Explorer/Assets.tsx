@@ -13,6 +13,14 @@
 // a `placeholder` variable (computed via counterpart.translate but never
 // passed to any prop in the original either).
 //
+// Follow-up fix (found via a live-render screenshot check, not part of
+// the original port): the `rowsOnPage` state is a string (it backs a
+// `Select` whose options are string values), but was being cast `as any`
+// straight into antd's `pagination.pageSize`, which expects a number -
+// harmless in practice (antd coerces it), but threw a PropTypes warning
+// on every render. Parsed with `parseInt(rowsOnPage, 10)` at both
+// pagination call sites instead of casting past the type.
+//
 // The legacy "user" and "market" filter modes had byte-for-byte
 // identical `columns` array definitions (only their filter *predicate*
 // over `assets` differed) - consolidated into one shared `columns`
@@ -410,7 +418,7 @@ export default function Assets() {
                                 )}
                                 pagination={{
                                     position: "bottom" as any,
-                                    pageSize: rowsOnPage as any
+                                    pageSize: parseInt(rowsOnPage, 10)
                                 }}
                             />
                         ) : (
@@ -420,7 +428,7 @@ export default function Assets() {
                                 columns={columns}
                                 dataSource={dataSource}
                                 pagination={{
-                                    pageSize: rowsOnPage as any,
+                                    pageSize: parseInt(rowsOnPage, 10),
                                     total: dataSource.length
                                 }}
                             />

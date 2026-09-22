@@ -721,6 +721,15 @@ in CI and the legacy code it replaces is deleted.
     logic was cross-checked by reading `AssetActions.js`'s
     `getAssetList` handler directly rather than standing up a live-data
     harness for a pure listing/search screen.
+  - Follow-up fix, found later by a live-render screenshot check (not
+    part of the original port): `rowsOnPage` is a string (it backs a
+    `Select` whose options are string values) but was cast `as any`
+    straight into antd's `pagination.pageSize`, which expects a number —
+    harmless in practice (antd coerces it) but threw a PropTypes warning
+    on every render. Fixed with `parseInt(rowsOnPage, 10)` at both
+    pagination call sites. Re-verified: `eslint`/`yarn typecheck` clean,
+    full Jest suite green (50/50), full webpack build shows only the 2
+    known pre-existing `charting_library` errors.
 - Eleventh slice: start of the Settings-subcomponent pass (per AGENTS.md,
   the wallet-backup/restore/password ones — `WalletSettings.jsx`,
   `BackupSettings.jsx`, `RestoreSettings.jsx`, `BackupFavorites.jsx`,
