@@ -922,6 +922,35 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Nineteenth slice: `Settings/BackupSettings.jsx` and
+  `Settings/RestoreSettings.jsx` got the real `.jsx`→`.tsx` rewrite -
+  the last of the wallet-security-sensitive Settings tier, closing it out
+  per AGENTS.md. Both are minimal, mechanical hooks translations with no
+  logic changes. Neither file holds key material or does crypto itself:
+  they're tab switchers between `BackupCreate`/`BackupBrainkey`
+  (`BackupSettings`) and `BackupRestore`/`ImportKeys`/
+  `CreateWalletFromBrainkey` (`RestoreSettings`) - all reused unchanged,
+  holding the actual wallet-file/brainkey backup-and-restore/key-import
+  logic - plus the already-ported, confirmed non-sensitive
+  `BackupFavorites`/`RestoreFavorites`.
+  - `RestoreSettings`'s `default:` switch branch intentionally covers
+    both the "key" and "legacy" restore types by rendering the same
+    `ImportKeys` with `privateKey` toggled by `restoreType === 1` -
+    preserved exactly, documented inline as intentional, not a bug.
+  - Verified: `eslint` clean (0 errors, 0 warnings), `yarn typecheck`
+    clean, full Jest suite green (50/50), full webpack build shows only
+    the 2 known pre-existing `charting_library` errors.
+  - This closes out every file from the "Mach alles" Phase 2 punch list:
+    Explorer's Assets/LiquidityPools/Accounts sub-tables and all twelve
+    Settings subcomponents (SettingsEntry, AccountsSettings,
+    FeeAssetSettings, AccessSettings, ResetSettings, WebsocketAddModal,
+    then the wallet-sensitive tier: WalletSettings, PasswordSettings,
+    BackupFavorites, RestoreFavorites, BackupSettings, RestoreSettings)
+    are now all `.tsx`. `app/components/Settings/` contains no remaining
+    `.jsx` files. `app/components/Explorer/` still has three -
+    `Explorer.jsx` itself (the tab-menu shell around all the ported
+    sub-tables) and the chart-only `BlocktimeChart.jsx`/
+    `TransactionChart.jsx` - none of which were in this pass's scope.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
