@@ -644,6 +644,42 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean, `yarn typecheck` clean, full Jest suite
     green (50/50), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Ninth slice: `Explorer/LiquidityPools.jsx` (the "/explorer/pools" tab)
+  got the real `.jsx`→`.tsx` rewrite. `PoolExchangeModal`/
+  `PoolStakeModal` — the actual trade/stake actions, which do involve
+  signing — are reused exactly as before, not touched; this file only
+  opens them, so it stays in the lower-risk read-only-listing category.
+  - Pre-existing bug found, left as-is (not this port's job to silently
+    change behavior — same reasoning as `CommitteeMembers.tsx`'s
+    copy-pasted translation key): `_getLiquidityPools` destructured
+    `GetLimit` from `this.state`, but no such field was ever set — only
+    lowercase `limit` was. `GetLimit` was always `undefined`, so the
+    rows-per-page selector never actually affected how many pools the
+    API returns per fetch (it does still affect the antd `Table`'s
+    client-side `pagination.pageSize`, which reads `limit` correctly).
+    Preserved as an explicit `undefined` in the port rather than
+    silently "fixed" to `limit`.
+  - Also dropped, confirmed dead by reading the whole file:
+    `this.state.total` and `this.state.lastPoolId` (a *local* state
+    field, distinct from the `lastPoolId` *prop* from `PoolmartStore`,
+    which the port does keep) were both written but never read anywhere.
+  - The auto-pagination effect (fetch more as soon as new pools arrive,
+    until the API returns nothing new) needed the same "compare against
+    the value from before this update" semantics the legacy
+    `componentWillReceiveProps(nextProps)` had by comparing against
+    `this.props.lastPoolId` (the *old*, pre-update props value, since
+    `this.props` hadn't been reassigned yet at that point in the
+    lifecycle) — reproduced with a ref that's only updated *after* the
+    comparison, one render behind, documented inline in the file.
+  - Verified: `eslint` clean, `yarn typecheck` clean, full Jest suite
+    green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors. Not separately verified
+    against live pool data (attempted, but the sanity-check script's API
+    call parameters were wrong and it wasn't worth further investment
+    for a listing page in this risk tier — the row-building logic itself
+    was verified by reading `PoolmartActions.js`'s fetch handler
+    directly, which is where the `balance_a / 10^precision` etc.
+    calculations this file merely displays actually originate).
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
