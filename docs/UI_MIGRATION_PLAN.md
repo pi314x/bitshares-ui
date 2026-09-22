@@ -826,6 +826,60 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Sixteenth slice: `Settings/AccessSettings.jsx` (the Settings screen's
+  node picker — active node, available/personal/hidden/testnet node
+  lists, latency re-check) got the real `.jsx`→`.tsx` rewrite. This was
+  the largest remaining non-wallet-sensitive Settings file (677 lines,
+  three classes: `AutoSelectionNode`, `ApiNode`, and the default-exported
+  `AccessSettings` — the first two are internal to the file, never
+  exported). Only changes which RPC node the app talks to, not
+  wallet/signing state.
+  - Biggest confirmed-dead find of this phase: grepped the whole app for
+    every `<AccessSettings` usage (`Settings.tsx` and `SyncError.jsx`,
+    the only two) and read both fully — neither ever passes a `popup`
+    prop, so the `props.popup ? (...) : (...)` ternary present in *all
+    three* classes always took the non-popup branch. Dropped the
+    popup-only JSX entirely from all three (the compact popup list
+    variant, `popupCount`, the popup 5-item cap) — only the non-popup
+    rendering is ported. Also dropped the `faucet` and `onChange` props
+    on `AccessSettings` itself (both passed by every caller, neither ever
+    read in the file), and `ApiNode.defaultProps = {node: {}}` (`ApiNode`
+    is only ever instantiated from this file's own `renderNode()`, which
+    already guards `if (node == null) return null;` first, so `node` is
+    always defined when it actually renders).
+  - `Settings.tsx`'s own `<AccessSettings>` call site had to drop the
+    `faucet`/`onChange` props it was passing, once `AccessSettingsProps`
+    stopped declaring them — TypeScript now catches what plain JS
+    silently let through as ignored extra props.
+  - The legacy `_recalculateLatency`'s `this.forceUpdate()` (after
+    `routerTransitioner.doLatencyUpdate(...)` resolves) is load-bearing:
+    `backgroundPinging` reads
+    `routerTransitioner.isBackgroundPingingInProgress()` fresh every
+    render with no store/state backing it, so nothing else would ever
+    trigger a re-render to show the ping finishing. Replicated with the
+    standard hooks forceUpdate substitute (a dummy `useState` setter).
+  - Found in passing while reading `SyncError.jsx` as one of
+    `AccessSettings`'s two callers (not itself touched by this slice):
+    it renders the already-ported `WebsocketAddModal` without ever
+    passing `changeConnection`, even though
+    `WebsocketAddModal.onRemoveSubmit` calls it when the removed node was
+    the active one — a pre-existing latent crash in that specific call
+    path, present before this port and left as-is (not this slice's
+    file to fix).
+  - Added `app/types/global-defines.d.ts` declaring `__TESTNET__` (a
+    webpack `DefinePlugin` compile-time global this file's `isTestNet()`
+    reads) - the first TS port to need one of these; same "add as needed"
+    approach as `vendor-shims.d.ts`'s untyped-package shims.
+  - Not separately verified against live node/latency data — the
+    highest-value check for this slice was the exhaustive static
+    "does anything actually pass `popup`" grep (stronger than a
+    screenshot could confirm, since a screenshot only shows the current
+    call site's rendering, not whether some other caller exists), which
+    was done. `AutoSelectionNode`/`ApiNode`'s rendering logic itself was
+    ported line-for-line from the always-taken branch.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,

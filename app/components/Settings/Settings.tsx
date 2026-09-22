@@ -1,23 +1,29 @@
 // TypeScript/functional-component port of the legacy Settings.jsx (Phase
 // 2, docs/UI_MIGRATION_PLAN.md). Renders the Settings screen's tab menu
-// and routes each tab to its (unchanged) subcomponent - AccountsSettings,
+// and routes each tab to its subcomponent - AccountsSettings,
 // WalletSettings, PasswordSettings, RestoreSettings, BackupSettings,
-// AccessSettings, ResetSettings, SettingsEntry, WebsocketAddModal - none
-// of which are touched here.
+// AccessSettings, ResetSettings, SettingsEntry, WebsocketAddModal. Most of
+// these have since also been ported to TSX in their own later slices (see
+// docs/UI_MIGRATION_PLAN.md) - this file's own job stays the same either
+// way: orchestration (which tab is active, syncing that with the URL)
+// around them, not their internals.
 //
 // No account balances or signing involved, so this doesn't carry the
-// same risk category as the Dashboard/Blocks rewrites - it's mostly
-// orchestration (which tab is active, syncing that with the URL) around
-// already-working subcomponents.
+// same risk category as the Dashboard/Blocks rewrites.
 //
-// Two confirmed-dead things dropped during the port (verified by reading
-// every consuming file, not just grepping the declaring one):
+// Two confirmed-dead things dropped during the original port of this file
+// (verified by reading every consuming file, not just grepping the
+// declaring one):
 // - `onReset()` was defined but never called, bound, or referenced.
 // - The `apiLatencies` prop (from SettingsContainer) and the `locales`
 //   prop plus the `{...this.state}` spread (both passed to SettingsEntry)
-//   were never read by anything downstream - AccessSettings.jsx fetches
-//   its own `apiLatencies` independently, and SettingsEntry.jsx only
-//   destructures `defaults`/`setting`/`settings` from its props.
+//   were never read by anything downstream - AccessSettings fetches its
+//   own `apiLatencies` independently, and SettingsEntry only destructures
+//   `defaults`/`setting`/`settings` from its props.
+// A third, found later while porting AccessSettings itself: the `faucet`
+// and `onChange` props this file passed to `<AccessSettings>` were never
+// read there either - dropped from this call site once AccessSettings.tsx
+// stopped declaring them.
 import * as React from "react";
 import {useParams, useHistory} from "react-router-dom";
 import counterpart from "counterpart";
@@ -345,9 +351,7 @@ export default function Settings(props: SettingsProps) {
         case "access":
             entries = (
                 <AccessSettings
-                    faucet={settings.get("faucet_address")}
                     nodes={defaults.apiServer}
-                    onChange={onChangeSetting}
                     showAddNodeModal={showAddNodeModal}
                     showRemoveNodeModal={showRemoveNodeModal}
                 />
