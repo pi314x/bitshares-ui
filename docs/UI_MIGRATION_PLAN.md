@@ -900,6 +900,28 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, one expected `any` warning),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Eighteenth slice: `Settings/BackupFavorites.jsx` and
+  `Settings/RestoreFavorites.jsx` got the real `.jsx`→`.tsx` rewrite.
+  Despite living among the wallet-backup-named Settings files (and
+  originally flagged for the extra-care tier by name alone before being
+  read), reading both in full showed they only export/import the user's
+  *starred markets* (favorite trading pairs) as JSON — no key material,
+  no wallet state, no crypto anywhere in either file. Reclassified to the
+  standard (non-wallet-sensitive) treatment once that was confirmed;
+  their same-directory, actually-sensitive namesakes
+  (`BackupSettings.jsx`/`RestoreSettings.jsx`) stay in the extra-care
+  tier.
+  - `BackupFavorites`: replaced the `alt-react` `connect()` wrapper with
+    `useAltStore(SettingsStore)`, reading `starredMarkets` from state.
+  - `RestoreFavorites`: no store subscription needed, purely local
+    `json`/`error` state plus `SettingsActions` calls — ported as-is, no
+    dead code found.
+  - Added a `file-saver` ambient module shim to
+    `app/types/vendor-shims.d.ts` (first TS port to import it, for the
+    JSON blob download in `BackupFavorites`).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
