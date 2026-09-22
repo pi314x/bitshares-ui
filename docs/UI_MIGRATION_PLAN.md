@@ -721,6 +721,38 @@ in CI and the legacy code it replaces is deleted.
     logic was cross-checked by reading `AssetActions.js`'s
     `getAssetList` handler directly rather than standing up a live-data
     harness for a pure listing/search screen.
+- Eleventh slice: start of the Settings-subcomponent pass (per AGENTS.md,
+  the wallet-backup/restore/password ones — `WalletSettings.jsx`,
+  `BackupSettings.jsx`, `RestoreSettings.jsx`, `BackupFavorites.jsx`,
+  `RestoreFavorites.jsx`, `PasswordSettings.jsx` — are deferred to last,
+  with extra care, as security-sensitive). `Settings/SettingsEntry.jsx`
+  (renders one generic row of the Settings tabs — locale, theme, browser
+  notifications, fee asset, gateway filter, wallet lock timeout, and the
+  generic dropdown/text-input fallback) got the real `.jsx`→`.tsx`
+  rewrite. Pure display/local-UI-state, no wallet or signing involvement.
+  - Confirmed dead, dropped (verified by reading this file plus its only
+    caller, `Settings.tsx`): the `message` state, the `_setMessage(key)`
+    method that set it, its `timer`/`componentWillUnmount` cleanup, and
+    the `<div className="facolor-success">{this.state.message}</div>` it
+    fed — `_setMessage` was never called anywhere in this file or its
+    caller (`ResetSettings.jsx` has its own, unrelated, same-named
+    method), so `message` was always `null`. Also dropped `optional` and
+    `confirmButton`, both declared but never assigned by any switch
+    branch, then rendered as always-`undefined`. Also dropped `noHeader`,
+    declared `false` and never reassigned, so the local `EntryLayout`
+    helper's `noHeader && children` branch could never be taken — inlined
+    the unconditional `FormItem`-wrapped path it always fell through to.
+  - The legacy `shouldComponentUpdate` skipped re-rendering the
+    "filteredServiceProviders" entry unless its own local modal-visibility
+    state changed. Not replicated, same tradeoff as elsewhere in this
+    phase: that entry's output never actually depends on `settings` or
+    `defaults`, so it's output-invisible either way.
+  - Added a `notifyjs` ambient module shim to `app/types/vendor-shims.d.ts`
+    (this file is the first TS port to import it, for the
+    browser-notification permission check).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
