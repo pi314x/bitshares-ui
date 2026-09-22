@@ -1024,6 +1024,60 @@ in CI and the legacy code it replaces is deleted.
     pre-existing `charting_library` errors.
   - This closes out `app/components/Explorer/` entirely — no `.jsx`
     files remain in that directory.
+- Twenty-first slice: `Blockchain/Transaction.jsx` (2427 lines — renders
+  a decoded, human-readable view of one transaction's operations; used
+  by `Block.jsx` when viewing a block's contained transactions, and by
+  `TransactionConfirm.jsx`, the app-wide pre-broadcast confirmation
+  dialog) got the real `.jsx`→`.tsx` rewrite. Before starting, this file
+  and its much larger sibling `Blockchain/Asset.jsx` (2461 lines, also
+  named in Phase 2's own scope line) were structurally mapped first:
+  `Transaction.jsx` turned out to be purely read-only display — no
+  `TransactionBuilder`, no `.broadcast(`/`.sign(` calls, no
+  operation-building forms anywhere, just a ~40-case switch mapping
+  known chain operation types to display rows — safe to port as a single
+  file. `Asset.jsx`, by contrast, is route-reached directly
+  (`/asset/:symbol`) and wires five live transaction-submitting forms
+  (`AssetOwnerUpdate`, `AssetPublishFeed`, `AssetResolvePrediction`,
+  `BidCollateralOperation`, `FeePoolOperation`) into its "Actions" tab
+  via prop injection, plus three layered Alt.js `connect()`/
+  `AssetWrapper` HOCs — deferred to its own slice, to be handled with the
+  same extra care as the wallet-security-sensitive Settings tier rather
+  than folded into this one.
+  - Confirmed dead, dropped (verified by reading the whole file):
+    `import {Link, DirectLink} from "react-scroll"` — `DirectLink` was
+    never referenced anywhere, and the `Link` name was always shadowed
+    by a local `let Link = ...` inside `linkToAccount`/`linkToAsset`
+    before any JSX used it, so the react-scroll import was never actually
+    reached (`Link` from `react-router-dom`, aliased `RealLink`, is what
+    those methods really used). Also the `proposal_create` case's local
+    `var operations = []` — populated via a loop but never read
+    afterward (`proposalsText` computes straight from
+    `op[1].proposed_ops.map(...)`). Also `Transaction`'s own
+    `this.state = {}` (never read or set) and `OperationTable`'s
+    `opCount`/`index` props (passed by every call site, including the
+    `opCount` variable computed in `Transaction` just to feed them, but
+    never read inside `OperationTable`'s own render).
+  - `OpType`'s `shouldComponentUpdate` (perf-only re-render gate on the
+    `type` prop) dropped, same as this migration's other legacy SCU
+    gates elsewhere.
+  - The one wallet-adjacent call, `WalletUnlockActions.unlock()` (used
+    only to decrypt-and-show a transfer/issue memo inline, not to sign
+    or broadcast anything), is reused exactly as before; its
+    `this.forceUpdate()` after unlock is load-bearing (the decrypted
+    memo text is recomputed fresh from `PrivateKeyStore.decodeMemo` on
+    every render, with no other trigger to re-render after unlocking) —
+    replicated with the standard hooks forceUpdate substitute.
+  - `Transaction` was missing a `block` prop from its own
+    `propTypes`/`defaultProps` even though `render()` reads
+    `this.props.block` in the `htlc_create` case — `Block.jsx` passes
+    it, `TransactionConfirm.jsx` doesn't (falls back to `new Date()`,
+    unchanged). Declared in the new `TransactionProps` interface since
+    it's genuinely read.
+  - Added `react-json-inspector` to `app/types/vendor-shims.d.ts` (first
+    TS port to import it).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
