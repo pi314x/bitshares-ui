@@ -505,6 +505,44 @@ in CI and the legacy code it replaces is deleted.
   - Still deferred: Explorer's other sub-tables and the Settings
     *subcomponents* themselves (`AccountsSettings.jsx` etc. are still
     legacy `.jsx` — only the shell around them moved).
+- Sixth slice: `Explorer/CommitteeMembers.jsx` (the
+  "/explorer/committee-members" tab) got the real `.jsx`→`.tsx` rewrite.
+  Same lower-risk category as Blocks.tsx (read-only public chain data),
+  manually verified against real committee-member data from
+  `wss://node.xbts.io/ws`: 11 active committee members resolved and
+  ranked correctly by vote count (highest first — `abit`, `xeroc`,
+  `johnr`, ... with real vote totals), matching the ported logic.
+  - The legacy file split this into two `BindToChainState`-wrapped
+    classes purely to apply two different loading-gate behaviors
+    (`show_loader: true` vs. the default) — collapsed into one component
+    with two early returns, since that split existed for HOC
+    convenience, not application logic.
+  - One `BindToChainState` implementation artifact deliberately *not*
+    replicated: its `chain_objects_list` resolution has an off-by-one
+    bug (`++index` runs before the array assignment, so the first
+    resolved item lands at index 1, not 0). The legacy loading-gate
+    check (`committee_members[1]`) was written to compensate for that
+    bug — the actual table rows are built with `.filter()`/`.map()`,
+    which skip the resulting sparse index-0 hole either way, so the
+    real behavior is unaffected. This port resolves members into a
+    normal 0-indexed array and gates on index 0 instead.
+  - Two more confirmed-dead things dropped, verified by reading the
+    whole render method: `cardView`/`cardViewCommittee` (fetched from
+    `SettingsStore` but never read anywhere), and a local
+    `activeCommitteeMembers` array built via a redundant for-in copy of
+    `globalObject.active_committee_members` and then never used — the
+    render already reads that field directly.
+  - Not changed: the search placeholder's translation key is
+    `"explorer.witnesses.filter_by_name"` (Witnesses' key, not this
+    screen's own) in the legacy source — looks like a copy-paste content
+    bug, but fixing displayed text isn't part of a structural port, so
+    it's left exactly as it was, with a comment flagging it for whoever
+    owns that content next.
+  - Verified: `eslint` clean (0 errors, `any`-only warnings); `yarn
+    typecheck` clean; full Jest suite green (49/49); full webpack build
+    shows only the 2 known pre-existing `charting_library` errors.
+  - Still deferred: `Assets.jsx`, `Witnesses.jsx`, `LiquidityPools.jsx`,
+    `Accounts.jsx`, and the Settings subcomponents.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
