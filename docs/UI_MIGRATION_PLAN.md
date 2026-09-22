@@ -680,6 +680,47 @@ in CI and the legacy code it replaces is deleted.
     was verified by reading `PoolmartActions.js`'s fetch handler
     directly, which is where the `balance_a / 10^precision` etc.
     calculations this file merely displays actually originate).
+- Tenth slice: `Explorer/Assets.jsx` (the "/explorer/assets" tab) and its
+  trivial `AssetsContainer.jsx` wrapper got the real `.jsx`→`.tsx`
+  rewrite (merged into one file, `AssetsContainer` deleted — `Explorer.jsx`
+  now imports `Assets.tsx` directly under the same local name it already
+  used). Same lower-risk, read-only Explorer-table category as the eighth
+  and ninth slices.
+  - Confirmed dead, dropped: two props `AssetsContainer.jsx` injected
+    from `SettingsStore`'s `viewSettings` (`filterMPA`, `filterUIA`) but
+    that `Assets.jsx` never read; a third injected prop name,
+    `filterSearch`, that `AssetsContainer` never actually passed a value
+    for either, so it was always `undefined` and behaved exactly like the
+    port's own `useState(() => "")` local state; `_onFilter(type, e)`,
+    defined but never called from anywhere in the render tree; and a
+    `placeholder` variable computed via `counterpart.translate(...)` but
+    never wired to any prop in either the original or the port (confirmed
+    by `eslint`'s `no-unused-vars` after an initial faithful port still
+    computed it).
+  - The legacy "user" and "market" filter modes had byte-for-byte
+    identical `columns` array definitions for the antd `Table` — only the
+    filter *predicate* over `assets` differed between them — so this port
+    consolidates them into one shared `columns` definition; nothing
+    observable changes.
+  - `_checkAssets`'s incremental-fetch/pagination logic (fetch 100 assets
+    at a time, tracking progress against a localStorage-cached
+    total-asset-count estimate to know when to stop showing the loading
+    spinner) is ported with the same subtlety the class version had: its
+    final "should we stop loading" check reads the fetch-count value
+    *before* the same call's own update to that value has taken effect
+    (React state/hook updates are deferred, not applied mid-function), so
+    it's always one batch behind. The port reads the same plain variable
+    throughout the function body, reproducing that exact staleness without
+    needing to special-case it.
+  - Verified: `eslint` clean (0 errors; only the expected `any` warnings
+    already present throughout this phase), `yarn typecheck` clean, full
+    Jest suite green (50/50 across 14 suites), full webpack build shows
+    only the 2 known pre-existing `charting_library` errors. Not
+    separately verified against live asset data for this slice — same
+    lower-risk-tier tradeoff as `LiquidityPools.tsx`; the fetch/pagination
+    logic was cross-checked by reading `AssetActions.js`'s
+    `getAssetList` handler directly rather than standing up a live-data
+    harness for a pure listing/search screen.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,

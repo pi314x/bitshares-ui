@@ -3,7 +3,7 @@ import Witnesses from "./Witnesses";
 import CommitteeMembers from "./CommitteeMembers";
 import FeesContainer from "../Blockchain/FeesContainer";
 import BlocksContainer from "./BlocksContainer";
-import AssetsContainer from "./AssetsContainer";
+import AssetsContainer from "./Assets";
 import AccountsContainer from "./Accounts";
 import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
