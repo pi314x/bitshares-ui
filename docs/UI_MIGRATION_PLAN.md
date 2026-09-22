@@ -880,6 +880,26 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Seventeenth slice: start of the wallet-security-sensitive tier per
+  AGENTS.md (`WalletSettings.jsx`, `PasswordSettings.jsx`,
+  `BackupSettings.jsx`, `RestoreSettings.jsx`,
+  `BackupFavorites.jsx`, `RestoreFavorites.jsx` — deferred to last with
+  extra care). `PasswordSettings.jsx` (8 lines, a trivial wrapper around
+  the untouched `WalletChangePassword`) and `WalletSettings.jsx` (wallet
+  switch/delete + balance-claim lookup + brainkey-sequence reset UI) got
+  the real `.jsx`→`.tsx` rewrite. Both are minimal, mechanical hooks
+  translations with no logic changes — per AGENTS.md's "prefer minimal,
+  well-tested diffs over refactors" for anything touching wallet
+  internals. Neither file holds key material or does any crypto itself:
+  `ChangeActiveWallet`, `WalletDelete`, `BalanceClaimActive`, and
+  `WalletChangePassword` (all reused unchanged) hold the actual
+  switching/deletion/balance-claim/password logic; the one direct call
+  into wallet internals this slice's files make,
+  `WalletDb.resetBrainKeySequence()`, passes straight through to the
+  untouched, already-audited `WalletDb` module exactly as before.
+  - Verified: `eslint` clean (0 errors, one expected `any` warning),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
