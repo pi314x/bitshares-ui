@@ -591,6 +591,37 @@ in CI and the legacy code it replaces is deleted.
     synchronously and crashing the render; and `IntlProvider` needs to
     wrap the tree for any component using `FormattedDate`/
     `FormattedNumber`.
+- Seventh slice: `Explorer/Witnesses.jsx` (the "/explorer/witnesses" tab)
+  got the real `.jsx`→`.tsx` rewrite, same lower-risk category as
+  Blocks.tsx/CommitteeMembers.tsx. Given the DashboardList bug above,
+  this one was verified with a render, not just logic: rebuilt the
+  throwaway live-data harness (same seeding technique, deleted after
+  use again) and rendered it against 17 real active witnesses from
+  `wss://node.xbts.io/ws` — real names, correct vote-based ranking, the
+  current-witness row correctly highlighted, no runtime errors. The
+  ranking/rank-vs-vote-order logic was separately checked against the
+  same live data outside the component too.
+  - Collapsed the legacy file's three pieces (`WitnessRow`, `WitnessList`,
+    `Witnesses`) into one component, same reasoning as
+    `CommitteeMembers.tsx`. This file had more dead code than that one,
+    all confirmed by reading every render method fully, not just
+    grepping the declaring site: `WitnessRow`, an entire ~70-line class
+    building a `<tr>` per witness, was never rendered anywhere — the
+    real table uses antd's `<Table>` with a `dataSource`/`columns`
+    config, evidently from a later refactor that orphaned it.
+    `_toggleView()` and the `cardView` state/prop it threaded through
+    were never read. `_setSort()` and the `sortBy`/`inverseSort` state
+    it drove were also dead — the antd `Table`'s own per-column `sorter`
+    functions handle interactive sorting; nothing in the render path
+    consulted this component's sort state at all.
+  - Same off-by-one `BindToChainState` loading-gate artifact as
+    `CommitteeMembers.tsx` (`witnesses[1]` → normalized to `[0]`), same
+    reasoning.
+  - Verified: `eslint` clean (0 errors, `any`-only warnings); `yarn
+    typecheck` clean; full Jest suite green (50/50); full webpack build
+    shows only the 2 known pre-existing `charting_library` errors.
+  - Still deferred: `Assets.jsx`, `LiquidityPools.jsx`, `Accounts.jsx`
+    (Explorer's remaining sub-tables), and the Settings subcomponents.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
