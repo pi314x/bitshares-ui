@@ -753,6 +753,27 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Twelfth slice: `Settings/AccountsSettings.jsx` (the Settings screen's
+  "My accounts" tab — list, hide/unhide, and link to permissions for each
+  account the wallet controls keys for) got the real `.jsx`→`.tsx`
+  rewrite. Read-only listing plus a hide/unhide toggle that only writes
+  local UI state (`AccountStore`'s `myHiddenAccounts`) — no signing, so
+  this stays out of the wallet-security-sensitive tier.
+  - Replaced the legacy `alt-react` `connect(AccountsSettings, {listenTo,
+    getProps})` wrapper with `useAltStore(AccountStore)` (same adapter
+    pattern as every other ported component this phase), then reads
+    `AccountStore.getMyAccounts()` fresh in the render body — it's a
+    plain method, not part of `getState()`, same treatment as
+    `ChainStore.getAccount()` calls elsewhere in this phase's ports.
+  - The legacy `shouldComponentUpdate` shallow-compared `myAccounts` (via
+    `utils.are_equal_shallow`, since `getMyAccounts()` returns a brand-new
+    array every call even when unchanged) and `hiddenAccounts` to skip
+    re-renders. Not replicated, same tradeoff as elsewhere in this phase:
+    a perf guard only, and this component's render body (sort + map over
+    a short account list) is cheap enough that it isn't worth the code.
+  - Verified: `eslint` clean (0 errors, one expected `any` warning),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
