@@ -951,6 +951,70 @@ in CI and the legacy code it replaces is deleted.
     `Explorer.jsx` itself (the tab-menu shell around all the ported
     sub-tables) and the chart-only `BlocktimeChart.jsx`/
     `TransactionChart.jsx` - none of which were in this pass's scope.
+- Twentieth slice: the three files left over in `app/components/Explorer/`
+  got the real `.jsx`→`.tsx` rewrite, closing out that directory entirely.
+  - `Explorer.jsx` (the "/explorer" tab-menu shell wrapping Blocks/
+    Assets/Pools/Accounts/Witnesses/CommitteeMembers/Markets/Fees) →
+    functional component. Its `this.state.tabs` was set once in the
+    constructor and never touched by any `setState` anywhere in the file
+    — not real state, just a constant table — ported as a plain
+    module-level array. `history`/`location` came from react-router-dom's
+    injected route props; ported with `useHistory`/`useLocation`, the
+    same hooks `Settings.tsx` already uses for the equivalent purpose.
+    Renamed the `AssetsContainer`/`AccountsContainer` import aliases to
+    `Assets`/`Accounts` (both functional components since their own
+    earlier slices; "Container" was a leftover from when they had a
+    separate `connect()`-wrapping file).
+  - `BlocktimeChart.jsx`/`TransactionChart.jsx` (the block-time and
+    tx-per-block charts on the Blocks tab) → kept as **class components**
+    rather than converted to hooks, a deliberate exception to this
+    phase's usual functional-component default. Both `shouldComponentUpdate`s
+    do an *imperative* Highcharts update (`chart.series[0].addPoint(...)`
+    + `chart.redraw()`) to animate new blocks in incrementally instead of
+    forcing a full chart rebuild on every new block — a side-effecting
+    SCU with no clean, low-risk hooks equivalent (a `React.memo`
+    comparator with side effects is itself an anti-pattern, and a
+    `useEffect`-based translation would change exactly when/how the chart
+    mutates relative to React's render cycle). Preserving this existing,
+    working behavior exactly mattered more than uniformity with the rest
+    of this phase, per AGENTS.md's "prefer minimal, well-tested diffs
+    over refactors." Legacy string refs (`ref="chart"`/`ref="trx_chart"`)
+    replaced with `React.createRef()`.
+  - Confirmed bug, preserved exactly in `BlocktimeChart.tsx` (not this
+    port's job to silently fix it): `_getData()` is declared with *no*
+    parameter and always reads `this.props` internally, yet both call
+    sites pass an argument (`nextProps` from `shouldComponentUpdate`,
+    `this.props` from `render`) as if it mattered — the `nextProps`
+    argument in `shouldComponentUpdate` is silently ignored, so that
+    pre-redraw data computation always uses the *current* props, not the
+    incoming ones. Confirmed as a genuine, isolated bug (not an
+    intentional pattern) by comparing against the sibling
+    `TransactionChart.jsx`, whose `_getData(props)` correctly takes and
+    uses its argument at both call sites. Also dropped a confirmed-dead
+    line in the same method: a `blockTimes.filter(a => a[0] >=
+    head_block - 30)` call whose result was never assigned back to
+    anything (the real trimming is the `takeRight(blockTimes, 30)` two
+    lines later) — since that was `head_block`'s only use anywhere in the
+    file, the prop is now unread by this component.
+  - Found while verifying `BlocktimeChart.tsx`'s new typed prop contract
+    against its caller: `Blocks.tsx` was passing `head_block_number` to
+    `<BlocktimeChart>`, which has only ever declared/destructured a
+    `head_block` prop (already unused either way, per above). Untyped JS
+    never caught this; the new `BlocktimeChartProps` interface does.
+    Renamed the call site's prop to `head_block` — zero behavioral
+    change, since the value was unread on the receiving end before and
+    after — documented inline in `Blocks.tsx`'s own header comment as a
+    follow-up from this slice.
+  - Added `react-highcharts` to `app/types/vendor-shims.d.ts` (first TS
+    port to import it).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only —
+    one `@typescript-eslint/no-unused-vars` line disabled inline for
+    `BlocktimeChart`'s intentionally-ignored, bug-preserving parameter,
+    documented at its declaration), `yarn typecheck` clean, full Jest
+    suite green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
+  - This closes out `app/components/Explorer/` entirely — no `.jsx`
+    files remain in that directory.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,

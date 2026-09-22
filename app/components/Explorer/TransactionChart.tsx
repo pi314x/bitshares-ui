@@ -1,21 +1,44 @@
-import React from "react";
+// TypeScript port of the legacy TransactionChart.jsx (Phase 2,
+// docs/UI_MIGRATION_PLAN.md). Kept as a class component rather than
+// converted to hooks, same reasoning as its sibling `BlocktimeChart.tsx`
+// in this directory: `shouldComponentUpdate` does an IMPERATIVE
+// Highcharts update (`chart.series[0].addPoint(...)` + `chart.redraw()`)
+// to animate new blocks in incrementally instead of forcing a full chart
+// rebuild - a side-effecting SCU with no clean, low-risk hooks
+// equivalent. The legacy string ref (`ref="trx_chart"`) is replaced with
+// `React.createRef()`.
+//
+// Unlike `BlocktimeChart.jsx`, this file's `_getData(props)` correctly
+// takes and uses its argument at both call sites - no bug to preserve
+// here.
+import * as React from "react";
 import ReactHighchart from "react-highcharts";
 import counterpart from "counterpart";
 
-class TransactionChart extends React.Component {
-    shouldComponentUpdate(nextProps) {
+interface TransactionChartProps {
+    blocks: any;
+    head_block: number;
+}
+
+export default class TransactionChart extends React.Component<
+    TransactionChartProps
+> {
+    chartRef = React.createRef<any>();
+
+    shouldComponentUpdate(nextProps: TransactionChartProps) {
         if (nextProps.blocks.size < 20) {
             return false;
         }
-        let chart = this.refs.trx_chart ? this.refs.trx_chart.chart : null;
+        const chart = this.chartRef.current
+            ? this.chartRef.current.chart
+            : null;
         if (chart && nextProps.blocks !== this.props.blocks) {
-            let {trxData, colors} = this._getData(nextProps);
-            let series = chart.series[0];
-            let finalValue = series.xData[series.xData.length - 1];
+            const {trxData, colors} = this._getData(nextProps);
+            const series = chart.series[0];
+            const finalValue = series.xData[series.xData.length - 1];
 
-            // console.log("chart:", chart, "series:", series.data, "finalValue:", finalValue);
             if (series.xData.length) {
-                trxData.forEach(point => {
+                trxData.forEach((point: any) => {
                     if (point[0] > finalValue) {
                         series.addPoint(
                             point,
@@ -37,27 +60,25 @@ class TransactionChart extends React.Component {
         );
     }
 
-    _getData(props) {
-        let {blocks, head_block} = props;
+    _getData(props: TransactionChartProps) {
+        const {blocks, head_block} = props;
 
-        let trxData = [];
         let max = 0;
-        trxData = blocks
-            .filter(a => {
+        const trxData = blocks
+            .filter((a: any) => {
                 return a.id >= head_block - 30;
             })
-            .sort((a, b) => {
+            .sort((a: any, b: any) => {
                 return a.id - b.id;
             })
             .takeLast(30)
-            .map(block => {
+            .map((block: any) => {
                 max = Math.max(block.transactions.length, max);
                 return [block.id, block.transactions.length];
             })
             .toArray();
 
-        let colors = trxData.map(entry => {
-            // console.log("entry:", entry);
+        const colors = trxData.map((entry: any) => {
             if (entry[1] <= 5) {
                 return "#50D2C2";
             } else if (entry[1] <= 10) {
@@ -77,13 +98,13 @@ class TransactionChart extends React.Component {
     }
 
     render() {
-        let {trxData, colors, max} = this._getData(this.props);
+        const {trxData, colors, max} = this._getData(this.props);
 
-        let tooltipLabel = counterpart.translate(
+        const tooltipLabel = counterpart.translate(
             "explorer.blocks.transactions"
         );
 
-        let config = {
+        const config = {
             chart: {
                 type: "column",
                 backgroundColor: "rgba(255, 0, 0, 0)",
@@ -110,7 +131,7 @@ class TransactionChart extends React.Component {
             },
             tooltip: {
                 shared: false,
-                formatter: function() {
+                formatter: function(this: any) {
                     return tooltipLabel + ": " + this.y;
                 }
             },
@@ -155,9 +176,7 @@ class TransactionChart extends React.Component {
         };
 
         return trxData.length ? (
-            <ReactHighchart ref="trx_chart" config={config} />
+            <ReactHighchart ref={this.chartRef} config={config} />
         ) : null;
     }
 }
-
-export default TransactionChart;

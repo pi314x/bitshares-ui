@@ -21,6 +21,15 @@
 // props consistently instead, which converges to fetching the same blocks
 // in practice (both compute the initial 20 blocks off essentially the same
 // head block number) and is more correct if anything, not less.
+//
+// Follow-up while porting `BlocktimeChart.jsx`/`TransactionChart.jsx`
+// themselves (their own slice): this file was passing
+// `head_block_number` to `<BlocktimeChart>`, which has only ever
+// declared/destructured a `head_block` prop (and, per that port's own
+// header comment, never actually reads it - it was already dead).
+// Renamed to `head_block` here so the newly-typed `BlocktimeChart.tsx`
+// prop contract type-checks; zero behavioral effect either way since the
+// value was unused on the receiving end before and after.
 import * as React from "react";
 import {Link, LinkProps} from "react-router-dom";
 import Immutable from "immutable";
@@ -436,7 +445,7 @@ export default function Blocks(props: BlocksProps) {
                         </div>
                         <BlocktimeChart
                             blockTimes={blockTimes}
-                            head_block_number={dynGlobalObject.get(
+                            head_block={dynGlobalObject.get(
                                 "head_block_number"
                             )}
                         />
