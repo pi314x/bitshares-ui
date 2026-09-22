@@ -4,7 +4,7 @@ import CommitteeMembers from "./CommitteeMembers";
 import FeesContainer from "../Blockchain/FeesContainer";
 import BlocksContainer from "./BlocksContainer";
 import AssetsContainer from "./AssetsContainer";
-import AccountsContainer from "./AccountsContainer";
+import AccountsContainer from "./Accounts";
 import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
 import MarketsContainer from "../Exchange/MarketsContainer";

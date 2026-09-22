@@ -622,6 +622,28 @@ in CI and the legacy code it replaces is deleted.
     shows only the 2 known pre-existing `charting_library` errors.
   - Still deferred: `Assets.jsx`, `LiquidityPools.jsx`, `Accounts.jsx`
     (Explorer's remaining sub-tables), and the Settings subcomponents.
+- Eighth slice: `Explorer/Accounts.jsx` (the "/explorer/accounts" tab's
+  account search) and its trivial `AccountsContainer.jsx` wrapper got the
+  real `.jsx`→`.tsx` rewrite (merged into one file, `AccountsContainer`
+  deleted — `Explorer.jsx` now imports `Accounts.tsx` directly under the
+  same local name it already used). Same lower-risk category as the
+  other Explorer tables.
+  - The legacy class's `_onAddContact`/`_onRemoveContact` called
+    `this.forceUpdate()` after dispatching to `AccountStore`, because its
+    `shouldComponentUpdate` only checked `searchAccounts`/`searchTerm`/
+    `isLoading` — not `accountContacts` (read fresh from
+    `AccountStore.getState()` every render) or `rowsOnPage`, so without
+    `forceUpdate` those handlers plus `handleRowsChange` wouldn't have
+    triggered a re-render at all. This port doesn't replicate that
+    `shouldComponentUpdate` gate (same tradeoff as the rest of this
+    phase), so state updates already re-render; `accountContacts`
+    specifically now comes through `useAltStore(AccountStore)` instead
+    of a direct `getState()` read + `forceUpdate()`, which is the one
+    place a plain "just drop forceUpdate" port would have silently
+    broken the two contact-toggle buttons.
+  - Verified: `eslint` clean, `yarn typecheck` clean, full Jest suite
+    green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
