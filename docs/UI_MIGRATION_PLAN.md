@@ -774,6 +774,42 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, one expected `any` warning),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Thirteenth slice: `Settings/FeeAssetSettings.jsx` (the "current fee
+  asset" display + "change default fee asset" button embedded in
+  `SettingsEntry`'s `fee_asset` row) got the real `.jsx`→`.tsx` rewrite.
+  Read-only display plus a local modal toggle — the actual fee-asset
+  preference write happens inside `SetDefaultFeeAssetModal` (unchanged,
+  reused as-is), not here.
+  - The legacy class only ever used its `fee_asset` prop (from the
+    alt-react `connect(..., {listenTo: [SettingsStore], getProps})`
+    wrapper) once, in the constructor, to seed `state.current_asset` —
+    there's no lifecycle method re-deriving it later, so subsequent
+    `fee_asset` setting changes never updated this component's
+    `current_asset` after mount (only the modal's own `onChange` did).
+    Ported with `useState(() => ...)`'s lazy initializer, which runs
+    exactly once on mount, matching that same one-time seed.
+  - The legacy `shouldComponentUpdate` always returned `true`, so this
+    component re-rendered on every SettingsStore change, even unrelated
+    ones — which, though clearly incidental rather than deliberate
+    design, was this component's only mechanism for ever re-reading
+    `ChainStore.getAsset(current_asset)` after mount if that asset object
+    became available asynchronously. Kept `useAltStore(SettingsStore)`
+    (discarding its returned value) to preserve that same incidental
+    re-render trigger, rather than either dropping it (behavior-changing)
+    or adding a ChainStore-tick mechanism the original never had
+    (over-fixing beyond what a faithful port calls for).
+  - Verified: `eslint` clean (0 errors, one expected `any` warning),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
+- Fourteenth slice: `Settings/ResetSettings.jsx` (the Settings screen's
+  "reset" tab — a button that clears all stored settings and navigates
+  away) got the real `.jsx`→`.tsx` rewrite. Straightforward hooks port —
+  local `message`/timer state and the `willTransitionTo`/
+  `SettingsActions.clearSettings` calls carried over unchanged, no dead
+  code found. Local UI-state-only, no wallet or signing involvement.
+  - Verified: `eslint` clean (0 errors, 0 warnings), `yarn typecheck`
+    clean, full Jest suite green (50/50), full webpack build shows only
+    the 2 known pre-existing `charting_library` errors.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
