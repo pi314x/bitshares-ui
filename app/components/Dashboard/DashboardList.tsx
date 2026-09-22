@@ -173,15 +173,15 @@ export default function DashboardList(props: DashboardListProps) {
 
                 const openOrders = aggregateOpenOrders(
                     account.get("orders"),
-                    ChainStore.getObject
+                    id => ChainStore.getObject(id)
                 );
                 const {collateral, debt} = aggregateCollateralAndDebt(
                     account.get("call_orders"),
-                    ChainStore.getObject
+                    id => ChainStore.getObject(id)
                 );
                 const balanceList = resolveAccountBalanceIds(
                     account.get("balances"),
-                    ChainStore.getObject
+                    id => ChainStore.getObject(id)
                 );
 
                 const isMyAccount =

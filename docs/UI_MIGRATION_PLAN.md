@@ -543,6 +543,54 @@ in CI and the legacy code it replaces is deleted.
     shows only the 2 known pre-existing `charting_library` errors.
   - Still deferred: `Assets.jsx`, `Witnesses.jsx`, `LiquidityPools.jsx`,
     `Accounts.jsx`, and the Settings subcomponents.
+- **Bug fix, found via manual screenshot verification of the live-data
+  rewrites (not by CI):** `Dashboard/DashboardList.tsx` (third slice)
+  passed the bare `ChainStore.getObject` method reference into
+  `aggregateOpenOrders`/`aggregateCollateralAndDebt`/
+  `resolveAccountBalanceIds` instead of `id => ChainStore.getObject(id)`.
+  `ChainStore`'s methods read `this.objects_by_id` internally, so the
+  unbound reference threw `Cannot read properties of undefined (reading
+  'objects_by_id')` the moment those functions' `.forEach` callback
+  invoked it as a plain function call — for any account that actually
+  has orders, call orders, or balances (i.e. every real, populated
+  account; an empty account never called it, so the bug was invisible
+  for those). Caught by rendering the real components against real
+  captured mainnet data in a throwaway screenshot harness (not committed
+  — see below) to visually verify this and the fifth/sixth slices; the
+  existing `balanceCalculations-test.ts` unit tests couldn't have caught
+  this because they pass their own mock `getObject`, never the real
+  `ChainStore.getObject` the way the component actually does.
+  - Fixed by wrapping each call site in an arrow function.
+  - Added `app/__tests__/next/dashboard/DashboardList-test.tsx`: renders
+    `DashboardList` against the real `bitsharesjs` `ChainStore` (seeded
+    with the same `alt-org` fixture `balanceCalculations-test.ts` uses),
+    the same way the component is used in production. Verified this
+    test actually catches the bug by reverting the fix locally and
+    confirming the test fails with the exact original error, then
+    restoring the fix.
+  - Verified: `eslint` clean, `yarn typecheck` clean, full Jest suite
+    green (50/50, up from 49/13 — 14 suites), full webpack build shows
+    only the 2 known pre-existing `charting_library` errors.
+  - The throwaway screenshot harness itself (a temporary
+    `app/next/_livepreview/` entry that seeded `ChainStore`/
+    `BlockchainStore` directly with real captured mainnet data and
+    rendered `CommitteeMembers`, `Blocks`, `DashboardList`, and
+    `Settings` side by side) is **not** committed — it was deleted after
+    use. It's recorded here because it's how this bug was actually found
+    (screenshots of the migrated screens, requested directly, caught
+    what the automated test suite didn't) and because reconstructing it
+    is cheap if another slice needs the same visual sanity check:
+    `ChainStore._updateObject(rawObject)` seeds chain objects directly
+    (`_subTo(type, id)` first for `committee_member`/`witness` types,
+    which `_updateObject` otherwise silently drops); a class-based Alt.js
+    store's *real* mutable state is reachable at `store.state` (its
+    public export is a wrapper `AltStore` instance, not the class
+    instance — direct property assignment on the export is invisible to
+    `getState()`); `Apis.instance` needs stubbing to a no-op so any
+    unseeded live-fetch attempt fails silently instead of throwing
+    synchronously and crashing the render; and `IntlProvider` needs to
+    wrap the tree for any component using `FormattedDate`/
+    `FormattedNumber`.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
