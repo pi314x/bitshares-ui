@@ -1471,12 +1471,82 @@ in CI and the legacy code it replaces is deleted.
 that group (`AccountPermissions.jsx`, `AccountPermissionsList.jsx`,
 `AccountPermissionsMigrate.jsx`, `AccountVoting.jsx`, and the three
 Voting tab panes plus `VotingAccountsList.jsx`) has been ported, with the
-one orphaned file (`AccountVotingProxy.jsx`) removed outright. Remaining
-Phase 3 scope: `AccountAssetCreate.jsx` (1374 lines) and
-`AccountAssetUpdate.jsx` (1747 lines) — both large, and both, unlike
-everything ported so far in this phase, submit real `asset_create`/
-`asset_update` transactions themselves rather than delegating to a
-shared `ApplicationApi` call assembled by a single central file.
+one orphaned file (`AccountVotingProxy.jsx`) removed outright.
+
+- Eighth slice: `Account/AccountAssetCreate.jsx` (1374 lines) got the
+  real `.jsx`→`.tsx` rewrite — the "create a new user-issued asset" form
+  (primary details, description, optional bitAsset/MPA options,
+  permissions, flags). Unlike every file ported so far in this phase,
+  `createAsset` (the confirm button's handler) builds and submits the
+  real `asset_create` transaction itself, via `AssetActions.createAsset`,
+  reused unchanged.
+  - State-management design differs from this family's other slices
+    (`AccountPermissions.tsx`/`AccountVoting.tsx`, both a
+    `useState<any>({})` + shallow-merge `mergeState`): this class
+    overwhelmingly favors *directly mutating* `this.state`'s nested
+    objects (`update`, `bitasset_opts`, `core_exchange_rate`,
+    `flagBooleans`, `permissionBooleans`) in place and calling
+    `this.forceUpdate()`, rather than going through `setState`'s merge —
+    and even its few genuine `setState({field: value})` calls almost
+    always pass back a reference that was *already* mutated in place
+    first (e.g. the flag/permission toggles). Rather than force this into
+    the `useState`+`mergeState` shape field by field, state is held in a
+    single `useRef` (matching a class instance's `this.state` object
+    identity/mutability exactly) plus a small `useForceUpdate` helper —
+    `updateState(partial)` (`Object.assign` into the ref, then force a
+    re-render) replicates `setState`'s observable shallow-merge behavior
+    exactly, since nothing in this file ever compares the whole state
+    object by reference.
+  - The one `this.setState(update, callback)` use (cursor-position
+    restoration after typing in the symbol/max_supply fields, so the
+    caret doesn't jump to the end on every keystroke) needed a real hooks
+    adaptation: the callback must run *after* the DOM reflects the new
+    input value, to compute the right selection range. Replicated with a
+    ref holding the pending restore request plus a no-dependency-array
+    `useEffect` (runs after every commit) that performs and clears it
+    when set — the closest hooks equivalent to `setState`'s post-commit
+    callback timing.
+  - Structural change (same substitution used throughout this migration):
+    `BindToChainState(AccountAssetCreate)` (`core`/`globalObject`, both
+    `.isRequired`) and `BindToChainState(BitAssetOptions)` (`backingAsset`,
+    also `.isRequired`) each replaced with a Container + component split.
+  - Confirmed dead, dropped (verified by reading the whole file and
+    grepping every method name against the rest of the file and
+    `AccountAssetUpdate.jsx`, the only other importer of `BitAssetOptions`):
+    `_hasChanged()`, `_onInputCoreAsset()`, and `_onFoundCoreAsset()` — all
+    three defined, none ever called or bound to any JSX element anywhere
+    (the live core-exchange-rate handler is the separate, actually-wired
+    `_onCoreRateChange`). Losing `_onFoundCoreAsset` also removes a
+    pre-existing bug that would otherwise need preserving: it read a
+    top-level `state.max_supply` that never exists (the real field is
+    nested at `state.update.max_supply`) — moot, since the method was
+    unreachable. Also dropped: three local variables in the original
+    `resetState(props)` (`precision`, `corePrecision`,
+    `coreRateBaseAssetName`) computed but never read, which meant
+    `resetState` no longer needed a `props` parameter at all; the
+    `ref="appTables"` on the render root (never read via `this.refs`);
+    `BitAssetOptions`'s `isUpdate` propType (never read internally, and
+    never actually supplied by either caller); and a stale, already-
+    superseded commented-out overflow-check block inside the
+    `max_supply` input handler.
+  - Two purely mechanical TS-driven adjustments, verified to have zero
+    behavioral effect: `rows="1"` (string) on the description textarea
+    became `rows={1}` (number); the original also had `rows="1"` on two
+    plain `<input type="text">` elements specifically — not a valid HTML
+    attribute for `<input>` at all (browsers silently ignore it there)
+    and not a valid React prop either — dropped entirely rather than
+    cast, an inert attribute either way.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors
+    (and confirms `AccountAssetUpdate.jsx`'s still-legacy `import
+    {BitAssetOptions} from "./AccountAssetCreate"` resolves cleanly
+    against the new module).
+
+Remaining Phase 3 scope: `AccountAssetUpdate.jsx` (1747 lines) — the
+"update an existing user-issued asset" counterpart, which, like
+`AccountAssetCreate.jsx`, submits its own `asset_update` transaction
+rather than delegating to a shared `ApplicationApi` call.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
