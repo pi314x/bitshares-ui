@@ -23,14 +23,21 @@
 // this file is a *local* variable computed per-row inside the
 // items-to-rows `.map()`, unrelated to the prop of the same name.
 //
-// `validateAccount`, `label`, `placeholder`, and `tabIndex` are also
-// confirmed dead in the exact same way (only ever read inside the now-
-// removed `onItemAccountChange`, or not read at all) - but since both
-// current callers (`Committee.tsx`/`Witnesses.tsx`) still forward them
-// from their own (still-legacy) parent `AccountVoting.jsx`, they're kept
-// as accepted-but-unused props here rather than chasing the dead-code
-// cascade up into a 900+ line file outside this slice's scope. Revisit
-// when `AccountVoting.jsx` itself gets ported.
+// `label` and `tabIndex` are also confirmed dead internally (only ever
+// read inside the now-removed `onItemAccountChange`, or not read at all)
+// but are kept as accepted-but-unused props: both current callers
+// (`Committee.tsx`/`Witnesses.tsx`) still actively supply real values for
+// them.
+//
+// Revisited now that `AccountVoting.jsx` (the ultimate source of these
+// props, via `Committee.tsx`/`Witnesses.tsx`) has itself been ported:
+// `validateAccount` and `placeholder` are now confirmed dead end to end,
+// not just internally - `AccountVoting.tsx` never computes/passes a
+// `validateAccount`-equivalent value at all (the closure it used to
+// build, `validateAccountHandler`, was itself provably dead - see
+// `AccountVoting.tsx`'s header comment), and no caller ever supplied
+// `placeholder`. Removed from the props interface entirely rather than
+// kept as accepted-but-unused, since nothing supplies them anymore.
 
 import * as React from "react";
 import Translate from "react-translate-component";
@@ -267,9 +274,7 @@ interface VotingAccountsListProps {
     items: any;
     onAddItem: (...args: any[]) => any;
     onRemoveItem: (...args: any[]) => any;
-    validateAccount?: (...args: any[]) => any;
     label: string;
-    placeholder?: string;
     tabIndex?: number;
     filterSearch?: string | null;
     type: string;

@@ -1381,6 +1381,102 @@ in CI and the legacy code it replaces is deleted.
     `validateAccount`'s intentionally-unused parameters), `yarn
     typecheck` clean, full Jest suite green (50/50), full webpack build
     shows only the 2 known pre-existing `charting_library` errors.
+- Seventh slice, and the last in the Permissions/Voting family:
+  `Account/AccountVoting.jsx` (911 lines) got the real `.jsx`→`.tsx`
+  rewrite — the parent orchestrator every already-ported Voting-family
+  file (`Committee.tsx`/`Witnesses.tsx`/`Workers.tsx`/
+  `VotingAccountsList.tsx`) depended on for real vote-adding/removing
+  logic. Its `publish` (called from `onPublish`/`onRemoveProxy`) submits
+  the real `account_update` operation via `ApplicationApi.updateAccount`,
+  reused unchanged — same wallet-security-sensitive care as the rest of
+  this family.
+  - Structural change (the same substitution this migration has applied
+    to every other legacy `BindToChainState`-wrapped file): the original
+    `BindToChainState(AccountVoting)` wrap — resolving `initialBudget`/
+    `globalObject`/`proxy` (all `ChainTypes...isRequired`) and gating
+    render behind a `<span/>` placeholder until every required prop
+    resolves — is collapsed into an `AccountVotingContainer` + `AccountVoting`
+    split (the same split used for `Asset.tsx`/`AssetContainer`): the
+    container resolves all three via `ChainStore.getObject`/`getAccount`
+    under `useChainStoreTick()` and renders the placeholder itself,
+    preserving the original guarantee that the actual component's
+    state-seeding logic (formerly the constructor, now `useState`'s lazy
+    initializer) never runs against an unresolved chain object. The
+    `withRouter(FillMissingProps)` wrap became a plain `FillMissingProps`
+    function — `history`/`location` are read with `useHistory()`/
+    `useLocation()` directly inside `AccountVoting` instead.
+  - `all_witnesses`/`all_committee` are the one exception to the
+    established flat-state-bag+`mergeState` pattern (used for everything
+    else, ~20 fields): the legacy `_getVoteObjects` intentionally bypasses
+    `setState` entirely, mutating `this.state.all_${type}` directly and
+    calling `this.forceUpdate()` to pick up the mutation — a real,
+    deliberate anti-pattern in the original, not a bug to "fix" into a
+    normal `setState`. Replicated with `useRef` (the mutation target) plus
+    a small `useForceUpdate` helper (a dummy counter bumped to force a
+    re-render), preserving the exact mutate-then-force-rerender behavior.
+  - `UNSAFE_componentWillMount` + `componentDidMount` (five calls total,
+    none observably depending on an intervening render) collapsed into one
+    mount-only effect. `UNSAFE_componentWillReceiveProps`'s two behaviors
+    split: the account-changed branch became a `[account]`-keyed effect
+    guarded to skip its first (mount) run; the unconditional
+    `getBudgetObject()` call (fired on *every* prop change, not just
+    `account`) has no exact hooks equivalent — approximated with an effect
+    keyed on `[account, location.pathname]`, the two props that actually
+    change while this component stays mounted in practice (account
+    switches, and tab switches via `/account/:name/voting/:tab`, which
+    change `location.pathname` without remounting). `settings`/
+    `viewSettings` changing without triggering this approximation is a
+    known, accepted narrowing — `getBudgetObject` is a cheap, idempotent,
+    display-only refresh that never touches the vote-submission
+    transaction.
+  - Wherever the original used `this.setState(partial, callback)`
+    specifically so the callback would see the just-applied value
+    (`onReset`, `onProxyAccountFound`, `getBudgetObject`'s own recursive
+    self-calls), replicated by passing that already-known value explicitly
+    as a parameter override instead of emulating `setState`'s callback
+    timing with an effect — functionally identical, since in each case the
+    callback only ever read the single field the preceding `setState` had
+    just written.
+  - Confirmed dead, dropped: the `this.refs.voting_proxy` guard at the top
+    of `onReset` (no such ref exists anywhere in the file); `onCreateTicket`
+    and `onClearProxy` (both defined, neither ever called or passed as a
+    prop anywhere); and `validateAccount`/the `validateAccountHandler`
+    closure built from it — deferred exactly to this slice by
+    `VotingAccountsList.tsx`'s own earlier comment ("revisit when
+    AccountVoting.jsx itself gets ported"). With the full chain now
+    traceable (`AccountVoting` → `Committee`/`Witnesses`
+    (`validateAccountHandler` prop) → `VotingAccountsList`
+    (`validateAccount` prop)), confirmed dead at every link and removed
+    end to end: dropped from `AccountVoting.tsx`, the now-fully-dead
+    `validateAccountHandler` prop removed from `Committee.tsx`/
+    `Witnesses.tsx`, and `validateAccount`/`placeholder` (the latter never
+    supplied by any caller either) removed from `VotingAccountsList.tsx`'s
+    prop interface. `label`/`tabIndex` stay as accepted-but-unused there —
+    both are still actively supplied real values by
+    `Committee.tsx`/`Witnesses.tsx`.
+  - One pre-existing bug preserved exactly, not fixed: `onReset` restores
+    `current_proxy_input: s.prev_proxy_input` — but no field named
+    `prev_proxy_input` is ever set anywhere in the file (only
+    `prev_proxy_account_id` is maintained), so this always evaluates to
+    `undefined` — "reset" clears the proxy search box's text rather than
+    restoring its previous contents. Kept byte-for-byte identical, since
+    fixing it either way is a judgment call on intent this port isn't the
+    place to make.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only,
+    across `AccountVoting.tsx` and the three touched Voting-family files),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
+
+**Phase 3's Permissions/Voting family is now complete** — every file in
+that group (`AccountPermissions.jsx`, `AccountPermissionsList.jsx`,
+`AccountPermissionsMigrate.jsx`, `AccountVoting.jsx`, and the three
+Voting tab panes plus `VotingAccountsList.jsx`) has been ported, with the
+one orphaned file (`AccountVotingProxy.jsx`) removed outright. Remaining
+Phase 3 scope: `AccountAssetCreate.jsx` (1374 lines) and
+`AccountAssetUpdate.jsx` (1747 lines) — both large, and both, unlike
+everything ported so far in this phase, submit real `asset_create`/
+`asset_update` transactions themselves rather than delegating to a
+shared `ApplicationApi` call assembled by a single central file.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its

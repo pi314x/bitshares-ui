@@ -4,6 +4,12 @@
 // local-modal-toggle orchestration; the actual vote-adding/removing
 // logic lives in the caller-supplied handler props, and the
 // join-committee flow is delegated unchanged to `JoinCommitteeModal`.
+//
+// Updated when `AccountVoting.jsx` (this file's only caller) was itself
+// ported: dropped the `validateAccountHandler` prop, confirmed fully dead
+// end to end (computed in `AccountVoting`, forwarded here to
+// `VotingAccountsList`'s `validateAccount` prop, which never reads it -
+// see `AccountVoting.tsx`'s header comment for the full trace).
 import * as React from "react";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
@@ -17,7 +23,6 @@ const TypedSearchInput = SearchInput as React.ComponentType<any>;
 
 interface CommitteeProps {
     onFilterChange: (e: any) => void;
-    validateAccountHandler: (...args: any[]) => any;
     addCommitteeHandler: (...args: any[]) => any;
     removeCommitteeHandler: (...args: any[]) => any;
     all_committee: any;
@@ -32,7 +37,6 @@ interface CommitteeProps {
 
 export default function Committee({
     onFilterChange,
-    validateAccountHandler,
     addCommitteeHandler,
     removeCommitteeHandler,
     all_committee,
@@ -77,7 +81,6 @@ export default function Committee({
                     type="committee"
                     label="account.votes.add_committee_label"
                     items={all_committee}
-                    validateAccount={validateAccountHandler}
                     onAddItem={addCommitteeHandler}
                     onRemoveItem={removeCommitteeHandler}
                     tabIndex={hasProxy ? -1 : 3}

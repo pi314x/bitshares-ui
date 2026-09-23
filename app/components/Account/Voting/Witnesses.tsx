@@ -4,6 +4,12 @@
 // modal-toggle orchestration; the actual vote-adding/removing logic
 // lives in the caller-supplied handler props, and the join/update-
 // witness flow is delegated unchanged to `JoinWitnessesModal`.
+//
+// Updated when `AccountVoting.jsx` (this file's only caller) was itself
+// ported: dropped the `validateAccountHandler` prop, confirmed fully dead
+// end to end (computed in `AccountVoting`, forwarded here to
+// `VotingAccountsList`'s `validateAccount` prop, which never reads it -
+// see `AccountVoting.tsx`'s header comment for the full trace).
 import * as React from "react";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
@@ -17,7 +23,6 @@ const TypedSearchInput = SearchInput as React.ComponentType<any>;
 
 interface WitnessesProps {
     onFilterChange: (e: any) => void;
-    validateAccountHandler: (...args: any[]) => any;
     addWitnessHandler: (...args: any[]) => any;
     removeWitnessHandler: (...args: any[]) => any;
     all_witnesses: any;
@@ -32,7 +37,6 @@ interface WitnessesProps {
 
 export default function Witnesses({
     onFilterChange,
-    validateAccountHandler,
     addWitnessHandler,
     removeWitnessHandler,
     all_witnesses,
@@ -91,7 +95,6 @@ export default function Witnesses({
                     type="witness"
                     label="account.votes.add_witness_label"
                     items={all_witnesses}
-                    validateAccount={validateAccountHandler}
                     onAddItem={addWitnessHandler}
                     onRemoveItem={removeWitnessHandler}
                     tabIndex={hasProxy ? -1 : 2}
