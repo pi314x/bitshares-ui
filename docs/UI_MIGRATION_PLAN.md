@@ -1261,6 +1261,21 @@ in CI and the legacy code it replaces is deleted.
     still type-check cleanly against the new prop contract), full Jest
     suite green (50/50), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Fourth "slice" was a deletion, not a port: `Account/AccountVotingProxy.jsx`
+  (256 lines) turned out to be entirely orphaned — a case-insensitive
+  grep across the whole `app/` tree found zero references to it anywhere
+  outside its own file (no imports, no dynamic-import strings). Its
+  `static propTypes` block even references a `PropTypes` global the file
+  never imports, which would throw `ReferenceError: PropTypes is not
+  defined` the moment the module was ever evaluated — moot in practice,
+  since nothing ever imports it, so webpack never includes it in any
+  bundle. `AccountVoting.jsx` (not yet ported) implements the live
+  account-voting-proxy feature entirely inline instead (92 references to
+  "proxy" in that file). Removed rather than ported — translating dead
+  code to TypeScript would add a maintenance burden for zero benefit.
+  Verified: full Jest suite green (50/50), full webpack build shows only
+  the 2 known pre-existing `charting_library` errors (confirming nothing
+  else referenced it).
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
