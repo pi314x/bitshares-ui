@@ -1314,6 +1314,73 @@ in CI and the legacy code it replaces is deleted.
     the intentionally-empty `onSubmit`, documented at its declaration),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Sixth slice: `Account/AccountPermissions.jsx` (546 lines) got the real
+  `.jsx`→`.tsx` rewrite — the central wallet-security-sensitive file this
+  whole family of slices was building up to. Its `onPublish` assembles
+  and submits the real `account_update` operation via
+  `ApplicationApi.updateAccount`, unchanged; `createPaperWalletAsPDF`
+  (the "create paperwallet" button) is likewise reused completely
+  unchanged.
+  - The legacy class kept ~25 related fields (active/owner
+    accounts/keys/addresses/weights/thresholds, `memo_key`, a `prev_`
+    shadow copy of each for change-detection, and the password-derived
+    candidate keys) as one flat `this.state` object, updated via React
+    class `setState`'s shallow-merge semantics — `updateAccountData`/
+    `onReset` each replace many fields in one call, and `onAddItem`
+    directly *mutates* the `*_weights` plain-object sub-field in place
+    before a separate `setState` call for just the list array (relying
+    on object-reference mutation being visible on next read, not on that
+    field going through its own `setState`). Replicated with a single
+    `useState<any>({})` plus a small `mergeState` helper doing the same
+    shallow merge `this.setState(partialObject)` did — kept as one state
+    bag rather than decomposed into ~25 independent hooks, to preserve
+    that mutation-then-sibling-setState pattern exactly and match how
+    the original genuinely modeled this data (one cohesive object), not
+    accidentally-coupled fields split apart by a mechanical translation.
+  - `UNSAFE_componentWillMount` did two things: seed state from
+    `account`, and pre-warm `accountUtils.getFinalFeeAsset(account,
+    "account_update")` (return value discarded — almost certainly a
+    cache-warming call, since `onPublish` calls the same function again
+    by id later and needs a synchronous result).
+    `UNSAFE_componentWillReceiveProps` re-seeded state whenever the
+    `account` prop changed, but did *not* repeat the fee-asset pre-warm.
+    Split into two effects to preserve that exact asymmetry: one
+    `useEffect` on `[account]` (mount + every subsequent account change,
+    matching the reseed), a separate `useEffect(() => {...}, [])` for the
+    pre-warm (mount-only, never repeated on account change — even though
+    that looks like it could be a gap when navigating between two
+    different accounts' permissions pages, faithfully preserved rather
+    than "fixed").
+  - A new `if (!state.active_accounts) { return null; }` guard was added
+    before the main render — not present in the original, and not a
+    behavior change to flag, but a necessary timing adaptation: the
+    class's `UNSAFE_componentWillMount` ran synchronously *before* first
+    render, so `this.state` was always populated by the time `render()`
+    first ran; hooks' `useEffect` runs *after* first paint, so without
+    the guard the initial render would call `.map()`/`.filter()` on
+    `undefined` state fields and crash. Renders `null` for one frame
+    instead, matching the original's actual on-screen result once the
+    effect runs.
+  - Confirmed dead, dropped: the string refs `ref="appTables"` and
+    `ref="memo_key"` — neither was ever read via `this.refs` anywhere in
+    the file.
+  - `validateAccount(collection, account)` is a real, actively-passed
+    callback (to `AccountPermissionsList`'s `validateAccount` prop), but
+    its body is `return null;` unconditionally, ignoring both
+    parameters — the "already in this permission list" duplicate-account
+    validation is effectively a disabled no-op stub in the original too,
+    not something this port restores or removes; kept exactly as-is
+    (with an inline `eslint-disable-next-line` for the now-flagged
+    unused parameters, since plain JS never enforced that).
+  - One purely mechanical TS-driven adjustment: the threshold `<input>`'s
+    `size="5"` (string, valid HTML/legacy JSX) became `size={5}` (number)
+    since React's TS types for `<input>` type `size` as numeric —
+    identical rendered/parsed value, zero behavioral difference.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only —
+    plus one `@typescript-eslint/no-unused-vars` disabled inline for
+    `validateAccount`'s intentionally-unused parameters), `yarn
+    typecheck` clean, full Jest suite green (50/50), full webpack build
+    shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
