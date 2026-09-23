@@ -1199,6 +1199,32 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Second slice: `Account/AccountPermissionsList.jsx` (293 lines — a
+  reusable list-building UI for one authority's accounts/keys/addresses
+  and their weights, used inside `AccountPermissions.jsx`, not yet
+  ported) got the real `.jsx`→`.tsx` rewrite. This component itself
+  doesn't build or submit any transaction — it only maintains local
+  selection/input state and calls back into caller-supplied `onAddItem`/
+  `onRemoveItem`/`validateAccount` props; `AccountPermissions.jsx` is
+  where the actual `account_update` operation gets assembled and
+  published, and stays unported (and on the extra-care list) for its own
+  slice.
+  - The legacy `accounts` prop was typed `ChainTypes.ChainObjectsList`
+    and resolved by the outer `BindToChainState(AccountPermissionsList,
+    {autosubscribe: false})` wrap before this component's own render ran.
+    Replicated by accepting the same raw id list `AccountPermissions.jsx`
+    already computes and resolving each id via `ChainStore.getObject`
+    directly (the same generic per-item resolution `ChainObjectsList`
+    itself does under the hood), gated by `useChainStoreTick()`. `keys`/
+    `addresses` were never chain-resolved in the original either (no
+    propType declared for them at all, just plain prop arrays of pubkey/
+    address strings) — unchanged.
+  - `AccountPermissionRow`'s `shouldComponentUpdate` (shallow prop-
+    equality gate) dropped, same as this migration's other legacy SCU
+    gates elsewhere — perf-only, doesn't change output.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
