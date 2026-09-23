@@ -1644,6 +1644,36 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   these — with a second reviewer, per the risk register below — before
   relying on this suite as a regression net for the Exchange rewrite.
 
+**Progress:**
+- Starting-point decision: given the scale here (`Exchange.jsx` alone is
+  3,683 lines — over 2x the largest file ported in Phase 3 — and the
+  `app/components/Exchange` directory totals ~16,000 lines across 28
+  files), plus this phase's explicit call to introduce Redux Toolkit (a
+  new dependency/architecture not used anywhere else in this migration
+  yet), starting directly on `Exchange.jsx` or the Redux store was judged
+  too large a first step to take without an established foothold in this
+  directory. Confirmed with the user: start with the smallest, most
+  self-contained satellite component first, matching how both Phase 2 and
+  Phase 3 opened with a lower-risk on-ramp before their largest files.
+  Redux Toolkit's introduction is deferred to a later slice, once there's
+  concrete evidence (from porting a few of the read-heavy satellites)
+  about `MarketsStore`'s actual update-frequency/consumer shape. Also
+  noted: the plan's `QuickTrade.jsx` no longer exists in the codebase —
+  trading-form logic now lives in `BuySell.jsx`/`ScaledOrder.jsx`/
+  `ScaledOrderTab.jsx` instead; the file list above is stale and this
+  phase's actual scope will be re-derived from the current directory
+  listing as slices proceed.
+- First slice: `Exchange/ConfirmOrderModal.jsx` (65 lines) got the real
+  `.jsx`→`.tsx` rewrite — a purely presentational confirmation dialog
+  shown before an order that would cancel/replace existing orders; no
+  chain state, no store, just props in and two callbacks
+  (`onForce`/`hideModal`) out. Chosen as the lowest-risk possible on-ramp
+  into this phase. Straightforward mechanical translation, no logic
+  changes, no dead code found.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
+
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
   brainkey creation, withdraw modals, HTLC.
