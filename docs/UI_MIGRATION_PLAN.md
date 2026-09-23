@@ -1165,6 +1165,40 @@ in CI and the legacy code it replaces is deleted.
   `AccountAssetUpdate.jsx`), notifications.
 - Exit criteria: legacy equivalents deleted; unit + integration tests for
   every form/validation path.
+- Unlike Phase 2, this phase is *not* scoped as signing-free — several
+  files here build and submit real transactions themselves
+  (`AccountAssetCreate.jsx`/`AccountAssetUpdate.jsx` most obviously;
+  `AccountPermissions.jsx`'s `onPublish` almost certainly submits an
+  `account_update`). Each slice's risk tier is assessed on its own
+  merits rather than assumed from the phase, same discipline Phase 2
+  applied to `Asset.jsx`.
+
+**Progress:**
+- First slice: the Account Voting screen's three tab panes,
+  `Account/Voting/Committee.jsx`, `Witnesses.jsx`, `Workers.jsx` (84/101/
+  213 lines), got the real `.jsx`→`.tsx` rewrite. Chosen as the lower-
+  risk on-ramp into this phase: pure display/local-modal-toggle
+  orchestration, no transaction-building of their own — the actual vote-
+  adding/removing logic lives in caller-supplied handler props from
+  `AccountVoting.jsx` (911 lines, not yet ported, still the files'
+  common parent), and the join/create-witness/committee flows are
+  delegated unchanged to `JoinWitnessesModal`/`JoinCommitteeModal`.
+  - Confirmed dead, dropped in `Workers.tsx`: the legacy
+    `shouldComponentUpdate` compared `nextProps.workerTableIndex`
+    against `this.state.workerTableIndex` as its final OR-condition —
+    but `workerTableIndex` was never actually destructured from props
+    anywhere in the file (only ever set via local state), and grepping
+    the component's only caller (`AccountVoting.jsx`) confirms it never
+    passes a `workerTableIndex` prop either. That means
+    `nextProps.workerTableIndex` was always `undefined` while
+    `this.state.workerTableIndex` was always a real number, so that
+    condition — and therefore the whole SCU, being OR'd with four others
+    — always evaluated `true`. The gate was already a complete no-op
+    (identical to not having `shouldComponentUpdate` at all), not a
+    working optimization this port needed to replicate.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
