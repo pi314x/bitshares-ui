@@ -1276,6 +1276,44 @@ in CI and the legacy code it replaces is deleted.
   Verified: full Jest suite green (50/50), full webpack build shows only
   the 2 known pre-existing `charting_library` errors (confirming nothing
   else referenced it).
+- Fifth slice: `Account/AccountPermissionsMigrate.jsx` (214 lines) got
+  the real `.jsx`→`.tsx` rewrite — the first genuinely
+  wallet-security-sensitive file in Phase 3, handled with the same extra
+  care as this migration's wallet-tier Settings files. It calls
+  `WalletDb.generateKeyFromPassword` directly to derive candidate
+  active/owner/memo keys from a user-entered password, for migrating an
+  account to a password-derived key model. The actual key-generation
+  math and the eventual `account_update` submission both stay entirely
+  inside `WalletDb`/the caller-supplied `onAddActive`/`onAddOwner`/
+  `onSetMemo`/`onRemoveActive`/`onRemoveOwner` props (all in the
+  not-yet-ported `AccountPermissions.jsx`) — this file only derives
+  candidate keys for display and forwards user actions to those
+  callbacks, unchanged.
+  - One pre-existing quirk preserved exactly, not "fixed": in
+    `_onUseKey`, the remove-branch handler lookup
+    (`role === "active" ? "onRemoveActive" : "onRemoveOwner"`) falls
+    through to `onRemoveOwner` for `role === "memo"`, which looks like a
+    bug at a glance. In practice it's unreachable — the memo row's "use"
+    button is only ever visible (and thus clickable) exactly when the
+    add branch, not the remove branch, would fire, since
+    `visibility: hidden` hides it whenever `memoInUse` is true. Kept
+    byte-for-byte identical rather than resolved either way, since
+    that's a judgment call on intent this port isn't the place to make.
+  - Two purely mechanical TS-driven adjustments, verified to have zero
+    behavioral effect: `visibility: ""` (React's CSS property types
+    reject an empty string) → `visibility: "visible"` (CSS-equivalent —
+    an unset `visibility` and an explicit `"visible"` render
+    identically). An initial draft also accidentally added
+    `e.preventDefault()` to the form's `onSubmit` handler where the
+    original was a genuine empty no-op (form submission, e.g. pressing
+    Enter in the password field, was never actually prevented) — caught
+    before committing and reverted to the same empty no-op, since
+    "fixing" that wasn't this port's call to make either.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only —
+    plus one `@typescript-eslint/no-empty-function` disabled inline for
+    the intentionally-empty `onSubmit`, documented at its declaration),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
