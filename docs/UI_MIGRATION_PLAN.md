@@ -1543,10 +1543,85 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
     {BitAssetOptions} from "./AccountAssetCreate"` resolves cleanly
     against the new module).
 
-Remaining Phase 3 scope: `AccountAssetUpdate.jsx` (1747 lines) — the
-"update an existing user-issued asset" counterpart, which, like
-`AccountAssetCreate.jsx`, submits its own `asset_update` transaction
-rather than delegating to a shared `ApplicationApi` call.
+- Ninth slice, and the last in Phase 3: `Account/AccountAssetUpdate.jsx`
+  (1747 lines) got the real `.jsx`→`.tsx` rewrite — the "update an
+  existing user-issued asset" counterpart to `AccountAssetCreate.tsx`:
+  primary details/CER, whitelist, description, optional bitAsset options,
+  permissions, flags, and feed producers. `updateAsset` builds and
+  submits the real `asset_update` transaction via
+  `AssetActions.updateAsset`, reused unchanged.
+  - Same `useRef`-holds-the-whole-state-object + `useForceUpdate` +
+    `updateState(partial)` design as `AccountAssetCreate.tsx`, for the
+    same reason: this class also mixes direct in-place mutation-then-
+    `forceUpdate()` with genuine `setState(partial)` calls throughout.
+    This file's `errors` state field is *fully replaced*, never merged,
+    every time it's set — preserved exactly via `updateState({errors:
+    {...}})`, matching `Object.assign`/real `setState`'s per-top-level-key
+    overwrite behavior precisely.
+  - Structural change (same substitution used throughout this migration):
+    `BindToChainState(AccountAssetUpdate)` (`globalObject`) and
+    `AssetWrapper(AccountAssetUpdate, {propNames: ["asset", "core"],
+    withDynamic: true})` (resolving `asset`/`core`, both `.isRequired`,
+    plus a `getDynamicObject` helper via the nested
+    `DynamicObjectResolver`) collapsed into one
+    `AccountAssetUpdateContainer` resolving all three via `ChainStore`
+    under `useChainStoreTick()`. `getDynamicObject(id)` implemented as a
+    direct `ChainStore.getObject(id)` read — the same simplification
+    already validated for `Asset.tsx`/`AssetContainer`
+    (`DynamicObjectResolver`'s own version just searches a
+    `ChainObjectsList`-resolved array for the same id, resolving through
+    `ChainStore.getObject` internally either way). The outer route-level
+    `AssetUpdateWrapper` (`withRouter`, reading `match.params.asset`)
+    became a plain function reading the same param with `useParams()` —
+    the same substitution already used for `Asset.tsx`/
+    `AssetSymbolSplitter`; `history`/`location`/`match` were never read
+    anywhere else in this file.
+  - `_onInputCoreAsset`/`_onFoundCoreAsset` are the *live* counterparts of
+    the same-named methods confirmed fully dead in the sibling
+    `AccountAssetCreate.tsx` — here they're actively wired to the
+    quote/base `AssetSelector`s. `_onFoundCoreAsset`'s pre-existing bug is
+    therefore preserved exactly, not dropped: it calls
+    `_validateEditFields({max_supply: this.state.max_supply, ...})`,
+    reading a top-level `state.max_supply` that never exists (the real
+    field is nested at `state.update.max_supply`) — so selecting a new
+    quote/base asset always resets the max-supply error to "too large"
+    regardless of the actual value. The same bug, for the same reason, is
+    also triggered by `_onFlagChange` (calls `_validateEditFields({})`)
+    and `onChangeFeedProducerList` (calls `_validateEditFields(
+    {feedProducers: current})`) — neither passes a `max_supply` key
+    either. All three preserved byte-for-byte.
+  - Confirmed dead, dropped: `_onClaimInput` and the `claimFeesAmount`
+    state field it wrote to (destructured in `render()` but never read
+    afterward, never wired to any element, and not among the arguments
+    passed to `AssetActions.updateAsset`); the `ref="appTables"` on the
+    render root; `ConfirmModal`'s `showModal` and `_cancelConfirm` props
+    (both passed by the parent, neither ever read inside `ConfirmModal` —
+    `_cancelConfirm`'s own wrapper method is dropped too, since passing
+    it to `ConfirmModal` was its only use); the blanket `{...this.props}`
+    spread onto `<ConfirmModal>` (verified by reading its whole render
+    body that it only ever reads `visible`/`tabsChanged`/`hideModal`/
+    `_updateAsset`); and a stale, already-superseded commented-out
+    overflow-check block inside `_onUpdateInput`'s `max_supply` case,
+    same category as `AccountAssetCreate.tsx`'s equivalent drop.
+  - `onChangeTab` (`<Tabs onChangeTab={i => this.setState({activeTab:
+    i})}>`) sets an `activeTab` field that's written but never read
+    anywhere else — not dropped, though, since the `setState` call itself
+    has a real, easy-to-miss effect: it forces a fresh render pass on
+    every tab switch, independent of chain-store-driven re-renders.
+    Preserved as `stateRef.current.activeTab = i; forceUpdate();`.
+  - `_updateAsset`'s delayed reset (`setTimeout(() => {...this.setState(
+    this.resetState(this.props))...}, 3000)`) reads `this.props` at
+    *fire* time in the original — always current, since `this` is a live
+    class instance. Replicated with a small ref updated on every render
+    to hold the latest `asset`/`core`/`globalObject`/`account`, read by
+    the timeout callback instead of the closure's own (potentially
+    3-seconds-stale) values — the closest hooks equivalent to a class's
+    always-current `this.props`.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
+
+**Phase 3 is now complete.**
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
