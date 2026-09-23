@@ -1225,6 +1225,42 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Third slice: `Account/VotingAccountsList.jsx` (388 lines — the
+  witness/committee-member table used inside `Committee.tsx`/
+  `Witnesses.tsx`, this phase's first slice) got the real `.jsx`→`.tsx`
+  rewrite. Purely display/local-vote-toggle orchestration — clicking a
+  row calls the caller-supplied `onAddItem`/`onRemoveItem` props (which
+  build and submit the actual vote-change transaction elsewhere, still
+  in the not-yet-ported `AccountVoting.jsx`), this file only decides
+  which handler to call per row and renders the table.
+  - Substantial confirmed-dead find (verified by reading the whole file
+    — no `AccountSelector` or any add-item form is rendered anywhere in
+    `render()`): the `selected_item`/`item_name_input`/`error` state,
+    and the class's own `onItemChange`/`onItemAccountChange`/
+    `onAddItem` methods — all bound in the constructor but never wired
+    to any JSX element's event handler (not to be confused with the
+    `onAddItem` *prop*, which the file's own per-row vote toggle does
+    use — only the internal same-named method was dead). Also dropped
+    the `action` prop (`defaultProps: {action: "remove"}`) — never read;
+    every use of the identifier `action` in the file is a *local*
+    per-row variable of the same name, computed inside the items-to-rows
+    `.map()`.
+  - `validateAccount`/`label`/`placeholder`/`tabIndex` are dead in the
+    exact same way (only read inside the now-removed
+    `onItemAccountChange`, or not read at all) — but since both current
+    callers (`Committee.tsx`/`Witnesses.tsx`) still forward them from
+    their own parent `AccountVoting.jsx`, they're kept as accepted-but-
+    unused props rather than chasing the cascade up into that 900+ line
+    file, which is out of this slice's scope — flagged inline as a
+    revisit once `AccountVoting.jsx` itself gets ported.
+  - Replaced `BindToChainState(VotingAccountsList)` (the default,
+    autosubscribing wrap) with direct `ChainStore.getObject` resolution
+    per item id, gated by `useChainStoreTick()`.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean (confirms `Committee.tsx`/`Witnesses.tsx`
+    still type-check cleanly against the new prop contract), full Jest
+    suite green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 4 — Trading (Exchange)
 - Migrate the single largest component, `Exchange.jsx` (3,683 lines) and its
