@@ -1137,7 +1137,20 @@ in CI and the legacy code it replaces is deleted.
     A live-render screenshot check of both the "Info" and "Actions" tabs
     against fixture chain data (to confirm the Actions tab's five forms
     mount without crashing and receive correctly-wired props) was run
-    separately, given this file's risk profile.
+    separately, given this file's risk profile — confirmed all six
+    Actions-tab sections render correctly (fee pool fund/claim ×3, asset
+    owner update, feed publish; no collateral-bid or resolve-prediction
+    sections, correctly, since the fixture is neither globally settled
+    nor a prediction market), all five real forms wired with correct
+    props (funding account, current owner, MCR/MSSR prefill, fee-pool
+    balances all traced to the seeded fixture values), zero console
+    errors. Harness note for reuse: `BindToChainState`/
+    `ChainTypes.ChainAccount`-consuming components (like
+    `AssetOwnerUpdate`/`AssetPublishFeed` here) default
+    `autosubscribe=true`, which calls `fetchFullAccount()` on first
+    access and hangs forever against a stubbed `Apis` unless the fixture
+    also pre-marks the seeded accounts as subscribed via
+    `ChainStore.get_full_accounts_subscriptions.set(id/name, true)`.
   - This closes out Phase 2's explicitly-named scope from §7's own text.
     `app/components/Blockchain/` still has other `.jsx` files (`Block.jsx`,
     `Operation.jsx`, `Fees.jsx`, `MemoText.jsx`, `AssetOwnerUpdate.jsx`
