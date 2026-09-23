@@ -1078,6 +1078,73 @@ in CI and the legacy code it replaces is deleted.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Twenty-second slice: `Blockchain/Asset.jsx` (2461 lines — the
+  "/asset/:symbol" details page) got the real `.jsx`→`.tsx` rewrite,
+  closing out Phase 2's own explicitly-named scope
+  (`Blockchain/Transaction.jsx, Blockchain/Asset.jsx`). This is the
+  highest-risk file ported this phase: it computes financial figures
+  itself (margin ratios, collateral-bid ordering, settlement prices via
+  the `CallOrder`/`CollateralBid`/`FeedPrice` classes from
+  `common/MarketClasses`, fed by live `Apis.instance().db_api().exec(...)`
+  calls) and its "Actions" tab wires five real transaction-submitting
+  child forms (`AssetOwnerUpdate`, `AssetPublishFeed`,
+  `AssetResolvePrediction`, `BidCollateralOperation`, `FeePoolOperation` —
+  all reused completely unchanged) into props via prop injection.
+  Confirmed with the user before starting, given the size and risk
+  profile; ported as a careful, mechanical, line-for-line translation
+  with no logic changes and no restructuring/splitting (an agent's own
+  structural-mapping suggestion to split the file into smaller modules
+  was explicitly not taken, per AGENTS.md's "prefer minimal, well-tested
+  diffs over refactors").
+  - Structural change (the same substitution pattern already applied to
+    every other legacy `BindToChainState`/`connect`/`AssetWrapper`-
+    wrapped file this phase, not a one-off redesign): the original's
+    three-layer HOC chain (`AssetSymbolSplitter` → `AssetContainer`,
+    wrapped with `AssetWrapper(..., {withDynamic: true})` → `connect(...)`
+    + `AssetWrapper(Asset, {propNames: ["backingAsset", "coreAsset"]})`)
+    collapsed into two components: `AssetContainer` (does all the
+    ChainStore resolution directly via `ChainStore.getAsset`/
+    `ChainStore.getObject` + `useAltStore(AccountStore)`, gated by
+    `useChainStoreTick()`) and `Asset` (receives already-resolved props,
+    exactly as before). `ChainStore.getAsset`'s `null`-vs-`undefined`
+    contract (confirmed by reading its source: `null` = confirmed not
+    found, `undefined` = still loading) is exactly what
+    `BindToChainState`/`AssetWrapper` already relied on internally, so
+    the original's `=== null` / `!x.get` guards are preserved verbatim.
+  - Confirmed dead, dropped (verified by reading the whole file): the
+    `marginTableSort`, `collateralTableSort`, and `sortDirection` state
+    fields (initialized in the constructor, never read anywhere else),
+    and `renderPriceFeed`/`renderSettlement`'s early-return `<div
+    header={title} />` (both functions) — `title` was only declared
+    later in the same method via `var title = (...)`, hoisted but always
+    `undefined` at that earlier point in execution; since React omits
+    `undefined` prop values from the rendered DOM regardless of prop
+    name, this always rendered identically to a plain `<div />`.
+  - `UNSAFE_componentWillMount`'s margin/collateral-bid fetch →
+    `useEffect(..., [])`, mount-only, matching the original's own
+    mount-only timing exactly (it never re-ran on asset-prop changes
+    either, only via the `onUpdate` callback after placing/canceling a
+    bid) — documented inline that this means navigating between two
+    different assets without an intervening full remount would, in both
+    the original and this port, leave stale margin/collateral-bid data
+    displayed against the new asset; a pre-existing characteristic, not
+    something this port changes.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only —
+    this file legitimately has the most of any port this phase, given
+    how much of it is untyped Immutable-Map/chain-object manipulation),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
+    A live-render screenshot check of both the "Info" and "Actions" tabs
+    against fixture chain data (to confirm the Actions tab's five forms
+    mount without crashing and receive correctly-wired props) was run
+    separately, given this file's risk profile.
+  - This closes out Phase 2's explicitly-named scope from §7's own text.
+    `app/components/Blockchain/` still has other `.jsx` files (`Block.jsx`,
+    `Operation.jsx`, `Fees.jsx`, `MemoText.jsx`, `AssetOwnerUpdate.jsx`
+    and its four form siblings, etc.) that were never named in Phase 2's
+    scope and were not touched by this pass — `MemoText.jsx` in
+    particular decrypts memos with wallet keys and would need the same
+    extra-care treatment as this slice, at minimum.
 
 ### Phase 3 — Account & portfolio actions
 - Migrate: account creation/import (non-key-bearing parts), permissions,
