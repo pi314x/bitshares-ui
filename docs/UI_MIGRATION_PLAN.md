@@ -1861,6 +1861,54 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Sixth slice: `Exchange/MyOpenOrders.jsx` (541 lines) got the real
+  `.jsx`→`.tsx` rewrite — the "my open orders" / "open settlement
+  orders" panel, rendered twice by `Exchange.jsx` with different
+  `activeTab` values. Exports a named `MarketOrders`, matching the
+  file's pre-existing external contract (`import {MarketOrders} from
+  "./MyOpenOrders"`) — the filename and the exported name have never
+  matched in this codebase, kept as-is. Closes the loop on this phase's
+  earlier `MarketOrdersView`/`OpenSettleOrders` slice: this was that
+  file's one deferred caller, still legacy at the time.
+  - `MarketOrdersRow`'s `shouldComponentUpdate` is another confirmed-real
+    SCU gate (checking `order.for_sale`/`order.id`/`quote`/`base`/
+    `order.market_base`/`selected`, not `price` or `onCancel`) —
+    preserved via `React.memo`. `onCancel` is a confirmed-dead prop
+    (passed via a fresh `.bind()` on every render, never read inside
+    `MarketOrdersRow`) — kept as accepted-but-unused, not dropped, since
+    it's genuinely supplied. `price`, also never read *inside*
+    `MarketOrdersRow`, is not dead: the parent's render sorts the
+    still-unmounted `<MarketOrdersRow price={price} .../>` React
+    elements by reading `.props.price` directly off each element object
+    before it's ever rendered — an unusual but legitimate pattern,
+    preserved exactly (a function component's elements still carry the
+    same externally-readable `.props`).
+  - `MarketOrders` closely mirrors `MarketHistory.tsx`'s structure (both
+    adapted from a shared original) — same `componentDidUpdate(prevState)`
+    mislabeled-parameter bug, replicated the same way (an always-running,
+    mount-skipped effect); same SCU-gate treatment via `React.memo`. One
+    real difference: `render()` here genuinely reads `state.activeTab`
+    (not `props.activeTab` with an override), so unlike
+    `MarketHistory.tsx`'s write-only shadow copy, this one is actually
+    displayed. Its `UNSAFE_componentWillReceiveProps` activeTab check
+    also differs subtly: it compares `nextProps.activeTab` against
+    `this.state.activeTab` (not `this.props.activeTab`) — preserved
+    exactly, via an effect reading the latest state value when it fires.
+  - Confirmed accepted-but-unused: `orders`, `flipMyOrders`,
+    `smallScreen`, `hidePanel`, `isPanelActive` — all passed by
+    `Exchange.jsx`, none ever read anywhere in this file (`_getOrders()`
+    computes orders from `currentAccount` directly, never from
+    `props.orders`).
+  - Two separate refs feed `updateContainer`: one threaded into the
+    already-`forwardRef`-wrapped `MarketsOrderView` (reading
+    `.current.refs.container`, matching that component's exposed
+    backward-compatible shape from the earlier slice), and one attached
+    directly to the `TransitionWrapper` this component renders itself
+    (a plain, direct ref — `TransitionWrapper` is still an untouched
+    class component).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
