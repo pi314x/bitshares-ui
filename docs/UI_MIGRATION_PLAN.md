@@ -1763,6 +1763,71 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
     expected `any` warnings only), `yarn typecheck` clean, full Jest
     suite green (50/50), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Fourth slice, a batch of five more satellites:
+  - `Exchange/MarketPicker.jsx` (337 lines) — the "pick a market to
+    trade" modal (three components in one file: `MarketListItem`,
+    `MarketPickerWrapper`, `MarketPicker`). Confirmed dead, dropped:
+    `MarketPicker`'s local `open`/`smallScreen` state (neither ever read
+    anywhere, letting `UNSAFE_componentWillMount` and the constructor's
+    state go too), `MarketPicker.show()` (never called), the
+    `assetsLoading` prop the original `connect(..., {getProps...})`
+    injected (never read anywhere), and a dynamic-string
+    `ref={this.props.modalId}` on the modal (never read). `alt-react`'s
+    `connect` replaced with `useAltStore(AssetStore)`.
+    `MarketPickerWrapper`'s `UNSAFE_componentWillReceiveProps` re-runs
+    `assetFilter` using `this.props.searchAssets`/etc. (the values from
+    *before* the update that triggered it), not `nextProps` — preserved
+    exactly via a ref tracking the previous render's props, not "fixed"
+    to read the fresh values. Its `shouldComponentUpdate` is the second
+    confirmed-real (non-no-op) SCU gate found in this phase — narrower
+    than all props, since it receives a wide spread from `Exchange.jsx`
+    — preserved via a `React.memo` comparator; the state-change half of
+    the original check needs no replication, since a functional
+    component's own `useState` updates always trigger its re-render
+    regardless of `React.memo`.
+  - `Exchange/MarketHistory.jsx` (265 lines) + `Exchange/View/MarketHistoryView.jsx`
+    (173 lines) — the trade-history panel. `rowCount` was state but never
+    once updated via `setState` anywhere — kept as a plain constant.
+    `componentDidUpdate(prevState) {...if (prevState.showAll != showAll)}`
+    has a genuine pre-existing bug, preserved exactly: React always
+    passes `(prevProps, prevState, snapshot)`, so the single parameter
+    here is actually `prevProps`, mislabeled — since nothing passes a
+    `showAll` *prop*, this comparison is `undefined != <boolean>`, always
+    `true`, so the branch fires unconditionally on every update, not
+    conditionally as it appears to. Replicated with a no-dependency-array
+    effect that always runs it. The third confirmed-real SCU gate this
+    phase has found (checking `history`/`baseSymbol`/`quoteSymbol`/
+    `className`/`activeTab`/`currentAccount`/`isPanelActive`/
+    `hideScrollbars`, but *not* `myHistory`/`base`/`quote`/`isNullAccount`/
+    several style-ish props render also reads) is preserved the same way.
+    `MarketHistoryView`'s two internal refs (`refs.history`/
+    `refs.historyTransition`, reached by the parent via
+    `this.refs.view.refs...`) become plain ref props, since both files
+    were ported together in this same slice and the double-indirection a
+    class needed is unnecessary for a functional child.
+  - `Exchange/OpenSettleOrders.jsx` (197 lines) — confirmed dead, dropped:
+    the whole `TableHeader` class (defined, never exported, never
+    rendered anywhere in the file) and `quoteSymbol`/`baseSymbol` props
+    (declared, even required via `propTypes`, but never read in
+    `render()` — presumably meant for the dead `TableHeader`). Its SCU
+    (checking only `currentAccount`/`orders`, not `base`/`quote`) is the
+    fourth confirmed-real gate this phase has found, preserved the same
+    way.
+  - `Exchange/View/MarketOrdersView.jsx` (211 lines) — unlike
+    `MarketHistoryView.tsx`, this file's caller, `MyOpenOrders.jsx` (541
+    lines), is *not* part of this slice and stays legacy for now, still
+    reaching into `MarketsOrderView` via `this.refs.view.refs.container`.
+    Since a plain function component can't be given a ref at all,
+    `MarketsOrderView` is wrapped in `React.forwardRef` with
+    `useImperativeHandle` exposing an object shaped exactly like the old
+    class instance's `.refs` (`{refs: {container: <getter>}}`), so
+    `MyOpenOrders.jsx`'s existing access keeps resolving correctly,
+    completely unmodified, until it too gets ported (at which point this
+    can be simplified to a direct ref/prop, same as `MarketHistoryView`).
+  - Verified (all five files together): `eslint` clean (0 errors,
+    expected `any` warnings only), `yarn typecheck` clean, full Jest
+    suite green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
