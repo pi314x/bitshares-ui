@@ -1828,6 +1828,39 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
     expected `any` warnings only), `yarn typecheck` clean, full Jest
     suite green (50/50), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Fifth slice, and the first file from this phase's larger tier:
+  `Exchange/ExchangeHeader.jsx` (486 lines) — the Exchange screen's top
+  bar (quote/base symbol pair, market-picker toggles, favorite star, and
+  the price-ticker stats strip built from `PriceStatWithLabel.tsx`,
+  already ported). Rendered by `Exchange.jsx` (not yet ported, its only
+  caller).
+  - Confirmed dead, dropped: the local `isModalVisible` state field —
+    initialized, never read or set again anywhere.
+  - Confirmed accepted-but-unused (kept in the props interface since the
+    still-legacy caller supplies them, but never read in `render()`):
+    `showVolumeChart`, `lowestAsk`, `highestBid`. `tinyScreen` is the
+    inverse case — it *is* read (a font-size ternary), but
+    `Exchange.jsx`'s call site never actually supplies it, so that
+    ternary always currently resolves to its `false` branch in practice.
+    Neither "fixed" here — that belongs to whoever ports `Exchange.jsx`
+    itself.
+  - `shouldComponentUpdate` is unlike this phase's other confirmed-real
+    SCU gates (which compared specific prop subsets): `if
+    (!nextProps.marketReady) return false; return true;` is an
+    unconditional "block all renders while the market isn't ready,
+    otherwise never block" gate, not a shallow comparison. Preserved via
+    a `React.memo` comparator that's the direct translation
+    (`!nextProps.marketReady`).
+  - `UNSAFE_componentWillReceiveProps` unconditionally re-syncs local
+    `selectedMarketPickerAsset` state from the incoming prop on every
+    update (no condition at all — a prop-seeded, locally-overridable-
+    until-the-next-external-update pattern, since a click handler also
+    sets this state directly). Replicated with a
+    `[selectedMarketPickerAsset (prop)]`-keyed effect, guarded to skip
+    its first (mount) run.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
