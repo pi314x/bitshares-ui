@@ -2217,6 +2217,66 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
     build shows only the 2 known pre-existing `charting_library` errors
     (confirms `Personalize.tsx`'s existing `{GroupOrderLimitSelector}
     from "./OrderBook"` import keeps resolving correctly).
+- Thirteenth slice: `Exchange/BuySell.jsx` (1577 lines) got the real
+  `.jsx`→`.tsx` rewrite — the buy/sell order form (price/amount/total/fee
+  inputs, expiration picker, submit button, quick-deposit/borrow/settle
+  actions). Security-sensitive per AGENTS.md: this is the form behind
+  `Exchange.jsx`'s real order-submission flow, though the actual
+  transaction building/submission itself lives in `Exchange.jsx`'s
+  callback props (`onSubmit`/`onBuy`/`onDeposit`/`onBorrow`) — this
+  component only computes what to display and which callback to invoke,
+  so extra care went into the submit button's disabled/enabled logic and
+  the bid/ask `onSubmit(true)`/`onSubmit(false)` wiring specifically,
+  cross-checked line-by-line against the original.
+  - `BindToChainState(BuySell)` only ever resolved one prop this way:
+    `balance` (declared `ChainTypes.ChainObject`, *not* `.isRequired` —
+    confirmed by reading `BindToChainState.jsx`'s `render()`, which only
+    loading-gates `required_props`, so the original never blocked
+    rendering on it). `quote`/`base` are plain already-resolved Immutable
+    objects passed directly by `Exchange.jsx`, not chain-type props at
+    all. Replaced with a small `BuySellContainer` that resolves `balance`
+    via `ChainStore.getObject(props.balance)` under `useChainStoreTick()`
+    and passes it straight through — no loading-gate placeholder needed,
+    matching the original's non-blocking behavior for a non-required
+    chain prop.
+  - The real, meaningful `shouldComponentUpdate` (an explicit allowlist
+    of checked props — a genuine performance gate for a component in the
+    hottest typing-while-trading UI path, not a no-op) is preserved via
+    `React.memo` with the exact logical-inverse comparator.
+  - `shouldComponentUpdate` also ran `_forceRender(nextProps)` inline:
+    when `parentWidth` changed, it toggled a local `forceReRender` state
+    true-then-false across two extra render passes, purely so
+    `render()`'s live `this.refs.order_form.clientWidth` read (which
+    decides `singleColumnForm`) would get re-measured once against the
+    *post-layout* DOM — the first render triggered directly by a
+    `parentWidth` change still reflects the *previous* layout, since
+    React's render phase runs before that update commits to the DOM.
+    Replicated with a `clientWidth` state value measured in a
+    `useLayoutEffect` keyed on `[parentWidth]` (mount-skipped, matching
+    `_forceRender` only ever being invoked from inside
+    `shouldComponentUpdate`, which never runs on the initial mount) —
+    achieves the same "re-render once more after layout settles" outcome
+    more directly than the original's double-toggle dance.
+  - Confirmed dead, dropped: `_setPrice(price)` (defined, never called —
+    the real "click to use this price" handler in `render()` calls the
+    *prop* `props.setPrice` directly, a different thing with a similar
+    name); the local `const currentAccount = AccountStore.getState()
+    .currentAccount` and the now-unused `AccountStore` import (every
+    other place in the file reads the real, passed-down `props
+    .currentAccount` instead — this shadowing local was computed and
+    never read anywhere).
+  - `getDatePickerRef`/`onExpirationSelectChange`/
+    `onExpirationSelectClick`/`onExpirationSelectBlur` mirror the
+    identical pattern already ported in `ScaledOrderTab.tsx` (a `useRef`
+    for the antd `DatePicker` instance plus two `useRef` booleans for the
+    double-click-to-open gesture).
+  - Preserved verbatim (not "fixed"): the "fee asset selection" block
+    mutates the `feeAssets` *prop* array in place via `.splice(1, 1)`
+    rather than cloning it first — a pre-existing mutation of caller-
+    owned data, kept exactly as-is.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
