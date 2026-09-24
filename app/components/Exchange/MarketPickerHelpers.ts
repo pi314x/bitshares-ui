@@ -1,7 +1,18 @@
+// TypeScript port of the legacy MarketPickerHelpers.js (Phase 4,
+// docs/UI_MIGRATION_PLAN.md) - pure helper functions for the market
+// picker's asset search/sort, used by `MarketPicker.jsx` (not yet
+// ported) and reused unchanged by `CreatePoolModal.jsx`/
+// `QuickTrade/QuickTrade.jsx`. No React involved; mechanical
+// `.js`->`.ts` translation, no logic changes.
 import {hasGatewayPrefix} from "common/gatewayUtils";
 import {ChainStore} from "bitsharesjs";
 
-function lookupAssets(value, gatewayAssets = false, getAssetList, setState) {
+function lookupAssets(
+    value: any,
+    gatewayAssets = false,
+    getAssetList: (...args: any[]) => any,
+    setState: (...args: any[]) => any
+) {
     if (!value && value !== "") return;
 
     let quote = value.toUpperCase();
@@ -16,25 +27,35 @@ function lookupAssets(value, gatewayAssets = false, getAssetList, setState) {
 }
 
 function assetFilter(
-    {searchAssets, marketPickerAsset, baseAsset, quoteAsset},
-    {inputValue, lookupQuote},
-    setState,
-    checkAndUpdateMarketList
+    {
+        searchAssets,
+        marketPickerAsset,
+        baseAsset,
+        quoteAsset
+    }: {
+        searchAssets: any;
+        marketPickerAsset: any;
+        baseAsset: any;
+        quoteAsset: any;
+    },
+    {inputValue, lookupQuote}: {inputValue: any; lookupQuote: any},
+    setState: (...args: any[]) => any,
+    checkAndUpdateMarketList: (...args: any[]) => any
 ) {
     setState({activeSearch: true});
 
     let assetCount = 0;
-    let allMarkets = [];
+    const allMarkets: any[] = [];
 
-    let baseSymbol = baseAsset.get("symbol");
-    let quoteSymbol = quoteAsset.get("symbol");
+    const baseSymbol = baseAsset.get("symbol");
+    const quoteSymbol = quoteAsset.get("symbol");
 
     if (searchAssets.size && !!inputValue && inputValue.length > 2) {
         searchAssets
-            .filter(a => {
+            .filter((a: any) => {
                 try {
                     if (a.options.description) {
-                        let description = JSON.parse(a.options.description);
+                        const description = JSON.parse(a.options.description);
                         if ("visible" in description) {
                             if (!description.visible) return false;
                         }
@@ -43,17 +64,17 @@ function assetFilter(
 
                 return a.symbol.indexOf(lookupQuote) !== -1;
             })
-            .forEach(asset => {
+            .forEach((asset: any) => {
                 if (assetCount > 100) return;
                 assetCount++;
 
-                let issuerName = fetchIssuerName(asset.issuer);
+                const issuerName = fetchIssuerName(asset.issuer);
 
-                let base = baseAsset.get("symbol");
-                let marketID = asset.symbol + "_" + base;
+                const base = baseAsset.get("symbol");
+                const marketID = asset.symbol + "_" + base;
 
-                let isQuoteAsset = quoteSymbol == marketPickerAsset;
-                let includeAsset =
+                const isQuoteAsset = quoteSymbol == marketPickerAsset;
+                const includeAsset =
                     (isQuoteAsset && asset.symbol != baseSymbol) ||
                     (!isQuoteAsset && asset.symbol != quoteSymbol);
 
@@ -75,8 +96,8 @@ function assetFilter(
     checkAndUpdateMarketList(marketsList);
 }
 
-function getMarketSortComponents(market) {
-    const weight = {};
+function getMarketSortComponents(market: any) {
+    const weight: any = {};
     const quote = market.quote;
     if (quote.indexOf(".") !== -1) {
         const [gateway, asset] = quote.split(".");
@@ -89,11 +110,11 @@ function getMarketSortComponents(market) {
     return weight;
 }
 
-function sortMarketsList(allMarkets, inputValue) {
+function sortMarketsList(allMarkets: any[], inputValue: string) {
     if (inputValue.startsWith("BIT") && inputValue.length >= 6) {
         inputValue = inputValue.substr(3, inputValue.length - 1);
     }
-    return allMarkets.sort(([, marketA], [, marketB]) => {
+    return allMarkets.sort(([, marketA]: any, [, marketB]: any) => {
         const weightA = getMarketSortComponents(marketA);
         const weightB = getMarketSortComponents(marketB);
 
@@ -120,8 +141,8 @@ function sortMarketsList(allMarkets, inputValue) {
     });
 }
 
-function fetchIssuerName(issuerId) {
-    let issuer = ChainStore.getObject(issuerId, false, false);
+function fetchIssuerName(issuerId: string) {
+    const issuer = (ChainStore as any).getObject(issuerId, false, false);
     if (!issuer) {
         return;
     } else {

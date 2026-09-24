@@ -1718,6 +1718,51 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
     expected `any` warnings only), `yarn typecheck` clean, full Jest
     suite green (50/50), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Third slice, a batch of four more satellites:
+  - `Exchange/ExchangeInput.jsx` (31 lines) — a numeric-only text input
+    used across the Exchange order forms and a couple of other modals.
+    Extended `DecimalChecker.jsx`, a shared base class still extended by
+    four other, not-yet-ported components — left untouched, and this port
+    instead inlines the two methods `ExchangeInput` actually used
+    (`onPaste`/`onKeyPress`), reading `allowNaN`/the caller's own
+    `onKeyPress` from props directly.
+  - `Exchange/MarketPickerHelpers.js` (132 lines) — pure helper functions
+    for the market picker's asset search/sort, used by `MarketPicker.jsx`
+    (not yet ported) and reused unchanged by `CreatePoolModal.jsx`/
+    `QuickTrade/QuickTrade.jsx`. Mechanical `.js`→`.ts`, no JSX involved.
+    (Noted in passing: the plan's `QuickTrade.jsx` actually lives at
+    `app/components/QuickTrade/QuickTrade.jsx`, not under `Exchange/` —
+    confirms the earlier note that this phase's file-list references are
+    stale and being re-derived from the actual tree as slices proceed.)
+  - `Exchange/MarketRow.jsx` (362 lines) — one row of the markets list
+    (`MyMarkets.jsx`, not yet ported, its only caller). Structural change:
+    `AssetWrapper(MarketRow, {propNames: ["quote", "base"], withDynamic:
+    true, defaultProps: {tempComponent: "tr"}})` replaced with the
+    established Container split; the `tempComponent: "tr"` customization
+    is preserved (the loading-gate placeholder is `<tr />`, not this
+    migration's usual `<span />`, since this component always renders as
+    a table row). `withRouter` replaced with `useHistory()`/
+    `useLocation()` — the caller (`MyMarkets.jsx`) also passes explicit
+    `location`/`history` props, but those were always shadowed by
+    `withRouter`'s own injected values in react-router v5, so they were
+    already inert. `shouldComponentUpdate`'s shallow-prop-equality check
+    is, by construction, the same comparison `React.memo`'s *default* (no
+    custom comparator) behavior performs — preserved via a plain
+    `React.memo(MarketRow)`, a real optimization for a component rendered
+    in a list inside the highest-update-frequency part of the app, not
+    dropped like this migration's previously-confirmed no-op SCU gates.
+  - `Exchange/PriceAlert.jsx` (353 lines) — the "set a price alert" modal;
+    purely local form-state (an array of alert rules) plus `onSave`/
+    `hideModal` callbacks out, no transaction submission. Structural
+    change: `AssetWrapper(PriceAlert, {propNames: ["quoteAsset",
+    "baseAsset"]})` replaced with the established Container split.
+    `componentDidUpdate`'s "did `visible` just transition from false to
+    true" check became a `[visible]`-keyed effect, guarded to skip its
+    first (mount) run.
+  - Verified (all four files together): `eslint` clean (0 errors,
+    expected `any` warnings only), `yarn typecheck` clean, full Jest
+    suite green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
