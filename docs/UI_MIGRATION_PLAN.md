@@ -1909,6 +1909,42 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Seventh slice: `Exchange/DepthHighChart.jsx` (520 lines) got the real
+  `.jsx`→`.tsx` rewrite — the order-book depth chart (a Highcharts area
+  chart of cumulative bids/asks, plus call/settle overlays), rendered by
+  `Exchange.jsx`. `ReactHighchart` (the third-party wrapper) is reused
+  completely unchanged.
+  - `shouldComponentUpdate` is an unusually elaborate confirmed-real SCU
+    gate: compares `orders`/`call_orders` via the imported
+    `didOrdersChange` (a real order-list-aware diff, reused unchanged
+    from `common/MarketClasses`), plus `feedPrice` *twice* — once via a
+    NaN-guarded check, once via a bare `!==` — meaning whenever
+    `feedPrice` is consistently `NaN` across renders, `NaN !== NaN`
+    being always `true` in JS forces a re-render on every props change
+    regardless of anything else. Preserved exactly via a `React.memo`
+    comparator, not "fixed" with an `Object.is`-style check. The gate
+    checks `height`/`isPanelActive`/`activePanels`/`LCP`/
+    `showCallLimit`/`hasPrediction`/`marketReady` but deliberately not
+    `base`/`quote`/the `flat_*` series arrays/`theme`/`centerRef`/
+    `invertedCalls`/`onClick`, all of which `render()` does read.
+  - `UNSAFE_componentWillUpdate`/`componentDidUpdate` together snapshot
+    and restore an *external* `centerRef` element's `scrollTop` around
+    this component's own re-render, so this component's DOM changes
+    don't visibly shift an ancestor/sibling's scroll position. Hooks
+    have no direct equivalent to `UNSAFE_componentWillUpdate`'s "runs
+    during the render phase, before commit, but not on mount" timing —
+    replicated by reading `centerRef.scrollTop` synchronously in the
+    function body itself (the same render-phase timing guarantee, just
+    also harmlessly exercised on the first render, whose captured value
+    is never used since the restore effect is mount-skipped same as the
+    original).
+  - Confirmed accepted-but-unused: `settles`, `spread` — both supplied
+    by `Exchange.jsx`, neither ever read anywhere in this file. Two
+    stale, already-commented-out draft plot-line blocks omitted as
+    informationally inert, same category as earlier such drops.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
