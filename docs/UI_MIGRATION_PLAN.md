@@ -2138,6 +2138,85 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Twelfth slice: `Exchange/OrderBook.jsx` (1495 lines) got the real
+  `.jsx`→`.tsx` rewrite — the order book panel (vertical `StickyTable`
+  layout and horizontal split-table layout), its four row components, and
+  `GroupOrderLimitSelector` (also imported by the already-ported
+  `Personalize.tsx`). No transaction-submission logic; only reads order
+  data via a caller-supplied `onClick` and manages its own scroll/
+  animation/grouping UI state.
+  - `Exchange.jsx` (not yet ported) still reaches into this component
+    from the outside via a legacy string ref (`ref="order_book"` then
+    `this.refs.order_book.verticalStickyTable.current.scrollData
+    .scrollWidth`, to measure the vertical order book's panel width) —
+    kept working via `React.forwardRef` + `useImperativeHandle` exposing
+    `{verticalStickyTable: <the same ref object used internally>}` (the
+    ref object itself, not a snapshot), matching this migration's
+    established deferred-legacy-caller pattern.
+  - The four row components' real `shouldComponentUpdate`s preserved via
+    `React.memo` with the exact logical-inverse comparator, including the
+    two vertical row components' deliberate early `return false` when an
+    order's `market_base` differs (a "don't re-render this row instance
+    across a market switch" guard, not a bug).
+    `OrderBookRowVertical`'s SCU also compares `isPanelActive`, but
+    `OrderBook.render()` never actually passes that prop down to it
+    (confirmed via a whole-file grep) — kept in the memo comparator
+    anyway, at zero cost, since it's always `undefined !== undefined`
+    (always `false`) in practice.
+  - `OrderBook`'s own `shouldComponentUpdate` always returned `true` (a
+    deliberate unconditional re-render, not a real gate), so it needed no
+    `React.memo` replication — only its two inline side effects
+    (perfect-scrollbar destroy/reinitialize + `TransitionWrapper
+    .resetAnimation()`, run when `showAllAsks`/`showAllBids` toggle while
+    horizontal+`hideScrollbars`) needed porting, as two
+    `useLayoutEffect`s keyed on those state values (mount-skipped, to
+    match the original's pre-commit timing as closely as hooks allow).
+  - `componentDidUpdate`'s market/direction-change branch ended, for the
+    vertical layout only, with a same-value `this.setState({autoScroll:
+    this.state.autoScroll})` — meaningless as a value change, but (since
+    this class's own SCU always returns `true`) it still forced one
+    additional render + `componentDidUpdate` pass, apparently so
+    `centerVerticalScrollBar()`'s DOM measurements would re-run once the
+    reset scroll positions/animations had settled. A `useState` setter
+    would bail out on an unchanged value (unlike a class's `setState`,
+    which doesn't), so this is replicated with a small `useReducer`-based
+    forced-update counter instead, to reproduce the same "one extra
+    render" behavior rather than silently dropping it.
+  - Confirmed dead, dropped: `OrderRows`'s own string ref (`ref={isBid ?
+    "bidTransition" : "askTransaction"}` — note "askTransaction", a typo
+    for "askTransition"), never read anywhere, not even inside
+    `OrderRows` itself; `OrderBook`'s `state.flip` (set from
+    `props.flipOrderBook` in the constructor, never read anywhere else);
+    `componentDidUpdate`'s `if (this.refs.vert_bids) this.refs.vert_bids
+    .scrollTop = 0;` (no element anywhere in `render()` is ever given
+    `ref="vert_bids"`, so this ref is always `undefined`); the
+    `bids`/`asks`/`orders` `propTypes`/`defaultProps` (never read
+    anywhere in the file — confirmed `Exchange.jsx` doesn't even pass
+    `bids`/`asks`; it does pass `orders`, `calls`, `invertedCalls`, and
+    `marketReady`, all four also confirmed unread here, kept
+    accepted-but-unused since `Exchange.jsx` stays a legacy caller this
+    slice); `shouldComponentUpdate`'s already-commented-out `if
+    (!nextProps.marketReady) return false;`; and
+    `GroupOrderLimitSelector`'s `getDerivedStateFromProps`, which
+    unconditionally overwrote `state.groupLimit` with
+    `props.currentGroupOrderLimit` on every render with no condition at
+    all — reading the prop directly is a zero-behavioral-difference
+    simplification.
+  - `queryStickyTable`'s `ReactDOM.findDOMNode(verticalStickyTable
+    .current)` call is preserved as-is (with a scoped
+    `eslint-disable-next-line react/no-find-dom-node` and a comment): the
+    third-party `StickyTable` class component (react-sticky-table,
+    untouched/out of scope) exposes no ref-forwarded DOM node of its own,
+    so `findDOMNode` remains the only way to reach its rendered DOM, same
+    as the original class did.
+  - Added `react-debounce-render`/`react-sticky-table` vendor-shims
+    entries (the latter also needed here, `react-debounce-render` carried
+    over from the previous `MyMarkets.tsx` slice).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors
+    (confirms `Personalize.tsx`'s existing `{GroupOrderLimitSelector}
+    from "./OrderBook"` import keeps resolving correctly).
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
