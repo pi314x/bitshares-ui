@@ -1963,6 +1963,28 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Ninth "slice" was a deletion, not a port: `Exchange/ScaledOrder.jsx`
+  (844 lines — `ScaledOrderForm`, `ScaledOrderModal`, and the default-
+  exported `ScaledOrderModalContainer`, a modal/drawer-based "place a
+  scaled order" UI with real fee/total math and order-submission logic).
+  A whole-app grep for any importer of this file's default export found
+  zero matches. Cross-checked `Exchange.jsx` itself: it has
+  `showScaledOrderModal()`/`hideScaledOrderModal()` methods and an
+  `isScaledOrderModalVisible` state flag, but that flag is only ever
+  *set* (constructor default, and by those two methods) — never *read*
+  anywhere in `render()` — so `<ScaledOrderModalContainer>` is never
+  actually rendered by anything reachable in the app. Confirmed the
+  scaled-order feature is live elsewhere: `Exchange.jsx`'s real
+  `_createScaledOrder(orders, feeID)` method (builds `LimitOrderCreate`
+  objects, calls `MarketsActions.createLimitOrder2`) is passed as the
+  `createScaledOrder` prop to `Exchange/ScaledOrderTab.jsx` (not yet
+  ported), the tab-based UI that actually superseded this older modal.
+  Deleted outright rather than ported, matching the
+  `AccountVotingProxy.jsx`/`PriceStat.jsx` precedent for confirmed-
+  orphaned whole files.
+  - Verified: `yarn typecheck` clean, full Jest suite green (50/50),
+    full webpack build shows only the 2 known pre-existing
+    `charting_library` errors (unrelated to this deletion).
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
