@@ -2051,6 +2051,93 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Eleventh slice: `Exchange/MyMarkets.jsx` (1223 lines) got the real
+  `.jsx`→`.tsx` rewrite — the starred/find-markets list panel (used both
+  as an Exchange satellite and, via the already-ported
+  `MarketsContainer.tsx`, as the Explorer's "Markets" tab), depending on
+  the already-ported `MarketRow.tsx`. No transaction logic; only reads
+  market/asset data and dispatches view-setting/star toggles.
+  - `MarketGroup`'s real `shouldComponentUpdate` (checks `markets`
+    shallow-equality plus `starredMarkets`/`marketStats`/`userMarkets`
+    reference equality) preserved via `React.memo` with the exact
+    logical-inverse comparator; its
+    `UNSAFE_componentWillReceiveProps` → a `[findMarketTab]`-keyed,
+    mount-skipped effect, with the same narrow, accepted approximation
+    gap already documented for `PriceStatWithLabel.tsx` (a memo-skipped
+    render also skips the effect that would have re-derived local state)
+    — considered low-risk here since `markets` is recomputed fresh
+    whenever `findMarketTab` flips at both real call sites.
+  - `MyMarkets`'s own `shouldComponentUpdate` both gated renders *and*
+    ran a real side effect inline (`this.setState`/`_changeTab` calls
+    from inside `shouldComponentUpdate` itself — a pattern with no direct
+    hooks equivalent). Traced its two branches separately: the "a local
+    state change is already pending" branch turned out to be a harmless,
+    always-converging *redundant* re-invocation of whatever call already
+    triggered it (confirmed by tracing every `_changeTab` call site), so
+    it's dropped, not replicated. The "the `activeTab` *prop* changed and
+    the tabHeader UI isn't in use" branch is real and live — confirmed
+    `Exchange.jsx` genuinely drives this component's active tab via its
+    own `activeTab` prop (`tabVerticalPanel`) — kept as an
+    `[activeTab prop]`-keyed, mount-skipped effect. The render-gating
+    half of the original SCU (its boolean return) is *not* replicated via
+    `React.memo` here, since it's entangled with that setState-in-SCU
+    side effect in a way a static comparator can't safely reproduce —
+    documented as an accepted change: the component now re-renders
+    somewhat more eagerly, bounded as before by the still-applied
+    `debounceRender(…, 50, {leading: false})` wrapper (confirmed
+    implementation-agnostic to class vs. function components by reading
+    `node_modules/react-debounce-render/lib/index.js` directly before
+    relying on it).
+  - Confirmed dead, dropped: `MarketGroup._onToggle()` (never wired to
+    any click handler — the collapsible list can only ever open via its
+    initial-state derivation); its already-commented-out
+    `_onSelectBase`; the `maxRows`/`allowChange` props passed to
+    `MarketGroup` by both of its call sites but never read inside it
+    (dropped on both ends, since this slice ports both files together);
+    `MyMarkets`'s own `_inverseSort`/`_changeSort` methods and their
+    `inverseSort`/`sortBy` state (an unused copy-paste duplicate of
+    `MarketGroup`'s own, actually-used version — `MyMarkets` never
+    renders its own sortable headers); `_goMarkets()` and `clearInput()`
+    (both defined, never called); the `assetNameError` state (read once
+    behind a ternary, never `setState`-assigned anywhere, so that branch
+    was provably always `null`); `UNSAFE_componentWillMount`'s `if
+    (this.props.currrent)` block — a three-r typo meaning this "seed
+    activeMarketTab from the current market" block never actually ran
+    (confirmed via a whole-app grep: nothing anywhere passes a prop
+    literally spelled `currrent`); `UNSAFE_componentWillReceiveProps`'s
+    `findSearchInput.focus()` call, gated on a `myMarketTab` *prop* that
+    (unlike the same-named locally-derived `const`) is never actually
+    passed by either real caller (confirmed via a whole-app grep); the
+    `MyMarketsWrapper` passthrough class (added no logic beyond spreading
+    props, collapsed away — `connect()`'s replacement now wraps the
+    debounced component directly); and a render-time `const translator =
+    require("counterpart")` that re-imported the exact same singleton
+    already imported at module scope under the name `counterpart` —
+    replaced with that existing import.
+  - Preserved verbatim (not "fixed"): `MarketGroup`'s real, used
+    `_inverseSort()` sends `SettingsActions.changeViewSetting({
+    myMarketsInvert: !this.state.myMarketsInvert})` — but the actual
+    state field is named `inverseSort`, not `myMarketsInvert` (another
+    typo), so this persisted view-setting is always sent as `true`
+    regardless of the real toggled direction, even though the local
+    `inverseSort` state (set correctly right below it, by the same
+    method) does track it correctly.
+  - `location`/`history` are no longer threaded through `MarketGroup` to
+    `<MarketRow>`: already confirmed dead there during the `MarketRow.tsx`
+    slice (shadowed by `withRouter`'s own injected values) and no longer
+    even part of that component's props interface.
+  - `connect(MyMarketsWrapper, {listenTo, getProps})` (listening to
+    `SettingsStore`/`MarketsStore`/`AssetStore`) became three
+    `useAltStore` calls, with `getProps()`'s field list read directly off
+    each store's state and merged with the JSX-supplied props.
+  - `SearchInput.jsx` declares its optional props only via a separate
+    `SearchInput.defaultProps` object (not in the destructured function
+    signature), which TS's JS inference doesn't treat as making them
+    optional — pre-existing, out of scope; imported through a local `any`
+    alias rather than widening that shared component's real prop types.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,

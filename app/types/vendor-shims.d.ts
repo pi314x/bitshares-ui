@@ -14,3 +14,4 @@ declare module "file-saver";
 declare module "react-highcharts";
 declare module "react-json-inspector";
 declare module "browser-locale";
+declare module "react-debounce-render";
