@@ -2588,6 +2588,44 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Third slice: `WalletChangePassword.jsx` and `WalletCreate.jsx` — both
+  build directly on Slice 2's already-ported `PasswordConfirm.tsx`/
+  `PasswordConfirmStyleGuide.tsx` and Slice 1's `BrainkeyInputStyleGuide.tsx`.
+  - `WalletChangePassword.jsx`: calls the real
+    `WalletDb.changePassword`/`WalletDb.validatePassword` unchanged
+    (`WalletDb.js` itself stays untyped `.js` until its own Slice 5).
+    `WalletPassword`'s legacy string ref (`ref="pwd"` +
+    `this.refs.pwd.cancel()`) becomes `React.forwardRef` +
+    `useImperativeHandle` exposing the same `cancel()`. Dropped as
+    confirmed dead: the unexported `class Reset` (defined, never rendered
+    in that file, never imported elsewhere — grepped for both) and the
+    `onSubmit` prop passed down to `PasswordConfirm` (that component never
+    reads an `onSubmit` prop, grepped its source — already a no-op).
+  - `WalletCreate.jsx`'s `CreateNewWallet`: the one case in this migration
+    so far where a straightforward per-field `useState` conversion would
+    have changed real behavior. Its `formChange` deliberately mutates
+    `this.state` directly before calling `setState` (the original's own
+    comment: "Set state is updated directly because validate is going to
+    require a merge of new and old state"), and `<Form
+    onChange={formChange}>` wraps the *entire* form — so React's
+    synthetic `onChange` bubbles up from any nested input's change event,
+    including `PasswordConfirmStyleGuide`'s and `BrainkeyInputStyleGuide`'s
+    own inputs deep inside nested `Form.Item`s, meaning `formChange`/
+    `validate` can run more than once per keystroke and need to observe
+    each other's writes within the same synchronous browser event — which
+    a per-render `useState` snapshot can't do, but a class's live mutable
+    `this.state` can. Ported with a `useRef`-held mutable state object
+    (mirroring `this.state` exactly) plus a render-triggering counter, so
+    the same live-mutation-then-notify semantics (and the same accidental
+    cross-component bubbling behavior) carry over unchanged. Dropped as
+    confirmed dead: the `hideTitle` prop (declared in the original's
+    `propTypes`, never read anywhere in its `render()`).
+  - Both files needed the `TypedLink = Link as
+    React.ComponentType<LinkProps>` cast already established in
+    `Explorer/Blocks.tsx` for `<Link>` usage.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
