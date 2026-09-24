@@ -2277,6 +2277,142 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+  - **Bug found and fixed in this file during the later `Exchange.tsx`
+    port** (see that slice's own entry below): the three `onSubmit` call
+    sites originally read `onClick={() => onSubmit(true)}`/`(false)` — an
+    arrow function that drops the click event, unlike the original
+    class's `onSubmit.bind(this, true)` (which still receives and
+    forwards it). Since `Exchange.tsx`'s `createLimitOrderConfirm` calls
+    `e.preventDefault()` as its first statement, this would have thrown
+    on every real Buy/Sell click. Fixed to `onClick={(e) => onSubmit(true,
+    e)}` (and `false`), forwarding the event explicitly.
+- Fourteenth slice: `Exchange/Exchange.jsx` (3683 lines) got the real
+  `.jsx`→`.tsx` rewrite — the single largest file in the entire
+  migration, the Exchange screen's root component orchestrating every
+  already-ported satellite (`BuySell`, `ScaledOrderTab`, `OrderBook`,
+  `MyMarkets`, `MarketHistory`, `MyOpenOrders`/`MarketOrders`,
+  `MarketPicker`, `ExchangeHeader`, `Personalize`, `PriceAlert`,
+  `ConfirmOrderModal`, `DepthHighChart`) and owning the real order-
+  submission logic (`_createLimitOrder`/`_createLimitOrderConfirm`/
+  `_createPredictionShort`/`_forceBuy`/`_forceSell`). This is Phase 4's
+  highest-risk file per AGENTS.md, so every already-ported child's real,
+  current props interface was read directly from its own source (not
+  assumed from memory) and cross-checked against every prop this file
+  passes it, and the full order-submission call chain (`onSubmit` →
+  `createLimitOrderConfirm` → `createLimitOrder`/`createPredictionShort`
+  → `MarketsActions.createLimitOrder2`/`createPredictionShort`) was
+  traced end to end before finalizing — which is what surfaced the
+  `BuySell.tsx` `onSubmit` event-forwarding bug documented above.
+  - The real `shouldComponentUpdate` is, underneath its verbose form,
+    two things: a genuine early-out (block re-rendering only while
+    `marketReady` is `false` on *both* the old and new props) and an
+    exhaustive shallow diff over every prop key. Its two state-shaped
+    checks are both subsumed by hooks' own state-change-always-re-
+    renders behavior and need no replication (established pattern
+    throughout this migration). Preserved via `React.memo` with a
+    comparator implementing just those two real parts.
+  - `shouldComponentUpdate` also ran an inline `setState` when
+    `quoteAsset`/`baseAsset` changed by *reference* (normalizes
+    `expirationType`, resetting a non-"SPECIFIC" choice to "YEAR" on
+    every such tick) — real, observable behavior (`expirationType` is
+    otherwise never touched in response to asset changes), replicated as
+    a `[quoteAsset, baseAsset]`-keyed, mount-skipped effect.
+  - `UNSAFE_componentWillReceiveProps` ran two independent, order-
+    independent checks: (1) `quoteAsset`/`baseAsset`/`currentAccount`
+    reference change → re-run `_checkFeeStatus`; (2) `quoteAsset`/
+    `baseAsset` *symbol* change (a strict subset of (1), implying the
+    market actually switched) → a full state reset via `_initialState`
+    plus a `changeViewSetting` dispatch for the "last market" setting.
+    `_initialState()` doesn't touch `feeStatus` (only ever set by the
+    constructor's own spread and by `_checkFeeStatus`), so the two checks
+    never interact or need a specific order relative to each other in
+    the original either — ported as two independent effects with their
+    own dependency arrays, both mount-skipped.
+  - `_initPsContainer()` (called from both `componentDidUpdate` and
+    `componentWillReceiveProps`, guarded by an instance `psInit` flag so
+    it only actually initializes perfect-scrollbar once, on whichever
+    update happens to be the first one where the `center` ref already
+    exists) is simplified to a single mount-only `useLayoutEffect` that
+    initializes it directly — by the time any effect runs post-mount, the
+    ref is already attached, so the original's "retry on every subsequent
+    update" dance has nothing left to wait for. Same outcome, reached
+    more directly.
+  - The `bid`/`ask` order-state objects were, in the original, mutated
+    *in place* by several handlers (`_onInputPrice`/`_onInputSell`/
+    `_onInputReceive`/`_currentPriceClick`/`_orderbookClick`/
+    `_depthChartClick`) and then committed via either `this.forceUpdate()`
+    (unconditional re-render, bypassing the need for a new object
+    reference) or a `setState` call that happened to change a *different*
+    top-level state key (relying on React's shallow state merge to pick
+    up the untouched, already-mutated sibling key for free). Neither
+    trick carries over to a `useState` setter, which bails out via
+    `Object.is` if given back the *same* object reference. Every such
+    handler here instead builds a shallow clone of the relevant `bid`/
+    `ask` object first, mutates the clone through the same shared
+    `setForSale`/`setReceive`/`setPrice`/`setPriceText` helper functions
+    (kept byte-for-byte equivalent to the originals, just no longer
+    methods), and commits the clone via `setBid`/`setAsk` — identical
+    final field values, correct under hooks' reference-based change
+    detection.
+  - `_forceRender`/`state.forceReRender`: this SCU-embedded mechanism
+    existed purely to force React to notice *state*-driven changes
+    (`activePanels`/`verticalOrderBook`) on top of a *props* change
+    (`quoteAsset`/`baseAsset`) already covered by the SCU's own shallow-
+    prop-diff loop; `forceReRender` itself is never read in `render()`.
+    Since state changes always re-render their own function component
+    regardless of any memo comparator, and the memo comparator above
+    already faithfully reproduces the real SCU gate, this whole forcing
+    mechanism has nothing left to do — dropped rather than translated.
+  - Confirmed dead, dropped: `state.favorite`, `state.showMarketPicker`
+    (only its sibling `marketPickerAsset` is ever read), `state.history`
+    (`[]`, distinct from the real `history` prop), `state.panelWidth`
+    (shadowed by an unconditional local reassignment before every read —
+    `panelWidth = 350;` — and never `setState`-assigned anywhere),
+    `state.isDepositBridgeModelLoaded` (a typo'd, dead sibling of the
+    real `isDepositBridgeModalLoaded`), `state.isScaledOrderModalVisible`
+    plus `showScaledOrderModal`/`hideScaledOrderModal` (never read in
+    `render()` — the same finding, now doubly confirmed, that led to
+    deleting the orphaned `Exchange/ScaledOrder.jsx` earlier in this
+    phase; the `showScaledOrderModal` prop passed to `<BuySell>` is
+    confirmed unread there too), `_toggleMiniChart()` (never called), the
+    `description`/`assetUtils.parseDescription(...)` computation gated
+    behind `hasPrediction` (computed, never read again), `_changeZoomPeriod`
+    (never called), `_toggleOpenBuySell`/`onToggleOpen` and `_clearForms`/
+    `clearForm` (both passed to `<BuySell>` but confirmed unread inside
+    `BuySell.tsx`), the `ref="deposit_modal"`/`ref="bridge_modal"` string
+    refs (assigned, never read), `isMarketFrozen()`'s `frozenAsset` return
+    field (only `isFrozen` is read), and
+    `UNSAFE_componentWillMount`'s `window.addEventListener("resize",
+    this._setDimensions, ...)` — `this._setDimensions` is never defined
+    anywhere in the class, and `addEventListener` with a non-function
+    listener is a silent no-op (no matching `removeEventListener` exists
+    for it either); the real resize handling is `_getWindowSize`.
+    `location`/`history` props, only ever forwarded to `<MyMarkets>`,
+    were already confirmed dead there during the `MyMarkets.tsx` slice.
+  - Every already-ported child's current props interface was read
+    directly from its own file and cross-checked prop-by-prop against
+    what this file passes it; two more confirmed-unread props surfaced
+    this way and were dropped rather than passed: `showModal`/
+    `onTogglePersonalize` to `<Personalize>` (neither referenced inside
+    `Personalize.tsx`).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build compiles the *entire* app dependency chain (`Exchange.tsx` →
+    `ExchangeContainer.jsx` → `App.jsx` → `Main.js`) showing only the 2
+    known pre-existing `charting_library` errors — the full integration
+    test for this whole migration effort.
+
+**Phase 4 is now complete.** Every file under `app/components/Exchange/`
+that Phase 4 set out to migrate has been ported to TypeScript/function
+components (or deleted as confirmed-orphaned dead code), and the full app
+build succeeds end to end through the new `Exchange.tsx` root. A handful
+of `.jsx` files in that directory were never in scope for this phase and
+remain legacy: `ExchangeContainer.jsx` (the market-subscription wrapper
+that renders `<Exchange>`, one layer up), `TradingViewPriceChart.jsx`
+(blocked on the vendored, not-yet-present `charting_library` package —
+the 2 known pre-existing build errors this phase's verification runs have
+consistently shown), `QuoteSelectionModal.jsx` (used by `MyMarkets.tsx`),
+and `ExchangeHeaderCollateral.jsx`.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
