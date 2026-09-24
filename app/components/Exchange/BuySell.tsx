@@ -10,6 +10,17 @@
 // particular care around the submit button's disabled/enabled state and
 // the bid/ask (`onSubmit(true)`/`onSubmit(false)`) wiring.
 //
+// Fixed during the later `Exchange.tsx` port (found while cross-checking
+// the full order-submission call chain): the three `onSubmit` call sites
+// originally read `onClick={() => onSubmit(true)}` - the original class
+// used `onSubmit.bind(this, true)`, which (unlike a no-arg arrow
+// function) still receives and forwards the click event as its next
+// argument. `Exchange.tsx`'s `_createLimitOrderConfirm`/
+// `createLimitOrderConfirm` calls `e.preventDefault()` as its first
+// statement, so the dropped event would have thrown on every real click.
+// Now `onClick={(e) => onSubmit(true, e)}` (and `false`), forwarding the
+// event explicitly.
+//
 // Confirmed dead, dropped:
 // - `_setPrice(price)`: defined, never called anywhere (the actual
 //   "click to use this price" handler in `render()` calls the *prop*
@@ -1241,7 +1252,9 @@ function BuySellInner(props: BuySellProps) {
                                                 disabled ? undefined : buttonClass
                                             }
                                             disabled={disabled}
-                                            onClick={() => onSubmit(true)}
+                                            onClick={(e: any) =>
+                                                onSubmit(true, e)
+                                            }
                                             type="primary"
                                             style={{margin: 5}}
                                         >
@@ -1492,7 +1505,9 @@ function BuySellInner(props: BuySellProps) {
                                             style={{margin: 0}}
                                             className={buttonClass}
                                             type="submit"
-                                            onClick={() => onSubmit(false)}
+                                            onClick={(e: any) =>
+                                                onSubmit(false, e)
+                                            }
                                             value={forceSellText}
                                         />
                                     </div>
@@ -1507,7 +1522,9 @@ function BuySellInner(props: BuySellProps) {
                                             style={{margin: 0}}
                                             className={buttonClass}
                                             type="submit"
-                                            onClick={() => onSubmit(false)}
+                                            onClick={(e: any) =>
+                                                onSubmit(false, e)
+                                            }
                                             value={forceSellText}
                                         />
                                     </div>
