@@ -1673,6 +1673,51 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Second slice, a batch of three small satellites:
+  - `Exchange/MarketsContainer.jsx` (34 lines) + `Exchange/Markets.jsx`
+    (59 lines) collapsed into one `MarketsContainer.tsx`. Confirmed dead:
+    `MarketsContainer.jsx`'s entire purpose was an `AltContainer` wrap
+    injecting `starredMarkets`/`viewSettings`/`lookupResults`/
+    `marketBase` onto its child `<Markets/>` — but `Markets.jsx` never
+    read any of those four props anywhere (its own logic only tracks a
+    local `height` state from a window resize listener, sized for its
+    `MyMarkets` child, which resolves its own store data independently).
+    Collapsed into one component under the `MarketsContainer` name
+    (`Explorer.tsx`'s external contract, its only importer), folding in
+    `Markets.jsx`'s real logic; `Markets.jsx` itself removed rather than
+    kept as a pass-through, since it had no other importer.
+  - `Exchange/PriceStat.jsx` (117 lines) deleted outright, not ported —
+    a whole-app case-insensitive grep found zero importers anywhere.
+    (Its internal class happened to be named `PriceStatWithLabel`, a
+    copy-paste artifact confusingly shared with the separate, actually-
+    used `PriceStatWithLabel.jsx` — unrelated files, not to be conflated.)
+  - `Exchange/PriceStatWithLabel.jsx` (113 lines, used repeatedly by
+    `ExchangeHeader.jsx`, not yet ported) got the real `.jsx`→`.tsx`
+    rewrite. Its `shouldComponentUpdate` is the first SCU gate in this
+    migration confirmed to be a *genuine* render throttle rather than a
+    no-op: it blocks re-render unless `volume2`/`base`/`price`/`ready`
+    change, so a `quote`/`content`/`toolTip`/`onClick`/
+    `ignoreColorChange`-only change doesn't show until one of those four
+    also changes — plausible given this tile sits in the Exchange price
+    ticker, this phase's own "state-heaviest, highest-update-frequency"
+    part of the app. Preserved via `React.memo` with a comparator that's
+    the exact logical inverse of the original SCU (memo's comparator
+    returns true to *skip*, the opposite sense). Its
+    `UNSAFE_componentWillReceiveProps` (computing the pulsing `change`/
+    `marketChange` state) becomes a no-dependency-array effect — but
+    since `React.memo` skips calling the component entirely on throttled
+    updates (unlike the class, whose `componentWillReceiveProps` always
+    ran even when `shouldComponentUpdate` then blocked the render), this
+    port only observes `market` prop changes that coincide with a memo-
+    passing render. Documented as an accepted, narrow approximation gap —
+    invisible to the user either way, since nothing paints during a
+    throttled update in either version — rather than pursued further with
+    a larger restructuring (an always-rendering outer tracker component)
+    a mechanical port isn't the place to introduce.
+  - Verified (all three files together): `eslint` clean (0 errors,
+    expected `any` warnings only), `yarn typecheck` clean, full Jest
+    suite green (50/50), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
