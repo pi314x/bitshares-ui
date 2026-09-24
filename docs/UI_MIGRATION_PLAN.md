@@ -1985,6 +1985,72 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `yarn typecheck` clean, full Jest suite green (50/50),
     full webpack build shows only the 2 known pre-existing
     `charting_library` errors (unrelated to this deletion).
+- Tenth slice: `Exchange/ScaledOrderTab.jsx` (1058 lines) got the real
+  `.jsx`→`.tsx` rewrite — the live "place a scaled order" tab (bid and
+  ask), wired to `Exchange.jsx`'s real `_createScaledOrder` handler
+  (`MarketsActions.createLimitOrder2`) via the `createScaledOrder` prop.
+  Security-sensitive per AGENTS.md: kept as a strictly mechanical
+  translation of the fee/total math and order-preparation logic.
+  - `ScaledOrderForm` (an antd v3 `Form.create({})`-wrapped component,
+    reached by `ScaledOrderTab` via `wrappedComponentRef`) became a
+    `React.forwardRef` function component exposing
+    `useImperativeHandle(ref, () => ({props: {form}}))` — confirmed
+    correct against `rc-form`'s actual `createBaseForm.js` source (`Form.create()`'s
+    wrapper does a generic `formProps.ref = wrappedComponentRef` assignment,
+    not a class-only one), same technique already used for
+    `MarketOrdersView.tsx`'s legacy-caller `wrappedComponentRef`/string-ref
+    contract in an earlier slice.
+  - Confirmed dead, dropped: the `Col`/`Row` (unused style-guide imports)
+    and `TranslateWithLinks` imports (never referenced anywhere);
+    `_getPreviewDataSource()` (defined, never called); `ScaledOrderTab`'s
+    `handleCancel()`/its `hideModal` prop (bound in the constructor but
+    never wired to any control, and neither of `Exchange.jsx`'s two
+    `<ScaledOrderTab>` call sites ever passes a `hideModal` prop — calling
+    it would have thrown). Also collapsed a no-op `if (expirationType ===
+    "SPECIFIC") {...} else {...}` in `prepareOrders` whose two branches
+    computed the exact same expression.
+  - **Not** dropped despite looking unused: `getFieldDecorator("action",
+    {initialValue: ...})(<Radio.Group>...)` is computed every render but
+    its result is never placed into the rendered JSX — the Buy/Sell radio
+    buttons are never shown. Read `rc-form`'s `createBaseForm.js` to
+    confirm this is not simply dead: `getFieldDecorator(name, opt)`
+    registers the field's `initialValue` as a synchronous side effect of
+    being *called* (inside its own `getFieldProps`), independent of
+    whether the decorated element it returns is ever rendered. Since the
+    radio group is never mounted, no `onChange` ever fires, so the
+    "action" field stays permanently pinned to its `initialValue` — `BUY`
+    on the bid tab, `SELL` on the ask tab. Dropping the call would leave
+    `values.action` `undefined` and silently break
+    `prepareOrders`/`_isMarketFeeVisible`/`_getMarketFeePercentage` (real
+    order-submission logic), so it is kept, called purely for its
+    registration side effect with the decorated element discarded, exactly
+    matching the original's (accidental-looking but load-bearing)
+    behavior.
+  - `ScaledOrderTab`'s `componentDidUpdate(prevProps)` has two independent
+    prop-diff checks (`baseAsset.get("id")` changed → `resetFields()`;
+    `lastClickedPrice` changed → `setFieldsValue({priceLower: ...})`).
+    Ported via a single no-dependency-array, mount-skipped effect using
+    two refs to track each previous prop value directly (rather than a
+    dependency-array-keyed effect), to exactly replicate `prevProps`
+    comparison semantics — including the original's requirement that
+    *both* the previous and current `baseAsset` be present before
+    comparing IDs, which a naive dependency-array approach would not
+    reproduce identically for an undefined→defined transition.
+  - `ScaledOrderForm`'s always-unconditional `componentDidUpdate()` (no
+    params — checks whether the form's live `orderCount` value differs
+    from a tracked `orderCount` state, and if so, re-runs
+    `_checkFeeAssets()`) ported the same way: a no-dependency-array,
+    mount-skipped effect (`componentDidMount`'s initial
+    `_checkFeeAssets()` call is a separate, mount-only effect).
+  - Preserved verbatim (not "fixed"): `_checkFeeAssets`/`checkFeeAssets`
+    calls `.then` directly on `_getAccountAssetsFeeStatus()`'s return
+    value, which can be the literal `false` (not a `Promise`) when
+    `currentAccount`/its balances aren't ready yet — a latent
+    pre-existing throw risk in the original, replicated exactly rather
+    than defensively guarded.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
