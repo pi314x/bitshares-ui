@@ -1945,6 +1945,24 @@ one orphaned file (`AccountVotingProxy.jsx`) removed outright.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Eighth slice: `Exchange/Personalize.jsx` (781 lines) got the real
+  `.jsx`→`.tsx` rewrite — the Exchange screen's settings modal (chart
+  options, order-book grouping/orientation, panel grouping, general
+  display toggles). Purely presentational/local-state; every toggle
+  just forwards to a caller-supplied callback prop, no transaction
+  logic.
+  - Confirmed dead, dropped: the local `open`/`smallScreen` state fields
+    — both initialized (the latter via `UNSAFE_componentWillMount`, from
+    `window.innerWidth`), neither ever read anywhere (every actual
+    screen-size check in `render()` reads the *prop*
+    `smallScreen`/`tinyScreen`, not this local state) — dropping both
+    made `UNSAFE_componentWillMount` itself removable too. Also dropped
+    the dynamic-string `ref={this.props.modalId}` on `<Modal>`, never
+    read anywhere — the same pattern as `MarketPicker.jsx`'s equivalent
+    earlier in this phase.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 5 — Wallet & signing-critical flows
 - Migrate: transfer/send, key import (`ImportKeys.jsx`), backup/restore,
