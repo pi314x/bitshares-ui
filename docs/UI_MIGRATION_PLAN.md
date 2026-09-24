@@ -2426,6 +2426,91 @@ and `ExchangeHeaderCollateral.jsx`.
   first, then refactor internals with the safety net in place.
 - Exit criteria: legacy `Wallet/*`, `Modal/*Withdraw*`, `Modal/HtlcModal.jsx`
   deleted; full send/receive/backup/restore test suite green.
+- **Reviewer-gate note:** this phase's own exit criteria call for a human
+  second-reviewer sign-off on every screen, in addition to normal review -
+  that isn't something this agent can substitute for itself. Each slice
+  below is executed with the same mechanical, well-verified rigor as
+  Phase 4 (plus characterization tests before touching any
+  encryption/signing/key-derivation logic specifically, per this phase's
+  own methodology note above), but the phase as a whole should be treated
+  as **ready for that review**, not as shipped past it.
+
+**Progress:**
+- First slice, the brainkey family (`app/stores/BrainkeyStore.js`,
+  `app/actions/BrainkeyActions.js`, `Wallet/Brainkey.jsx`,
+  `Wallet/BrainkeyInput.jsx`, `Wallet/BrainkeyInputStyleGuide.jsx`,
+  `Wallet/BackupBrainkey.jsx`) got the real `.js`/`.jsx` → `.ts`/`.tsx`
+  rewrite — chosen to start Phase 5 the same way Phase 4 started
+  (smallest, most self-contained corner first): these six files form a
+  closed unit (brainkey derivation, the brainkey text-entry/spellcheck
+  UI, and the "reveal my brainkey after re-entering my password" screen)
+  with no dependency on `WalletDb.js` itself being ported yet (it's
+  imported here exactly as before, as a plain untyped `.js` module — the
+  same way already-ported `.tsx` files elsewhere in this migration
+  import other not-yet-ported stores).
+  - `BrainkeyStore.js`/`BrainkeyStore.ts`: the first Alt.js *store*
+    converted in this migration (Phases 3–4 only ever converted
+    components). Its `derived_keys` array holds real private key objects
+    (derived from the brainkey via `key.get_brainPrivateKey`) in memory —
+    preserved exactly as an in-memory-only cache, nothing added that
+    logs or persists them. Since `BaseStore` and `alt.createStore(...)`
+    inject `setState`/`bindListeners`/etc. onto the store class
+    dynamically at runtime (nothing a `.js`-inferred structural type
+    would know about, and this file is the first store TS actually
+    type-checks, since `tsconfig.json` has `checkJs: false`), the class
+    extends `(BaseStore as any)` to accept those calls — matching the
+    "any for untyped legacy libraries" convention already established
+    for other cases in this migration.
+  - `Brainkey.jsx`'s three `connect(..., connectObject)` components (all
+    listening to the same `BrainkeyStoreFactory.getInstance("wmc")`
+    instance) become `useAltStore(store)` calls; `getInstance("wmc")` is
+    idempotent (cached by name in the factory) and safe to call on every
+    render. `Brainkey`'s `componentWillUnmount` (`BrainkeyStoreFactory
+    .closeInstance("wmc")`, which also clears the derived private keys
+    from memory via the store's own `clearCache()`) becomes a mount-only
+    cleanup effect — this specific cleanup call is the one place in this
+    slice where getting the port wrong would leave stale derived private
+    keys in memory longer than intended, so it was checked twice against
+    the original.
+  - `BrainkeyAccounts` (inside `Brainkey.jsx`) was `BindToChainState`-
+    wrapped for a `ChainTypes.ChainAccountsList.isRequired` prop — a chain
+    type this migration hadn't needed to replicate yet. Read
+    `BindToChainState.jsx`'s own list-resolution code directly (the
+    `chain_accounts_list` branch of its `update()` method) rather than
+    assume: it maps each ID in the Immutable list to
+    `ChainStore.getAccount(id)`, producing a plain array, resolved
+    synchronously on mount before any paint (so the loading-gate
+    placeholder was never actually observable in practice either).
+    `BrainkeyAccounts` has exactly one call site (in this same file), so
+    the resolution is inlined directly under `useChainStoreTick()` rather
+    than built as a separate reusable Container.
+  - `BrainkeyInput.jsx`/`BrainkeyInputStyleGuide.jsx` (functionally
+    identical except a raw `<textarea>` vs. antd's `Input.TextArea`) each
+    keep their module-level `dictionary_set` (populated once, shared
+    across every mounted instance) exactly as-is, including the
+    original's inefficiency: every new mounted instance re-fetches the
+    dictionary from the server even if a previous instance already
+    populated it. `formChange`'s pre-existing "off by one keystroke" quirk
+    (`_checkBrainKey()`'s `valid` result reflects the *previous* brainkey
+    state, since it's read before the new value is committed) is
+    preserved exactly, not corrected. Both files' `require("common/
+    dictionary_en.json")` (conditional on `__ELECTRON__`, ~339KB) stays a
+    runtime `require`, not converted to a static `import` - the latter
+    would pull the dictionary into the *browser* bundle unconditionally,
+    changing real bundle-size behavior for a build that doesn't need it.
+  - `BackupBrainkey.jsx`: the "re-enter your password, then view your
+    brainkey" screen. `WalletDb.getBrainKey()`'s result is held only in
+    this component's own local state, exactly as before, and is not
+    logged. Confirmed dead, dropped: `state.invalid_password`
+    (initialized, never read or set again anywhere in the class).
+  - Added `__ELECTRON__`/`__BASE_URL__`/`__DEV__` to
+    `app/types/global-defines.d.ts` (the same "declare as needed"
+    approach already used there for `__TESTNET__`) - these are
+    `webpack.config.js` `DefinePlugin` compile-time constants this slice
+    is the first to need typed.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
