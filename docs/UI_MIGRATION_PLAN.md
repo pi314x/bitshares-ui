@@ -2511,6 +2511,83 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Second slice: small presentational `Wallet/*` components, the
+  `BalanceClaim*` family, and `stores/ImportKeysStore.js` — grouped
+  because none of them depend on `WalletDb.js`, `BackupStore.js`, or each
+  other beyond this set, so they port and verify as one closed unit.
+  - `ImportKeysStore.js` → `.ts`: a single boolean `importing` flag, no
+    key material. Same `extends (BaseStore as any)` treatment as
+    `BrainkeyStore.ts`.
+  - `LoginTypeSelector.jsx`: `AltContainer`/`connect()` →
+    `useAltStore(WalletUnlockStore)`. Preserved verbatim, not fixed: the
+    operator-precedence bug in `if (!newType in validValues)` — `!` binds
+    tighter than `in`, so this actually evaluates `(!newType) in
+    validValues`, always `false`, so the "Invalid login type value" guard
+    never fires regardless of the real value. `tsc` won't accept the `in`
+    operator's left operand without a cast (a check the original untyped
+    `.js` never had to satisfy), so `(!newType as any) in (validValues as
+    any)` is used — the cast doesn't change the already-inert runtime
+    behavior.
+  - `PasswordConfirm.jsx`/`PasswordConfirmStyleGuide.jsx`: both hold the
+    typed password only in local component state, forwarded to the caller
+    via `onValid` exactly as before, never logged. The original's
+    `this.setState(state, this.validate)` — a setState callback used
+    specifically so `validate` reads the just-committed, fresh state
+    rather than a stale one — becomes a `[password, confirm]`-keyed effect
+    that skips its first run (the original's `validate()` is likewise
+    never called on mount; only the unrelated input auto-focus runs then).
+    `PasswordConfirmStyleGuide.jsx` has a genuine bug preserved exactly:
+    `ref={this.getInputNode()}` *calls* the ref-callback immediately
+    (with no argument) instead of passing the function reference, so the
+    JSX actually receives `ref={undefined}` — the first password input's
+    DOM node is never captured, and `componentDidMount`'s auto-focus is a
+    silent no-op. Replicated by calling `getInputNode()` (no argument)
+    directly in the ported JSX's `ref` prop too, so the port's auto-focus
+    effect is equally inert.
+  - `BalanceClaimAssetTotal.jsx`, `BalanceClaimByAsset.jsx`,
+    `BalanceClaimActive.jsx`, `BalanceClaimSelector.jsx`: the
+    balance-claim screen family (`existing-account/balance-claim`).
+    `BalanceClaimByAsset.jsx` and `BalanceClaimActive.jsx` each duplicate
+    (not share) the same `UNSAFE_componentWillMount`/
+    `UNSAFE_componentWillReceiveProps` pair — unconditionally call
+    `BalanceClaimActiveActions.setPubkeys(keySeq)` on mount, then again
+    only when `PrivateKeyStore`'s key set actually changes. Ported with a
+    `useRef`-tracked previous `keySeq`, compared synchronously in the
+    render body on every render (both original lifecycle methods run
+    before paint, so this preserves the same timing), duplicated
+    independently in both files exactly as the original duplicates it.
+    `BalanceClaimActive.jsx`'s `onClaimBalance` calls the real
+    transaction-broadcasting `WalletActions.importBalance(claim_account_name,
+    selected_balances, true /*broadcast*/)` — carried over unchanged, per
+    AGENTS.md's signing-flow care.
+    `BalanceClaimSelector.jsx`'s `UNSAFE_componentWillReceiveProps`
+    auto-selects checkboxes for a newly-arrived `claim_account_name` (only
+    when nothing is already selected — `onClaimAccount`'s own `if
+    (checked.size) return` guard, which also makes the render-body
+    execution safe from re-render loops). One documented, deliberate
+    deviation here: the original's `onClaimAccount` reads
+    `this.props.total_by_account_asset`, which inside
+    `UNSAFE_componentWillReceiveProps` is still the *previous* render's
+    value (React hasn't applied `nextProps` yet at that point); this port
+    uses the current render's value instead. The two are only observably
+    different if `balances`/`address_to_pubkey` change in the very same
+    store update as `claim_account_name` — unreachable in practice since
+    this component's only mount path (`BalanceClaimActive`) already gates
+    rendering on `balances` being loaded already, whereas the original
+    would additionally crash (`.forEach` on `undefined`) the first time
+    that window were hit.
+  - `ExistingAccount.jsx`: both of its `connect()`-wrapped exports
+    (`ExistingAccount`, `ExistingAccountOptions`) become
+    `useAltStore(WalletManagerStore)`. Still imports the not-yet-ported
+    `ImportKeys.jsx` and `Backup.jsx`'s `BackupRestore` exactly as before
+    (plain untyped `.jsx` modules), same cross-format-import pattern used
+    elsewhere in this migration. `<Link>` needed the same `TypedLink =
+    Link as React.ComponentType<LinkProps>` cast already established in
+    `Explorer/Blocks.tsx` and elsewhere — an existing project-wide
+    React/TS inference gap, not something specific to this file.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (50/50), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
