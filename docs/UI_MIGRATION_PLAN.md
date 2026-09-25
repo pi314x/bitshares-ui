@@ -2649,13 +2649,16 @@ and `ExchangeHeaderCollateral.jsx`.
   since this is still money-moving code.
 
 ### Phase 7 — Gateways & deposit/withdraw bridges
-- Migrate the 7 gateway integrations (BlockTrades, Citadel, RuDex, Gdex,
-  Xbtsx, Bitspark, Piratecash) one at a time — these are independently large
-  (`BlockTradesBridgeDepositRequest.jsx` alone is 2,874 lines) and each has
-  its own external API quirks; do not batch them.
-- Exit criteria: each gateway migrated + deleted individually, with its own
-  integration test using recorded/mocked API fixtures (never hit the live
-  gateway APIs in CI).
+- **Scope note (per requester direction):** of the 7 gateway integrations
+  (BlockTrades, Citadel, RuDex, Gdex, Xbtsx, Bitspark, Piratecash), this
+  phase migrates only **Xbtsx** and **Piratecash**. The other 5 stay
+  on the legacy `.jsx` stack for now and are out of scope here — revisit
+  only if asked.
+- Migrate Xbtsx and Piratecash one at a time — these are independently
+  large and each has its own external API quirks; do not batch them.
+- Exit criteria: each of the two migrated + deleted individually, with its
+  own integration test using recorded/mocked API fixtures (never hit the
+  live gateway APIs in CI).
 
 ### Phase 8 — i18n consolidation & remaining long tail
 - Drop `counterpart`, consolidate on `react-intl`, reconcile the 10
