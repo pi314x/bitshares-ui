@@ -4011,9 +4011,58 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~168 more `.jsx` files outside
+- `Account/` batch 8 (2 files): `MarginPosition.jsx`, `AccountMembership.jsx`
+  → `.tsx`. Grep-verified: no `extends <ClassName>` matches.
+  - `MarginPosition.tsx`: security-sensitive per AGENTS.md
+    (`_onClosePosition` builds/submits a `call_order_update` op via
+    `WalletApi.new_transaction()`/`WalletDb.process_transaction()`) -
+    transcribed verbatim. Contains this batch's one **real, load-bearing**
+    ref (unlike the several confirmed-dead refs dropped in earlier
+    batches): the original's dynamic string ref (`ref={this.state
+    .modalRef}`, read back via `this.refs[this.state.modalRef].show()`
+    to imperatively open a child `BorrowModal`) is translated to a plain
+    `useRef()` object ref - this still works because `BorrowModal` is
+    still a class component (`.jsx`), so a ref naturally resolves to its
+    instance either way. `BindToChainState(Component, {tempComponent:
+    "tr"})` (optional `object`, required `debtAsset`/`collateralAsset`)
+    replaced by a Container replicating the `<tr />` `tempComponent`
+    fallback, same pattern as `AccountWhitelist.tsx`'s `AccountRow` in an
+    earlier batch. Dropped as confirmed dead: `state.hasOrder`, set once
+    in the constructor but never read again (`render()` recomputes an
+    equivalent `has_order` local from the current `object` prop
+    instead). One TS-forced mechanical simplification: `getCRTip`'s
+    `if (!statusClass || statusClass === "")` collapses to
+    `if (!statusClass)` (the second clause was always dead, since `""`
+    is already falsy) once `getStatusClass`'s return type is inferred
+    and TS flags the redundant comparison.
+  - `AccountMembership.tsx`: `BindToChainState(Component)` (four required
+    chain-type props - `account`, `gprops`, `dprops`, `core_asset` - all
+    four genuinely used in render here, unlike the similarly-shaped
+    `AccountReferralsTable.tsx` port where three of four were dead)
+    replaced by a Container gating on all four under
+    `useChainStoreTick()`. `UNSAFE_componentWillMount` (calls
+    `accountUtils.getFinalFeeAsset` once, for its side effect) is
+    replicated with a genuinely *mount-only* `useEffect` (`[]` deps) -
+    unlike most other lifecycle merges this migration, there is no
+    `componentWillReceiveProps` counterpart, so no mount-guard/dependency
+    trickery is needed. Dropped as confirmed dead:
+    `UNSAFE_componentWillReceiveProps` (sets `state.referralsIndex`, a
+    field never read in `render()` and never even initialized in the
+    constructor) and the `ref="appTables"` legacy string ref. `upgradeAccount`
+    (calls `AccountActions.upgradeAccount`, a fee-costing on-chain
+    membership upgrade) transcribed verbatim.
+  - Verified: `yarn typecheck` clean (after the `getCRTip` simplification
+    above), `eslint` clean (0 errors, expected `any`-type warnings only),
+    full Jest suite green (5,532/5,532), `yarn build` shows only the 2
+    known pre-existing `charting_library` errors. Old `.jsx` files
+    removed.
+- Remaining long tail (~166 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (13 more), `Modal/` (21),
+  directories) not yet started: `Account/` (13 more: `FeePoolOperation`,
+  `Proposals`, `AccountPools`, `CreateAccount`, `AccountOverview`,
+  `RecentTransactions`, `CreateAccountPassword`, `WorkersList`,
+  `AccountOrders`, `AccountSelector`, `AccountDepositWithdraw`,
+  `AccountPortfolioList`, `AccountSelectorAnt`), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
