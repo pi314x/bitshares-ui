@@ -1,7 +1,17 @@
-import React from "react";
-import PropTypes from "prop-types";
+// TypeScript/functional-component port of the legacy ScanOrEnterText.jsx
+// (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+import * as React from "react";
 import {Input} from "bitshares-ui-style-guide";
 import QRScanner from "../QRAddressScanner";
+
+interface ScanOrEnterTextProps {
+    labelContent?: React.ReactNode;
+    handleQrScanSuccess: (data: any) => void;
+    onInputChange: (event: any) => void;
+    inputValue?: string;
+    submitBtnText?: React.ReactNode;
+    dataFoundText?: React.ReactNode;
+}
 
 export default function ScanOrEnterText({
     labelContent,
@@ -10,7 +20,7 @@ export default function ScanOrEnterText({
     inputValue,
     submitBtnText,
     dataFoundText
-}) {
+}: ScanOrEnterTextProps) {
     return (
         <div style={{marginBottom: "1em"}}>
             <label className="left-label">{labelContent}</label>
@@ -36,12 +46,3 @@ export default function ScanOrEnterText({
         </div>
     );
 }
-
-ScanOrEnterText.propTypes = {
-    labelContent: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
-    handleQrScanSuccess: PropTypes.func.isRequired,
-    onInputChange: PropTypes.func.isRequired,
-    inputValue: PropTypes.string,
-    submitBtnText: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
-    dataFoundText: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
-};

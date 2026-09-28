@@ -1,4 +1,7 @@
-import React from "react";
+// TypeScript/functional-component port of the legacy
+// PrintReceiptButton.jsx (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical,
+// no logic changes.
+import * as React from "react";
 import {Tooltip, Button} from "bitshares-ui-style-guide";
 import counterpart from "counterpart";
 import jsPDF from "jspdf";
@@ -6,7 +9,13 @@ import "jspdf-autotable";
 import BlockchainStore from "stores/BlockchainStore";
 import BlockchainActions from "actions/BlockchainActions";
 
-const printReceipt = ({data, parsePrice}) => {
+const printReceipt = ({
+    data,
+    parsePrice
+}: {
+    data: any;
+    parsePrice: (price: any) => any;
+}) => {
     const {
         line_items,
         to,
@@ -29,12 +38,12 @@ const printReceipt = ({data, parsePrice}) => {
         totalFontSize = 20;
 
     let height = 0;
-    let body = [];
+    let body: any[] = [];
     let transactionId = "";
     let fromName = "";
 
     if (from) {
-        from.get("history").forEach(op => {
+        from.get("history").forEach((op: any) => {
             if (op.get("block_num") === blockNum) {
                 transactionId = op.get("id");
                 return;
@@ -43,13 +52,13 @@ const printReceipt = ({data, parsePrice}) => {
         fromName = from.get("name");
     }
 
-    const date = BlockchainStore.getState().blockHeaders.get(blockNum);
+    const date = (BlockchainStore as any).getState().blockHeaders.get(blockNum);
 
     const timestamp = date
         ? date.timestamp.toLocaleDateString("en-US").replace(/\//g, ".")
         : new Date().toLocaleDateString("en-US").replace(/\//g, ".");
 
-    const pdf = new jsPDF({
+    const pdf: any = new (jsPDF as any)({
         orientation: "portrait",
         compressPdf: true
     });
@@ -102,7 +111,7 @@ const printReceipt = ({data, parsePrice}) => {
             1: {fontStyle: "bold"},
             2: {cellWidth: 40}
         },
-        startY: (height += rowHeight),
+        startY: height += rowHeight,
         theme: "plain"
     });
 
@@ -126,7 +135,7 @@ const printReceipt = ({data, parsePrice}) => {
 
     pdf.setFontStyle("normal");
     pdf.setFontSize(fontSize);
-    for (let item of line_items) {
+    for (const item of line_items) {
         const price = parsePrice(item.price);
         const unit = `${price} ${asset}`;
         const total = `${item.quantity * price} ${asset}`;
@@ -156,14 +165,24 @@ const printReceipt = ({data, parsePrice}) => {
     });
     pdf.save("bitshares-receipt-" + to + ".pdf");
 };
-const PrintReceiptButton = ({data, parsePrice}) => {
+
+interface PrintReceiptButtonProps {
+    data: any;
+    parsePrice: (price: any) => any;
+}
+
+const PrintReceiptButton = ({data, parsePrice}: PrintReceiptButtonProps) => {
     const tip = "tooltip.print_receipt",
         dataPlace = "left",
         buttonText = counterpart.translate("invoice.print_receipt");
-    if (data.blockNum) BlockchainActions.getHeader.defer(data.blockNum);
+    if (data.blockNum)
+        (BlockchainActions as any).getHeader.defer(data.blockNum);
 
     return (
-        <Tooltip placement={dataPlace} title={counterpart.translate(tip)}>
+        <Tooltip
+            placement={dataPlace as any}
+            title={counterpart.translate(tip)}
+        >
             <Button
                 type="primary"
                 icon="download"

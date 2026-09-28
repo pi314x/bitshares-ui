@@ -2837,6 +2837,78 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (63/63), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Eighth slice: Transfer/Send - `Modal/SendModal.jsx`,
+  `Transfer/Invoice.jsx`, `Transfer/InvoicePay.jsx`,
+  `Transfer/InvoiceRequest.jsx`, `Transfer/ScanOrEnterText.jsx`,
+  `Transfer/PrintReceiptButton.jsx`. The real-money transfer modal and the
+  merchant-invoice request/pay flow.
+  - `SendModal.jsx` → `.tsx`: external callers hold an imperative ref to
+    call `.show()` (`AccountPortfolioList.jsx`'s `this.send_modal.show()`,
+    `NextShellContainer.tsx`'s `sendModalRef.current.show()`, both already
+    typed `{show: () => void}`) - ported with `React.forwardRef` +
+    `useImperativeHandle` exposing exactly that method, matching both
+    existing consumers unchanged. Its `shouldComponentUpdate` is **not**
+    a pure performance guard (unlike `WalletUnlockModal.tsx`'s, which
+    was) - it has two real side effects: auto-selecting the sole
+    available asset when the from-account's balances narrow to exactly
+    one type, and running a balance check whenever the modal is about to
+    open. Both replicated by comparing each render's freshly-computed
+    values against refs holding the previous render's, executed in the
+    render body (before paint) like the original. Preserved verbatim
+    (not "fixed"): `UNSAFE_componentWillReceiveProps` compares the
+    incoming `currentAccount` prop against *both* the current
+    `from_name` state *and* the previous (stale) `this.props
+    .currentAccount` - replicated with a ref holding the previous
+    render's `currentAccount` prop. Also found and preserved: `_getAvailableAssets`
+    reads a `state.from_error` field that was never actually part of this
+    component's state anywhere (`getInitialState` doesn't include it,
+    nothing ever sets it - `from_error` only ever existed as an unrelated
+    `render()`-local variable of the same name) - always `undefined` in
+    practice, so this port simply doesn't thread a `from_error` parameter
+    through at all, since it never affected the real runtime behavior.
+    Dropped as confirmed dead: two extra bound arguments on `_setTotal`'s
+    `onClick` handler (`_setTotal(asset_id, balance_id)` never reads a
+    3rd/4th argument) and the `feeAmount` render-body destructure that
+    only existed to feed those two dead arguments.
+  - `Invoice.jsx`: preserved verbatim (not "fixed") - the original builds
+    `state.tabs` (including each tab's `<InvoiceRequest>`/`<InvoicePay>`
+    content element) once in the constructor, closing over that first
+    render's `props`; later prop changes (e.g. a new `currentAccount`)
+    never reach the already-mounted children through this path. Replicated
+    with a `useState` lazy initializer (runs once, matching a constructor).
+  - `InvoiceRequest.jsx`/`InvoicePay.jsx`: both have a `UNSAFE
+    .componentWillReceiveProps` that reads `this.props.currentAccount`
+    (stale, pre-update) rather than `nextProps.currentAccount` -
+    preserved with the same previous-render-ref pattern. In
+    `InvoiceRequest.jsx` this is inert in practice (`componentDidMount`
+    already sets `recipient_name` from the same, already chain-state-loaded
+    `currentAccount` on mount, given `Invoice.jsx`'s `bindToCurrentAccount`
+    gates rendering on that); in `InvoicePay.jsx` it's reachable (e.g. via
+    the raw-invoice-data retry path). `InvoicePay.jsx`'s original
+    `getTotal()`/`_findPayment()` two-phase `setState({...},
+    this.getTotal)` (set fields, then read them back from `this.state`
+    inside the callback to compute derived ones) is restructured into
+    computing the derived values eagerly from already-known local values
+    and setting everything in one state update - same end result, since
+    both are pure functions of data already in hand at the call site.
+    `onBroadcastAndConfirm`/`onTrxIncluded` (registered/unregistered by
+    reference via `TransactionConfirmStore.listen`/`.unlisten`) need a
+    stable identity across renders like the originals' bound methods had -
+    given via `useCallback` with an empty dependency array. Dropped as
+    confirmed dead: `InvoiceRequest.jsx`'s `invoice` state field (set once,
+    never read/written again) and `InvoicePay.jsx`'s `_printExampleInvoice`
+    (a debug-only method, never called - its call site was already
+    commented out in the original) and its `balance` render variable
+    (computed, never actually rendered in the returned JSX).
+  - `ScanOrEnterText.jsx`/`PrintReceiptButton.jsx`: straightforward
+    presentational ports.
+  - Added `declare module "bitsharesjs/es"`, `declare module
+    "common/base58"`, and `declare module "qrcode.react"` to
+    `app/types/vendor-shims.d.ts` (none of these ship types; same
+    "declare as needed" pattern used throughout this phase).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (63/63), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a

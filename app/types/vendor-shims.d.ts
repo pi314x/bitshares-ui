@@ -19,3 +19,6 @@ declare module "react-sticky-table";
 declare module "intro.js";
 declare module "lzma";
 declare module "react-foundation-apps/src/utils/foundation-api";
+declare module "bitsharesjs/es";
+declare module "common/base58";
+declare module "qrcode.react";
