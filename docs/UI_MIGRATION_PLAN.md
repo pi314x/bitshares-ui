@@ -3657,9 +3657,84 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~199 more `.jsx` files outside
-  `Blockchain/operations/`, the eight `Utility/` batches above, and the
-  excluded gateway directories) not yet started.
+- `Utility/` batch 9 (5 files): `AmountSelector2.jsx`, `AmountSelector3
+  .jsx`, `AssetSelector.jsx`, `FeeAssetSelector.jsx`, `TranslateWithLinks
+  .jsx` → `.tsx`. Grep-verified: no `extends <ClassName>` matches. These
+  are composed of/compose with the deferred mixin-cluster files
+  (`AmountSelector2`/`3` render `<AmountSelector>` from the still-`.jsx`
+  `AmountSelectorStyleGuide.jsx`) via plain JSX composition, not class
+  inheritance - unaffected by that deferral.
+  - `AssetSelector.tsx`: dropped the confirmed-dead `getAsset()` method
+    and its "can be used in parent component: `this.refs.asset_selector
+    .getAsset()`" comment - grepped `.getAsset()` across the whole app
+    and found zero callers using it via a ref anywhere. `BindToChainState
+    (AssetSelector)` (resolving the optional `asset` prop) replaced by a
+    Container under `useChainStoreTick()`. `componentDidMount` +
+    `UNSAFE_componentWillReceiveProps` (both call `onFound` - mount
+    requires `asset` truthy, update only requires the reference to have
+    changed) unified into one `useEffect` keyed on `asset`, with a
+    mount-only ref distinguishing the two conditions.
+  - `FeeAssetSelector.tsx` (the largest/most stateful file ported in this
+    phase so far): kept as one combined state object (not split into
+    per-field `useState` calls) updated via a shallow-merge helper, to
+    preserve the original's atomic multi-field `this.setState({a, b})`
+    calls exactly, with a `stateRef` mirroring the latest state for reads
+    inside `async` functions (`_calculateFee`, `_syncAvailableAssets`)
+    across `await` boundaries. `shouldComponentUpdate` here looked at
+    first like a correctness gate (it can prevent `componentDidUpdate`
+    from running at all, not just a render) - checked carefully: every
+    condition inside `_feeNeedCalculation` (the function `componentDidUpdate`
+    itself uses to decide whether to recalculate) is also one of
+    `shouldComponentUpdate`'s own OR'd conditions, so `shouldComponentUpdate`
+    can only return `false` when `_feeNeedCalculation` is *already* false -
+    it never actually suppresses a fee recalculation, so dropping it is
+    safe. **One deliberate, documented behavior difference** (not a
+    silent "fix"): `componentDidUpdate`'s `assets: null` reset on account
+    change *was* subject to a narrow edge case via `shouldComponentUpdate`
+    (could be silently skipped if the account changes before
+    `transaction`/`feeAsset` are ready, and no other state field happens
+    to differ); this port's `useEffect` always performs the reset when
+    the account reference changes, which is more consistently correct
+    rather than bug-for-bug - see the file header comment for the full
+    reasoning. Also found via typecheck: `Exchange/MyMarkets.tsx` passes
+    an `onAssetSelect` prop to `<AssetSelector>` that the original
+    component never read (only `onFound`/`onChange`/`onAction` are read) -
+    a pre-existing dead prop in that caller, left as-is (out of scope to
+    "fix" a different file's bug while porting this one); `AssetSelector
+    Props` was given an index signature to accept it and other
+    unrecognized extra props without a type error, matching the
+    original's permissive-by-default JS behavior.
+  - `TranslateWithLinks.tsx`: preserved two real pre-existing bugs
+    verbatim - `if (splitText.indexOf(key.arg))` silently skips
+    interpolating a value that happens to land at array index `0` (since
+    `indexOf` returns `0`, which is falsy, only when found at the very
+    first position, vs `-1`, which is truthy, when not found at all -
+    almost certainly meant to be `!== -1`); and the `"icon"` case's
+    `title = name.replace(...)` references a bare `name` that isn't
+    `key.value` or anything else in scope, which at runtime resolves to
+    the browser global `window.name` (normally `""`) - written here as
+    an explicit `window.name` since TypeScript's own inference for the
+    bare identifier in this scope didn't match the DOM global and didn't
+    typecheck, but behaviorally identical at runtime.
+  - Verified: `yarn typecheck` clean (after the `onAssetSelect` index-
+    signature fix above), `eslint` clean (0 errors, expected `any`-type
+    warnings only), full Jest suite green (5,532/5,532), `yarn build`
+    shows only the 2 known pre-existing `charting_library` errors. Old
+    `.jsx` files removed.
+- Remaining long tail (~194 more `.jsx` files outside
+  `Blockchain/operations/`, the nine `Utility/` batches above, and the
+  excluded gateway directories) not yet started. This effectively
+  completes the `Utility/` directory except for: `AssetWrapper.jsx`/
+  `BindToChainState.jsx`/`ChainTypes.js` (shared resolution
+  infrastructure, intentionally left as-is - the target of this
+  migration's `BindToChainState`-replacement pattern, not a migration
+  candidate itself), and the deferred mixin cluster (`DecimalChecker
+  .jsx`, `AmountSelector.jsx`, `AmountSelectorStyleGuide.jsx`,
+  `MarketStatsCheck.jsx`, `EquivalentPrice.jsx`, `EquivalentValueComponent
+  .jsx`, `MarketPrice.jsx`, `MarketChangeComponent.jsx`, plus their two
+  external consumers `Modal/DepositModal.jsx` and `Dashboard
+  /SimpleDepositWithdraw.jsx`) - see the "General rule adopted" note
+  under batch 1 above for why these are deferred together.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
