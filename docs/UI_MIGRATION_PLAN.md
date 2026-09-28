@@ -3504,8 +3504,65 @@ compromise, not silent scope-narrowing.
     (5,532/5,532, after the test-path fix above), `yarn build` shows
     only the 2 known pre-existing `charting_library` errors. Old `.jsx`
     files removed.
-- Remaining long tail (~213 more `.jsx` files outside
-  `Blockchain/operations/`, the four `Utility/` batches above, and the
+- `Utility/` batch 5 (7 files ported, 1 deleted): `ChainSelect.jsx`
+  (default-exports `ChainSelectView`), `SearchInput.jsx`, `PriceInput
+  .jsx`, `PaginatedList.jsx`, `CollapsibleTable.jsx`, `LiquidityPoolsList
+  .jsx`, `PeriodSelector.jsx` → `.tsx`; `ChainResolveComponents.jsx`
+  deleted outright. Grep-verified: no `extends <ClassName>` matches for
+  any of the seven class-based ones.
+  - **`ChainResolveComponents.jsx` deleted, not ported**: grep for its
+    exports (`ChainResolveComponents`, `ResolvemyActiveAccounts`) across
+    all of `app/` found zero importers anywhere else in the codebase —
+    confirmed dead code at the whole-file level (not just an unused
+    import within a file), so it was deleted rather than mechanically
+    carried forward.
+  - `SearchInput.tsx`: preserved verbatim (not "fixed") — `searchInput`
+    is a single `React.createRef()` created once at *module* scope,
+    shared by every `<SearchInput>` instance rendered anywhere in the
+    app (not a per-instance ref) — a real pre-existing bug. Using
+    `useRef()` inside the component (a per-instance ref) would be the
+    "obvious" hooks-idiomatic fix but would silently change behavior, so
+    it wasn't done.
+  - `PriceInput.tsx`: preserved verbatim — the constructor's `price`/
+    `realPriceValue` state was computed once from the *initial*
+    `quote`/`base` props (no `componentWillReceiveProps`), replicated
+    with a `useState` lazy initializer; `onPriceChanged` mutates the
+    `price` object in state directly rather than replacing it, then
+    triggers a re-render via a partial state update — replicated with a
+    manual `{...prev, ...}` merge (hooks' `setState`, unlike class
+    `setState`, doesn't auto-merge).
+  - `PaginatedList.tsx`: preserved verbatim — `pageSize` state computed
+    once from the initial prop (constructor semantics, `useState` lazy
+    initializer); the stray `uns` prop passed to `<Table>` with no value
+    kept as-is (harmless, silently ignored by the underlying component).
+  - `CollapsibleTable.tsx`: `componentDidMount`'s `ReactDOM.findDOMNode
+    (this)` (locating `.ant-table-tbody` to attach animation-end
+    listeners — antd 3.x's `Table` is a class component with no
+    alternative DOM-node-access API) is replicated via a ref to the
+    rendered `<Table>` plus `findDOMNode` on that ref's value, with a
+    targeted `eslint-disable-next-line react/no-find-dom-node` — the
+    same escape hatch already established in `Exchange/OrderBook.tsx`.
+    Also preserved: the animation-end listeners are never removed (no
+    `componentWillUnmount` cleanup in the original either).
+  - `LiquidityPoolsList.tsx`: the original's `BindToChainState(Component)`
+    wrapping was dropped entirely (not replaced by a Container, unlike
+    every other `BindToChainState` usage ported so far) — found by
+    reading `BindToChainState.jsx`'s type-checker list directly: it only
+    recognizes `ChainTypes.ChainLiquidityPool` (singular), not the plural
+    `ChainTypes.ChainLiquidityPoolsList` this component's `pools` prop
+    actually declares, so the prop was never matched by any resolution
+    category and was already being passed straight through unresolved —
+    the wrapping was already a behavioral no-op, confirmed by the render
+    code itself treating `pools` as an already-resolved multi-entry
+    collection.
+  - Verified: `yarn typecheck` clean (after widening `PaginatedListProps`
+    with an index signature — a real caller, `Account/VotingAccountsList
+    .tsx`, passes a `leftPadding` prop the original silently ignored),
+    `eslint` clean (0 errors, expected `any`-type warnings only), full
+    Jest suite green (5,532/5,532), `yarn build` shows only the 2 known
+    pre-existing `charting_library` errors. Old `.jsx` files removed.
+- Remaining long tail (~206 more `.jsx` files outside
+  `Blockchain/operations/`, the five `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup
