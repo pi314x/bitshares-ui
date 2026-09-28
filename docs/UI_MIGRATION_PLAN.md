@@ -3561,8 +3561,44 @@ compromise, not silent scope-narrowing.
     `eslint` clean (0 errors, expected `any`-type warnings only), full
     Jest suite green (5,532/5,532), `yarn build` shows only the 2 known
     pre-existing `charting_library` errors. Old `.jsx` files removed.
-- Remaining long tail (~206 more `.jsx` files outside
-  `Blockchain/operations/`, the five `Utility/` batches above, and the
+- `Utility/` batch 6 (3 files): `AssetSelect.jsx`, `CryptoLinkFormatter
+  .jsx`, `FloatingDropdown.jsx` (default-exports `Dropdown`) → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches.
+  - `AssetSelect.tsx`: preserved verbatim - the original assigned
+    `AssetSelectView.defaultPropTypes = {...}` (not the correctly-spelled
+    `defaultProps`), so React never actually applied any of those
+    "defaults" - a pre-existing typo, already dead at runtime before this
+    port. Real default values were deliberately *not* added, since that
+    would silently change behavior (e.g. `<AssetSelect>` with no `assets`
+    prop currently crashes on `assets.filter(...)`, rather than falling
+    back to `[]`). The original's `BindToChainState(AssetSelectView)`
+    resolution of `assets` (`ChainTypes.ChainAssetsList`) is replaced by
+    a Container replicating `BindToChainState.jsx`'s exact
+    `chain_assets_list` resolution loop, including its sparse-array
+    quirk (the loop increments its index *before* assigning, so real
+    items start at array index 1, with a hole at 0) - harmless here since
+    `AssetSelectView` only calls `.filter(...)` on the result (which
+    skips holes), but preserved rather than "fixed" in case other
+    components sharing this resolution category are ported later.
+  - `CryptoLinkFormatter.tsx`: the original's `static assetTemplates = {}`
+    class field was always shadowed by an identically-named instance
+    field assigned in the constructor - the static one was dead from the
+    start; replicated as a plain module-scope constant.
+  - `FloatingDropdown.tsx`: `componentDidMount` + `UNSAFE_component
+    WillReceiveProps` (together keeping a document-level click listener
+    in sync as `entries.length` crosses the 1/>1 boundary) are unified
+    into one `useEffect` keyed on `entries.length`, with cleanup in a
+    separate mount-only effect. Since the listener is attached once (not
+    re-created every render), it can't close over `id` the way the
+    class's `this.props.id` always read the *current* value - replicated
+    with an `idRef` kept in sync on every render and read from inside the
+    long-lived listener.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~203 more `.jsx` files outside
+  `Blockchain/operations/`, the six `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup
