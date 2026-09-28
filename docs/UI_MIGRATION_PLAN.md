@@ -4056,17 +4056,99 @@ compromise, not silent scope-narrowing.
     full Jest suite green (5,532/5,532), `yarn build` shows only the 2
     known pre-existing `charting_library` errors. Old `.jsx` files
     removed.
-- Remaining long tail (~166 more `.jsx` files outside
+- `Account/` batch 9 (3 files): `FeePoolOperation.jsx`, `Proposals.jsx`,
+  `AccountPools.jsx` → `.tsx`. Grep-verified: no `extends <ClassName>`
+  matches beyond plain `React.Component`/`Component`.
+  - `FeePoolOperation.tsx`: security-sensitive per AGENTS.md
+    (`onFundPool`/`onClaimPool`/`onClaimFees`/`onClaimCollateralFees`
+    submit on-chain fee-pool operations via `AssetActions`) - transcribed
+    verbatim. `AssetWrapper` kept as-is. Preserved verbatim: the stray
+    `console.log(dynamicObject)` debug statement (matches this project's
+    established practice of keeping pre-existing debug logs rather than
+    silently removing them, e.g. `AccountWhitelist.tsx`); the original's
+    "mutate an `Asset` instance held in state, then `setState` a sibling
+    key to trigger the re-render" pattern, replicated as-is since the
+    `Asset` instances are genuinely never replaced across renders, only
+    mutated in place.
+  - `Proposals.tsx`: `BindToChainState(Component)` (required `account`)
+    replaced by a Container; the class's own *additional*
+    `ChainStore.subscribe(this.forceUpdate)`/`componentWillUnmount`
+    unsubscribe pair (redundant with, but distinct from, the resolving
+    HOC's own subscription) is preserved by calling `useChainStoreTick()`
+    in *both* the Container and the inner component, matching the
+    original's double-subscription exactly rather than collapsing it.
+    The `this._proposals`/`this._loading` instance fields (mutated
+    directly during `render()` to memoize the derived proposal list, with
+    no `setState` involved) become `useRef()`s, mutated and read back
+    within the same render pass - a direct translation, not the
+    render-phase-`setState` pattern used elsewhere in this migration,
+    since the original never used `setState` for this either. Dropped as
+    confirmed dead: the `ref={"modal"}` legacy string ref on
+    `ProposalModal`, and the vestigial `this.state &&` guards before
+    every `this.state.modal.*` access (`this.state` is unconditionally
+    set in the constructor, so always truthy by render time - and
+    `useState`'s state is likewise never `undefined` after the first
+    render). One TS-forced adjustment: `TransactionIDAndExpiry` (a
+    plain, not-yet-ported `.jsx` component) infers `style` as a required
+    prop from its destructured parameters, so an explicit
+    `style={undefined}` is added at the one call site that omits it
+    (identical runtime value to omitting it entirely, since the original
+    never passed one either).
+  - `AccountPools.tsx`: the original's three layers - `connect(
+    AccountPoolsStoreWrapper, {listenTo: [PoolmartStore, AssetStore],
+    getProps})` wrapping `BindToChainState(AccountPools, {show_loader:
+    true})`, wrapping a trivial passthrough class with no logic of its
+    own - collapse into two: `AccountPoolsContainer` (`useAltStore`
+    called twice, once per store - the established multi-store pattern)
+    feeding `AccountPoolsChainContainer` (resolves `defaultAsset` via
+    `ChainStore.getAsset` under `useChainStoreTick()`, replicating the
+    `show_loader` fallback exactly as `AccountPage.tsx`'s Container does).
+    `componentDidMount` (initial fetch) + `componentWillReceiveProps`
+    (re-fetch when a newly-arrived `liquidityPools` prop's last pool id
+    doesn't match the *previous* render's `lastPoolId` prop) unified into
+    one `useEffect` keyed on `liquidityPools`, with a mount-flag ref
+    distinguishing the two call sites; each `setState(update, callback)`
+    call's callback runs synchronously right after the corresponding
+    state update rather than via a dedicated effect, since neither
+    `_getLiquidityPools` nor `_resetLiquidityPools` ever reads the
+    just-updated field itself. **Dropped as confirmed dead** (found while
+    porting): `state.total` (set, never read - the `<Table>`'s
+    `pagination.total` uses `dataSource.length` instead); `state
+    .lastPoolId` (set only in `_resetLiquidityPools`, but every real
+    comparison reads the *prop* `lastPoolId` from `PoolmartStore`
+    instead); the connect-provided `liquidityPoolsLoading` prop (computed
+    but never read anywhere in the class); and, in `render()`, the
+    `if (assetsList.length) {...}` re-mapping block - here `assetsList`
+    is a genuine Immutable.js `List` (built via `List().push(id)` in
+    `getProps`), which has no `.length` property (only `.size`), unlike
+    the *same-looking* code in `AccountAssets.tsx` where `assetsList`
+    really is a plain JS array (from `BindToChainState`'s
+    `chain_assets_list` resolution) - so this branch, unlike that one,
+    can never run. **Preserved verbatim** (not "fixed"): `_hideDeleteModal`
+    sets `selectedPool` to `undefined` rather than `null`, because
+    `DeletePoolModal.onHideModal` is always invoked with zero arguments
+    (verified in `Modal/DeletePoolModal.jsx`), making its `pool`
+    parameter always `undefined`; the filter inputs are tracked in state
+    and re-trigger a fetch on change but are never actually applied to
+    `dataSource` in `render()` - that's the original's own behavior.
+  - Verified: `yarn typecheck` clean (after adding the established
+    `LinkComponent = Link as React.ComponentType<any>` cast in
+    `AccountPools.tsx`, loosening `AccountPoolsChainContainer`'s prop
+    type to make `defaultAsset` optional there, and the `Proposals.tsx`
+    `style={undefined}` fix above), `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~163 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (13 more: `FeePoolOperation`,
-  `Proposals`, `AccountPools`, `CreateAccount`, `AccountOverview`,
-  `RecentTransactions`, `CreateAccountPassword`, `WorkersList`,
-  `AccountOrders`, `AccountSelector`, `AccountDepositWithdraw`,
-  `AccountPortfolioList`, `AccountSelectorAnt`), `Modal/` (21),
-  `Blockchain/` non-operations (~13), `Registration/` (11), root
-  `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
-  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
-  smaller directories.
+  directories) not yet started: `Account/` (10 more: `CreateAccount`,
+  `AccountOverview`, `RecentTransactions`, `CreateAccountPassword`,
+  `WorkersList`, `AccountOrders`, `AccountSelector`,
+  `AccountDepositWithdraw`, `AccountPortfolioList`,
+  `AccountSelectorAnt`), `Modal/` (21), `Blockchain/` non-operations
+  (~13), `Registration/` (11), root `components/` (9), `Forms/` (8),
+  `PredictionMarkets/` (7), `Dashboard/` (7), `Account/CreditOffer/` (7),
+  `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the

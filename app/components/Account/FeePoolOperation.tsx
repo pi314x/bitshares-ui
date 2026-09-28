@@ -1,4 +1,29 @@
-import React from "react";
+// TypeScript/functional-component port of the legacy FeePoolOperation.jsx
+// (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+//
+// Security-sensitive per AGENTS.md (submits on-chain fee-pool
+// fund/claim operations via `AssetActions`): `onFundPool`, `onClaimPool`,
+// `onClaimFees`, `onClaimCollateralFees` transcribed verbatim.
+//
+// `AssetWrapper(Component, {propNames: ["asset", "core"], defaultProps,
+// withDynamic: true})` kept as-is (shared HOC, out of scope).
+//
+// Preserved verbatim (not "fixed"): the stray `console.log(dynamicObject)`
+// in `renderClaimCollateralFees` (matches the project's established
+// practice elsewhere of keeping pre-existing debug logs, e.g.
+// `AccountWhitelist.tsx`, `FeeAssetSelector.tsx`); `onClaimInput` and
+// `onClaimCollateralInput` remain two near-identical functions rather
+// than being consolidated, matching the original's own duplication.
+//
+// The original's `state[key + "Asset"].setAmount(...)` (mutating an
+// `Asset` instance already held in state, then `setState`-ing a
+// *different* key to trigger the re-render) is replicated as-is: the
+// `Asset` instances are never replaced across renders (only mutated in
+// place), and `mergeState` on a sibling primitive key still triggers the
+// re-render that picks up the mutation, exactly like the original's
+// `this.setState({[key]: ...})` on a class instance whose other fields
+// were mutated directly.
+import * as React from "react";
 import classnames from "classnames";
 import Translate from "react-translate-component";
 import {Asset} from "common/MarketClasses";
@@ -9,129 +34,133 @@ import AssetActions from "actions/AssetActions";
 import AssetWrapper from "../Utility/AssetWrapper";
 import {ChainStore} from "bitsharesjs";
 
-const stateSetter = (that, key, transform = value => value) => value =>
-    that.setState({[key]: transform(value)});
+interface FeePoolOperationState {
+    funderAccountName?: any;
+    newFunderAccount?: any;
+    fundPoolAmount: any;
+    fundPoolAsset: any;
+    claimPoolAmount: any;
+    claimPoolAmountAsset: any;
+    claimFeesAmount: any;
+    claimFeesAmountAsset: any;
+    claimCollateralFeesAmount: any;
+    claimCollateralFeesAmountAsset: any;
+    backingAsset: any;
+}
 
-const keyGetter = key => object => object[key];
+interface FeePoolOperationCoreProps {
+    type?: string;
+    asset: any;
+    core: any;
+    hideBalance?: boolean;
+    getDynamicObject: (id: any) => any;
+    funderAccountName?: any;
+}
 
-class FeePoolOperation extends React.Component {
-    static defaultProps = {
-        type: "fund"
-    };
-
-    constructor(props) {
-        super(props);
-        this.state = this.initialState();
-    }
-
-    onAccountNameChanged = stateSetter(this, "funderAccountName");
-    onAccountChanged = stateSetter(this, "newFunderAccount");
-    onPoolInput = stateSetter(this, "fundPoolAmount", keyGetter("amount"));
-
-    onClaimInput(key, {amount}) {
-        this.state[key + "Asset"].setAmount({real: amount});
-        this.setState({
-            [key]: amount
-        });
-    }
-
-    onClaimCollateralInput(key, {amount}) {
-        this.state[key + "Asset"].setAmount({real: amount});
-        this.setState({
-            [key]: amount
-        });
-    }
-
-    onFundPool = () =>
-        AssetActions.fundPool(
-            this.state.newFunderAccount
-                ? this.state.newFunderAccount.get("id")
-                : null,
-            this.props.core,
-            this.props.asset,
-            this.state.fundPoolAmount.replace(/,/g, "")
-        );
-
-    reset = () => {
-        this.setState(this.initialState());
-    };
-
-    initialState = () => ({
-        funderAccountName: this.props.funderAccountName,
+function FeePoolOperation({
+    type = "fund",
+    asset,
+    core,
+    hideBalance,
+    getDynamicObject,
+    funderAccountName: funderAccountNameProp
+}: FeePoolOperationCoreProps) {
+    const buildInitialState = (): FeePoolOperationState => ({
+        funderAccountName: funderAccountNameProp,
         fundPoolAmount: 0,
-        fundPoolAsset: new Asset({
+        fundPoolAsset: new (Asset as any)({
             amount: 0,
-            precision: this.props.core.get("precision"),
-            asset_id: this.props.core.get("id")
+            precision: core.get("precision"),
+            asset_id: core.get("id")
         }),
         claimPoolAmount: 0,
-        claimPoolAmountAsset: new Asset({
+        claimPoolAmountAsset: new (Asset as any)({
             amount: 0,
-            precision: this.props.core.get("precision"),
-            asset_id: this.props.core.get("id")
+            precision: core.get("precision"),
+            asset_id: core.get("id")
         }),
         claimFeesAmount: 0,
-        claimFeesAmountAsset: new Asset({
+        claimFeesAmountAsset: new (Asset as any)({
             amount: 0,
-            precision: this.props.asset.get("precision"),
-            asset_id: this.props.asset.get("id")
+            precision: asset.get("precision"),
+            asset_id: asset.get("id")
         }),
         claimCollateralFeesAmount: 0,
-        claimCollateralFeesAmountAsset: new Asset({
+        claimCollateralFeesAmountAsset: new (Asset as any)({
             amount: 0,
-            precision: this.props.asset.get("precision"),
-            asset_id: this.props.asset.get("id")
+            precision: asset.get("precision"),
+            asset_id: asset.get("id")
         }),
-        backingAsset: new Asset({
+        backingAsset: new (Asset as any)({
             amount: 0,
-            asset_id: this.props.asset.has("bitasset")
-                ? this.props.asset.getIn([
-                      "bitasset",
-                      "options",
-                      "short_backing_asset"
-                  ])
+            asset_id: asset.has("bitasset")
+                ? asset.getIn(["bitasset", "options", "short_backing_asset"])
                 : "1.3.0"
         })
     });
 
-    onClaimCollateralFees() {
-        let account = ChainStore.getAccount(this.props.funderAccountName);
+    const [state, setState] = React.useState<FeePoolOperationState>(
+        buildInitialState
+    );
+
+    const mergeState = (partial: Partial<FeePoolOperationState>) => {
+        setState(prev => ({...prev, ...partial}));
+    };
+
+    const reset = () => {
+        setState(buildInitialState());
+    };
+
+    const onAccountNameChanged = (value: any) =>
+        mergeState({funderAccountName: value});
+    const onAccountChanged = (value: any) =>
+        mergeState({newFunderAccount: value});
+    const onPoolInput = (value: any) =>
+        mergeState({fundPoolAmount: value.amount});
+
+    const onClaimInput = (key: string, {amount}: any) => {
+        (state as any)[key + "Asset"].setAmount({real: amount});
+        mergeState({[key]: amount} as any);
+    };
+
+    const onClaimCollateralInput = (key: string, {amount}: any) => {
+        (state as any)[key + "Asset"].setAmount({real: amount});
+        mergeState({[key]: amount} as any);
+    };
+
+    const onFundPool = () =>
+        (AssetActions as any).fundPool(
+            state.newFunderAccount ? state.newFunderAccount.get("id") : null,
+            core,
+            asset,
+            state.fundPoolAmount.replace(/,/g, "")
+        );
+
+    const onClaimCollateralFees = () => {
+        const account = (ChainStore as any).getAccount(state.funderAccountName);
         if (!account) return;
-        AssetActions.claimCollateralFees(
+        (AssetActions as any).claimCollateralFees(
             account.get("id"),
-            this.props.asset,
-            this.state.backingAsset,
-            this.state.claimCollateralFeesAmountAsset
+            asset,
+            state.backingAsset,
+            state.claimCollateralFeesAmountAsset
         );
-    }
+    };
 
-    onClaimFees() {
-        let account = ChainStore.getAccount(this.props.funderAccountName);
+    const onClaimFees = () => {
+        const account = (ChainStore as any).getAccount(state.funderAccountName);
         if (!account) return;
-        AssetActions.claimPoolFees(
+        (AssetActions as any).claimPoolFees(
             account.get("id"),
-            this.props.asset,
-            this.state.claimFeesAmountAsset
+            asset,
+            state.claimFeesAmountAsset
         );
-    }
+    };
 
-    onClaimPool = () =>
-        AssetActions.claimPool(
-            this.props.asset,
-            this.state.claimPoolAmountAsset
-        );
+    const onClaimPool = () =>
+        (AssetActions as any).claimPool(asset, state.claimPoolAmountAsset);
 
-    renderFundPool() {
-        const {
-            props,
-            state,
-            onPoolInput,
-            onFundPool,
-            reset,
-            onAccountNameChanged,
-            onAccountChanged
-        } = this;
-        const {asset, core, hideBalance, getDynamicObject} = props;
+    const renderFundPool = () => {
         const {funderAccountName, fundPoolAmount, newFunderAccount} = state;
         let dynamicObject = null;
         if (!hideBalance)
@@ -143,9 +172,9 @@ class FeePoolOperation extends React.Component {
         if (newFunderAccount) {
             const coreBalanceID = newFunderAccount.getIn(["balances", coreID]);
             if (coreBalanceID) {
-                let balanceObject = ChainStore.getObject(coreBalanceID);
+                const balanceObject = ChainStore.getObject(coreBalanceID);
                 if (balanceObject) {
-                    balance = balanceObject.get("balance");
+                    balance = (balanceObject as any).get("balance");
                 }
             }
         }
@@ -164,7 +193,7 @@ class FeePoolOperation extends React.Component {
                         <span>: </span>
                         {dynamicObject ? (
                             <FormattedAsset
-                                amount={dynamicObject.get("fee_pool")}
+                                amount={(dynamicObject as any).get("fee_pool")}
                                 asset={coreID}
                             />
                         ) : null}
@@ -208,13 +237,11 @@ class FeePoolOperation extends React.Component {
                 </div>
             </div>
         );
-    }
+    };
 
-    renderClaimPool() {
-        const {props, onClaimPool, reset} = this;
-        const {claimPoolAmount} = this.state;
-        const {asset, core, getDynamicObject} = props;
-        let dynamicObject = getDynamicObject(
+    const renderClaimPool = () => {
+        const {claimPoolAmount} = state;
+        const dynamicObject: any = getDynamicObject(
             asset.get("dynamic_asset_data_id")
         );
         const coreID = core.get("id") || "1.3.0";
@@ -222,15 +249,13 @@ class FeePoolOperation extends React.Component {
         const balanceText = !!dynamicObject ? (
             <span
                 onClick={() => {
-                    this.state.claimPoolAmountAsset.setAmount({
+                    state.claimPoolAmountAsset.setAmount({
                         sats: dynamicObject.get("fee_pool")
                     });
-                    this.setState({
-                        claimPoolAmount: this.state.claimPoolAmountAsset.getAmount(
-                            {
-                                real: true
-                            }
-                        )
+                    mergeState({
+                        claimPoolAmount: state.claimPoolAmountAsset.getAmount({
+                            real: true
+                        })
                     });
                 }}
             >
@@ -253,7 +278,9 @@ class FeePoolOperation extends React.Component {
                     label="transfer.amount"
                     display_balance={balanceText}
                     amount={claimPoolAmount}
-                    onChange={this.onClaimInput.bind(this, "claimPoolAmount")}
+                    onChange={(value: any) =>
+                        onClaimInput("claimPoolAmount", value)
+                    }
                     asset={coreID}
                     assets={[coreID]}
                     placeholder="0.0"
@@ -276,35 +303,31 @@ class FeePoolOperation extends React.Component {
                 </div>
             </div>
         );
-    }
+    };
 
-    renderClaimFees() {
-        const {props} = this;
-        const {claimFeesAmount} = this.state;
-        const {asset, getDynamicObject} = props;
-        let dynamicObject = getDynamicObject(
+    const renderClaimFees = () => {
+        const {claimFeesAmount} = state;
+        const dynamicObject: any = getDynamicObject(
             asset.get("dynamic_asset_data_id")
         );
 
-        let unclaimedBalance = dynamicObject
+        const unclaimedBalance = dynamicObject
             ? dynamicObject.get("accumulated_fees")
             : 0;
-        let validClaim =
+        const validClaim =
             claimFeesAmount > 0 &&
-            this.state.claimFeesAmountAsset.getAmount() <= unclaimedBalance;
+            state.claimFeesAmountAsset.getAmount() <= unclaimedBalance;
 
-        let unclaimedBalanceText = (
+        const unclaimedBalanceText = (
             <span
                 onClick={() => {
-                    this.state.claimFeesAmountAsset.setAmount({
+                    state.claimFeesAmountAsset.setAmount({
                         sats: dynamicObject.get("accumulated_fees")
                     });
-                    this.setState({
-                        claimFeesAmount: this.state.claimFeesAmountAsset.getAmount(
-                            {
-                                real: true
-                            }
-                        )
+                    mergeState({
+                        claimFeesAmount: state.claimFeesAmountAsset.getAmount({
+                            real: true
+                        })
                     });
                 }}
             >
@@ -339,7 +362,9 @@ class FeePoolOperation extends React.Component {
                     label="transfer.amount"
                     display_balance={unclaimedBalanceText}
                     amount={claimFeesAmount}
-                    onChange={this.onClaimInput.bind(this, "claimFeesAmount")}
+                    onChange={(value: any) =>
+                        onClaimInput("claimFeesAmount", value)
+                    }
                     asset={asset.get("id")}
                     assets={[asset.get("id")]}
                     placeholder="0.0"
@@ -352,52 +377,43 @@ class FeePoolOperation extends React.Component {
                         className={classnames("button", {
                             disabled: !validClaim
                         })}
-                        onClick={this.onClaimFees.bind(this)}
+                        onClick={onClaimFees}
                     >
                         <Translate content="explorer.asset.fee_pool.claim_fees" />
                     </button>
-                    <button
-                        className="button outline"
-                        onClick={this.reset.bind(this)}
-                    >
+                    <button className="button outline" onClick={reset}>
                         <Translate content="account.perm.reset" />
                     </button>
                 </div>
             </div>
         );
-    }
+    };
 
-    renderClaimCollateralFees() {
-        const {props} = this;
-        const {claimCollateralFeesAmount} = this.state;
-        const {asset, getDynamicObject} = props;
-        let dynamicObject = getDynamicObject(
+    const renderClaimCollateralFees = () => {
+        const {claimCollateralFeesAmount} = state;
+        const dynamicObject: any = getDynamicObject(
             asset.get("dynamic_asset_data_id")
         );
         console.log(dynamicObject);
-        let backingAsset = this.props.asset.has("bitasset")
-            ? this.props.asset.getIn([
-                  "bitasset",
-                  "options",
-                  "short_backing_asset"
-              ])
+        const backingAsset = asset.has("bitasset")
+            ? asset.getIn(["bitasset", "options", "short_backing_asset"])
             : "1.3.0";
-        let unclaimedCollateralBalance = dynamicObject
+        const unclaimedCollateralBalance = dynamicObject
             ? dynamicObject.get("accumulated_collateral_fees")
             : 0;
-        let validClaim =
+        const validClaim =
             claimCollateralFeesAmount > 0 &&
-            this.state.claimCollateralFeesAmountAsset.getAmount() <=
+            state.claimCollateralFeesAmountAsset.getAmount() <=
                 unclaimedCollateralBalance;
 
-        let unclaimedCollateralBalanceText = (
+        const unclaimedCollateralBalanceText = (
             <span
                 onClick={() => {
-                    this.state.claimCollateralFeesAmountAsset.setAmount({
+                    state.claimCollateralFeesAmountAsset.setAmount({
                         sats: dynamicObject.get("accumulated_collateral_fees")
                     });
-                    this.setState({
-                        claimCollateralFeesAmount: this.state.claimCollateralFeesAmountAsset.getAmount(
+                    mergeState({
+                        claimCollateralFeesAmount: state.claimCollateralFeesAmountAsset.getAmount(
                             {
                                 real: true
                             }
@@ -437,10 +453,12 @@ class FeePoolOperation extends React.Component {
                     label="transfer.amount"
                     display_balance={unclaimedCollateralBalanceText}
                     amount={claimCollateralFeesAmount}
-                    onChange={this.onClaimCollateralInput.bind(
-                        this,
-                        "claimCollateralFeesAmount"
-                    )}
+                    onChange={(value: any) =>
+                        onClaimCollateralInput(
+                            "claimCollateralFeesAmount",
+                            value
+                        )
+                    }
                     asset={backingAsset}
                     assets={[backingAsset]}
                     placeholder="0.0"
@@ -453,40 +471,36 @@ class FeePoolOperation extends React.Component {
                         className={classnames("button", {
                             disabled: !validClaim
                         })}
-                        onClick={this.onClaimCollateralFees.bind(this)}
+                        onClick={onClaimCollateralFees}
                     >
                         <Translate content="explorer.asset.fee_pool.claim_collateral_fees" />
                     </button>
-                    <button
-                        className="button outline"
-                        onClick={this.reset.bind(this)}
-                    >
+                    <button className="button outline" onClick={reset}>
                         <Translate content="account.perm.reset" />
                     </button>
                 </div>
             </div>
         );
-    }
+    };
 
-    render() {
-        if (this.props.type === "fund") {
-            return this.renderFundPool();
-        } else if (this.props.type === "claim") {
-            return this.renderClaimPool();
-        } else if (this.props.type === "claim_fees") {
-            return this.renderClaimFees();
-        } else if (this.props.type === "claim_collateral_fees") {
-            return this.renderClaimCollateralFees();
-        }
+    if (type === "fund") {
+        return renderFundPool();
+    } else if (type === "claim") {
+        return renderClaimPool();
+    } else if (type === "claim_fees") {
+        return renderClaimFees();
+    } else if (type === "claim_collateral_fees") {
+        return renderClaimCollateralFees();
     }
+    return null;
 }
 
-FeePoolOperation = AssetWrapper(FeePoolOperation, {
+const WrappedFeePoolOperation = AssetWrapper(FeePoolOperation, {
     propNames: ["asset", "core"],
     defaultProps: {
         core: "1.3.0"
     },
     withDynamic: true
-});
+} as any);
 
-export default FeePoolOperation;
+export default WrappedFeePoolOperation;
