@@ -18,3 +18,4 @@ declare module "react-debounce-render";
 declare module "react-sticky-table";
 declare module "intro.js";
 declare module "lzma";
+declare module "react-foundation-apps/src/utils/foundation-api";

@@ -1,4 +1,19 @@
-import React from "react";
+// TypeScript/functional-component port of the legacy
+// WalletUnlockModalLib.jsx (Phase 5, docs/UI_MIGRATION_PLAN.md).
+// Mechanical, no logic changes.
+//
+// `CustomPasswordInput`, `LoginButtons`, `CustomError`, and
+// `RestoreBackupOnly` are exported here but - grepped across the whole
+// codebase - imported nowhere, including by `WalletUnlockModal.tsx`
+// itself. Kept anyway (not dropped) since they're plain, side-effect-free
+// presentational exports from a shared "lib" file, unlike the
+// confirmed-dead *internal* state/refs dropped elsewhere in this
+// migration. `CustomPasswordInput`'s legacy string ref
+// (`ref="password_input"`) is dropped since nothing reads
+// `this.refs.password_input` anywhere (the class itself has no other
+// consumers) and string refs aren't supported by function components
+// anyway.
+import * as React from "react";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {getWalletName} from "branding";
@@ -13,9 +28,15 @@ export const DisableChromeAutocomplete = () => (
     />
 );
 
-const stopPropagation = e => e.stopPropagation();
+const stopPropagation = (e: any) => e.stopPropagation();
 
-export const KeyFileLabel = ({showUseOtherWalletLink, onUseOtherWallet}) => (
+export const KeyFileLabel = ({
+    showUseOtherWalletLink,
+    onUseOtherWallet
+}: {
+    showUseOtherWalletLink?: boolean;
+    onUseOtherWallet: (e: any) => void;
+}) => (
     <div className="label-container">
         <label className="left-label login-label">
             <Translate content="wallet.key_file_bin" />{" "}
@@ -28,28 +49,32 @@ export const KeyFileLabel = ({showUseOtherWalletLink, onUseOtherWallet}) => (
     </div>
 );
 
-export class StyledUpload extends React.Component {
-    render() {
-        return (
-            <label className="upload-button themed-input">
-                <Translate content="wallet.restore_key_file" />
-                <UploadButtonLogo />
-                <input
-                    type="file"
-                    onClick={stopPropagation}
-                    onChange={this.props.onFileChosen}
-                    accept=".bin"
-                />
-            </label>
-        );
-    }
+export function StyledUpload({onFileChosen}: {onFileChosen: (e: any) => void}) {
+    return (
+        <label className="upload-button themed-input">
+            <Translate content="wallet.restore_key_file" />
+            <UploadButtonLogo />
+            <input
+                type="file"
+                onClick={stopPropagation}
+                onChange={onFileChosen}
+                accept=".bin"
+            />
+        </label>
+    );
 }
 
-export const CustomError = ({message}) => (
+export const CustomError = ({message}: {message?: any}) => (
     <div className="has-error">{message || ""}</div>
 );
 
-export const BackupFileSelector = ({onFileChosen, onRestoreOther}) => (
+export const BackupFileSelector = ({
+    onFileChosen,
+    onRestoreOther
+}: {
+    onFileChosen: (e: any) => void;
+    onRestoreOther: (e: any) => void;
+}) => (
     <div>
         <StyledUpload onFileChosen={onFileChosen} />
         <div className="login-hint">
@@ -61,14 +86,26 @@ export const BackupFileSelector = ({onFileChosen, onRestoreOther}) => (
     </div>
 );
 
-export const RestoreBackupOnly = ({onFileChosen, onRestoreOther}) => (
+export const RestoreBackupOnly = ({
+    onFileChosen,
+    onRestoreOther
+}: {
+    onFileChosen: (e: any) => void;
+    onRestoreOther: (e: any) => void;
+}) => (
     <BackupFileSelector
         onFileChosen={onFileChosen}
         onRestoreOther={onRestoreOther}
     />
 );
 
-export const BackupWarning = ({onChange, checked}) => (
+export const BackupWarning = ({
+    onChange,
+    checked
+}: {
+    onChange: (e: any) => void;
+    checked: boolean;
+}) => (
     <div className="backup-warning">
         <Alert
             type="warning"
@@ -87,7 +124,13 @@ export const BackupWarning = ({onChange, checked}) => (
     </div>
 );
 
-export const LoginButtons = ({onLogin, backupLogin}) => (
+export const LoginButtons = ({
+    onLogin,
+    backupLogin
+}: {
+    onLogin: (e: any) => void;
+    backupLogin?: boolean;
+}) => (
     <Tooltip
         placement="bottom"
         title={counterpart.translate("tooltip.login", {
@@ -104,14 +147,13 @@ export const LoginButtons = ({onLogin, backupLogin}) => (
     </Tooltip>
 );
 
-export class CustomPasswordInput extends React.Component {
-    render = () => (
+export function CustomPasswordInput() {
+    return (
         <div className="content-block account-selector input-area">
             <label className="left-label login-label">
                 <Translate content="settings.password" />
             </label>
             <input
-                ref="password_input"
                 name="password"
                 id="password"
                 type="password"
@@ -133,7 +175,13 @@ const UploadButtonLogo = () => (
     </svg>
 );
 
-export const WalletDisplay = ({name, onUseOtherWallet}) => (
+export const WalletDisplay = ({
+    name,
+    onUseOtherWallet
+}: {
+    name: any;
+    onUseOtherWallet: (e: any) => void;
+}) => (
     <div className="content-box">
         <b>
             <Translate content="wallet.using" />
@@ -145,7 +193,11 @@ export const WalletDisplay = ({name, onUseOtherWallet}) => (
     </div>
 );
 
-export const CreateLocalWalletLink = ({onCreate}) => (
+export const CreateLocalWalletLink = ({
+    onCreate
+}: {
+    onCreate: (e: any) => void;
+}) => (
     <div className="login-hint">
         <Translate content="wallet.no_wallet" component="span" />{" "}
         <span className="button" onClick={onCreate}>
@@ -158,6 +210,10 @@ export const WalletSelector = ({
     restoringBackup,
     walletNames,
     onWalletChange
+}: {
+    restoringBackup?: boolean;
+    walletNames: any;
+    onWalletChange: (e: any) => void;
 }) => (
     <select
         value={restoringBackup ? "upload." : ""}
@@ -167,7 +223,7 @@ export const WalletSelector = ({
         <option value="" hidden>
             {counterpart.translate("wallet.select_wallet")}
         </option>
-        {walletNames.map(walletName => (
+        {walletNames.map((walletName: string) => (
             <option
                 className="login-option"
                 key={walletName}

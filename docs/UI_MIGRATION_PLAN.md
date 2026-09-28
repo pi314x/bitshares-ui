@@ -2735,6 +2735,63 @@ and `ExchangeHeaderCollateral.jsx`.
     extensionlessly), which broke webpack resolution once the file became
     `WalletDb.ts`; changed to the same extensionless `"stores/WalletDb"`
     the rest of the codebase already uses.
+- Sixth slice: `WalletManager.jsx` and `WalletUnlockModal.jsx`/
+  `WalletUnlockModalLib.jsx` - the wallet-management console and the
+  password/unlock modal, both depending on the now-ported `WalletDb.ts`.
+  - `WalletManager.jsx`: four `connect(..., connectObject)`-wrapped class
+    components → function components on `useAltStore(WalletManagerStore)`.
+    `ChangeActiveWallet`'s `UNSAFE_componentWillReceiveProps` has a real,
+    preserved-not-fixed quirk: it compares the *incoming* prop against the
+    *current local state* rather than the previous prop, so any re-render
+    from its store subscription - not just one where `current_wallet`
+    itself changed - silently resets the user's pending, unconfirmed
+    wallet-switch dropdown selection back to the actual current wallet.
+    Replicated with the same comparison run in the render body (a
+    `useState` lazy initializer starting state already equal to the
+    store's value means the comparison is naturally false on the first
+    render, matching the original not firing this check on mount).
+  - `WalletUnlockModalLib.jsx`: straightforward presentational component
+    ports. `CustomPasswordInput`, `LoginButtons`, `CustomError`, and
+    `RestoreBackupOnly` are exported but - grepped across the whole
+    codebase - imported nowhere at all; kept anyway (not dropped), unlike
+    confirmed-dead *internal* state/refs dropped elsewhere in this
+    migration, since these are plain side-effect-free exports from a
+    shared lib file that some future caller could still reasonably use.
+  - `WalletUnlockModal.jsx` → `.tsx`: the password/unlock modal itself -
+    the primary UI surface for the now-characterization-tested
+    `WalletDb.validatePassword`/`isLocked`. This file performs no
+    cryptography itself; it only calls into that already-verified
+    boundary exactly as before, with the typed password kept only in
+    local component state. `AltContainer`'s 6-store `inject` map becomes
+    several `useAltStore()` calls with the same derivations recomputed
+    inline. Two *deliberate, documented* simplifications - **flagged for
+    the human second-reviewer to specifically sanity-check in manual QA**
+    (open/close the modal in both login modes, watch for any visual
+    glitch): (1) the original's `shouldComponentUpdate` shallow-compared
+    incoming props/state and skipped re-rendering when nothing had
+    actually changed, purely to avoid extra work from `AltContainer`
+    re-running `inject` on every one of the 6 stores' updates - not
+    replicated, since doing so exactly would require suppressing this
+    component's *own* state-triggered re-renders (which `React.memo`
+    cannot do - it only guards against unchanged-prop re-renders from a
+    parent) via manual "return the previous render's output" trickery,
+    judged not worth the risk for a purely cosmetic optimization; (2)
+    `shouldComponentUpdate` additionally skipped exactly one render when
+    `isOpen` was about to flip from true to false, letting the `Modal`'s
+    own visibility-driven close transition play out - also not
+    replicated, for the same reason; worst case this changes is one extra
+    render during the modal's closing transition, not a functional
+    difference. Also dropped as confirmed dead: `passwordInput()` (never
+    called anywhere in the class, and referencing a `this.refs
+    .custom_password_input` ref that doesn't exist in `render()` either)
+    and two `AltContainer`-injected props, `reject` and `locked`, neither
+    read anywhere in the original class body (all grepped to confirm).
+  - Added `declare module "react-foundation-apps/src/utils/foundation-api"`
+    to `app/types/vendor-shims.d.ts` (that subpath ships no types; same
+    "declare as needed" pattern as `lzma` earlier this phase).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (63/63), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
