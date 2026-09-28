@@ -3898,9 +3898,32 @@ compromise, not silent scope-narrowing.
     only otherwise), full Jest suite green (5,532/5,532), `yarn build`
     shows only the 2 known pre-existing `charting_library` errors. Old
     `.jsx` files removed.
-- Remaining long tail (~176 more `.jsx` files outside
+- `Account/` batch 5 (2 files): `AccountPage.jsx`, `CreateWorker.jsx` →
+  `.tsx`. Grep-verified: no `extends <ClassName>` matches.
+  - `AccountPage.tsx` (the account section's routing shell): the
+    original's `BindToChainState(AccountPage, {show_loader: true})` is
+    the first usage in this migration of the `show_loader` option -
+    unlike every prior `BindToChainState` port (which fell back to a
+    blank `<span/>` while unresolved), this one shows a real
+    `LoadingIndicator` + "Loading ..." message, replicated verbatim in
+    the Container. Two independent lifecycle concerns - `componentDidMount`
+    +`UNSAFE_componentWillReceiveProps` (react to the *route-resolved*
+    `account` changing) and a separate `componentDidUpdate` (reacts to
+    the *store-tracked* `currentAccount` changing, to redirect the URL) -
+    get two separate `useEffect`s keyed on their respective values, each
+    with its own mount-skip ref guard.
+  - `CreateWorker.tsx`: preserved verbatim - `shouldComponentUpdate` used
+    the comma operator (`(a, b)` evaluates and discards `a`, returns only
+    `b`), so a documented-looking `currentAccount` prop check in it never
+    actually did anything; and a leftover `console.log("state:", ...)`
+    that fires on every render.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~174 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (21 more), `Modal/` (21),
+  directories) not yet started: `Account/` (19 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
