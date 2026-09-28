@@ -3721,10 +3721,34 @@ compromise, not silent scope-narrowing.
     warnings only), full Jest suite green (5,532/5,532), `yarn build`
     shows only the 2 known pre-existing `charting_library` errors. Old
     `.jsx` files removed.
-- Remaining long tail (~194 more `.jsx` files outside
-  `Blockchain/operations/`, the nine `Utility/` batches above, and the
-  excluded gateway directories) not yet started. This effectively
-  completes the `Utility/` directory except for: `AssetWrapper.jsx`/
+- `Utility/` batch 10 (2 files, the last two non-deferred, non-infra
+  files in the directory): `CustomTable.jsx`, `FormattedPrice.jsx` →
+  `.tsx`. Grep-verified: no `extends <ClassName>` matches.
+  - `CustomTable.tsx`: `connect(Component, {listenTo, getProps})`
+    replaced by `useAltStore(SettingsStore)`; `getProps(nextProps)` only
+    injected the store's `viewSettings` when the caller hadn't already
+    passed one, replicated with `props.viewSettings || settingsState
+    .viewSettings`.
+  - `FormattedPrice.tsx`: the outer wrapper's `AltContainer` (`alt-
+    container` package, injecting `marketDirections` from
+    `SettingsStore`) replaced by `useAltStore(SettingsStore)`.
+    `UNSAFE_componentWillReceiveProps` (recomputes the market
+    name/asset pair when `base_asset`/`quote_asset` change) replicated
+    with a `useEffect` keyed on those two props, skipped on its first
+    (mount) run via a ref guard - the same pattern used for `Tabs.tsx`
+    in batch 7. `AssetWrapper`/`withRouter` wrapping kept as-is. Added
+    `react-popover` to `app/types/vendor-shims.d.ts` (first `.tsx` usage;
+    distinct from `bitshares-ui-style-guide`'s own `Popover`, both are
+    used in this one file for different purposes).
+  - Verified: `yarn typecheck` clean (after adding the `react-popover`
+    shim), `eslint` clean (0 errors, after removing an import that
+    became unused once `shouldComponentUpdate`'s `utils.are_equal_shallow`
+    call was dropped as a pure perf guard; expected `any`-type warnings
+    only otherwise), full Jest suite green (5,532/5,532), `yarn build`
+    shows only the 2 known pre-existing `charting_library` errors. Old
+    `.jsx` files removed.
+- This completes `app/components/Utility/`'s long tail (10 batches, 41
+  files ported, 1 dead file deleted) except for: `AssetWrapper.jsx`/
   `BindToChainState.jsx`/`ChainTypes.js` (shared resolution
   infrastructure, intentionally left as-is - the target of this
   migration's `BindToChainState`-replacement pattern, not a migration
@@ -3735,6 +3759,13 @@ compromise, not silent scope-narrowing.
   external consumers `Modal/DepositModal.jsx` and `Dashboard
   /SimpleDepositWithdraw.jsx`) - see the "General rule adopted" note
   under batch 1 above for why these are deferred together.
+- Remaining long tail (~192 more `.jsx` files outside
+  `Blockchain/operations/`, `Utility/`, and the excluded gateway
+  directories) not yet started: `Account/` (39), `Modal/` (21),
+  `Blockchain/` non-operations (~13), `Registration/` (11), root
+  `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
+  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
+  smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
