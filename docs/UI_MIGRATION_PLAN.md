@@ -3113,7 +3113,59 @@ headers, specifically to make that review tractable.
     warnings only), `yarn typecheck` clean, full Jest suite green
     (72/72), full webpack build shows only the 2 known pre-existing
     `charting_library` errors.
-- Piratecash gateway not yet started (next).
+- Piratecash gateway migrated: `lib/common/PiratecashMethods.js`/
+  `PiratecashDepositAddressCache.js`,
+  `DepositWithdraw/piratecash/PiratecashGateway.jsx`,
+  `PiratecashGatewayDepositRequest.jsx`, and `PiratecashWithdrawModal.jsx`
+  all ported to `.ts`/`.tsx`.
+  - This codebase already had Piratecash as a near-duplicate of the
+    Xbtsx gateway before this migration (confirmed by diffing each
+    original file pair: only names, two coin/URL constants, and the
+    `"PPY"`/`"PIRATE"` default-coin strings differ - every bug,
+    structural quirk, and piece of dead code found and documented in the
+    Xbtsx slice applies identically here). Each file was ported by
+    mirroring its already-verified Xbtsx counterpart with those names
+    substituted, then independently typechecked/linted/tested - not by
+    assuming correctness from the mirror alone.
+  - Preserved verbatim (not "fixed"), inherited copy-paste artifacts kept
+    exactly as in the original: `PiratecashMethods.ts`'s local-storage
+    handle is still named `xbtsxStorage` (meaningless here, an internal
+    variable name with zero behavioral effect either way); several
+    `Translate` `content` keys in `PiratecashWithdrawModal.tsx` are still
+    `gateway.xbtsx.min_amount`/`gateway.xbtsx.min_amount_error` rather
+    than a `gateway.piratecash.*` key.
+  - Same real bugs preserved as in the Xbtsx port: `PiratecashGateway
+    .tsx`'s `_getActiveCoin` string-vs-object argument mismatch
+    (unreachable here for the same reason - `AccountDepositWithdraw.jsx`
+    never passes `provider` to `PiratecashGateway` either); `Piratecash
+    WithdrawModal.tsx`'s `onWithdrawAmountChange` setState callback that
+    references `_checkBalance` without calling it.
+  - Same structural changes as the Xbtsx port: `BindToChainState`
+    wrapper(s) replaced by small container components resolving chain
+    data directly via `ChainStore` under `useChainStoreTick()`, matching
+    each component's original required-vs-optional prop gating; the
+    render-body `requestDepositAddress(...)` side effect kept in place
+    rather than moved into an effect.
+  - Same confirmed-dead code dropped (grep-verified against the
+    Piratecash originals independently, not assumed from the Xbtsx
+    findings): the unused `deposit_address_cache` instance and
+    `deposit_fee` prop in `PiratecashGatewayDepositRequest.tsx`;
+    `confirmation_is_valid`, `withdraw_address_first`, `setNestedRef`
+    /`this.nestedRef`, and `getWithdrawModalId()`/`withdrawModalId` in
+    `PiratecashWithdrawModal.tsx`.
+  - New integration test `app/__tests__/gateways/piratecashMethods-test.js`
+    (9 tests, mirroring `xbtsxMethods-test.js`) covers
+    `PiratecashMethods.ts`'s three fetch-based API calls against
+    hand-built fixtures shaped like the real pirate.cash API's responses
+    via a mocked `global.fetch` - the live gateway API is never hit -
+    plus the `WithdrawAddresses` localStorage-backed helpers.
+  - Verified: `eslint` clean on all files (0 errors, expected `any`
+    warnings only), `yarn typecheck` clean, full Jest suite green
+    (81/81), full webpack build shows only the 2 known pre-existing
+    `charting_library` errors.
+- **Phase 7 complete**: both scoped gateways (Xbtsx, Piratecash) migrated
+  per the requester-direction scope note above; the other 5 gateway
+  integrations remain out of scope on the legacy `.jsx` stack.
 
 ### Phase 8 — i18n consolidation & remaining long tail
 - Drop `counterpart`, consolidate on `react-intl`, reconcile the 10
