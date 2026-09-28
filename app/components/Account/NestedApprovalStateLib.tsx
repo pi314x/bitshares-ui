@@ -1,24 +1,29 @@
-import React from "react";
+// TypeScript/functional-component port of the legacy
+// NestedApprovalStateLib.jsx (Phase 8, docs/UI_MIGRATION_PLAN.md).
+// Mechanical, no logic changes - only the `Tooltip` class needed
+// converting, everything else was already a function/plain helper.
+import * as React from "react";
 import Icon from "../Icon/Icon";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import {Tooltip as AntTooltip} from "bitshares-ui-style-guide";
 
-export class Tooltip extends React.Component {
-    render() {
-        const {className, children, dataTip, content} = this.props;
-        return (
-            <AntTooltip
-                title={
-                    (dataTip && dataTip.trim()) ||
-                    counterpart.translate(content)
-                }
-            >
-                <span className={"tooltip " + className}>{children}</span>
-            </AntTooltip>
-        );
-    }
+interface TooltipProps {
+    className?: string;
+    children?: React.ReactNode;
+    dataTip?: string;
+    content?: string;
+}
+
+export function Tooltip({className, children, dataTip, content}: TooltipProps) {
+    return (
+        <AntTooltip
+            title={(dataTip && dataTip.trim()) || counterpart.translate(content)}
+        >
+            <span className={"tooltip " + className}>{children}</span>
+        </AntTooltip>
+    );
 }
 
 export const AuthorityDepthOverflowWarning = () => (
@@ -51,7 +56,7 @@ export const Review = () => (
     </Tooltip>
 );
 
-export const Failed = ({reason}) => (
+export const Failed = ({reason}: {reason?: string}) => (
     <Tooltip
         className="error"
         dataTip={reason}
@@ -61,13 +66,19 @@ export const Failed = ({reason}) => (
     </Tooltip>
 );
 
-export const ExpandButton = ({onToggle, expanded}) => (
+export const ExpandButton = ({
+    onToggle,
+    expanded
+}: {
+    onToggle: (e: any) => void;
+    expanded: boolean;
+}) => (
     <a className="expand-button" onClick={onToggle}>
         [{expanded ? "-" : "+"}]
     </a>
 );
 
-export const ApprovedIcon = ({approved}) =>
+export const ApprovedIcon = ({approved}: {approved: boolean}) =>
     approved ? (
         <Icon
             name="checkmark-circle"
@@ -84,10 +95,20 @@ export const ApprovedIcon = ({approved}) =>
         />
     );
 
-export const KeyPermissionBranch = ({available, permission, weight, level}) => (
+export const KeyPermissionBranch = ({
+    available,
+    permission,
+    weight,
+    level
+}: {
+    available: any;
+    permission: any;
+    weight: any;
+    level: number;
+}) => (
     <tbody>
         <tr>
-            <td colSpan="2">
+            <td colSpan={2}>
                 <ApprovedIcon approved={permission.isAvailable(available)} />
                 {permission.id.substr(0, 20 - 4 * level)}
                 ...
@@ -98,24 +119,28 @@ export const KeyPermissionBranch = ({available, permission, weight, level}) => (
 );
 
 export const hasAuthorityDepthProblem = (
-    maxAuthorityDepth,
-    permission,
+    maxAuthorityDepth: number,
+    permission: any,
     level = 0
-) => {
+): boolean => {
     if (level > maxAuthorityDepth) {
         return true;
     } else if (!permission.isNested() && !permission.isMultiSig()) {
         return false;
     } else {
-        return permission.accounts.some(subAccount =>
+        return permission.accounts.some((subAccount: any) =>
             hasAuthorityDepthProblem(maxAuthorityDepth, subAccount, level + 1)
         );
     }
 };
 
-export const getStatus = (permission, available, availableKeys) =>
+export const getStatus = (
+    permission: any,
+    available: any,
+    availableKeys: any
+) =>
     permission.accounts.reduce(
-        (amount, subPermission) =>
+        (amount: number, subPermission: any) =>
             amount +
             (isApproved(subPermission, available, availableKeys)
                 ? subPermission.weight
@@ -124,18 +149,25 @@ export const getStatus = (permission, available, availableKeys) =>
         0
     ) +
     permission.keys.reduce(
-        (amount, key) =>
+        (amount: number, key: any) =>
             amount + (key.isAvailable(availableKeys) ? key.weight : 0),
         0
     );
 
-export const isApproved = (permission, available, availableKeys) =>
+export const isApproved = (
+    permission: any,
+    available: any,
+    availableKeys: any
+): boolean =>
     permission.isNested() || permission.isMultiSig()
-        ? getStatus(permission, available, availableKeys) >=
-          permission.threshold
+        ? getStatus(permission, available, availableKeys) >= permission.threshold
         : permission.isAvailable(available);
 
-export const statusText = (permission, available, availableKeys) =>
+export const statusText = (
+    permission: any,
+    available: any,
+    availableKeys: any
+) =>
     permission && permission.threshold > 10
         ? `${utils.get_percentage(
               permission.getStatus(available, availableKeys),
@@ -145,7 +177,5 @@ export const statusText = (permission, available, availableKeys) =>
               permission.threshold
           }`;
 
-export const notNestdWeight = (weight, threshold) =>
-    threshold && threshold > 10
-        ? utils.get_percentage(weight, threshold)
-        : weight;
+export const notNestdWeight = (weight: any, threshold: any) =>
+    threshold && threshold > 10 ? utils.get_percentage(weight, threshold) : weight;

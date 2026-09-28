@@ -3796,9 +3796,36 @@ compromise, not silent scope-narrowing.
     including the `Identicon` canvas-rendering test), `yarn build` shows
     only the 2 known pre-existing `charting_library` errors. Old `.jsx`
     files removed.
-- Remaining long tail (~185 more `.jsx` files outside
+- `Account/` batch 2 (4 files): `AccountInfo.jsx`, `AssetFeedProducers
+  .jsx` (exports the mismatched class name `AccountFeedProducers`,
+  preserved as-is), `NestedApprovalStateLib.jsx`, `AccountBrowsingMode
+  .jsx` → `.tsx`. Grep-verified: no `extends <ClassName>` matches.
+  - `AccountInfo.tsx`: `BindToChainState(AccountInfo)` (required
+    `account` prop) replaced by a Container under `useChainStoreTick()`.
+  - `NestedApprovalStateLib.tsx`: only the `Tooltip` class needed
+    converting - the file's many other named exports were already plain
+    functions/helpers.
+  - `AccountBrowsingMode.tsx`: first component in this migration
+    listening to *two* stores - `connect(Component, {listenTo:
+    [AccountStore, SettingsStore], getProps})` replaced by two
+    `useAltStore()` calls (one per store), the same multi-store pattern
+    already established in `Dashboard/DashboardList.tsx`.
+    `componentDidUpdate` (compares the current vs previous
+    `currentAccount`) replicated with a `useEffect` keyed on
+    `currentAccount`, skipped on its first (mount) run via a ref guard.
+  - Verified: `yarn typecheck` clean (after adding index signatures to
+    two of the four files' prop interfaces - `Account/AccountAssetUpdate
+    .tsx` passes an extra `asset` prop to `<AccountFeedProducers>` the
+    original never read, and `next/NextShellContainer.tsx` passes a
+    `location` prop to `<AccountBrowsingMode>` the original never read
+    either; both are pre-existing dead props in those callers, left
+    as-is), `eslint` clean (0 errors, expected `any`-type warnings only),
+    full Jest suite green (5,532/5,532), `yarn build` shows only the 2
+    known pre-existing `charting_library` errors. Old `.jsx` files
+    removed.
+- Remaining long tail (~181 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (30 more), `Modal/` (21),
+  directories) not yet started: `Account/` (26 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and

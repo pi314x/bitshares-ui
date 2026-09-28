@@ -12,6 +12,7 @@ interface AccountImageProps {
     account?: string;
     image?: string;
     size?: {height: number; width: number};
+    [key: string]: any;
     style?: React.CSSProperties;
 }
 
