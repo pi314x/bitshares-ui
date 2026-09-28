@@ -4139,10 +4139,100 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~163 more `.jsx` files outside
+- `Account/` batch 10 (3 files): `CreateAccount.jsx`, `AccountOverview.jsx`,
+  `RecentTransactions.jsx` → `.tsx`. Grep-verified: no `extends
+  <ClassName>` matches beyond plain `React.Component`.
+  - `CreateAccount.tsx`: security-sensitive per AGENTS.md
+    (`createAccount` via `WalletUnlockActions.unlock()` +
+    `AccountActions.createAccount`; `createWallet` via
+    `WalletActions.setWallet`) - transcribed verbatim. `connect(
+    withRouter(Component), {listenTo: [AccountStore], getProps: () =>
+    ({})})` (a store subscription injecting no props, used purely to
+    force re-renders since `AccountStore.getMyAccounts()` is read
+    directly) replaced by `useAltStore(AccountStore)`; `withRouter`
+    dropped since the component is only ever rendered as a route
+    `component`. The nested callback ref grabbing a *child* class
+    component's own `this.refs.nameInput`, and the real `ref="password"`
+    (read via `.value()` in `onSubmit`), both become `useRef()`s - both
+    targets are still class components. The commented-out
+    `ref="refcode"` (on a `<RefcodeInput>` that's itself commented out)
+    is preserved as an inert comment; its `useRef()` counterpart is
+    declared but never attached, so `refcode` is always effectively
+    `null`, matching the original exactly. `shouldComponentUpdate`
+    (a shallow-equality gate with no hooks equivalent) is dropped.
+    **Dropped as confirmed dead** (found while porting):
+    `state.show_identicon` (set by live code, never read anywhere -
+    unlike `state.hide_refcode`, which is only referenced inside the
+    same commented-out `RefcodeInput` block and is kept as-is, matching
+    that intentionally-disabled feature stub). One TS-forced fix: the
+    outer `<div>`'s non-standard `name` attribute is spread in via an
+    `as any` cast rather than dropped.
+  - `AccountOverview.tsx`: `AssetWrapper`/the trivial
+    `AccountOverviewWrapper` passthrough (`<BalanceWrapper {...props}
+    wrap={AccountOverview}/>`, `BalanceWrapper` already a `.tsx` port)
+    keep the same two-layer shape as functions. `UNSAFE_componentWillMount`
+    + `UNSAFE_componentWillReceiveProps` (both ultimately reduce to
+    "call `checkMarginStatus(account)`" once you substitute `account`
+    for the `props`/`np` parameter each site was only ever using) unify
+    into one `useEffect` keyed on `account`, with *no* mount-guard needed
+    - the established pattern for when both call sites pass identical
+    arguments. `shouldComponentUpdate` (spanning both props and state)
+    dropped, no hooks equivalent. `state.alwaysShowAssets` (never
+    reassigned) becomes a plain local constant, not state.
+    `state.enabledColumns` (read twice, but never set anywhere in the
+    class) is replaced by a literal `undefined` at its one call site
+    rather than invented state. **Dropped as confirmed dead**: the
+    `ref="appTables"` legacy string ref, and the already-unused
+    `Input`/`Icon` imports from `bitshares-ui-style-guide` (neither
+    referenced anywhere in the original's `render()` either).
+    `ChainStore.requestAllDataForAccount(...)` is called directly in the
+    component body, preserved verbatim including running on every
+    render, exactly as the original class did in `render()`.
+  - `RecentTransactions.tsx`: exports two components, both originally
+    `BindToChainState`-wrapped. `RecentTransactions` itself: the
+    original's `connect(BindToChainState(Component), {listenTo:
+    [SettingsStore], getProps})` collapses into one Container
+    (`useAltStore(SettingsStore)` for `marketDirections`, then
+    resolving the required `accountsList` prop via the
+    no-sparse-array-quirk `chain_accounts_list` pattern, with no
+    `tempComponent`/`show_loader` option, so the default blank `<span
+    />` fallback applies). `TransactionWrapper` (a render-prop
+    component, `{this.props.children(this.props)}`, used only by the
+    excluded gateway directories): its Container resolves
+    `asset`/`to`/`fromAccount` the usual way and passes the resolved
+    props back into the render-prop function, matching
+    `BindToChainState`'s own `<Component {...props} {...state}/>` merge.
+    `shouldComponentUpdate` (another large multi-field gate) dropped.
+    **Dropped as confirmed dead** (found while porting): `state.rows`
+    (set, never read); `_onIncreaseLimit` (never wired to any element);
+    `this.refs.transactions` in `componentDidMount` (no element ever
+    sets `ref="transactions"` - a leftover from the commented-out
+    `ps.initialize(t)` call); `maxHeight`/`headerHeight` as
+    `render()`-body locals (both already read into unused local
+    variables in the original `render()`, only actually consumed inside
+    the now-dropped `shouldComponentUpdate`/inside `_setHeaderHeight`,
+    which still reads `state.headerHeight` directly). The one real
+    string ref, `ref="header"` (read via `.offsetHeight`, called once
+    from `componentDidMount` when `!fullHeight`), becomes a `useRef()` -
+    preserved verbatim, not "fixed": since the div it's attached to is
+    only rendered when `!dashboard`, a caller passing `dashboard={true}`
+    with `fullHeight={false}` (no current call site does) would crash
+    exactly as the original did reading `.offsetHeight` off an unset ref.
+  - Verified: `yarn typecheck` clean (after adding a `declare module
+    "react-scroll"` vendor shim to `app/types/vendor-shims.d.ts` -
+    matching the established pattern there for untyped packages -
+    aliasing `settingsAPIs.ES_WRAPPER_LIST`, currently an empty array
+    literal that TS infers as `never[]`, to a local `any[]`-typed
+    constant in `RecentTransactions.tsx`, and typing
+    `AccountOverview.tsx`'s `includedBalancesList`/`hiddenBalancesList`
+    as `Immutable.List<string>()` to match `TotalBalanceValue.tsx`'s
+    prop type), `eslint` clean (0 errors, expected `any`-type warnings
+    only), full Jest suite green (5,532/5,532), `yarn build` shows only
+    the 2 known pre-existing `charting_library` errors. Old `.jsx` files
+    removed.
+- Remaining long tail (~160 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (10 more: `CreateAccount`,
-  `AccountOverview`, `RecentTransactions`, `CreateAccountPassword`,
+  directories) not yet started: `Account/` (7 more: `CreateAccountPassword`,
   `WorkersList`, `AccountOrders`, `AccountSelector`,
   `AccountDepositWithdraw`, `AccountPortfolioList`,
   `AccountSelectorAnt`), `Modal/` (21), `Blockchain/` non-operations

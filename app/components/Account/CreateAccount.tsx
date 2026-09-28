@@ -1,5 +1,65 @@
-import React from "react";
-import {connect} from "alt-react";
+// TypeScript/functional-component port of the legacy CreateAccount.jsx
+// (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+//
+// Security-sensitive per AGENTS.md (wallet unlock and account/key
+// creation): `createAccount` (`WalletUnlockActions.unlock()` +
+// `AccountActions.createAccount`) and `createWallet`
+// (`WalletActions.setWallet`) are transcribed verbatim, no restructuring.
+//
+// One TS-forced adjustment: the outer `<div>`'s non-standard `name`
+// attribute (valid on a handful of HTML elements but not `div`, so
+// untyped in React's own JSX typings) is spread in via `{...({name:
+// "scrollToInput"} as any)}` rather than dropped, since `<div id=
+// "scrollToInput" name="scrollToInput">` is exactly what the original
+// rendered.
+//
+// Structural change (not a behavior change): `connect(withRouter(
+// Component), {listenTo: [AccountStore], getProps: () => ({})})` - a
+// store subscription that injects no props of its own, used purely to
+// force a re-render whenever `AccountStore` changes (since
+// `AccountStore.getMyAccounts()` is read directly, not from props) - is
+// replaced by `useAltStore(AccountStore)` in a thin Container, called
+// for its re-render-triggering side effect exactly like the original's
+// empty `getProps`. `withRouter` is dropped since this component is only
+// ever rendered as a route `component` (`LoginSelector.jsx`), which
+// already injects `history`/`location`/`match` directly.
+//
+// `shouldComponentUpdate` (`!utils.are_equal_shallow(nextState, this
+// .state)`) has no hooks equivalent for a component gating its own
+// re-renders on its own state, and is dropped - this doesn't change any
+// rendered output, only how many times identical output might be
+// recomputed, since every `setState`/`mergeState` call here always
+// changes at least one field.
+//
+// The `this.accountNameInput` (nested callback ref reading a *child*
+// class component's own `this.refs.nameInput`) and `ref="password"`
+// (read via `.value()` in `onSubmit`) refs are real and load-bearing -
+// translated to `useRef()` object refs. Both targets
+// (`AccountNameInputStyleGuide`/`PasswordInput`) are still class
+// components, so this still works. The commented-out `ref="refcode"`
+// (on a `<RefcodeInput>` that is itself commented out in `render()`) is
+// preserved as an inert comment, exactly as in the original - `this.refs
+// .refcode` can therefore never actually be non-null, so `createAccount`'s
+// `refcode` is always effectively `null`; replicated with a `useRef()`
+// that is likewise declared but never attached to any live element.
+//
+// Dropped as confirmed dead (found while porting, not merely carried
+// forward): `state.show_identicon` - set by live code in
+// `onAccountNameChange`, but never read anywhere (`<AccountNameInput>`
+// never receives it as a prop either). `state.hide_refcode`, by
+// contrast, is *only* referenced inside the same commented-out
+// `RefcodeInput` block noted above (an intentionally-disabled feature
+// stub, not confirmed-dead active code), so it - and the commented-out
+// `showRefcodeInput` method that would have set it - are kept as-is.
+//
+// `onFinishConfirm` is defined once per render and self-references its
+// own closure for the matching `TransactionConfirmStore.unlisten` call
+// (the same closure instance that was passed to `.listen()`), and reads
+// `state.accountName` through a `stateRef` mirror (the pattern
+// established in `AccountAssets.tsx`) so it always sees the latest value
+// at the time the store actually fires, matching the class version's
+// dynamic `this.state` reads.
+import * as React from "react";
 import classNames from "classnames";
 import AccountActions from "actions/AccountActions";
 import AccountStore from "stores/AccountStore";
@@ -16,143 +76,156 @@ import Translate from "react-translate-component";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {BackupCreate} from "../Wallet/Backup";
 import ReactTooltip from "react-tooltip";
-import utils from "common/utils";
 import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
-import {withRouter} from "react-router-dom";
 import {scroller} from "react-scroll";
 import {getWalletName} from "branding";
 import {Notification} from "bitshares-ui-style-guide";
+import {useAltStore} from "../../next/hooks/useAltStore";
 
-class CreateAccount extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            validAccountName: false,
-            accountName: "",
-            validPassword: false,
-            registrar_account: null,
-            loading: false,
-            hide_refcode: true,
-            show_identicon: false,
-            step: 1
-        };
-        this.onFinishConfirm = this.onFinishConfirm.bind(this);
+const LinkComponent = Link as React.ComponentType<any>;
 
-        this.accountNameInput = null;
+interface CreateAccountState {
+    validAccountName: boolean;
+    accountName: string;
+    validPassword: boolean;
+    registrar_account: any;
+    loading: boolean;
+    hide_refcode: boolean;
+    step: number;
+}
 
-        this.scrollToInput = this.scrollToInput.bind(this);
-    }
+interface CreateAccountCoreProps {
+    history: any;
+}
 
-    UNSAFE_componentWillMount() {
-        SettingsActions.changeSetting({
-            setting: "passwordLogin",
-            value: false
-        });
-    }
+function CreateAccount({history}: CreateAccountCoreProps) {
+    const [state, setState] = React.useState<CreateAccountState>({
+        validAccountName: false,
+        accountName: "",
+        validPassword: false,
+        registrar_account: null,
+        loading: false,
+        hide_refcode: true,
+        step: 1
+    });
 
-    componentDidMount() {
-        ReactTooltip.rebuild();
-        this.scrollToInput();
-    }
+    const mergeState = (partial: Partial<CreateAccountState>) => {
+        setState(prev => ({...prev, ...partial}));
+    };
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !utils.are_equal_shallow(nextState, this.state);
-    }
+    const stateRef = React.useRef(state);
+    stateRef.current = state;
 
-    isValid() {
-        let firstAccount = AccountStore.getMyAccounts().length === 0;
-        let valid = this.state.validAccountName;
-        if (!WalletDb.getWallet()) {
-            valid = valid && this.state.validPassword;
-        }
-        if (!firstAccount) {
-            valid = valid && this.state.registrar_account;
-        }
-        return valid;
-    }
+    const accountNameInputRef = React.useRef<any>(null);
+    const passwordRef = React.useRef<any>(null);
+    const refcodeRef = React.useRef<any>(null);
 
-    onAccountNameChange(e) {
-        const state = {};
-        if (e.valid !== undefined) state.validAccountName = e.valid;
-        if (e.value !== undefined) state.accountName = e.value;
-        if (!this.state.show_identicon) state.show_identicon = true;
-        this.setState(state);
-    }
-
-    onPasswordChange(e) {
-        this.setState({validPassword: e.valid});
-    }
-
-    onFinishConfirm(confirm_store_state) {
-        if (
-            confirm_store_state.included &&
-            confirm_store_state.broadcasted_transaction
-        ) {
-            TransactionConfirmStore.unlisten(this.onFinishConfirm);
-            TransactionConfirmStore.reset();
-
-            FetchChain("getAccount", this.state.accountName, undefined, {
-                [this.state.accountName]: true
-            }).then(() => {
-                console.log("onFinishConfirm");
-                this.props.history.push(
-                    "/wallet/backup/create?newAccount=true"
-                );
-            });
-        }
-    }
-
-    scrollToInput() {
-        scroller.scrollTo(`scrollToInput`, {
+    const scrollToInput = () => {
+        (scroller as any).scrollTo(`scrollToInput`, {
             duration: 1500,
             delay: 100,
             smooth: true,
             containerId: "accountForm"
         });
-    }
+    };
 
-    createAccount(name) {
-        let refcode = this.refs.refcode ? this.refs.refcode.value() : null;
-        let referralAccount = AccountStore.getState().referralAccount;
-        WalletUnlockActions.unlock()
+    const isMountRef = React.useRef(true);
+    React.useEffect(() => {
+        if (isMountRef.current) {
+            isMountRef.current = false;
+            (SettingsActions as any).changeSetting({
+                setting: "passwordLogin",
+                value: false
+            });
+            (ReactTooltip as any).rebuild();
+            scrollToInput();
+        }
+    }, []);
+
+    const isValid = () => {
+        const firstAccount = (AccountStore as any).getMyAccounts().length === 0;
+        let valid = state.validAccountName;
+        if (!(WalletDb as any).getWallet()) {
+            valid = valid && state.validPassword;
+        }
+        if (!firstAccount) {
+            valid = valid && state.registrar_account;
+        }
+        return valid;
+    };
+
+    const onAccountNameChange = (e: any) => {
+        const partial: Partial<CreateAccountState> = {};
+        if (e.valid !== undefined) partial.validAccountName = e.valid;
+        if (e.value !== undefined) partial.accountName = e.value;
+        mergeState(partial);
+    };
+
+    const onPasswordChange = (e: any) => {
+        mergeState({validPassword: e.valid});
+    };
+
+    const onFinishConfirm = (confirm_store_state: any) => {
+        if (
+            confirm_store_state.included &&
+            confirm_store_state.broadcasted_transaction
+        ) {
+            (TransactionConfirmStore as any).unlisten(onFinishConfirm);
+            (TransactionConfirmStore as any).reset();
+
+            FetchChain("getAccount", stateRef.current.accountName, undefined, {
+                [stateRef.current.accountName]: true
+            }).then(() => {
+                console.log("onFinishConfirm");
+                history.push("/wallet/backup/create?newAccount=true");
+            });
+        }
+    };
+
+    const createAccount = (name: string) => {
+        const refcode = refcodeRef.current ? refcodeRef.current.value() : null;
+        const referralAccount = (AccountStore as any).getState().referralAccount;
+        (WalletUnlockActions as any)
+            .unlock()
             .then(() => {
-                this.setState({loading: true});
+                mergeState({loading: true});
 
-                AccountActions.createAccount(
-                    name,
-                    this.state.registrar_account,
-                    referralAccount || this.state.registrar_account,
-                    0,
-                    refcode
-                )
+                (AccountActions as any)
+                    .createAccount(
+                        name,
+                        stateRef.current.registrar_account,
+                        referralAccount || stateRef.current.registrar_account,
+                        0,
+                        refcode
+                    )
                     .then(() => {
                         // User registering his own account
-                        if (this.state.registrar_account) {
+                        if (stateRef.current.registrar_account) {
                             FetchChain("getAccount", name, undefined, {
                                 [name]: true
                             }).then(() => {
-                                this.setState({
+                                mergeState({
                                     step: 2,
                                     loading: false
                                 });
                             });
-                            TransactionConfirmStore.listen(
-                                this.onFinishConfirm
+                            (TransactionConfirmStore as any).listen(
+                                onFinishConfirm
                             );
                         } else {
                             // Account registered by the faucet
                             FetchChain("getAccount", name, undefined, {
                                 [name]: true
                             }).then(() => {
-                                this.setState({
+                                mergeState({
                                     step: 2,
                                     loading: false
                                 });
                             });
                         }
                     })
-                    .catch(error => {
+                    .catch((error: any) => {
                         console.log(
                             "ERROR AccountActions.createAccount",
                             error
@@ -164,7 +237,7 @@ class CreateAccount extends React.Component {
                                 ? error.base[0]
                                 : "unknown error";
                         if (error.remote_ip) error_msg = error.remote_ip[0];
-                        Notification.error({
+                        (Notification as any).error({
                             message: counterpart.translate(
                                 "notifications.account_create_failure",
                                 {
@@ -173,25 +246,26 @@ class CreateAccount extends React.Component {
                                 }
                             )
                         });
-                        this.setState({loading: false});
+                        mergeState({loading: false});
                     });
             })
             .catch(() => {});
-    }
+    };
 
-    createWallet(password) {
-        return WalletActions.setWallet(
-            "default", //wallet name
-            password
-        )
+    const createWallet = (password: string) => {
+        return (WalletActions as any)
+            .setWallet(
+                "default", //wallet name
+                password
+            )
             .then(() => {
                 console.log(
                     "Congratulations, your wallet was successfully created."
                 );
             })
-            .catch(err => {
+            .catch((err: any) => {
                 console.log("CreateWallet failed:", err);
-                Notification.error({
+                (Notification as any).error({
                     message: counterpart.translate(
                         "notifications.account_wallet_create_failure",
                         {
@@ -200,41 +274,45 @@ class CreateAccount extends React.Component {
                     )
                 });
             });
-    }
+    };
 
-    onSubmit(e) {
+    const onSubmit = (e: any) => {
         e.preventDefault();
-        if (!this.isValid()) return;
-        let account_name = this.accountNameInput.getValue();
-        if (WalletDb.getWallet()) {
-            this.createAccount(account_name);
+        if (!isValid()) return;
+        const account_name = accountNameInputRef.current.getValue();
+        if ((WalletDb as any).getWallet()) {
+            createAccount(account_name);
         } else {
-            let password = this.refs.password.value();
-            this.createWallet(password).then(() =>
-                this.createAccount(account_name)
-            );
+            const password = passwordRef.current.value();
+            createWallet(password).then(() => createAccount(account_name));
         }
-    }
+    };
 
-    onRegistrarAccountChange(registrar_account) {
-        this.setState({registrar_account});
-    }
+    const onRegistrarAccountChange = (registrar_account: any) => {
+        mergeState({registrar_account});
+    };
 
     // showRefcodeInput(e) {
     //     e.preventDefault();
     //     this.setState({hide_refcode: false});
     // }
 
-    _renderAccountCreateForm() {
-        let {registrar_account} = this.state;
+    const onBackupDownload = () => {
+        mergeState({
+            step: 3
+        });
+    };
 
-        let my_accounts = AccountStore.getMyAccounts();
-        let firstAccount = my_accounts.length === 0;
-        let hasWallet = WalletDb.getWallet();
-        let valid = this.isValid();
+    const renderAccountCreateForm = () => {
+        const {registrar_account} = state;
+
+        const my_accounts = (AccountStore as any).getMyAccounts();
+        const firstAccount = my_accounts.length === 0;
+        const hasWallet = (WalletDb as any).getWallet();
+        const valid = isValid();
         let isLTM = false;
-        let registrar = registrar_account
-            ? ChainStore.getAccount(registrar_account)
+        const registrar = registrar_account
+            ? (ChainStore as any).getAccount(registrar_account)
             : null;
         if (registrar) {
             if (registrar.get("lifetime_referrer") == registrar.get("id")) {
@@ -242,14 +320,14 @@ class CreateAccount extends React.Component {
             }
         }
 
-        let buttonClass = classNames("submit-button button no-margin", {
+        const buttonClass = classNames("submit-button button no-margin", {
             disabled: !valid || (registrar_account && !isLTM)
         });
 
         return (
             <form
                 style={{maxWidth: "40rem"}}
-                onSubmit={this.onSubmit.bind(this)}
+                onSubmit={onSubmit}
                 noValidate
                 className="create-account-wrapper"
             >
@@ -267,13 +345,13 @@ class CreateAccount extends React.Component {
                     )}
                 </p>
                 <AccountNameInput
-                    ref={ref => {
+                    ref={(ref: any) => {
                         if (ref) {
-                            this.accountNameInput = ref.refs.nameInput;
+                            accountNameInputRef.current = ref.refs.nameInput;
                         }
                     }}
                     cheapNameOnly={!!firstAccount}
-                    onChange={this.onAccountNameChange.bind(this)}
+                    onChange={onAccountNameChange}
                     accountShouldNotExist={true}
                     placeholder={counterpart.translate("wallet.account_public")}
                     noLabel
@@ -282,9 +360,9 @@ class CreateAccount extends React.Component {
                 {/* Only ask for password if a wallet already exists */}
                 {hasWallet ? null : (
                     <PasswordInput
-                        ref="password"
+                        ref={passwordRef}
                         confirmation={true}
-                        onChange={this.onPasswordChange.bind(this)}
+                        onChange={onPasswordChange}
                         noLabel
                         checkStrength
                     />
@@ -298,7 +376,7 @@ class CreateAccount extends React.Component {
                         </label>
                         <AccountSelect
                             account_names={my_accounts}
-                            onChange={this.onRegistrarAccountChange.bind(this)}
+                            onChange={onRegistrarAccountChange}
                         />
                         {registrar_account && !isLTM ? (
                             <div
@@ -314,7 +392,7 @@ class CreateAccount extends React.Component {
                 <div className="divider" />
 
                 {/* Submit button */}
-                {this.state.loading ? (
+                {state.loading ? (
                     <LoadingIndicator type="three-bounce" />
                 ) : (
                     <button style={{width: "100%"}} className={buttonClass}>
@@ -325,15 +403,15 @@ class CreateAccount extends React.Component {
                 {/* Backup restore option */}
                 <div style={{paddingTop: 40}}>
                     <label>
-                        <Link to="/existing-account">
+                        <LinkComponent to="/existing-account">
                             <Translate content="wallet.restore" />
-                        </Link>
+                        </LinkComponent>
                     </label>
 
                     <label>
-                        <Link to="/create-wallet-brainkey">
+                        <LinkComponent to="/create-wallet-brainkey">
                             <Translate content="settings.backup_brainkey" />
-                        </Link>
+                        </LinkComponent>
                     </label>
                 </div>
 
@@ -343,7 +421,7 @@ class CreateAccount extends React.Component {
                         <label>
                             <a
                                 onClick={() => {
-                                    this.setState({step: 3});
+                                    mergeState({step: 3});
                                 }}
                             >
                                 <Translate content="wallet.go_get_started" />
@@ -353,12 +431,12 @@ class CreateAccount extends React.Component {
                 )}
             </form>
         );
-    }
+    };
 
-    _renderAccountCreateText() {
-        let hasWallet = WalletDb.getWallet();
-        let my_accounts = AccountStore.getMyAccounts();
-        let firstAccount = my_accounts.length === 0;
+    const renderAccountCreateText = () => {
+        const hasWallet = (WalletDb as any).getWallet();
+        const my_accounts = (AccountStore as any).getMyAccounts();
+        const firstAccount = my_accounts.length === 0;
 
         return (
             <div className="confirm-checks">
@@ -384,20 +462,20 @@ class CreateAccount extends React.Component {
                 </p>
 
                 <Translate
-                    style={{textAlign: "left"}}
+                    style={{textAlign: "left"} as any}
                     component="p"
                     content="wallet.create_account_text"
                 />
 
                 {firstAccount ? (
                     <Translate
-                        style={{textAlign: "left"}}
+                        style={{textAlign: "left"} as any}
                         component="p"
                         content="wallet.first_account_paid"
                     />
                 ) : (
                     <Translate
-                        style={{textAlign: "left"}}
+                        style={{textAlign: "left"} as any}
                         component="p"
                         content="wallet.not_first_account"
                     />
@@ -411,27 +489,21 @@ class CreateAccount extends React.Component {
                 } */}
             </div>
         );
-    }
+    };
 
-    _renderBackup() {
+    const renderBackup = () => {
         return (
             <div className="backup-submit">
                 <p>
                     <Translate unsafe content="wallet.wallet_crucial" />
                 </p>
                 <div className="divider" />
-                <BackupCreate noText downloadCb={this._onBackupDownload} />
+                <BackupCreate noText downloadCb={onBackupDownload} />
             </div>
         );
-    }
-
-    _onBackupDownload = () => {
-        this.setState({
-            step: 3
-        });
     };
 
-    _renderBackupText() {
+    const renderBackupText = () => {
         return (
             <div>
                 <p
@@ -451,9 +523,9 @@ class CreateAccount extends React.Component {
                 </p>
             </div>
         );
-    }
+    };
 
-    _renderGetStarted() {
+    const renderGetStarted = () => {
         return (
             <div>
                 <table className="table">
@@ -463,9 +535,9 @@ class CreateAccount extends React.Component {
                                 <Translate content="wallet.tips_dashboard" />:
                             </td>
                             <td>
-                                <Link to="/">
+                                <LinkComponent to="/">
                                     <Translate content="header.dashboard" />
-                                </Link>
+                                </LinkComponent>
                             </td>
                         </tr>
 
@@ -474,11 +546,11 @@ class CreateAccount extends React.Component {
                                 <Translate content="wallet.tips_account" />:
                             </td>
                             <td>
-                                <Link
-                                    to={`/account/${this.state.accountName}/overview`}
+                                <LinkComponent
+                                    to={`/account/${state.accountName}/overview`}
                                 >
                                     <Translate content="wallet.link_account" />
-                                </Link>
+                                </LinkComponent>
                             </td>
                         </tr>
 
@@ -487,9 +559,9 @@ class CreateAccount extends React.Component {
                                 <Translate content="wallet.tips_deposit" />:
                             </td>
                             <td>
-                                <Link to="/deposit-withdraw">
+                                <LinkComponent to="/deposit-withdraw">
                                     <Translate content="wallet.link_deposit" />
-                                </Link>
+                                </LinkComponent>
                             </td>
                         </tr>
 
@@ -498,9 +570,9 @@ class CreateAccount extends React.Component {
                                 <Translate content="wallet.tips_transfer" />:
                             </td>
                             <td>
-                                <Link to="/transfer">
+                                <LinkComponent to="/transfer">
                                     <Translate content="wallet.link_transfer" />
-                                </Link>
+                                </LinkComponent>
                             </td>
                         </tr>
 
@@ -509,18 +581,18 @@ class CreateAccount extends React.Component {
                                 <Translate content="wallet.tips_settings" />:
                             </td>
                             <td>
-                                <Link to="/settings">
+                                <LinkComponent to="/settings">
                                     <Translate content="header.settings" />
-                                </Link>
+                                </LinkComponent>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         );
-    }
+    };
 
-    _renderGetStartedText() {
+    const renderGetStartedText = () => {
         return (
             <div>
                 <p
@@ -546,61 +618,60 @@ class CreateAccount extends React.Component {
                 </p>
             </div>
         );
-    }
+    };
 
-    render() {
-        let {step} = this.state;
+    const {step} = state;
 
-        return (
-            <div
-                className="sub-content"
-                id="scrollToInput"
-                name="scrollToInput"
-            >
-                <div style={{maxWidth: "95vw"}}>
-                    {step !== 1 ? (
-                        <p
-                            style={{
-                                fontWeight: "normal",
-                                fontFamily: "Roboto-Medium, arial, sans-serif",
-                                fontStyle: "normal"
-                            }}
-                        >
-                            <Translate content={"wallet.step_" + step} />
-                        </p>
-                    ) : null}
+    return (
+        <div
+            className="sub-content"
+            id="scrollToInput"
+            {...({name: "scrollToInput"} as any)}
+        >
+            <div style={{maxWidth: "95vw"}}>
+                {step !== 1 ? (
+                    <p
+                        style={{
+                            fontWeight: "normal",
+                            fontFamily: "Roboto-Medium, arial, sans-serif",
+                            fontStyle: "normal"
+                        }}
+                    >
+                        <Translate content={"wallet.step_" + step} />
+                    </p>
+                ) : null}
 
-                    {step === 1
-                        ? this._renderAccountCreateForm()
-                        : step === 2
-                        ? this._renderBackup()
-                        : this._renderGetStarted()}
-                </div>
-
-                <div style={{maxWidth: "95vw", paddingTop: "2rem"}}>
-                    {step === 1
-                        ? this._renderAccountCreateText()
-                        : step === 2
-                        ? this._renderBackupText()
-                        : this._renderGetStartedText()}
-                </div>
-                <Link to="/">
-                    <button className="button primary hollow">
-                        <Translate content="wallet.back" />
-                    </button>
-                </Link>
+                {step === 1
+                    ? renderAccountCreateForm()
+                    : step === 2
+                    ? renderBackup()
+                    : renderGetStarted()}
             </div>
-        );
-    }
+
+            <div style={{maxWidth: "95vw", paddingTop: "2rem"}}>
+                {step === 1
+                    ? renderAccountCreateText()
+                    : step === 2
+                    ? renderBackupText()
+                    : renderGetStartedText()}
+            </div>
+            <LinkComponent to="/">
+                <button className="button primary hollow">
+                    <Translate content="wallet.back" />
+                </button>
+            </LinkComponent>
+        </div>
+    );
 }
 
-CreateAccount = withRouter(CreateAccount);
+interface CreateAccountContainerProps {
+    history: any;
+    [key: string]: any;
+}
 
-export default connect(CreateAccount, {
-    listenTo() {
-        return [AccountStore];
-    },
-    getProps() {
-        return {};
-    }
-});
+function CreateAccountContainer({history}: CreateAccountContainerProps) {
+    useAltStore(AccountStore);
+    return <CreateAccount history={history} />;
+}
+
+export default CreateAccountContainer;
