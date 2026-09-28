@@ -3921,9 +3921,63 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~174 more `.jsx` files outside
+- `Account/` batch 6 (3 files): `MarginPositionsTable.jsx`,
+  `AccountWhitelist.jsx`, `NestedApprovalState.jsx` → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches.
+  - `MarginPositionsTable.tsx`: `ListGenerator`'s `static
+    getDerivedStateFromProps` (recomputes a margin-items cache only when
+    `bitAssets.length` or a JSON-stringified `callOrders` actually
+    changed) is a textbook `useMemo` case, replicated directly.
+    `BindToChainState(Component)` replaced by a Container under
+    `useChainStoreTick()`; `AssetWrapper` kept as-is around it.
+  - `AccountWhitelist.tsx` (**security-sensitive per AGENTS.md** - builds
+    and submits an `account_whitelist` operation via `WalletApi
+    .new_transaction()`/`WalletDb.process_transaction()`; transcribed
+    verbatim, no restructuring): `AccountRow`'s `BindToChainState
+    (Component, {tempComponent: "tr"})` replaced by a Container that
+    replicates the `tempComponent` fallback exactly - a bare `<tr />`
+    while unresolved, not the usual blank `<span/>`, since a
+    `tempComponent` option changes what the original HOC falls back to.
+    Dropped as confirmed dead: the outer `<div ref="appTables">` legacy
+    string ref (grepped the whole file; never read).
+  - `NestedApprovalState.tsx` (the most structurally complex file ported
+    in this migration so far - a self-recursive permission-tree
+    component): `AccountPermissionTree`'s `BindToChainState(Component)`
+    replaced by a Container+Core split under `useChainStoreTick()`, with
+    the Container itself used recursively (matching the original's
+    `BoundAccountPermissionTree` recursive-usage pattern exactly). Its
+    `accounts` prop is declared in propTypes but never read anywhere -
+    confirmed dead, so left unresolved. `FirstLevel`'s `BindToChainState
+    (Component)` (optional `required`/`available` lists) replaced by a
+    Container replicating `BindToChainState.jsx`'s `chain_accounts_list`
+    resolution loop directly - unlike `chain_objects_list`/
+    `chain_assets_list` (ported in earlier batches), *this* resolution
+    loop increments its index *after* assigning, so it has no sparse-
+    array quirk (documented explicitly, since a reader who'd seen the
+    other two ported list-resolution helpers might otherwise assume all
+    three share the same quirk). `FirstLevel`'s `UNSAFE_componentWillMount`
+    + manual `ChainStore.subscribe(this._updateState)`/
+    `componentWillUnmount` unsubscribe (recomputing derived permission
+    data on *every* chain-store tick, not just prop changes) is replaced
+    by computing that same data directly in the render body on every
+    render, combined with `useChainStoreTick()` - at least as fresh as
+    the original's subscribe-then-setState round trip, with no
+    possibility of a render showing stale derived data in between.
+    `ProposalWrapper`'s `BindToChainState(Component)` (required
+    `proposal`, `globalObject`) replaced by a Container gating on both.
+  - Verified: `yarn typecheck` clean (after loosening two prop-interface
+    fields from required to optional where they're only ever satisfied
+    via a `{...rest}` spread TypeScript can't fully trace through),
+    `eslint` clean (0 errors, after removing two now-genuinely-unused
+    event-handler parameters - not renaming them, since this codebase's
+    lint config doesn't recognize the underscore-prefix convention - and
+    an empty interface / a `let` that should have been `const`; expected
+    `any`-type warnings only otherwise), full Jest suite green
+    (5,532/5,532), `yarn build` shows only the 2 known pre-existing
+    `charting_library` errors. Old `.jsx` files removed.
+- Remaining long tail (~171 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (19 more), `Modal/` (21),
+  directories) not yet started: `Account/` (16 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
