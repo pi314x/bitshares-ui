@@ -1,4 +1,22 @@
-import React from "react";
+// TypeScript/functional-component port of the legacy AccountVesting.jsx
+// (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+//
+// Security-sensitive per AGENTS.md: `onClaim` calls
+// `WalletActions.claimVestingBalance`, a wallet transaction action -
+// transcribed verbatim, no restructuring.
+//
+// `UNSAFE_componentWillMount` (calls `retrieveVestingBalances` once,
+// unconditionally) + `componentDidUpdate` (calls it again only when the
+// account id changes) are unified into one `useEffect` keyed on
+// `account.get("id")` - it fires once on mount and again whenever the id
+// changes, matching both original call sites with the same argument in
+// both cases (the same pattern used for `AccountReferralsTable.tsx` in
+// an earlier batch). Unlike a couple of other lifecycle merges in this
+// migration, a plain `useEffect` (rather than a render-phase update) is
+// used here since the only visible effect of the pre-fetch/post-fetch
+// timing gap is a `loading` flag toggling a `PaginatedList` spinner, not
+// a wrong-content flash.
+import * as React from "react";
 import Translate from "react-translate-component";
 import FormattedAsset from "../Utility/FormattedAsset";
 import {ChainStore} from "bitsharesjs";
@@ -10,71 +28,43 @@ import PaginatedList from "components/Utility/PaginatedList";
 import SearchInput from "../Utility/SearchInput";
 import counterpart from "counterpart";
 
-class AccountVesting extends React.Component {
-    constructor(props) {
-        super(props);
+interface AccountVestingState {
+    vesting_balances: any[];
+    searchTerm: string;
+    loading: boolean;
+    error: boolean;
+}
 
-        this.state = {
-            vesting_balances: [],
-            searchTerm: "",
-            loading: false,
-            error: false
-        };
+interface AccountVestingProps {
+    account: any;
+}
 
-        this.onSearch = this.onSearch.bind(this);
-        this.retrieveVestingBalances = this.retrieveVestingBalances.bind(this);
-    }
+function AccountVesting({account}: AccountVestingProps) {
+    const [state, setState] = React.useState<AccountVestingState>({
+        vesting_balances: [],
+        searchTerm: "",
+        loading: false,
+        error: false
+    });
 
-    UNSAFE_componentWillMount() {
-        this.retrieveVestingBalances.call(this, this.props.account.get("id"));
-    }
+    const mergeState = (partial: Partial<AccountVestingState>) => {
+        setState(prev => ({...prev, ...partial}));
+    };
 
-    componentDidUpdate(prevProps) {
-        let oldId = prevProps.account.get("id");
-        let newId = this.props.account.get("id");
-
-        if (newId !== oldId) {
-            this.retrieveVestingBalances.call(this, newId);
-        }
-    }
-
-    retrieveVestingBalances(accountId) {
-        this.setState({
-            loading: true
-        });
-        accountId = accountId || this.props.account.get("id");
-        Apis.instance()
-            .db_api()
-            .exec("get_vesting_balances", [accountId])
-            .then(vesting_balances => {
-                this.mapVestingBalances(vesting_balances);
-                this.setState({
-                    loading: false
-                });
-            })
-            .catch(err => {
-                console.log("error:", err);
-                this.setState({
-                    loading: false,
-                    error: true
-                });
-            });
-    }
-
-    mapVestingBalances(vb) {
+    const mapVestingBalances = (vb: any) => {
         if (!vb) {
             return null;
         }
-        let vesting_balances = vb.filter(item => {
+        let vesting_balances = vb.filter((item: any) => {
             return item.balance.amount && item.balance.asset_id;
         });
-        vesting_balances = vesting_balances.map(item => {
+        vesting_balances = vesting_balances.map((item: any) => {
             let cvbAsset,
                 balance,
-                available_percentage = 0,
-                days_earned = 0,
-                days_required = 0,
-                days_remaining = 0,
+                available_percentage: any = 0,
+                days_earned: any = 0,
+                days_required: any = 0,
+                days_remaining: any = 0,
                 isCoinDays = true,
                 canClaim = true;
 
@@ -84,11 +74,11 @@ class AccountVesting extends React.Component {
 
                 if (item.policy && item.policy[0] === 1) {
                     // cdd_vesting_policy (coin days destroyed)
-                    let start = Math.floor(
+                    const start = Math.floor(
                         new Date(item.policy[1].start_claim + "Z").getTime() /
                             1000
                     );
-                    let now = Math.floor(new Date().getTime() / 1000);
+                    const now = Math.floor(new Date().getTime() / 1000);
 
                     if (start > 0) {
                         // Vesting has a specific start date.
@@ -99,16 +89,16 @@ class AccountVesting extends React.Component {
 
                         isCoinDays = false;
 
-                        let seconds_earned = now - start;
-                        let seconds_period = item.policy[1].vesting_seconds;
+                        const seconds_earned = now - start;
+                        const seconds_period = item.policy[1].vesting_seconds;
 
                         if (seconds_earned < seconds_period) {
                             canClaim = false;
                             days_earned = parseFloat(
-                                seconds_earned / 86400
+                                (seconds_earned / 86400) as any
                             ).toFixed(2);
                             days_required = parseFloat(
-                                seconds_period / 86400
+                                (seconds_period / 86400) as any
                             ).toFixed(2);
                             days_remaining = (
                                 days_required - days_earned
@@ -125,16 +115,16 @@ class AccountVesting extends React.Component {
 
                         // Core is lazy calculating the vesting balance object, so we
                         // need to account for the time passed since it was last updated
-                        let seconds_last_updated = Math.floor(
+                        const seconds_last_updated = Math.floor(
                             new Date(
                                 item.policy[1].coin_seconds_earned_last_update +
                                     "Z"
                             ).getTime() / 1000
                         );
-                        let seconds_earned =
+                        const seconds_earned =
                             parseFloat(item.policy[1].coin_seconds_earned) +
                             balance * (now - seconds_last_updated);
-                        let seconds_period = item.policy[1].vesting_seconds;
+                        const seconds_period = item.policy[1].vesting_seconds;
 
                         available_percentage =
                             seconds_period === 0
@@ -166,19 +156,19 @@ class AccountVesting extends React.Component {
                     }
                 } else if (item.policy && item.policy[0] === 0) {
                     // linear_vesting_policy
-                    let start = Math.floor(
+                    const start = Math.floor(
                         new Date(
                             item.policy[1].begin_timestamp + "Z"
                         ).getTime() / 1000
                     );
-                    let now = Math.floor(new Date().getTime() / 1000);
-                    let seconds_earned = Math.max(now - start, 0);
-                    let seconds_period =
+                    const now = Math.floor(new Date().getTime() / 1000);
+                    const seconds_earned = Math.max(now - start, 0);
+                    const seconds_period =
                         item.policy[1].vesting_duration_seconds;
-                    let seconds_cliff = item.policy[1].vesting_cliff_seconds;
-                    let begin_balance = item.policy[1].begin_balance;
-                    let claimed_percentage = 1 - balance / begin_balance;
-                    let seconds_remaining = Math.max(
+                    const seconds_cliff = item.policy[1].vesting_cliff_seconds;
+                    const begin_balance = item.policy[1].begin_balance;
+                    const claimed_percentage = 1 - balance / begin_balance;
+                    const seconds_remaining = Math.max(
                         seconds_period - seconds_earned,
                         0
                     );
@@ -187,7 +177,7 @@ class AccountVesting extends React.Component {
                         2
                     );
 
-                    let vested_percentage =
+                    const vested_percentage =
                         seconds_earned >= seconds_period
                             ? 1
                             : seconds_earned < seconds_cliff
@@ -229,17 +219,44 @@ class AccountVesting extends React.Component {
                 vb: item
             };
         });
-        this.setState({vesting_balances});
-    }
+        mergeState({vesting_balances});
+    };
 
-    getHeader() {
+    const retrieveVestingBalances = (accountIdArg?: any) => {
+        mergeState({
+            loading: true
+        });
+        const accountId = accountIdArg || account.get("id");
+        Apis.instance()
+            .db_api()
+            .exec("get_vesting_balances", [accountId])
+            .then((vesting_balances: any) => {
+                mapVestingBalances(vesting_balances);
+                mergeState({
+                    loading: false
+                });
+            })
+            .catch((err: any) => {
+                console.log("error:", err);
+                mergeState({
+                    loading: false,
+                    error: true
+                });
+            });
+    };
+
+    React.useEffect(() => {
+        retrieveVestingBalances(account.get("id"));
+    }, [account.get("id")]);
+
+    const getHeader = () => {
         return [
             {
                 title: "#",
                 dataIndex: "vestingId",
                 align: "left",
                 defaultSortOrder: "ascend",
-                sorter: (a, b) => {
+                sorter: (a: any, b: any) => {
                     return a.vestingId > b.vestingId
                         ? 1
                         : a.vestingId < b.vestingId
@@ -251,19 +268,17 @@ class AccountVesting extends React.Component {
                 title: <Translate content="account.member.balance_type" />,
                 dataIndex: "vestingType",
                 align: "left",
-                sorter: (a, b) => {
+                sorter: (a: any, b: any) => {
                     return a.vestingType > b.vestingType
                         ? 1
                         : a.vestingType < b.vestingType
                         ? -1
                         : 0;
                 },
-                render: item => {
+                render: (item: any) => {
                     return (
                         <span>
-                            <Translate
-                                content={"account.vesting.type." + item}
-                            />
+                            <Translate content={"account.vesting.type." + item} />
                         </span>
                     );
                 }
@@ -272,20 +287,15 @@ class AccountVesting extends React.Component {
                 title: <Translate content="account.member.cashback" />,
                 dataIndex: "vestingBalance",
                 align: "left",
-                render: item => {
-                    return (
-                        <FormattedAsset
-                            amount={item.amount}
-                            asset={item.asset}
-                        />
-                    );
+                render: (item: any) => {
+                    return <FormattedAsset amount={item.amount} asset={item.asset} />;
                 }
             },
             {
                 title: <Translate content="account.member.required" />,
                 dataIndex: "coinDaysRequired",
                 align: "left",
-                render: item => {
+                render: (item: any) => {
                     return item.days_required ? (
                         <span>
                             {item.days_required}
@@ -305,7 +315,7 @@ class AccountVesting extends React.Component {
                 title: <Translate content="account.member.earned" />,
                 dataIndex: "coinDaysEarned",
                 align: "left",
-                render: item => {
+                render: (item: any) => {
                     return item.days_earned ? (
                         <span>
                             {item.days_earned}
@@ -325,7 +335,7 @@ class AccountVesting extends React.Component {
                 title: <Translate content="account.member.remaining" />,
                 dataIndex: "coinDaysRemaining",
                 align: "left",
-                render: item => {
+                render: (item: any) => {
                     return item.days_remaining ? (
                         <span>
                             {item.days_remaining}
@@ -339,82 +349,77 @@ class AccountVesting extends React.Component {
                 title: <Translate content="account.member.available" />,
                 dataIndex: "availablePercent",
                 align: "left",
-                render: item => {
-                    return item ? (
-                        <span>{(item * 100).toFixed(2)}%</span>
-                    ) : null;
+                render: (item: any) => {
+                    return item ? <span>{(item * 100).toFixed(2)}%</span> : null;
                 }
             },
             {
                 title: <Translate content="account.member.action" />,
                 align: "center",
-                render: item => {
+                render: (item: any) => {
                     return item.canClaim ? (
-                        <Button
-                            onClick={() => this.onClaim(item)}
-                            type="secondary"
-                        >
+                        <Button onClick={() => onClaim(item)} type="secondary">
                             <Translate content="account.member.claim" />
                         </Button>
                     ) : null;
                 }
             }
         ];
-    }
+    };
 
-    onClaim({vb}) {
-        const account_id = this.props.account.get("id");
-        WalletActions.claimVestingBalance(account_id, vb, false).then(() => {
-            this.retrieveVestingBalances();
-        });
-    }
+    const onClaim = ({vb}: {vb: any}) => {
+        const account_id = account.get("id");
+        (WalletActions as any)
+            .claimVestingBalance(account_id, vb, false)
+            .then(() => {
+                retrieveVestingBalances();
+            });
+    };
 
-    onSearch(event) {
-        this.setState({
+    const onSearch = (event: any) => {
+        mergeState({
             searchTerm: event.target.value || ""
         });
-    }
+    };
 
-    render() {
-        const header = this.getHeader();
+    const header = getHeader();
 
-        let vb = this.state.vesting_balances.filter(item => {
-            return (
-                `${item.vestingId}\0${item.vestingType}`
-                    .toUpperCase()
-                    .indexOf(this.state.searchTerm.toUpperCase()) !== -1
-            );
-        });
-
+    const vb = state.vesting_balances.filter(item => {
         return (
-            <div className="grid-content vertical">
-                <Translate component="h1" content="account.vesting.title" />
-                <Translate content="account.vesting.explain" component="p" />
-                <div className="header-selector padding">
-                    <SearchInput
-                        onChange={this.onSearch.bind(this)}
-                        value={this.state.searchTerm}
-                        autoComplete="off"
-                        placeholder={counterpart.translate("exchange.filter")}
-                    />
-                    {this.state.error && (
-                        <Translate
-                            className="header-selector--error"
-                            content="errors.loading_from_blockchain"
-                        />
-                    )}
-                </div>
-                <div>
-                    <PaginatedList
-                        loading={this.state.loading}
-                        rows={vb}
-                        header={header}
-                        pageSize={10}
-                    />
-                </div>
-            </div>
+            `${item.vestingId}\0${item.vestingType}`
+                .toUpperCase()
+                .indexOf(state.searchTerm.toUpperCase()) !== -1
         );
-    }
+    });
+
+    return (
+        <div className="grid-content vertical">
+            <Translate component="h1" content="account.vesting.title" />
+            <Translate content="account.vesting.explain" component="p" />
+            <div className="header-selector padding">
+                <SearchInput
+                    onChange={onSearch}
+                    value={state.searchTerm}
+                    autoComplete="off"
+                    placeholder={counterpart.translate("exchange.filter")}
+                />
+                {state.error && (
+                    <Translate
+                        className="header-selector--error"
+                        content="errors.loading_from_blockchain"
+                    />
+                )}
+            </div>
+            <div>
+                <PaginatedList
+                    loading={state.loading}
+                    rows={vb}
+                    header={header as any}
+                    pageSize={10}
+                />
+            </div>
+        </div>
+    );
 }
 
 export default AccountVesting;

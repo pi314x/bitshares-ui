@@ -3975,9 +3975,45 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only otherwise), full Jest suite green
     (5,532/5,532), `yarn build` shows only the 2 known pre-existing
     `charting_library` errors. Old `.jsx` files removed.
-- Remaining long tail (~171 more `.jsx` files outside
+- `Account/` batch 7 (3 files): `AccountVesting.jsx`,
+  `AccountSignedMessages.jsx`, `AccountAssets.jsx` → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches.
+  - `AccountVesting.tsx`: security-sensitive per AGENTS.md (`onClaim`
+    calls `WalletActions.claimVestingBalance`) - transcribed verbatim.
+    `UNSAFE_componentWillMount` + `componentDidUpdate` (same account-id-
+    keyed pattern as `AccountReferralsTable.tsx` in an earlier batch)
+    unified into one `useEffect`.
+  - `AccountSignedMessages.tsx`: security-sensitive per AGENTS.md
+    (`_tabSMSignAction`/`_tabVMAction` sign/verify messages with the
+    memo key) - transcribed verbatim. `BindToChainState(Component)`
+    replaced by a Container. Dropped as confirmed dead: two legacy
+    string refs (`appTables`, `memo_key`), neither ever read. **Preserved
+    verbatim, not "fixed"**: the verify-on-change toggle's `<table><tr>`
+    has no `<tbody>` wrapper (invalid nesting - logs a React
+    `validateDOMNesting` warning), and the popup message next to
+    "Verify" uses a bare `<text>` (an SVG element, not HTML) instead of
+    `<span>`.
+  - `AccountAssets.tsx`: `connect(Component, {listenTo, getProps})`
+    replaced by `useAltStore(AssetStore)`; `AssetWrapper` kept as-is.
+    `UNSAFE_componentWillMount` + `UNSAFE_componentWillReceiveProps`
+    (both call `_checkAssets`, mount with `force=true`) unified into one
+    `useEffect` keyed on `assets`. Preserved verbatim: `assetsFetched` is
+    read before it's ever set in state, so `n >= undefined` (always
+    `false` in JS) makes that branch a no-op on the very first call -
+    replicated by genuinely leaving it out of the initial state object.
+    **Dropped as confirmed dead** (found while porting, not merely
+    carried forward): `_onIssueInput` and the `_searchAccounts` debounced
+    helper it alone called - `_onIssueInput` is defined but never wired
+    to any element in `render()` (`<IssueModal>` only ever receives
+    `visible`/`hideModal`/`showModal`/`asset_to_issue`), making both
+    functions, and the never-read `searchTerm` state field, unreachable.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~168 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (16 more), `Modal/` (21),
+  directories) not yet started: `Account/` (13 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
