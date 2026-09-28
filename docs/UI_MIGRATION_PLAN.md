@@ -3617,8 +3617,48 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~201 more `.jsx` files outside
-  `Blockchain/operations/`, the seven `Utility/` batches above, and the
+- `Utility/` batch 8 (2 files): `HelpContent.jsx`, `AssetInput.jsx` →
+  `.tsx`. Grep-verified: no `extends <ClassName>` matches.
+  - `HelpContent.tsx`: `UNSAFE_componentWillMount` populated a module-
+    scope `HelpData` cache *synchronously before the first render*, so
+    that same render's `HelpData[locale][path]` read already saw it - a
+    plain `useEffect` would run *after* the first paint and show a
+    blank/error flash first. Replicated with a synchronous
+    check-and-run directly in the render body, gated by a `useRef` flag
+    so it still only runs once per mount. Preserved verbatim: the
+    constructor's `window._onClickLink = this.onClickLink.bind(this)` is
+    a single *global* slot, so mounting multiple `HelpContent` instances
+    (routine - this component is used pervasively) means only the most-
+    recently-mounted instance's `history` actually receives link clicks
+    anywhere on the page - a real pre-existing bug, replicated with a
+    mount-only `useEffect` and a `historyRef` kept fresh on every render
+    (matching `this.props.history` always reading current). Simplified
+    `return !null;` (almost certainly an unintentional `!` typo) to
+    `return null;` - React renders a boolean the same as `null` (nothing
+    visible), so the observable output is identical either way; this is
+    the first behavior-neutral simplification in this migration made
+    purely to satisfy the type checker (`TS2873: this kind of expression
+    is always falsy`) rather than preserving a real bug. Added
+    `__HASH_HISTORY__` to `app/types/global-defines.d.ts` (the first
+    `.tsx` usage of this webpack `DefinePlugin` global).
+  - `AssetInput.tsx`: `BindToChainState(ControlledAssetInput)` (resolving
+    the optional, non-required `asset` prop) replaced by a Container
+    under `useChainStoreTick()`. `componentDidMount`
+    (`checkFound()`) + `componentDidUpdate` (`checkFound(prevProps
+    .asset)`, unconditional on every update) unified into one
+    dependency-free `useEffect` (runs after every render) with a
+    mount-only ref flag distinguishing the first call from later ones,
+    and a ref tracking the previous resolved `asset` across renders.
+    The outer wrapper's `getDerivedStateFromProps` (derives `defaultValue`
+    only while `state.value` is still `undefined`, i.e. before the user
+    has typed anything, and is a no-op afterward) is functionally a
+    one-time initializer, replicated with a `useState` lazy initializer.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~199 more `.jsx` files outside
+  `Blockchain/operations/`, the eight `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup

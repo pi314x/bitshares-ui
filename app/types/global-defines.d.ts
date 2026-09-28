@@ -6,3 +6,4 @@ declare const __TESTNET__: boolean;
 declare const __ELECTRON__: boolean;
 declare const __BASE_URL__: string;
 declare const __DEV__: boolean;
+declare const __HASH_HISTORY__: boolean;
