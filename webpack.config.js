@@ -271,7 +271,13 @@ module.exports = function(env) {
         "bitshares-ui-style-guide$": path.resolve(
             root_dir,
             "node_modules/bitshares-ui-style-guide/dist/main.js"
-        )
+        ),
+        // Phase 8 (docs/UI_MIGRATION_PLAN.md): drop the `counterpart`
+        // package in favor of a local, tested replacement covering the
+        // exact subset of its API this app (and react-translate
+        // -component, which imports `counterpart` internally) actually
+        // uses. See app/lib/i18n/counterpartShim.js's header.
+        counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
     };
     if (!env.prod) {
         alias = Object.assign({}, alias, {

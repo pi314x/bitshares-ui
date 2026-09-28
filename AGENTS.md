@@ -71,3 +71,26 @@ lint/test CI gate at all.
 - Locale files live in `app/assets/locales/*.json`; keep keys in sync
   across locales when adding user-facing strings (English is the source of
   truth).
+
+## i18n (Phase 8)
+
+- The `counterpart` npm package has been replaced by
+  `app/lib/i18n/counterpartShim.js`, a local reimplementation of the
+  specific subset of counterpart's API this app actually uses (verified
+  by grepping every call site), covered by a characterization-test suite
+  (`app/__tests__/i18n/counterpartShim-test.js`) comparing its output
+  against the real `counterpart` package (kept only as a devDependency,
+  for that test) across every key in `locale-en.json`/`locale-de.json`
+  plus every real `.localize()` call site's type/format/locale
+  combination. A build-time module alias (`webpack.config.js`'s
+  `resolve.alias`, and Jest's `moduleNameMapper` in `package.json`)
+  transparently redirects every `import ... from "counterpart"` -
+  including `react-translate-component`'s own internal one - to this
+  shim. **Do not `import` the real `counterpart` package directly**
+  (other than in that one characterization test, which intentionally
+  bypasses the alias via a relative path) - existing `import counterpart
+  from "counterpart"` call sites across the app need no changes at all,
+  since the alias handles it. See the shim's file header for the full
+  design rationale and what was deliberately not replicated (pluralization,
+  `scope` prefixing, fallback-key resolution - all grep-confirmed unused
+  anywhere in this codebase).
