@@ -3050,6 +3050,71 @@ headers, specifically to make that review tractable.
   own integration test using recorded/mocked API fixtures (never hit the
   live gateway APIs in CI).
 
+**Progress:**
+- Xbtsx gateway migrated: `lib/common/XbtsxMethods.js`/
+  `XbtsxDepositAddressCache.js`, `DepositWithdraw/xbtsx/XbtsxGateway.jsx`,
+  `XbtsxGatewayDepositRequest.jsx`, and `XbtsxWithdrawModal.jsx` all
+  ported to `.ts`/`.tsx`.
+  - `XbtsxGateway.tsx`: preserves a real bug found while reading the
+    original closely - `_getActiveCoin(props, state)` expects `state` to
+    be an object with an `.action` field, but `UNSAFE
+    .componentWillReceiveProps` calls it with `this.state.action` (a bare
+    *string*), so `state.action` inside the function always reads
+    `undefined` off a string. Unreachable in practice: this component's
+    only caller (`AccountDepositWithdraw.jsx`) never passes the
+    `provider` prop the buggy branch is gated behind. Replicated exactly
+    (not "fixed") via a previous-render-ref comparison, this migration's
+    established `UNSAFE_componentWillReceiveProps` translation pattern.
+  - `XbtsxGatewayDepositRequest.tsx`/`XbtsxWithdrawModal.tsx`: both
+    replace their `BindToChainState` wrapper(s) with small container
+    components resolving `account`/`issuer_account` (or `issuer`)
+    /`asset`(s) directly via `ChainStore` under `useChainStoreTick()`,
+    matching each original's exact required-vs-optional prop gating
+    (`XbtsxWithdrawModal`'s `account`/`issuer`/`asset` were `.isRequired`
+    - gated behind a loading fallback; `XbtsxGatewayDepositRequest`'s
+      four ChainTypes props were not - resolved without a gate, matching
+      the original, since its own `render()` already handles the
+      not-yet-resolved case itself).
+  - `XbtsxGatewayDepositRequest.tsx` preserves the original's real
+    side-effecting `requestDepositAddress(...)` fetch call made directly
+    inside the render body (not a lifecycle method or effect) whenever
+    the cached account name doesn't match the current account - an
+    unusual pre-existing pattern kept exactly as-is rather than moved
+    into a `useEffect`, since that would be a genuine timing change, not
+    a mechanical one.
+  - `XbtsxWithdrawModal.tsx` preserves a second real bug: the original's
+    `onWithdrawAmountChange` setState callback reads `this._checkBalance;`
+    with no call parentheses - a no-op property reference, not an
+    invocation - so only the following `this._checkMinAmount()` actually
+    runs. Also uses the "live mutable state bag" pattern (`state` object
+    mutated in place before `setState`, matching this phase's established
+    approach for `setState(patch, callback)` chains) given how many of
+    its methods (`_updateFee`, `_checkFeeStatus`, `_checkBalance`,
+    `_checkMinAmount`) read back state a callback just set.
+  - Dropped as confirmed dead across the three components (grep-verified
+    against the originals): `XbtsxGatewayDepositRequest.tsx`'s
+    `deposit_address_cache` instance (every call to its methods is
+    commented out in the original - the class itself is still ported as
+    a standalone lib file, matching the original's own choice to keep it
+    available without wiring it up) and the never-read `deposit_fee`
+    prop; `XbtsxWithdrawModal.tsx`'s `confirmation_is_valid` and
+    `withdraw_address_first` state fields (write-only), `setNestedRef`
+    /`this.nestedRef` (a ref stored and never read again), and
+    `getWithdrawModalId()`/its `withdrawModalId` render variable (a
+    hardcoded string, computed but never actually used anywhere).
+  - New integration test `app/__tests__/gateways/xbtsxMethods-test.js`
+    (9 tests) covers `XbtsxMethods.ts`'s three real fetch-based API calls
+    (`fetchCoinList`, `requestDepositAddress`, `validateAddress`) against
+    hand-built fixtures shaped like the real xbts.io API's responses, via
+    a mocked `global.fetch` - the live gateway API is never hit - plus
+    the `WithdrawAddresses` localStorage-backed helpers against jsdom's
+    real `localStorage`.
+  - Verified: `eslint` clean on all files (0 errors, expected `any`
+    warnings only), `yarn typecheck` clean, full Jest suite green
+    (72/72), full webpack build shows only the 2 known pre-existing
+    `charting_library` errors.
+- Piratecash gateway not yet started (next).
+
 ### Phase 8 — i18n consolidation & remaining long tail
 - Drop `counterpart`, consolidate on `react-intl`, reconcile the 10
   `app/assets/locales` files against the 6-language `app/help/` set (or

@@ -22,3 +22,4 @@ declare module "react-foundation-apps/src/utils/foundation-api";
 declare module "bitsharesjs/es";
 declare module "common/base58";
 declare module "qrcode.react";
+declare module "react-copy-to-clipboard";
