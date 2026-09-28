@@ -33,3 +33,4 @@ declare module "bitsharesjs/es/chain/src/ChainStore";
 declare module "highcharts/modules/treemap";
 declare module "highcharts/modules/heatmap";
 declare module "react-scroll";
+declare module "string-similarity";

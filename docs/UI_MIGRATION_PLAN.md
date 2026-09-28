@@ -4230,10 +4230,56 @@ compromise, not silent scope-narrowing.
     only), full Jest suite green (5,532/5,532), `yarn build` shows only
     the 2 known pre-existing `charting_library` errors. Old `.jsx` files
     removed.
-- Remaining long tail (~160 more `.jsx` files outside
+- `Account/` batch 11 (3 files): `CreateAccountPassword.jsx`,
+  `WorkersList.jsx`, `AccountOrders.jsx` → `.tsx`. Grep-verified: no
+  `extends <ClassName>` matches beyond plain `React.Component`.
+  - `CreateAccountPassword.tsx`: security-sensitive per AGENTS.md - a
+    near-twin of this batch's `CreateAccount.tsx` (same `connect(
+    withRouter(...))` → `useAltStore` change, same nested/string-ref →
+    `useRef()` translations, same inert commented-out `RefcodeInput`
+    block). The auto-generated password (`"P" + key.get_random_key()
+    .toWif()`, from `bitsharesjs`) is computed exactly once via
+    `useState`'s lazy initializer, matching the constructor running
+    once per instance - never logged or persisted beyond state.
+    `createAccount` (`AccountActions.createAccountWithPassword`),
+    `_unlockAccount` (`WalletDb.validatePassword` +
+    `WalletUnlockActions.checkLock.defer()`) transcribed verbatim.
+    **Dropped as confirmed dead** (found while porting):
+    `_renderAccountCreateText` - fully defined but never called
+    anywhere in the original, unlike its identically-named twin in
+    `CreateAccount.tsx` which *is* called from `render()` - this
+    component's `render()` never renders a second text column at all.
+  - `WorkersList.tsx`: `BindToChainState(WorkerList)` is called with no
+    `propTypes` declared at all, so it resolves zero chain props and has
+    no required props - it still unconditionally subscribes to
+    `ChainStore` (verified directly in `BindToChainState.jsx`'s
+    `componentWillMount`), so it's replaced by `useChainStoreTick()` in
+    a thin pass-through Container. The original class has no
+    `this.state` at all (bare `super(props)` constructor), so nothing
+    needed a `useState` - every method becomes a plain function reading
+    `props`. The `// fixme: don't call setState in render` comment and
+    the `setTimeout(...250)` call it documents are preserved verbatim,
+    not fixed. One dedup (not a logic change): a duplicate `rest:
+    item.rest` key in one object literal. One TS-forced adjustment:
+    `maxDisplayAccountNameLength={null}` → `={undefined}` (identical
+    behavior - the receiving component's own `> 0 ? 20 : Infinity` gate
+    treats both the same).
+  - `AccountOrders.tsx`: security-sensitive per AGENTS.md
+    (`_cancelLimitOrders`/`cancelSelected` build and submit a
+    `cancelLimitOrders` transaction via `MarketsActions`) - transcribed
+    verbatim. `connect(Component, {listenTo: [SettingsStore],
+    getProps})` replaced by `useAltStore(SettingsStore)`.
+  - Verified: `yarn typecheck` clean (after adding `react-scroll` and
+    `string-similarity` vendor shims to `app/types/vendor-shims.d.ts`,
+    and fixing three `prefer-const` lint errors caused by destructuring
+    a field that's reassigned alongside sibling fields that aren't, in
+    `WorkersList.tsx`), `eslint` clean (0 errors, expected `any`-type
+    warnings only), full Jest suite green (5,532/5,532), `yarn build`
+    shows only the 2 known pre-existing `charting_library` errors. Old
+    `.jsx` files removed.
+- Remaining long tail (~157 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (7 more: `CreateAccountPassword`,
-  `WorkersList`, `AccountOrders`, `AccountSelector`,
+  directories) not yet started: `Account/` (4 more: `AccountSelector`,
   `AccountDepositWithdraw`, `AccountPortfolioList`,
   `AccountSelectorAnt`), `Modal/` (21), `Blockchain/` non-operations
   (~13), `Registration/` (11), root `components/` (9), `Forms/` (8),
