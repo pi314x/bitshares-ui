@@ -3597,8 +3597,28 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~203 more `.jsx` files outside
-  `Blockchain/operations/`, the six `Utility/` batches above, and the
+- `Utility/` batch 7 (2 files): `NodeSelector.jsx`, `Tabs.jsx`
+  (exports `{Tabs, Tab}`) → `.tsx`. Grep-verified: no `extends
+  <ClassName>` matches.
+  - Both replace their `connect(Component, {listenTo, getProps})`
+    alt-react HOC with `useAltStore(SettingsStore)`, per the pattern
+    established for `BlockDate.tsx` in batch 3.
+  - `Tabs.tsx`: `UNSAFE_componentWillReceiveProps` (syncs `activeTab` to
+    `viewSettings.get(setting)` whenever that resolved value changes) is
+    replicated with a `useEffect` keyed on the resolved value, skipped on
+    its first (mount) run via a ref guard, since mount's initial
+    `activeTab` is already correctly computed by the `useState` lazy
+    initializer.
+  - Verified: `yarn typecheck` clean (after fixing an import-path typo -
+    `../next/hooks/useAltStore` needed one more `../`, and a `withRouter
+    (Component as any)` cast that broke the wrapped component's prop
+    inference for every caller, fixed with an explicit `React.ComponentType
+    <any>` cast on the final export), `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~201 more `.jsx` files outside
+  `Blockchain/operations/`, the seven `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup
