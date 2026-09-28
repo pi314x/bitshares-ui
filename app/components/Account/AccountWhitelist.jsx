@@ -11,7 +11,7 @@ import ChainTypes from "../Utility/ChainTypes";
 import BindToChainState from "../Utility/BindToChainState";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import WalletApi from "api/WalletApi";
-import WalletDb from "stores/WalletDb.js";
+import WalletDb from "stores/WalletDb";
 
 class AccountRow extends React.Component {
     static propTypes = {
@@ -132,19 +132,16 @@ class AccountList extends React.Component {
     }
 }
 
-AccountList = connect(
-    AccountList,
-    {
-        listenTo() {
-            return [SettingsStore];
-        },
-        getProps() {
-            return {
-                settings: SettingsStore.getState().settings
-            };
-        }
+AccountList = connect(AccountList, {
+    listenTo() {
+        return [SettingsStore];
+    },
+    getProps() {
+        return {
+            settings: SettingsStore.getState().settings
+        };
     }
-);
+});
 
 class AccountWhitelist extends React.Component {
     constructor(props) {

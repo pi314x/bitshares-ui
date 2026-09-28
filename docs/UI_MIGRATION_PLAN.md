@@ -2680,6 +2680,61 @@ and `ExchangeHeaderCollateral.jsx`.
     `yarn typecheck` clean, full Jest suite green (55/55, including the 5
     new characterization tests), full webpack build shows only the 2 known
     pre-existing `charting_library` errors.
+- Fifth slice: `WalletDb.js` itself (854 lines) - the file this phase's own
+  methodology note names directly ("wrap it behind a typed interface and
+  add characterization tests first, then refactor internals with the
+  safety net in place"). This is a **mechanical, line-for-line port only** -
+  no internal refactor. The raw `WalletDb` class is now also a named export
+  (alongside the unchanged default-exported singleton) purely so tests can
+  construct/inspect it directly.
+  - **Characterization tests first**, against the pre-port `.js`
+    implementation: `app/__tests__/wallets/walletDbCrypto-test.js`, driving
+    the real exported singleton (with `jest.resetModules()` + a fresh
+    `require()` per test, since `aes_private`/`_passwordKey` live in
+    module-private `let`s shared by every consumer of that module
+    instance) and a minimal fake IndexedDB transaction (just enough of
+    `objectStore().put()`/`transaction.oncomplete` for
+    `idb_helper.on_request_end`/`on_transaction_end` to resolve, built in
+    the test file rather than pulling in a full IndexedDB implementation).
+    Covers: password unlock/lock (`validatePassword`/`isLocked`/`onLock`),
+    the bare-`false`-not-an-object return value on a wrong wallet password
+    (a real pre-existing inconsistency in the original - preserved, not
+    "fixed"), `changePassword` re-wrapping the same master encryption key
+    so keys encrypted before a password change stay decryptable after it,
+    `getBrainKey`/`getBrainKeyPrivate`, `generateKeyFromPassword`'s
+    deterministic derivation, and `getPrivateKey`/`decryptTcomb_PrivateKey`'s
+    AES round trip. All 8 passed against the pre-port `.js` code before the
+    port started, and pass unchanged against the ported `.ts` code now.
+  - **Scope note:** the IndexedDB/Web-Worker-dependent methods
+    (`onCreateWallet`, `saveKey`, `importKeysWorker`, `loadDbData`,
+    `_updateWallet`) were *not* characterization-tested - mocking a full
+    IndexedDB + Worker round trip (`worker-loader`'s `AesWorker`) was
+    judged not worth the added test fragility for a mechanical port with
+    no internal refactor. Those methods instead got an extra-careful
+    line-by-line diff review against the original. **This is specifically
+    flagged for the human second-reviewer this phase's exit criteria
+    require** - please re-diff `WalletDb.ts` against the last commit that
+    had `WalletDb.js` (this slice's own commit) for those five methods in
+    particular.
+  - Same `extends (BaseStore as any)` treatment as the other Alt.js stores
+    already ported this phase. `worker.onmessage`'s handler in
+    `importKeysWorker` is (and always was) an arrow function, so the
+    original's `let _this = this;` alias was unnecessary even there (arrow
+    functions close over the lexical `this`) - dropped in favor of using
+    `this` directly, which also satisfies
+    `@typescript-eslint/no-this-alias` without changing behavior.
+    Confirmed dead, dropped: `saveKey`'s unused `let wallet =
+    this.state.wallet;` (never referenced again in that method).
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (63/63, including the 8
+    new characterization tests), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors. Also fixed one unrelated
+    breakage this rename surfaced: `Account/AccountWhitelist.jsx` imported
+    `"stores/WalletDb.js"` with an explicit `.js` extension (the only such
+    import among 48 `WalletDb` consumers - every other file imports it
+    extensionlessly), which broke webpack resolution once the file became
+    `WalletDb.ts`; changed to the same extensionless `"stores/WalletDb"`
+    the rest of the codebase already uses.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
