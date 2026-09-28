@@ -2626,6 +2626,60 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (50/50), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Fourth slice: `BackupStore.js`, `app/lib/common/backupUtils.js`,
+  `BackupActions.js`, and `Backup.jsx` — the real AES-encrypt/decrypt
+  wallet-backup path. Per this phase's own methodology note, characterization
+  tests were written **first**, against the pre-port `.js` implementation:
+  `app/__tests__/wallets/backupCrypto-test.js`, covering
+  `decryptWalletBackup` against a fixed vector (a real wallet-object fixture
+  already in the repo at `app/__tests__/wallets/wallet_bts0-9_password.json`,
+  encrypted once with a fixed, test-only `PrivateKey.fromSeed(...)` key and
+  hardcoded as a base64 buffer), a `createWalletBackup` →
+  `decryptWalletBackup` round trip, the `"invalid_decryption_key"` rejection
+  path, and `backupName`'s prefixing/date-stamping. All 5 passed against the
+  pre-port `.js` code before the port started, and pass unchanged against
+  the ported `.ts`/`.tsx` code now. Note: `createWalletBackup` itself isn't
+  byte-reproducible even with a fixed `entropy` argument -
+  `bitsharesjs`'s `key.get_random_key` always mixes real OS randomness on
+  top via `secure-random` (see `KeyUtils.js`'s `random32ByteBuffer`) - so
+  the fixed-vector test exercises decryption only (which *is* deterministic
+  for fixed ciphertext); the round-trip test covers the encrypt path.
+  - `BackupActions.js`/`BackupStore.js`/`backupUtils.js`: straightforward
+    ports (same `extends (BaseStore as any)` treatment for the store as
+    `BrainkeyStore.ts`). Added `declare module "lzma"` to
+    `app/types/vendor-shims.d.ts` (that package ships no types, same
+    pattern as the other untyped-dependency entries already there).
+  - `Backup.jsx` → `Backup.tsx`: 11 `connect(..., connectObject)`-wrapped
+    class components, all listening to the same
+    `[WalletManagerStore, BackupStore]` pair via one shared
+    `connectObject` — replaced by one shared `useWalletBackup()` hook.
+    Lifecycle timing was translated per-component rather than uniformly:
+    `UNSAFE_componentWillMount` (runs once, *before* first paint) became
+    either a `useState`/`useRef` value computed directly in the render
+    body (`NewWalletName`, whose initial state depends on it) or a
+    `useRef` mount-guard (`BackupRestore`'s `BackupActions.reset()`) — not
+    `useEffect`, which would run *after* first paint and introduce a
+    one-frame flash the class version never had; `componentDidMount`
+    (`Download`'s file-saver-support check + auto-create-backup call, which
+    nothing in that component's own first `render()` depends on) is a
+    plain mount-only `useEffect`.
+    Dropped as confirmed dead, not ported: `Upload`'s legacy string ref
+    (`ref="file_input"`, referenced only in a commented-out line in the
+    original) and its `onFileUpload`'s `this.forceUpdate()` call (inert -
+    the file read it would be "forcing an update" for is asynchronous, so
+    the store hasn't changed yet at that point regardless; the real
+    re-render already happens via the store subscription once the read
+    completes). Also dropped: `BackupRestore`'s `new_wallet`/
+    `has_new_wallet`/`restored` locals and the `WalletManagerStore`/
+    `BackupStore` subscription that fed them — computed in the original's
+    `render()` but never referenced in its returned JSX (confirmed via a
+    full re-read); its child components (`Upload`, `DecryptBackup`, etc.)
+    each subscribe to those stores independently, so this doesn't change
+    their reactivity.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (55/55, including the 5
+    new characterization tests), full webpack build shows only the 2 known
+    pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a

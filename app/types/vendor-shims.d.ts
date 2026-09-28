@@ -17,3 +17,4 @@ declare module "browser-locale";
 declare module "react-debounce-render";
 declare module "react-sticky-table";
 declare module "intro.js";
+declare module "lzma";
