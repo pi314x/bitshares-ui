@@ -2792,6 +2792,51 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (63/63), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Seventh slice: `ImportKeys.jsx` (1,043 lines, the largest file in
+  `Wallet/`) - the private-key import flow (BTS 1.0 `wallet_export_keys`
+  JSON, hosted-wallet backup JSON, raw WIF paste). Same "live mutable
+  state bag" (`useRef` + render-triggering counter) pattern as
+  `WalletCreate.tsx`'s `CreateNewWallet`, since the original directly
+  mutates `this.state.imported_keys_public`/`keys_to_account` in several
+  methods without an immediate `setState` call.
+  - **Two real, pre-existing bugs found and preserved (not fixed) -
+    both flagged for the human second-reviewer:**
+    1. `_passwordCheck` (checking a password against an uploaded BTS 1.0
+       wallet backup's checksum) reads `this.refs.password.value`, where
+       the ref is to an antd `Input` *component instance*. antd 3.x's
+       `Input` keeps the typed value in `this.state.value` internally
+       (confirmed by reading `node_modules/antd/lib/input/Input.js`) and
+       never exposes a plain `.value` property on the instance - so this
+       read is always `undefined`. A real, non-empty password typed into
+       that field is never actually captured; only the automatic
+       empty-password attempt (made before the field has even mounted,
+       when the fallback `: ""` applies) behaves as intended. `onWif`, a
+       few lines away in the same file, correctly reads `.state.value`
+       for a different input, confirming this is a mistake rather than a
+       deliberate API difference. Replicated exactly (reads `.value`, not
+       `.state.value`) via a `useRef` on the antd `Input`.
+    2. `_parseWalletJson` (the hosted-wallet-backup JSON parser)
+       references `file.name` (three call sites) and, after its main
+       loop, a bare `enckeys.length` - neither is actually in scope in
+       the original method (`enckeys` is `let`-declared inside an earlier
+       `if` block, block-scoping it away; `file` isn't declared anywhere
+       in the method). Evaluating either is a real `ReferenceError` in the
+       original `.js`, which the method's own `catch (e) { throw
+       e.message || e; }` re-throws as the confusing string `"file is not
+       defined"`/`"enckeys is not defined"` instead of the intended
+       descriptive message. Net effect: this parser can only ever
+       *succeed* at reporting its intended error when the uploaded JSON
+       is missing `encrypted_brainkey` (the one check that throws before
+       any out-of-scope reference); every other input hits one of the
+       ReferenceErrors. TypeScript can't compile an actual reference to a
+       genuinely undeclared identifier, so a small helper,
+       `referenceErrorLikeOriginal(name)`, reproduces the identical
+       *observable* effect (a thrown `ReferenceError` with the same
+       `.message` text) at the same call sites, without changing when or
+       whether the method throws.
+  - Verified: `eslint` clean (0 errors, expected `any` warnings only),
+    `yarn typecheck` clean, full Jest suite green (63/63), full webpack
+    build shows only the 2 known pre-existing `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
