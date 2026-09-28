@@ -2909,6 +2909,84 @@ and `ExchangeHeaderCollateral.jsx`.
   - Verified: `eslint` clean (0 errors, expected `any` warnings only),
     `yarn typecheck` clean, full Jest suite green (63/63), full webpack
     build shows only the 2 known pre-existing `charting_library` errors.
+- Ninth slice, the remaining withdraw/HTLC modals
+  (`Modal/WithdrawModalNew.jsx`, `Modal/HtlcModal.jsx`) - both ported to
+  `.tsx`.
+  - `WithdrawModalNew.tsx`: the original's 4-layer class-wrapper chain
+    (`BindToChainState(WithdrawModalWrapper)` wrapping `BindToChainState
+    (BalanceWrapper)` wrapping `connect(WithdrawModalNew, {...})` for
+    `GatewayStore`/`AssetStore`/`SettingsStore`/`MarketsStore`) collapses
+    into one `WithdrawModalAccountContainer` resolving `account`/`assets`
+    /`balances`/`intermediateAccounts` directly via `ChainStore` under
+    `useChainStoreTick()`, per this migration's established
+    `BindToChainState` replacement pattern - `BalanceWrapper`'s own
+    `orders`/`balanceAssets` computation isn't carried over (grepped:
+    `WithdrawModalNew` never reads either, both already dead from this
+    component's perspective). `UNSAFE_componentWillReceiveProps`'s two
+    real side effects tied specifically to *prop* changes (recomputing
+    the derived asset-pair variables, and re-running address validation
+    if one was already entered) and `UNSAFE_componentWillUpdate`'s
+    `MarketsActions.getMarketStats(...)` trigger are both replicated by
+    comparing each render's freshly-read external values against refs
+    holding the previous render's. The original's `withdrawAssets` bug is
+    preserved exactly (`Immutable.List().push(...)` result never
+    reassigned, so always empty) but, since grep confirms it's never read
+    downstream, isn't threaded through the props chain at all; the real
+    `intermediateAccounts` computation (which *does* reassign) is kept.
+    Dropped as confirmed dead (via `git show HEAD:...jsx | grep <name>`):
+    `updateFee` (referenced as a setState callback but never defined
+    anywhere in the original class - React silently skips a non-function
+    setState callback) and `onSelectedAddressChanged` (only called from
+    `_renderStoredAddresses()`, itself never called anywhere in
+    `render()`).
+  - `HtlcModal.tsx`: the `Preimage` sub-component's `componentDidMount`
+    +`componentDidUpdate` pair (auto-generates a random preimage hash via
+    `key.get_random_key()` whenever no hash is given yet) and the main
+    `HtlcModal`'s own `componentDidMount`+`componentDidUpdate` pair
+    (`_syncOperation` on mount and on operation-prop change, plus an
+    independent from-props account sync on every update after the first)
+    are each replicated as a single `useEffect` with no dependency array,
+    so they run after every render exactly like "`componentDidMount` once,
+    then `componentDidUpdate` on every subsequent render" would.
+    `shouldComponentUpdate` (`return false` while `fromAccount` is truthy
+    but not yet chain-loaded) is a pure loading-gate with no other
+    observable side effects - dropped, same category as
+    `WalletUnlockModal.tsx`'s droppable guard - **flagged for
+    human-reviewer manual QA**: this component's only caller
+    (`Showcases/Htlc.jsx`) already passes an already-`bindToCurrentAccount`
+    -resolved account, making the unloaded-`fromAccount` case an edge case
+    in practice, but if it can occur this port will now render through
+    that transition instead of bailing out (relying on `ChainStore`'s
+    placeholder objects being safe to call `.get()`/`.getIn()` on, a
+    pre-existing codebase convention, not new to this port). Found and
+    preserved (verbatim, not "fixed"): `_getAvailableAssets` destructures
+    a `from_error` field out of its `state` parameter that was never
+    actually part of `this.state` anywhere (only an unrelated `render()`
+    -local variable of the same name) - always `undefined` in practice,
+    so this port simply drops that always-true half of the gating
+    condition instead of threading a permanently-`undefined` field
+    through. Dropped as confirmed dead (via the same `git show | grep`
+    technique): `onTrxIncluded` and the `TransactionConfirmStore` import
+    (bound in the constructor, calls `.unlisten` on itself, but is never
+    passed to `TransactionConfirmStore.listen(...)` anywhere - it can
+    never run); the `connect()` wrapper and its sole injected prop
+    `fee_asset_symbol` (never read anywhere in the component); the
+    `error` state field (set to `null` repeatedly, never read); the
+    `num_of_periods` state field (initialized, never read or re-set); the
+    `htlcId` state field (set in `_syncOperation`, never read - the real
+    HTLC id used for redeem/extend submission is always read fresh from
+    `props.operation.payload.id`, not from state);
+    `Preimage.onInputChanged`'s `this.hashingInProgress` (written once,
+    never read); the `Preimage` ref (`this.preimage`, written via a
+    callback ref, never read); and `_setTotal`'s two extra bound
+    arguments plus the render-body `feeAmount` destructure that only fed
+    them (the same dead-extra-bound-args pattern already found/dropped in
+    `SendModal.jsx`/`WithdrawModalNew.jsx` this phase).
+  - Old `Modal/WithdrawModalNew.jsx` and `Modal/HtlcModal.jsx` deleted.
+  - Verified: `eslint` clean on both files (0 errors, expected `any`
+    warnings only), `yarn typecheck` clean, full Jest suite green
+    (63/63), full webpack build shows only the 2 known pre-existing
+    `charting_library` errors.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
