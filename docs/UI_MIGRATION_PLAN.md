@@ -3313,8 +3313,95 @@ compromise, not silent scope-narrowing.
     errors, expected `any`-type warnings only), full Jest suite green
     (5,532/5,532), `yarn build` shows only the 2 known pre-existing
     `charting_library` errors. Old `.jsx` files removed.
-- Remaining long tail (~235 more `.jsx` files outside
-  `Blockchain/operations/`) not yet started.
+- `Utility/` batch 1 (7 files): `Pulsate.jsx`, `LoadingButton.jsx`,
+  `CopyButton.jsx`, `FormattedFee.jsx`, `TimeAgo.jsx`,
+  `BalanceComponent.jsx`, `FormattedTime.jsx` → `.tsx`.
+  - `Pulsate.tsx`: the class's `setState`-callback trick (read
+    `findDOMNode(this).offsetHeight` between two state transitions, to
+    force a synchronous reflow so a CSS pulse animation restarts cleanly)
+    is replicated with `useLayoutEffect` (runs synchronously after DOM
+    commit, before paint — the same timing as a `setState` callback),
+    not `useEffect` (which runs after paint and would introduce a visible
+    animation glitch).
+  - `FormattedFee.tsx`/`BalanceComponent.tsx`: `BindToChainState(Component)`
+    HOC usage replaced by a small Container component resolving the
+    required prop via `ChainStore.getObject` directly under
+    `useChainStoreTick()`, per this migration's established
+    `BindToChainState`-replacement pattern.
+  - `FormattedTime.tsx`: preserved verbatim (not "fixed") — the original
+    stores `props.time` in `state.time` in the constructor and never
+    updates it on subsequent prop changes, so it silently freezes at
+    whatever `time` was passed on first render. Replicated with a
+    `useState` lazy initializer (runs once, matching constructor timing).
+  - `TimeAgo.tsx`: dropped as confirmed dead — a legacy string ref
+    (`ref={"timeago_ttip_" + time}"`) with no reader anywhere in the file
+    or elsewhere in the app.
+  - Deliberately **not** converted, and left as `.jsx`: `DecimalChecker
+    .jsx` and `MarketPrice.jsx`'s `MarketStats` class. Both are used as
+    `extends`-base classes by other, not-yet-converted class components
+    (`DecimalChecker` by `AmountSelectorStyleGuide.jsx`, `AmountSelector
+    .jsx`, `Modal/DepositModal.jsx`, `Dashboard/SimpleDepositWithdraw
+    .jsx`; `MarketStats` by `MarketChangeComponent.jsx`'s `class
+    MarketChangeComponent extends MarketStats`) — converting the base
+    class to a function component first would break every one of those
+    `extends` consumers. General rule adopted from here on: **before
+    converting any exported class, grep the whole `app/` tree for
+    `extends <ClassName>`; if any not-yet-converted class component
+    extends it, defer the conversion** until its consumers are converted
+    individually first.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green, `yarn build` shows
+    only the 2 known pre-existing `charting_library` errors. Old `.jsx`
+    files removed.
+- `Utility/` batch 2 (5 files, the "Link/simple-display" family):
+  `LinkToAccountById.jsx`, `LinkToAssetById.jsx`, `LinkToWitnessById.jsx`,
+  `PendingBlock.jsx`, `VestingBalance.jsx` → `.tsx`. Verified via grep
+  (`extends LinkToAccountById|extends LinkToAssetById|extends
+  LinkToWitnessById|extends PendingBlock|extends VestingBalance\b`, no
+  matches) that none of these five are used as `extends`-base classes
+  elsewhere, so all were safe to convert.
+  - `LinkToAccountById.tsx`/`LinkToWitnessById.tsx`/`PendingBlock.tsx`/
+    `VestingBalance.tsx`: `BindToChainState(Component)` HOC usage
+    replaced by a Container+Core split under `useChainStoreTick()`, as
+    above. `LinkToAssetById.tsx` keeps its `AssetWrapper(Component)` HOC
+    wrapping as-is (like `BindToChainState.Wrapper`, `AssetWrapper` is a
+    shared HOC used by ~29 files, several already migrated — out of
+    scope for this migration's per-leaf-component conversion pass).
+  - Dropped as confirmed dead, found by reading `BindToChainState.jsx`'s
+    resolution/render logic directly (not assumed): `LinkToAccountById
+    .jsx`'s `if (!account_name) { return <span>{this.props.account.get
+    ("id")}</span>; }` fallback. `account` was a required
+    `ChainTypes.ChainAccountName` prop; `BindToChainState`'s `render()`
+    gates every required chain-type prop behind `state[prop] !==
+    undefined` before ever rendering the wrapped component, and its
+    account-name resolution loop only ever writes a state value for a
+    *required* prop when `ChainStore.getAccountName()` returns a truthy
+    string — so `account_name` was always truthy by the time this
+    component rendered; the fallback (calling `.get("id")` on what is
+    actually a plain string) was unreachable.
+  - Preserved verbatim (not "fixed"): `LinkToAccountById.tsx`'s
+    `maxDisplayAccountNameLength` prop is only ever used as a *gate*
+    (`> 0 ? 20 : Infinity`) — the truncation length is the literal `20`
+    regardless of the actual prop value passed in.
+  - New: `@types/react-router-dom`'s `Link` return type isn't assignable
+    to `JSX.Element` under this repo's `@types/react` version (a `key:
+    Key | null` vs `key: string | null` mismatch) — worked around with a
+    local `const LinkComponent = Link as React.ComponentType<any>;` cast
+    per file, matching this migration's established pattern of casting
+    around third-party typing friction rather than fighting it.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- **Scope note:** the `DepositWithdraw/{gdex,citadel,openledger,rudex,
+  blocktrades,bitspark}` directories (~22 files) are treated as excluded
+  from this phase's long tail, for the same reason Phase 7 scoped its
+  gateway work down to Xbtsx and Piratecash only (explicit user
+  instruction) — Xbtsx and Piratecash are the only gateways in active
+  migration scope.
+- Remaining long tail (~223 more `.jsx` files outside
+  `Blockchain/operations/`, the two `Utility/` batches above, and the
+  excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
