@@ -2987,6 +2987,35 @@ and `ExchangeHeaderCollateral.jsx`.
     warnings only), `yarn typecheck` clean, full Jest suite green
     (63/63), full webpack build shows only the 2 known pre-existing
     `charting_library` errors.
+- Tenth slice, the transfer-related operation display components under
+  `Blockchain/operations/` (`Transfer.jsx`, `AccountTransfer.jsx`,
+  `OverrideTransfer.jsx`, `TransferFromBlind.jsx`, `TransferToBlind.jsx`)
+  ported to `.tsx`. All five were already plain function components (no
+  class lifecycle, no local state) rendered via `Blockchain/operations
+  /index.js`'s `opComponents(opType, props, opts)` switch statement
+  (imported extensionless, so no other file needed to change) - so this
+  slice is just adding prop types, no structural changes. This closes out
+  the "transfer/send" scope named in this phase's slice-planning note.
+  - Verified: `eslint` clean on all five files (0 errors, expected `any`
+    warnings only), `yarn typecheck` clean, full Jest suite green
+    (63/63), full webpack build shows only the 2 known pre-existing
+    `charting_library` errors.
+
+**Phase 5 status:** all planned slices (brainkey family; small Wallet
+components + BalanceClaim family + ImportKeysStore; WalletChangePassword/
+WalletCreate; backup/restore incl. `BackupStore.js`/`backupUtils.js`
+/`BackupActions.js`; `WalletDb.js` itself; WalletManager/WalletUnlockModal;
+`ImportKeys.jsx`; the transfer/send flow incl. `SendModal.jsx`/Invoice
+family; the withdraw/HTLC modals; the transfer operation display
+components) are ported, characterization-tested where the methodology
+above requires it, and green across `yarn typecheck`/`eslint`/`yarn test`
+/`yarn build`. Per this phase's own reviewer-gate note, **the phase is
+ready for the required human second-reviewer sign-off, not yet shipped
+past it** - that sign-off is not something this agent can substitute for
+itself. Every bug found-and-preserved, every confirmed-dead-code drop, and
+every deliberate simplification (e.g. dropped `shouldComponentUpdate`
+loading-gates) is documented per-slice above and in the corresponding file
+headers, specifically to make that review tractable.
 
 ### Phase 6 — Extension-based signing: the BitShares wallet browser extension
 - Adds the BitShares wallet browser extension (e.g. Beet, or a
