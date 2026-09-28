@@ -3823,9 +3823,40 @@ compromise, not silent scope-narrowing.
     full Jest suite green (5,532/5,532), `yarn build` shows only the 2
     known pre-existing `charting_library` errors. Old `.jsx` files
     removed.
-- Remaining long tail (~181 more `.jsx` files outside
+- `Account/` batch 3 (2 files): `AccountInputStyleGuide.jsx`,
+  `SignedMessage.jsx` → `.tsx`. Grep-verified: no `extends <ClassName>`
+  matches.
+  - `AccountInputStyleGuide.tsx`: **preserved a real, significant
+    pre-existing bug verbatim**: `simpleComponent()` calls `input()` but
+    never `return`s it, so when no `label` prop is given, the rendered
+    output is permanently blank (the `<Input>` never mounts) - and, as a
+    direct consequence, its ref never attaches, so the effect
+    replicating `componentDidUpdate`'s unconditional `.focus()` call
+    would throw if `focus` is ever `true` with no `label` given, exactly
+    like the original's unguarded `this.refs.input.focus()`.
+  - `SignedMessage.tsx`: `UNSAFE_componentWillMount` +
+    `UNSAFE_componentWillReceiveProps` (both run *before* the render that
+    shows their result, and this component's own JSX has an "error"
+    fallback branch that would flash visibly for one frame if a plain
+    `useEffect` ran them post-render instead) replicated with a render-
+    phase conditional `setState` - React's own documented-safe pattern
+    for "adjust state during render" (the same class of update
+    `getDerivedStateFromProps` uses), guarded by a ref so it only fires
+    under the exact same condition the original's `componentWillReceiveProps`
+    guard used.
+  - Added `bitsharesjs/es/chain/src/ChainStore` to `app/types/vendor-
+    shims.d.ts` (a deeper import path than the already-declared
+    `bitsharesjs/es`, which TypeScript doesn't prefix-match).
+  - Verified: `yarn typecheck` clean (after adding explicit `any` typing
+    for a couple of values TS couldn't otherwise infer, and typing
+    `catch` clause variables - TypeScript's default `unknown` catch-
+    variable type needed an explicit cast to read `.message`), `eslint`
+    clean (0 errors, expected `any`-type warnings only), full Jest suite
+    green (5,532/5,532), `yarn build` shows only the 2 known pre-existing
+    `charting_library` errors. Old `.jsx` files removed.
+- Remaining long tail (~179 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (26 more), `Modal/` (21),
+  directories) not yet started: `Account/` (24 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
