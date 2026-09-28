@@ -6,7 +6,7 @@ jest.mock("../../../components/Utility/HelpContent", () => () => null);
 import * as React from "react";
 import {render} from "@testing-library/react";
 
-const FormattedAsset = require("../../../components/Utility/FormattedAsset.jsx")
+const FormattedAsset = require("../../../components/Utility/FormattedAsset")
     .default;
 
 describe("<FormattedAsset>", function() {

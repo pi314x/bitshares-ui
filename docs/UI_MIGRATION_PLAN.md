@@ -3437,8 +3437,75 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~217 more `.jsx` files outside
-  `Blockchain/operations/`, the three `Utility/` batches above, and the
+- `Utility/` batch 4 (4 files, the higher-complexity ones): `AssetName
+  .jsx`, `FormattedAsset.jsx`, `TransitionWrapper.jsx`,
+  `BindToCurrentAccount.jsx` → `.tsx`. Grep-verified: no `extends
+  <ClassName>` matches for any of the four.
+  - `AssetName.tsx`: `AssetWrapper(Component)` HOC kept as-is (shared
+    HOC). The constructor's synchronous `_load()` call (before first
+    mount) plus `componentDidUpdate`'s unconditional `_load()` call are
+    both replicated by a single dependency-free `useEffect`, and
+    `_isMounted` by a `useRef` toggled by a mount-only effect — the same
+    pattern established for `withWorthLessSettlementFlag.tsx` in batch 3.
+    Preserved verbatim: `_load()`'s own internal `!assetIssuerName` check
+    means a later `asset` prop change does **not** trigger a re-fetch
+    once an issuer name has already been resolved once (stale issuer
+    name from a previous asset keeps showing). The outer default-exported
+    `AssetNameWrapper` class originally spread `{...this.props}` onto the
+    inner component — an easy thing to silently drop when destructuring
+    props in a function-component port (a real mistake caught and fixed
+    *before* verification: I initially destructured only `name` off the
+    props and dropped every other prop, e.g. `noTip`/`replace`/
+    `dataPlace`/`customClass`, all real props passed by callers
+    throughout the app — fixed with a `{name, ...rest}` destructure and
+    `<WrappedAssetName {...rest} .../>`).
+  - `FormattedAsset.tsx`: `AssetWrapper(Component)` kept as-is; the
+    inner `SupplyPercentage`'s `BindToChainState(Component)` HOC replaced
+    by a Container+Core split, as in prior batches. Dropped as confirmed
+    dead (visible directly in the file): `this.state.isPopoverOpen` and
+    its `togglePopover`/`closePopover` methods — defined but never read
+    anywhere in `render()`.
+  - `TransitionWrapper.tsx`: three already-migrated consumers
+    (`Exchange/OrderBook.tsx`, `Exchange/MyOpenOrders.tsx`,
+    `Exchange/MarketHistory.tsx`) hold a ref to this component and call
+    an imperative `.resetAnimation()` method on it, a pattern a plain
+    function component can't support — ported with `React.forwardRef` +
+    `React.useImperativeHandle` exposing the same method, so those
+    callers (already typed `React.useRef<any>(null)`) keep working
+    unchanged. This is the first `forwardRef`/`useImperativeHandle` usage
+    in this migration for a component whose imperative API is consumed
+    externally via ref, rather than only internally.
+  - `BindToCurrentAccount.tsx`: a HOC *factory*
+    (`bindToCurrentAccount(WrappedComponent)`), not a leaf component. Its
+    inner class was wrapped with `BindToChainState(Component)`, relying
+    on a static `propTypes = {currentAccount: ChainTypes.ChainAccount}`
+    for `BindToChainState`'s own prop-type introspection (load-bearing,
+    not just documentation). Replaced with the same Container+
+    `useChainStoreTick()` pattern used elsewhere, replicating
+    `BindToChainState`'s *`ChainAccount`-specific* resolution verbatim
+    (found by reading `BindToChainState.jsx`'s `chain_accounts`
+    resolution loop directly): unwrap a single-entry `{name: ...}` Map —
+    exactly what this file's own `getProps()` constructs — before
+    calling `ChainStore.getAccount()`, with `autosubscribe` fixed to
+    `true` (the original's `static defaultProps`).
+  - New vendor-shim entries in `app/types/vendor-shims.d.ts`:
+    `alt-react`, `react-transition-group` (first `.tsx` usage of each).
+  - Fixed an existing test's hardcoded `.jsx` extension:
+    `app/__tests__/components/Utility/FormattedAsset-test.jsx`'s
+    `require("...FormattedAsset.jsx")` → `require("...FormattedAsset")`
+    (extensionless, so it resolves the new `.tsx` file — the same
+    extensionless-import convention already used everywhere else, this
+    one file had just hardcoded the extension).
+  - Verified: `yarn typecheck` clean (after fixing two real mistakes
+    caught by the type checker before commit — a `string[]` value
+    mistakenly typed as `string | null` in `AssetName.tsx`, and a
+    `className`-prop `null` vs `undefined` mismatch), `eslint` clean (0
+    errors, expected `any`-type warnings only), full Jest suite green
+    (5,532/5,532, after the test-path fix above), `yarn build` shows
+    only the 2 known pre-existing `charting_library` errors. Old `.jsx`
+    files removed.
+- Remaining long tail (~213 more `.jsx` files outside
+  `Blockchain/operations/`, the four `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup
