@@ -3399,8 +3399,46 @@ compromise, not silent scope-narrowing.
   gateway work down to Xbtsx and Piratecash only (explicit user
   instruction) — Xbtsx and Piratecash are the only gateways in active
   migration scope.
-- Remaining long tail (~223 more `.jsx` files outside
-  `Blockchain/operations/`, the two `Utility/` batches above, and the
+- `Utility/` batch 3 (6 files): `AccountName.jsx`, `BlockDate.jsx`,
+  `PriceText.jsx`, `MarketLink.jsx`, `LimitToWithdraw.jsx`,
+  `withWorthLessSettlementFlag.jsx` → `.tsx`. Verified via grep no
+  matches for `extends <ClassName>` on any of the five class-based ones.
+  - `AccountName.tsx`: `BindToChainState(Component)` HOC replaced by a
+    Container+Core split, as in prior batches.
+  - `BlockDate.tsx`: first `connect()` (alt-react) HOC encountered in
+    this migration pass — replaced with `useAltStore(BlockchainStore)`,
+    per the same adapter pattern already used elsewhere (`app/next/hooks
+    /useAltStore.ts`). The `static defaultProps` `format` value (computed
+    once from `browser-locale` at class-definition time) is replicated as
+    a module-scope constant computed once at import time, not
+    recomputed per render. `shouldComponentUpdate` here is **not** a
+    pure perf guard — it has a real side effect
+    (`setTimeout(ReactTooltip.rebuild, 1000)` when `blockHeader`
+    transitions from falsy to truthy) — replicated with a `useEffect`
+    keyed on `blockHeader`, comparing against the previous value via a
+    ref, rather than dropped like the pure perf-guard cases in earlier
+    batches.
+  - `MarketLink.tsx`: `AssetWrapper(Component)` HOC usage kept as-is
+    (shared HOC, out of scope). The file's large commented-out dead
+    `ObjectWrapper`/`BindToChainState` block (with its own "hangs the
+    page... firefox 62.0" historical note) was dropped rather than
+    carried forward — it was already inert, never-executed code.
+  - `withWorthLessSettlementFlag.tsx`: a HOC *factory* (not a leaf
+    component) — its inner `PureComponent`'s `UNSAFE_componentWillMount`
+    (calls `updateFlag()` once before first render) + `componentDidUpdate`
+    (calls `updateFlag()` again after *every* update, unconditionally,
+    with no props comparison) are both replicated by a single
+    `useEffect` with **no** dependency array — deliberately not narrowed
+    to `[asset, shortBackingAsset]`, since the original recomputes on
+    every update unconditionally and narrowing the deps would be a
+    behavior change. Preserved verbatim: the `preicision` typo (should
+    be `precision`) in the `base` `Asset` constructor's options.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~217 more `.jsx` files outside
+  `Blockchain/operations/`, the three `Utility/` batches above, and the
   excluded gateway directories) not yet started.
 
 ### Phase 9 — Legacy removal & dependency cleanup

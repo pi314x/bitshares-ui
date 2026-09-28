@@ -11,6 +11,12 @@ import {Link} from "react-router-dom";
 import AssetWrapper from "./AssetWrapper";
 import AssetName from "./AssetName";
 
+// `@types/react-router-dom`'s `Link` return type isn't assignable to
+// `JSX.Element` under this repo's `@types/react` version (key type
+// mismatch) - cast to a generic component type, as done elsewhere in this
+// migration for similar third-party typing friction.
+const LinkComponent = Link as React.ComponentType<any>;
+
 interface LinkToAssetByIdProps {
     asset: any;
     noLink?: boolean;
@@ -22,7 +28,7 @@ function LinkToAssetById({asset, noLink}: LinkToAssetByIdProps) {
     return noLink ? (
         assetName
     ) : (
-        <Link to={`/asset/${symbol}/`}>{assetName}</Link>
+        <LinkComponent to={`/asset/${symbol}/`}>{assetName}</LinkComponent>
     );
 }
 

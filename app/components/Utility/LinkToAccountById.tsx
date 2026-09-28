@@ -37,6 +37,12 @@ import {Link} from "react-router-dom";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
+// `@types/react-router-dom`'s `Link` return type isn't assignable to
+// `JSX.Element` under this repo's `@types/react` version (key type
+// mismatch) - cast to a generic component type, as done elsewhere in this
+// migration for similar third-party typing friction.
+const LinkComponent = Link as React.ComponentType<any>;
+
 interface LinkToAccountByIdContainerProps {
     account: string;
     subpage?: string;
@@ -70,13 +76,13 @@ function LinkToAccountById({
             {ellipsis}
         </span>
     ) : (
-        <Link
+        <LinkComponent
             onClick={onClick ? onClick : () => {}}
             to={`/account/${accountName}/${subpage}/`}
         >
             {displayName}
             {ellipsis}
-        </Link>
+        </LinkComponent>
     );
 }
 
