@@ -3854,9 +3854,53 @@ compromise, not silent scope-narrowing.
     clean (0 errors, expected `any`-type warnings only), full Jest suite
     green (5,532/5,532), `yarn build` shows only the 2 known pre-existing
     `charting_library` errors. Old `.jsx` files removed.
-- Remaining long tail (~179 more `.jsx` files outside
+- `Account/` batch 4 (3 files): `AssetWhitelist.jsx`, `AccountTreemap
+  .jsx`, `AccountReferralsTable.jsx` → `.tsx`. Grep-verified: no `extends
+  <ClassName>` matches.
+  - `AssetWhitelist.tsx`: `connect(Component, {listenTo, getProps})`
+    replaced by `useAltStore(SettingsStore)`.
+  - `AccountTreemap.tsx`: a three-layer HOC cascade
+    (`BindToChainState(AccountTreemap)`, `BindToChainState
+    (AccountTreemapBalanceWrapper)`, `AltContainer` injecting from
+    `SettingsStore`+`MarketsStore`) each replaced by their established
+    equivalents (Container+`useChainStoreTick()`, two `useAltStore()`
+    calls). `AccountTreemap`'s `assets` prop (`ChainTypes.ChainAssetsList`)
+    is declared in the original propTypes but never actually read
+    anywhere in the component - confirmed dead, so no resolution
+    Container was built for it, unlike `AccountTreemapBalanceWrapper`'s
+    `balanceObjects` (which *is* used, and whose resolution replicates
+    `BindToChainState.jsx`'s `chain_objects_list` loop directly, same
+    sparse-array quirk as prior batches).
+  - `AccountReferralsTable.tsx`: `gprops`/`dprops`/`core_asset` (all
+    `.isRequired`) are resolved (gating first render, matching the
+    original) but never actually read anywhere in the component body -
+    confirmed dead, same as `myActiveAccounts`/`myHiddenAccounts`
+    (injected from `AccountStore` via `connect`, replaced by
+    `useAltStore(AccountStore)`) - so none of the four are threaded down
+    to the inner component, only used for the gate. `_getReferrals`'s
+    local `referralsIndex` array is captured once per call and *mutated
+    in place* inside several parallel `FetchChain(...).then(...)`
+    callbacks, each of which calls `setState` with that same mutated
+    reference - preserved exactly (not rebuilt into a fresh array per
+    update), since multiple referral accounts resolving concurrently is
+    expected to progressively fill in the same growing table.
+    `componentDidMount` + `componentDidUpdate` (both call the same method
+    with the same arguments, just under different trigger conditions)
+    collapse into a single `useEffect` keyed on `account` with no extra
+    mount-skip guard needed, since both cases want the identical call.
+  - Verified: `yarn typecheck` clean (after adding `highcharts/modules/
+    treemap` and `highcharts/modules/heatmap` to `app/types/vendor-shims
+    .d.ts`, and fixing a couple of TS inference gaps - an untyped empty-
+    array-literal field from `api/apiConfig` and cross-component prop
+    threading through a `{...rest}` spread), `eslint` clean (0 errors,
+    after removing an now-unused destructured `core_asset` var once its
+    dead-prop-threading was simplified away; expected `any`-type warnings
+    only otherwise), full Jest suite green (5,532/5,532), `yarn build`
+    shows only the 2 known pre-existing `charting_library` errors. Old
+    `.jsx` files removed.
+- Remaining long tail (~176 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (24 more), `Modal/` (21),
+  directories) not yet started: `Account/` (21 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and

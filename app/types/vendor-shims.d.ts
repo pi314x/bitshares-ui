@@ -30,3 +30,5 @@ declare module "react-popover";
 declare module "js-sha256";
 declare module "jdenticon";
 declare module "bitsharesjs/es/chain/src/ChainStore";
+declare module "highcharts/modules/treemap";
+declare module "highcharts/modules/heatmap";
