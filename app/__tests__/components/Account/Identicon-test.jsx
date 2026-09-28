@@ -7,7 +7,7 @@ jest.mock("jdenticon", () => ({updateById: jest.fn()}));
 import * as React from "react";
 import {render} from "@testing-library/react";
 
-const Identicon = require("../../../components/Account/Identicon.jsx")
+const Identicon = require("../../../components/Account/Identicon")
     .default;
 
 describe("<Identicon>", function() {

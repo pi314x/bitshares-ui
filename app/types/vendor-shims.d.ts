@@ -27,3 +27,5 @@ declare module "react-clipboard.js";
 declare module "alt-react";
 declare module "react-transition-group";
 declare module "react-popover";
+declare module "js-sha256";
+declare module "jdenticon";

@@ -3759,9 +3759,46 @@ compromise, not silent scope-narrowing.
   external consumers `Modal/DepositModal.jsx` and `Dashboard
   /SimpleDepositWithdraw.jsx`) - see the "General rule adopted" note
   under batch 1 above for why these are deferred together.
-- Remaining long tail (~192 more `.jsx` files outside
+- `Account/` batch 1 (7 files, the smallest in the directory): `Statistics
+  .jsx`, `AccountImage.jsx`, `AccountBalance.jsx`, `BalanceWrapper.jsx`,
+  `AccountOrderRowDescription.jsx`, `Connections.jsx`, `Identicon.jsx` →
+  `.tsx`. Grep-verified: no `extends <ClassName>` matches, and no
+  `Account/` file is used as an `extends`-base class anywhere else in the
+  app.
+  - `Statistics.tsx`/`AccountBalance.tsx`: `BindToChainState(Component)`
+    HOC usage (both have `.isRequired` chain-type props) replaced by a
+    Container gating on the resolved value(s) under `useChainStoreTick()`,
+    as established.
+  - `BalanceWrapper.tsx`: replicates `BindToChainState.jsx`'s
+    `chain_objects_list` resolution loop directly (same sparse-array-
+    starting-at-index-1 quirk as `Utility/AssetSelect.tsx`'s
+    `chain_assets_list` port - harmless here too, since the render logic
+    only calls `.filter(...)`/`.reduce(...)` on the results, both of
+    which skip array holes).
+  - `Identicon.tsx`: the legacy string ref (`ref="canvas"`) replaced by
+    `useRef<HTMLCanvasElement>`. `repaint()` (called from both
+    `componentDidMount` and `componentDidUpdate`) replicated with a
+    `useEffect` keyed on exactly the values `shouldComponentUpdate` used
+    to gate re-renders (`size.height`, `size.width`, `account`) - since
+    `shouldComponentUpdate` returning `false` here would also have
+    skipped `componentDidUpdate`'s `repaint()` call, this dependency
+    array reproduces that "repaint exactly when these change" behavior
+    directly. The module-scope `canvas_id_count` counter (building a
+    unique canvas `id` per instance) is kept as a module-scope counter,
+    with the per-instance increment replicated via a `useState` lazy
+    initializer.
+  - Added `js-sha256` and `jdenticon` to `app/types/vendor-shims.d.ts`.
+    Fixed `app/__tests__/components/Account/Identicon-test.jsx`'s
+    hardcoded `.jsx` require path (same class of fix as `Utility/
+    FormattedAsset-test.jsx` in batch 4).
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532,
+    including the `Identicon` canvas-rendering test), `yarn build` shows
+    only the 2 known pre-existing `charting_library` errors. Old `.jsx`
+    files removed.
+- Remaining long tail (~185 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (39), `Modal/` (21),
+  directories) not yet started: `Account/` (30 more), `Modal/` (21),
   `Blockchain/` non-operations (~13), `Registration/` (11), root
   `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
