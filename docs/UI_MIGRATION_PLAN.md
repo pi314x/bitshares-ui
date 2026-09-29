@@ -4533,10 +4533,49 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~147 more `.jsx` files outside
+- `Modal/` batch 3 (3 files): `QrcodeModal.jsx`, `IssueModal.jsx`,
+  `JoinWitnessesModal.jsx` → `.tsx`. Grep-verified: no `extends
+  <ClassName>` matches beyond plain `React.Component`.
+  - `QrcodeModal.tsx`: security-sensitive per AGENTS.md (handles a raw
+    private key passed via `keyValue`) - `onPasswordEnter` either
+    AES-encrypts the key with the entered password before rendering it
+    as a QR code, or renders it *unencrypted* if no password was
+    entered, transcribed verbatim (not a bug introduced here). The real
+    `ref="password_input"` becomes a `useRef<HTMLInputElement>()`.
+  - `IssueModal.tsx`: security-sensitive per AGENTS.md (`onSubmit`
+    submits an on-chain asset-issue transaction via
+    `ApplicationApi.issue_asset`) - transcribed verbatim.
+    `BindToChainState(Component)` (required `asset_to_issue`) replaced
+    by a Container. The one real caller (`AccountAssets.tsx`) only ever
+    passes `visible`/`hideModal`/`showModal`/`asset_to_issue` -
+    `amount`/`to`/`showModal` are accepted-but-effectively-unset/-unused
+    props, matching the original. Simplified `onSubmit`'s
+    `.bind(this, this.state.to, this.state.amount)` to a direct
+    `onClick={onSubmit}` - the bound args were never read by a
+    zero-parameter method, always silently discarded.
+  - `JoinWitnessesModal.tsx`: security-sensitive per AGENTS.md
+    (`onAddWitness` submits an on-chain witness create/update
+    transaction via `AccountActions.createWitness`/`updateWitness`) -
+    transcribed verbatim. `shouldComponentUpdate` dropped (it had its
+    own bug, comparing `state.url` to `nextState.visible` - moot once
+    dropped). `componentDidUpdate` (fetches the witness object when the
+    account id changes, or on the first update if `witnessObject` is
+    still `null` - note the fetch is *never* triggered by the initial
+    mount itself) becomes a `useEffect` with its own mount-flag ref, the
+    same "componentDidUpdate never fires on mount" translation
+    established for `AccountSelector.tsx` (Account/ batch 12). **Same
+    judgment call as `JoinCommitteeModal.tsx`** (previous Modal batch):
+    `render()` references a bare, undeclared `account` identifier -
+    read as the `account` prop, the only TypeScript-compilable and
+    plausible reading.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~144 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (15 more), `Blockchain/` non-operations (~13), `Registration/` (11),
+  (12 more), `Blockchain/` non-operations (~13), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
