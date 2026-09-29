@@ -4484,10 +4484,59 @@ compromise, not silent scope-narrowing.
   `any`-type warnings only), full Jest suite green (5,532/5,532), `yarn
   build` shows only the 2 known pre-existing `charting_library` errors.
   Old `.jsx` files removed.
-- Remaining long tail (~150 more `.jsx` files outside
+- `Modal/` batch 2 (3 files): `DeletePoolModal.jsx`,
+  `JoinCommitteeModal.jsx`, `ReserveAssetModal.jsx` → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches beyond plain
+  `React.Component`.
+  - `DeletePoolModal.tsx`: **dropped as confirmed dead** (each name
+    appears only on its own `import` line, nowhere else in the file):
+    `Immutable`, `big` (bignumber.js), `AccountStore`, `AmountSelector`,
+    `Icon`, `AccountBalance`, `connect` (alt-react), `BindToChainState`,
+    and the `ChainTypes`-typed `propTypes` they fed - this file never
+    actually applied `BindToChainState`/`connect` to its export
+    (`export default DeletePoolModal;`, unwrapped), so `pool` was always
+    whatever raw value the caller passed, never chain-resolved. Likely
+    leftover copy-paste from a sibling modal. `componentWillReceiveProps`
+    (a pure `console.log` debug statement, no other effect) kept per
+    this migration's established debug-log preservation practice.
+    Constructor-captured `state.isModalVisible` (never resynced) reads
+    the `isModalVisible` prop directly instead - verified behaviorally
+    identical for the one real caller (`AccountPools.tsx` conditionally
+    mounts/unmounts the whole component rather than updating a mounted
+    one to `false`).
+  - `JoinCommitteeModal.tsx`: `shouldComponentUpdate` dropped.
+    **Judgment call, not just a preserved-bug documentation**: the
+    original's `render()` references a bare `account` identifier twice
+    that is neither a prop, state, nor destructured anywhere in
+    `render()` - a plain-JS-only `ReferenceError` waiting to happen
+    (only when `committeeAccount` goes falsy after the user clears the
+    `AccountSelector` input), almost certainly meant to be `this.props
+    .account`. Unlike every other "preserve the bug verbatim" case in
+    this migration, TypeScript refuses to *compile* a reference to an
+    identifier that was never declared, so there is no way to leave this
+    exactly as broken as the original without breaking the build - read
+    as the `account` prop here, the only value that both type-checks and
+    is the single plausible reading of what was intended.
+  - `ReserveAssetModal.tsx`: security-sensitive per AGENTS.md
+    (`onSubmit` submits an on-chain asset-reserve/burn transaction via
+    `AssetActions.reserveAsset`) - transcribed verbatim, including that
+    `hideModal()` fires unconditionally right after kicking off the
+    async action, not after it resolves. `AssetWrapper` kept as-is.
+    `UNSAFE_componentWillReceiveProps` (resets amount state when the
+    resolved `asset`'s id changes) becomes a `useEffect` keyed on
+    `asset.get("id")` - no mount-guard needed, since the effect's first
+    firing recomputes the same initial state the lazy `useState`
+    initializer already computed. Dropped as confirmed dead:
+    `onAmountChanged`'s `state.asset` field, set but never read anywhere
+    in `render()`.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~147 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (18 more), `Blockchain/` non-operations (~13), `Registration/` (11),
+  (15 more), `Blockchain/` non-operations (~13), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
