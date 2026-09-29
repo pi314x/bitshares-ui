@@ -4825,11 +4825,110 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~136 more `.jsx` files outside
+- `Modal/` batch 7 (2 files): `PoolExchangeModal.jsx`,
+  `PoolStakeModal.jsx` → `.tsx`. Both wrap a single required `pool:
+  ChainTypes.ChainLiquidityPool.isRequired` chain prop via
+  `connect(BindToChainState(...), {listenTo: [AccountStore],
+  getProps})` - the first files in this migration needing
+  `BindToChainState.jsx`'s `chain_liquidity_pools` resolution, the one
+  *asynchronous* `ChainTypes.*` resolution in this codebase (`await
+  ChainStore.getLiquidityPoolsByShareAsset([pool])`, unlike every other
+  `ChainTypes.*` resolution's synchronous cache read). Both become a
+  Container (reading `account` via `useAltStore(AccountStore)` and
+  resolving `pool` via that same `await
+  ChainStore.getLiquidityPoolsByShareAsset([pool])` call, re-run on a
+  `[pool, tick]` dependency array so it re-resolves both on prop change
+  and on every chain-store tick, matching the original's continuous
+  per-update re-resolution) wrapping a Core (the ported class body),
+  gating on `resolvedPool === undefined` with a blank `<span/>`
+  fallback per `BindToChainState.jsx`'s exact "only `undefined` blocks;
+  a resolved `null` renders through" semantics (neither class declares
+  `tempComponent`/`show_loader`).
+  - Both files: security-sensitive per AGENTS.md.
+    `PoolExchangeModal.tsx`'s `onSubmit` submits an on-chain
+    `liquidity_pool_exchange` transaction via
+    `ApplicationApi.liquidityPoolExchange()`; `PoolStakeModal.tsx`'s
+    `onSubmit` submits `liquidity_pool_deposit`
+    (`ApplicationApi.liquidityPoolDeposit()`) or
+    `liquidity_pool_withdraw` (`ApplicationApi.liquidityPoolWithdraw()`)
+    depending on `currentTab` - both APIs build their operation and call
+    `WalletDb.process_transaction()` under the hood - transcribed
+    verbatim. Both files: `state.isModalVisible` and
+    `componentWillReceiveProps`/`UNSAFE_componentWillReceiveProps`
+    (which only ever re-synced it from the `isModalVisible` prop) are
+    dropped, reading the `isModalVisible` prop directly instead - same
+    `DeletePoolModal.tsx` precedent, re-verified here: all three real
+    callers (`Poolmart/LiquidityPools.jsx`, `Explorer/LiquidityPools
+    .tsx`, `Account/AccountPools.tsx`) conditionally mount/unmount the
+    whole component rather than toggling an already-mounted instance's
+    `isModalVisible` prop.
+  - `PoolExchangeModal.tsx`: dropped as confirmed dead (grepped): the
+    `Immutable` import (only on its own `import` line); `switchAsset`'s
+    entire tail beyond its one `setState` call (a `ChainStore
+    .getAccount` lookup and balance computation whose returned object
+    is never read - `switchAsset` is only ever used as a `<Button
+    onClick={this.switchAsset}>` handler, whose return value React
+    discards; `getPairs()`, with the identical body, is kept since it's
+    actually called for its return value). `onChangeAmountToSell`/
+    `onChangeMinToReceive` were traced variable-by-variable to see what
+    actually reaches their final `setState` calls: in
+    `onChangeAmountToSell`, `account`/`accountObj` (the equivalent
+    lookup already happens live in `getPairs()`, called every render),
+    a shadowing dead `const {amountToSellTag, minToReceiveTag} =
+    this.state` destructure, and roughly half of the AMM fee-percentage
+    math (`maker_fee_a`/`maker_fee_b`, `taker_fee_percenta`, `flagsb()`,
+    `taker_market_fee_percenta()`/`taker_market_fee_percent_a`,
+    `tmp_delta_a`, `tmp_a`, and `tmp_delta_b_floor`/`tmp_b_ceil`/
+    `max_mar`/`tmp_b_taker_ceil`/`total`) were all confirmed to only
+    feed each other or a value (`total`) that's itself never read again
+    - none of it reaches the `setState({amountToSell, minToReceive})`
+    call, so it's dropped; the live half (`flagsa()`,
+    `taker_market_fee_percentb()`, `tmp_delta_b`, `tmp_b`,
+    `taker_market_fee_percent_b`) is kept verbatim, including a
+    pre-existing bug where `flagsa()` has no final `else` and can return
+    `undefined`, propagating as `NaN`. `onChangeMinToReceive` turned out
+    more extreme: its final `setState` is just `{minToReceive:
+    Number(e.amount)}`, and every one of the ~150 lines of near-
+    identical AMM math between its two `setState` calls was confirmed to
+    be entirely dead (none of it is read by that final call or anything
+    else) - kept as just the two `setState` calls. `state.fee` is read
+    in `render()` but grep-confirmed to never be set to anything but
+    `null` - kept as real, permanently-inert state (established
+    treatment of read-but-never-toggled fields, see `ReportModal.tsx`'s
+    `loadingImage`/`logsCopySuccess`).
+  - `PoolStakeModal.tsx`: `getShareAssetCurrentSupply`'s two
+    `console.log(...)` statements, each immediately following a
+    `return` in the same block, are genuinely unreachable (not merely
+    unused) and dropped - distinct from this file's other, reachable
+    debug logs (`onChangeAssetBAmount`'s trailing `console.log`,
+    `onChangeShareAssetAmount`'s three in its `else` branch), which are
+    kept verbatim per this migration's established practice.
+    `onChangeAssetAAmount`/`onChangeAssetBAmount`/
+    `onChangeShareAssetAmount` were checked the same variable-by-
+    variable way, but unlike `PoolExchangeModal.tsx`'s siblings, every
+    local variable in all three does feed a `setState` call - no local
+    dead code found there. `assetAErr`/`assetBErr`/`shareAssetErr` are
+    read in `render()` (`validateStatus`/`help`) but never set to
+    anything but their inert initial value - kept as real state, same
+    treatment as `PoolExchangeModal.tsx`'s `state.fee`. Preserved,
+    not "fixed": several `currentSupply !== undefined` guards that are
+    tautologically always true in practice, and a `Math.min()` call
+    with a single argument.
+  - Both files: TS-forced casts - `bignumber.js` ships no type
+    declarations and isn't in `app/types/vendor-shims.d.ts`, so every
+    `new big(...)` becomes `new (big as any)(...)`, matching
+    `AccountAssetCreate.tsx`'s precedent; `ApplicationApi`'s
+    liquidity-pool methods are cast `(ApplicationApi as any)`, matching
+    `CreateLockModal.tsx`'s `(ApplicationApi as any).createTicket`
+    precedent.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~134 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (4 more: `PoolExchangeModal.jsx`, `PoolStakeModal.jsx`,
-  `CreatePoolModal.jsx`, `BorrowModal.jsx`), `Blockchain/`
+  (2 more: `CreatePoolModal.jsx`, `BorrowModal.jsx`), `Blockchain/`
   non-operations (~13), `Registration/` (11), root `components/` (9),
   `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
   `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
