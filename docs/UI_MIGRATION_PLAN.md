@@ -4366,13 +4366,113 @@ compromise, not silent scope-narrowing.
     full Jest suite green (5,532/5,532), `yarn build` shows only the 2
     known pre-existing `charting_library` errors. Old `.jsx` files
     removed.
-- Remaining long tail (~154 more `.jsx` files outside
+- `Account/` batch 13 (1 file, the last of the directory's long tail):
+  `AccountPortfolioList.jsx` → `.tsx`. Grep-verified:
+  `class AccountPortfolioList extends React.Component` - plain, no mixin.
+  Non-security-sensitive per AGENTS.md (grepped for `WalletApi`,
+  `WalletDb`, `.add_type_operation`, `process_transaction` - none appear;
+  this file only orchestrates opening/closing `SendModal`/`WithdrawModal`/
+  `DepositModal`/`BorrowModal`/`SettleModal`/`ReserveAssetModal`/
+  `SimpleDepositBlocktradesBridge`, all of which build/sign their own
+  transactions separately).
+  - No `BindToChainState` wrapping existed in the original (only
+    `connect(Component, {listenTo: [SettingsStore, GatewayStore,
+    MarketsStore], getProps})` + `debounceRender(Component, 50, {leading:
+    false})`), so no Container/`useChainStoreTick` translation was
+    needed. `connect`'s three-store `getProps` becomes an outer wrapper
+    component that calls `useAltStore` once per store and passes the
+    results as explicit props into the `debounceRender`-wrapped core
+    component - the same "outer wrapper gathers stores, inner component
+    stays debounced" shape already used by `MyMarkets.tsx`. Store-derived
+    props are spread *after* the caller's own props (matching
+    `alt-react`'s `<Component {...this.props} {...this.getNextProps()}
+    />` override order in `node_modules/alt-react/src/connect.js`), which
+    is why `AccountOverview.tsx`'s second call site passing its own
+    `settings` prop was always silently overridden by `SettingsStore`'s
+    `settings` in the original, and remains so here.
+  - `UNSAFE_componentWillMount`/`componentWillUnmount` wrapping
+    `setInterval(this._checkRefAssignments)` becomes a mount-only
+    `useEffect`. `this.changeRefs` (mutated during balance-row building,
+    read by the "sort by 24h change" comparator) becomes a
+    `useRef<{[key: string]: any}>({})`. `state.allRefsAssigned`'s value
+    is never read anywhere except the interval's own gate - it exists
+    purely so calling `setState`/the hooks `mergeState` forces a
+    re-render once the ref dictionary has entries (otherwise nothing else
+    would ever re-render to reflect the mutated ref data); kept as real
+    state for that side effect, not because its value is consumed
+    downstream.
+  - `shouldComponentUpdate` dropped, per this migration's established
+    precedent (no hooks equivalent; never changes rendered output, only
+    how often identical output is recomputed).
+  - `this.sortFunctions` (methods calling each other via
+    `this.sortFunctions.X(...)`, reading `this.props`/`this.changeRefs`)
+    becomes plain closures rebuilt each render (never compared by
+    reference, so safe to rebuild). `_sumCollateralBalances`/
+    `_sumVestingBalances` are pure functions of their argument (no
+    `this.props`/`this.state`/ref reads), so they're extracted to module
+    scope as `sumCollateralBalances`/`sumVestingBalances`.
+  - `this.send_modal`, set via a plain `refCallback` prop (not React's
+    `ref=`), is preserved as-is: `SendModal.tsx` (already ported) was
+    built with this exact external caller in mind - its default export
+    forwards `refCallback` to a `React.forwardRef` +
+    `useImperativeHandle({show})` instance, and its own header comment
+    names this file's `this.send_modal.show()` call as the usage it keeps
+    working. Ported as `sendModalRef = useRef<{show: () => void} |
+    null>(null)`.
+  - `setState(update, callback)` calls in `triggerSend`,
+    `_showDepositModal`, `_showDepositWithdraw` all have callbacks that
+    only read refs/props/other untouched state (never the just-applied
+    field), so each becomes `mergeState(...)` followed by the callback
+    body invoked synchronously right after, per the established
+    `AccountPools.tsx`-precedent rule.
+  - **Dropped as confirmed dead** (grepped, not assumed): `_getSeparator`
+    - fully defined, never called anywhere in the file; the `fiatModal`
+    state field - written by `_showDepositWithdraw` but never read
+    anywhere else in the file.
+  - **Preserved verbatim, not "fixed"** (all grep-verified): `getHeader`'s
+    `preferredUnit` local reads `this.props.core_asset` (snake_case) -
+    not a real prop of this component (the sole caller,
+    `AccountOverview.tsx`, only ever passes `coreAsset`, camelCase); in
+    practice unreachable without throwing, since `SettingsStore` always
+    seeds a default `"unit"` setting, so `settings.get("unit") || ...`
+    short-circuits before ever touching the nonexistent prop. `getHeader`'s
+    `shownAssets` local reads a state field that is never initialized nor
+    ever set anywhere in the file - always `undefined`, so the "hide"
+    column's header title always resolves to `"account.perm.show"`.
+    `sortFunctions.changeValue`'s `parseFloat(aValue) != "NaN"` compares a
+    number to the *string* `"NaN"` with loose `!=`, which is always
+    `true` (almost certainly meant to be `isNaN(parseFloat(aValue))`), so
+    its `: aValue` fallback branch is dead. The second
+    `AccountPortfolioList` call site in `AccountOverview.tsx` never passes
+    `callOrders`/`coreAsset` (only the first, "included assets" call
+    does) - already tolerated by `(callOrders || [])` and by
+    `getFinalPrice` receiving `undefined` for the hidden-assets table,
+    same as before.
+  - TS-forced adjustments (no behavior change): `react-router-dom`'s
+    `Link` aliased through `React.ComponentType<any>` (this repo's
+    recurring `@types/react-router-dom` friction); two `getEquivalentValue`
+    call sites' `false` argument cast `as any` (that still-`.jsx` helper's
+    `fullPrecision = null` JS default parameter makes `tsc` infer `null |
+    undefined` for it even though the file itself isn't typechecked); one
+    inline `<Icon onClick={e => ...}>` handler needed an explicit `(e:
+    any)` annotation; an unused `getAssetAndGateway` import (dead already
+    in the original, but `@typescript-eslint/no-unused-vars` is an error
+    for `.tsx` files) dropped; several `let` bindings the original never
+    reassigns after their single initial assignment
+    (`directMarketLink`/two `let {isBitAsset...}` destructures/one of two
+    `preferredMarket`s) changed to `const` for `prefer-const`, following
+    the same split-out-only-the-reassigned-fields fix as `WorkersList.tsx`.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` file removed.
+- Remaining long tail (~153 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (1 more: `AccountPortfolioList`,
-  the last file in the directory), `Modal/` (21), `Blockchain/`
-  non-operations (~13), `Registration/` (11), root `components/` (9),
-  `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
-  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
+  directories) not yet started, `Account/` now fully ported: `Modal/`
+  (21), `Blockchain/` non-operations (~13), `Registration/` (11), root
+  `components/` (9), `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/`
+  (7), `Account/CreditOffer/` (7), `Showcases/` (6), and smaller
+  directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
