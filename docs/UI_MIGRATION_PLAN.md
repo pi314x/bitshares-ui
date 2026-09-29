@@ -4277,14 +4277,102 @@ compromise, not silent scope-narrowing.
     warnings only), full Jest suite green (5,532/5,532), `yarn build`
     shows only the 2 known pre-existing `charting_library` errors. Old
     `.jsx` files removed.
-- Remaining long tail (~157 more `.jsx` files outside
+- `Account/` batch 12 (3 files): `AccountSelectorAnt.jsx`,
+  `AccountSelector.jsx`, `AccountDepositWithdraw.jsx` → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches beyond plain
+  `React.Component`.
+  - `AccountSelectorAnt.tsx`: `BindToChainState(Component)` resolves the
+    *optional* (not `.isRequired`) `account` prop, so the Container
+    resolves it when truthy under `useChainStoreTick()` without gating
+    render on it; `connect(Component, {listenTo: [AccountStore],
+    getProps})` replaced by `useAltStore(AccountStore)`. Dropped as
+    confirmed dead (grep-verified against the whole app, not just this
+    file): `getAccount()` and the `this.refs.account_selector
+    .getAccount()` parent-ref-access pattern its comment describes - no
+    caller anywhere sets a ref on this component and calls it (the
+    identical, equally-unused comment/method pair also exists on the
+    sibling `AccountSelector.jsx`). The legacy string ref fallback
+    (`ref={this.props.inputRef || "user_input"}`) had no reader
+    anywhere - `ref={props.inputRef}` (the real `useRef()` object the
+    one actual caller, `WalletUnlockModal.tsx`, already supplies)
+    replaces it directly, since a function component has no
+    `this.refs` fallback destination to begin with. **Also dropped as
+    confirmed dead, found while fixing lint errors** (verified against
+    the *original* file, not introduced by porting): `linked_status`
+    and `action_class`, two `render()`-body locals the original itself
+    never referenced in its own `return` (which renders only
+    `labelWrapper(<Input .../>)` - none of the typeahead/scammer/contact
+    computation in this particular component ever reaches the DOM,
+    unlike its more fully-wired sibling `AccountSelector.jsx`) - and,
+    cascading from that, `_onAddContact`/`_onRemoveContact` (their only
+    callers) and the `AccountActions`/`Icon`/`Tooltip`/`classnames`
+    imports those alone needed.
+  - `AccountSelector.tsx`: same `BindToChainState`/`connect` → Container
+    pattern. `state.accountIndex` (a search-results array *mutated in
+    place* across several methods, with `this.setState({accountIndex})`
+    on the same reference used purely to force a re-render) can't
+    translate to a plain `useState` 1:1: React's `useState` setter bails
+    out of re-rendering when given back the exact same reference (via
+    `Object.is`), unlike a class's `setState`, which always re-renders
+    regardless of reference equality. Replicated with a
+    `useRef<any[]>()` holding the real mutable array plus a `renderTick`
+    `useState` bumped wherever the original called
+    `this.setState({accountIndex})`. `componentDidUpdate` (focuses the
+    input; notifies `onAccountChanged` when the resolved `account` prop
+    changes) runs after every update but *not* the initial mount -
+    replicated with a `useEffect` (no dependency array) using its own,
+    separate mount-flag ref from the mount-only effect above it (effects
+    run in declaration order within a commit, so sharing one flag would
+    make this effect see it already flipped to `false` on the very
+    first render). `ref="user_input"` is real and load-bearing here
+    (read via `.focus()`) - unlike the dead, identically-named ref in
+    the sibling `AccountSelectorAnt.tsx` - translated to a real
+    `useRef()`. **Preserved verbatim as a real bug** (not "fixed"):
+    `_fetchAccounts`'s `search_array.splice(account.get("name"))` passes
+    a *name string*, not a numeric index, to `splice`'s `start`
+    argument - `Number(name)` is `NaN`, which clamps to `0`, so each
+    call actually empties the *entire* `search_array`, not just the one
+    matched account.
+  - `AccountDepositWithdraw.tsx`: renders several still-`.jsx` gateway
+    bridge components (OpenledgerGateway, RuDexGateway, BitsparkGateway,
+    PiratecashGateway, XbtsxGateway, BlockTradesBridgeDepositRequest,
+    CitadelBridgeDepositRequest, GdexGateway) unchanged - those gateway
+    directories are out of scope for this migration, but this file
+    itself lives under `Account/`, so it's in scope. The outer
+    `connect(DepositStoreWrapper, {listenTo: [AccountStore,
+    SettingsStore, GatewayStore], getProps})` wrapping
+    `BindToChainState(Component)` wrapping `DepositStoreWrapper`'s own
+    `UNSAFE_componentWillMount` (`updateGatewayBackers()`) collapse into
+    one Container: three `useAltStore` calls, a mount-only effect for
+    `updateGatewayBackers()`, and `account` resolution gated on the
+    default blank `<span/>` fallback. Dropped as confirmed dead:
+    `state.metaService`/`toggleMetaService` - the toggle is never wired
+    to any element, and the state field is only read inside the dropped
+    `shouldComponentUpdate`. `ref="deposit_modal"` is real
+    (`Modal/DepositModal.jsx` is still a class with a `.show()` method)
+    and becomes a `useRef()`; `ref="withdraw_modal"`, by contrast, is
+    **already dead in production** from an earlier, unrelated port:
+    `Modal/WithdrawModalNew.tsx` (already `.tsx`, verified directly) was
+    converted to a plain function component with no `forwardRef`/
+    `useImperativeHandle` and no `.show()` method, controlled entirely
+    via a `visible` prop instead - passing a ref to it was already
+    always a no-op before this port touched the file. This port
+    preserves that exact pre-existing breakage (cast to `any` to satisfy
+    TS on the dead `ref` prop) rather than wiring up the "correct"
+    `visible`-prop control flow as an unrelated fix.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, after
+    fixing several `prefer-const`/`no-unused-vars` errors that fell out
+    of the dead-code drops above - expected `any`-type warnings only),
+    full Jest suite green (5,532/5,532), `yarn build` shows only the 2
+    known pre-existing `charting_library` errors. Old `.jsx` files
+    removed.
+- Remaining long tail (~154 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started: `Account/` (4 more: `AccountSelector`,
-  `AccountDepositWithdraw`, `AccountPortfolioList`,
-  `AccountSelectorAnt`), `Modal/` (21), `Blockchain/` non-operations
-  (~13), `Registration/` (11), root `components/` (9), `Forms/` (8),
-  `PredictionMarkets/` (7), `Dashboard/` (7), `Account/CreditOffer/` (7),
-  `Showcases/` (6), and smaller directories.
+  directories) not yet started: `Account/` (1 more: `AccountPortfolioList`,
+  the last file in the directory), `Modal/` (21), `Blockchain/`
+  non-operations (~13), `Registration/` (11), root `components/` (9),
+  `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
+  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
