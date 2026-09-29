@@ -4736,13 +4736,103 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~138 more `.jsx` files outside
+- `Modal/` batch 6 (2 files): `ProposalModal.jsx`, `DepositModal.jsx` →
+  `.tsx`. Smaller batch than usual - both files involved enough
+  `BindToChainState`/mixin-translation complexity on their own to keep
+  the batch focused.
+  - `ProposalModal.tsx`: security-sensitive per AGENTS.md (`
+    onProposalAction` submits an on-chain `proposal_delete`/
+    `proposal_update` transaction via `WalletApi.new_transaction()`/
+    `WalletDb.process_transaction()`) - transcribed verbatim. Three
+    original classes (`ProposalModal`, `FirstLevel`, `ModalWrapper`)
+    become three matching Container+Core pairs plus the outer guard,
+    with `ChainTypes`/`BindToChainState` replaced by manual `ChainStore`
+    resolution + `useChainStoreTick()` - the same approach already used
+    for `NestedApprovalState.tsx`'s `ProposalWrapper`/
+    `AccountPermissionTree` (earlier Account/ batch), including a local
+    re-implementation of that file's `resolveAccountsList` helper
+    (kept per-file, not shared, matching this migration's convention).
+    `ProposalModal`'s own `BindToChainState` wrap (optional `accounts`)
+    needed no "still loading" gate; `FirstLevel`'s wrap (required
+    `account`/`proposal`) does, replicating `BindToChainState.jsx`'s
+    exact "only `undefined` blocks; a resolved `null` renders through"
+    semantics with a blank `<span/>` fallback (no `tempComponent`/
+    `show_loader` declared by either class). Both original
+    `BindToChainState` wraps subscribed to `ChainStore` independently -
+    replicated with `useChainStoreTick()` in both Containers, matching
+    the already-established double-subscription treatment from
+    `Proposals.tsx` (Account/ batch 9). One lint-forced trim: the
+    original's `_onProposalAction` destructured `{active, key, owner,
+    payee}` from state but only ever read `active`/`payee` there (`key`/
+    `owner` are genuinely used elsewhere, via a fresh lookup, just not
+    through that particular destructure) - the two unused names dropped
+    from that one destructure to satisfy `no-unused-vars`, which this
+    file is now newly subject to.
+  - `DepositModal.tsx`: non-security-sensitive per AGENTS.md (grepped for
+    `WalletApi`/`WalletDb`/`.add_type_operation`/`process_transaction` -
+    none appear; this component only requests/displays a gateway deposit
+    address). `DepositModalContent extends DecimalChecker` is dropped
+    entirely rather than inlined - grep-verified none of
+    `DecimalChecker`'s methods or its `allowNaN` propType are referenced
+    anywhere in this file, so the inheritance contributes nothing
+    observable here. The four `lib/common/assetGatewayMixin` functions
+    and `gatewayUtils.getGatewayStatusByAsset`, all called via `.call
+    (this, ...)` in the original, use the same fake-`this` object-literal
+    translation already established for `WithdrawModalNew.tsx` (earlier
+    Modal batch); `gatewaySelector` doesn't reference `this` anywhere in
+    its own body despite the `.call(this, args)` in the original, so
+    it's called directly here as a plain function instead of replicating
+    that no-op `.call`. `shouldComponentUpdate` isn't a pure performance
+    guard - like `ReportModal.tsx`'s (earlier Modal batch), it runs a
+    real side effect (state reset + re-fetching the deposit address)
+    whenever the `asset` prop changes - the gating half is dropped, the
+    side-effect half becomes a `useEffect` keyed on `asset` with the
+    usual mount-flag-ref guard (the mount case is covered by its own
+    separate mount-only effect, replicating `UNSAFE_componentWillMount`).
+    Dropped as confirmed dead (grepped): `DepositModalContent.onClose`
+    (defined, never bound to anything - only the *outer* class's own
+    `onClose` is wired to the `<Modal onCancel>`), and consequently its
+    `hideModal` prop (never read by any reachable code); the outer
+    class's `open={this.props.visible}` prop passed to
+    `DepositModalContent` (no `open` prop is ever read there). The outer
+    `DepositModal` class's `state.open` is set but never read in
+    `render()` (`<Modal>` uses `props.visible`, not `state.open`) -
+    `show()`'s entire observable effect is calling `props.hideModal()`
+    after the update commits. Replicated with an ever-incrementing tick
+    state rather than a literal boolean, since a hooks `useState` setter
+    bails out (skipping the following effect) on a value-identical
+    update where a class `setState(update, callback)` never does - the
+    same "renderTick" technique already used for `AccountSelector.tsx`
+    (Account/ batch 12). `forwardRef`+`useImperativeHandle` exposes
+    `.show()`, matching `SendModal.tsx`'s established precedent, for the
+    one real ref-based caller (`AccountDepositWithdraw.tsx`'s
+    `depositModalRef.current.show()`). **Preserved verbatim, not
+    "fixed"**: that one caller never passes a `hideModal` prop to this
+    `<DepositModal>` instance at all - calling `.show()` there calls
+    `props.hideModal()` with `hideModal` genuinely `undefined`, which
+    throws, exactly as the original class would; typed optional and
+    invoked with an `as any` cast rather than adding a runtime guard that
+    would silently swallow this pre-existing bug. One unrelated TS-forced
+    cast, in an already-ported sibling file rather than this one: `
+    CryptoLinkFormatter.tsx` (an earlier, separately-ported file) types
+    its two string-returning branches in a way `tsc` won't accept as a
+    valid JSX component's return type when actually rendered from a
+    `.tsx` file for the first time - cast to `any` at this call site
+    (`CryptoLinkFormatterImpl as any`) rather than touching that
+    unrelated file, matching this migration's existing `Link as
+    React.ComponentType<any>` pattern elsewhere.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~136 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (6 more), `Blockchain/` non-operations (~13), `Registration/` (11),
-  root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
-  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
-  smaller directories.
+  (4 more: `PoolExchangeModal.jsx`, `PoolStakeModal.jsx`,
+  `CreatePoolModal.jsx`, `BorrowModal.jsx`), `Blockchain/`
+  non-operations (~13), `Registration/` (11), root `components/` (9),
+  `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
+  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
