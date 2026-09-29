@@ -4925,13 +4925,159 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~134 more `.jsx` files outside
+- `Modal/` batch 8 (2 files, the last of the directory's long tail):
+  `CreatePoolModal.jsx`, `BorrowModal.jsx` → `.tsx`. This completes
+  `Modal/`.
+  - `CreatePoolModal.tsx`: security-sensitive per AGENTS.md
+    (`onCreatePool` submits an on-chain `liquidity_pool_create`
+    transaction via `ApplicationApi.liquidityPoolCreate()`) -
+    transcribed verbatim, including its exact fee-percent (`* 100.0`)
+    and lower-`1.3.x`-id-first asset-ordering logic. A plain class - no
+    `connect`/`BindToChainState` at all - so this is a direct class-to-
+    hooks translation, not a Container/Core split; `SearchListItem` and
+    `CreatePoolModal` each become one function. Dropped as confirmed
+    dead (grepped): the `PoolAction`, `QRCode`, `Aes`, `AssetName`,
+    `SearchInput` imports and the `Select` re-export (each appears only
+    on its own `import` line); `utils` (its one use,
+    `utils.are_equal_shallow`, was inside the dropped
+    `shouldComponentUpdate`, a pure render-gating check with no side
+    effects); `state.keyString` (initialized, never read/set again);
+    `state.marketsList`/`state.activeSearch`/`initialState()`'s
+    `inputValue` field (all three write-only - `marketsList` was read
+    only inside the dropped SCU, `activeSearch` is never even
+    initialized, `inputValue` is assigned but never read); all three
+    inputs' legacy string ref (`ref="marketPicker_input"`, the same
+    name on all three - only the last-rendered one would ever be
+    reachable even if used - but `this.refs.marketPicker_input` is
+    never read anywhere); the `modalId`/`keyValue` propTypes (neither
+    read via `this.props.X` anywhere, and the real caller,
+    `Account/AccountPools.tsx`, never passes either - unlike
+    `showModal`/`name`/`assetsList`, which that caller DOES pass, kept
+    as accepted-but-unused); `onPoolNameChange`'s local `keys` (computed,
+    never read); `onSetAssetBArray` (an empty no-op method, bound in the
+    constructor like its sibling `onSetAssetAArray`, but - unlike that
+    sibling - never actually called anywhere; `onAssetBSearch`'s early-
+    return branch calls `onSetAssetAArray()` instead, a preserved bug -
+    see below). Preserved verbatim, not "fixed": `showAlertChangeAssetA`/
+    `showAlertChangeAssetB`/`showAlertChangeTrankerFee`/
+    `showAlertChangeUnstakeFee` (read in `render()` but never set `true`
+    anywhere - permanently dead `<Alert>`s, kept as real state per this
+    migration's established read-but-never-toggled treatment);
+    `onSetAssetAArray`'s no-op calls from both `onAssetASearch` and
+    `onAssetBSearch` (the latter a real bug - calls the "A" no-op
+    instead of a "B" one, which no longer even exists after the dead-
+    code drop above); `onCreatePool`'s redundant final `onCancel()` call
+    and `onCancel`'s own redundant double state reset; every stray
+    `console.log` (`"componentWillReceiveProps is invoked."`, the
+    asset-swap-order pair, `"onSetAssetA "`/`"takerFee: "`,
+    `"onSetAssetB "`, etc.); `onCreatePool` wired directly as the
+    `<form onSubmit>` handler with no `e.preventDefault()`. TS-forced:
+    `SearchListItem`'s inner `<li key={this.props.key}>` read a `key`
+    prop, which React never actually forwards into any component's
+    props (class or function) - always `undefined` at runtime
+    regardless, and not even nameable on a TS component-props type, so
+    dropped rather than worked around; its `marketPickerAsset`/
+    `onClose` destructured-but-unused props and the `tabIndex` prop
+    passed by all three `<SearchListItem>` call sites (never read
+    inside `SearchListItem`) dropped for the same reason;
+    `onFormatTakerFee`/`onFormatUnstackFee`'s unused `e` parameter
+    dropped to satisfy `no-unused-vars`, newly enforced on this file.
+  - `BorrowModal.tsx`: security-sensitive per AGENTS.md (`onSubmit`
+    submits an on-chain `call_order_update` transaction - opening/
+    adjusting a margin position - via `WalletApi.new_transaction()`/
+    `WalletDb.process_transaction()`) - transcribed verbatim, including
+    the exact delta-collateral/delta-debt arithmetic and the "amount
+    can not be 0" workaround. The most complex `BindToChainState`
+    resolution case in this directory: `BorrowModalContent`
+    (`BindToChainState`-wrapped, then `debounceRender`-wrapped) becomes
+    `BorrowModalCore` (render/state/handlers) + `BorrowModalContainer`
+    (chain resolution, `useChainStoreTick()`) +
+    `BorrowModalContainerDebounced` (the same outer-`debounceRender`-
+    around-the-resolution-layer shape as `MyMarkets.tsx`'s
+    `MyMarketsDebounced`); `ModalWrapper` becomes `BorrowModalWrapper`.
+    `quoteAssetObj`/`backingAssetObj` (`ChainTypes.ChainAsset.isRequired`
+    x2) resolve via `ChainStore.getAsset`, gated on either being
+    `undefined` with a blank `<span/>` fallback (no `tempComponent`/
+    `show_loader` declared, matching this migration's established "no
+    option" case); `debtBalanceObj`/`collateralBalanceObj`
+    (`ChainTypes.ChainObject`, optional) resolve via
+    `ChainStore.getObject`, un-gated; `call_orders`
+    (`ChainTypes.ChainObjectsList`, optional) resolves via a local
+    `resolveCallOrdersList` helper, a from-scratch per-file copy (this
+    migration's established convention) of `BindToChainState.jsx`'s
+    `chain_objects_list` loop specifically - read precisely rather than
+    assumed from the *accounts*-list variant: its `index` increments
+    *before* each item is placed, so source item 0 lands at output
+    index 1 and index 0 is always left empty, the opposite timing from
+    `chain_accounts_list`/`resolveAccountsList`'s increment-*after*-
+    placement (as already noted in `NestedApprovalState.tsx`'s and
+    `ProposalModal.tsx`'s own `resolveAccountsList` helpers) - the
+    quirk has zero observable effect here since `call_orders`' only
+    reader immediately does `.filter(a => !!a).find(...)`, dropping the
+    always-empty slot regardless. `shouldComponentUpdate` is a pure
+    render-gating boolean - dropped entirely; one of its five OR'd
+    conditions was itself already dead code (`!x.get("symbol") ===
+    y.get("symbol")` compares a `boolean` to a `string` with `===`,
+    which can never be `true`), evidence this SCU never did anything
+    beyond gating. `componentDidUpdate` (unconditional
+    `ReactTooltip.rebuild()`, no gating logic to separate out) and
+    `UNSAFE_componentWillReceiveProps` each become their own dependency-
+    less mount-skip `useEffect`, the latter using
+    `prevAccountObjRef`/`prevHasCallOrdersRef`/`prevQuoteAssetIdRef` for
+    the "previous props" comparison and `stateRef.current` for the
+    "current" `debtAmount`/`collateral`/`collateral_ratio`, per this
+    migration's standard translation. **Forced simplification, not
+    "preserved verbatim"** (called out separately since it's the one
+    place this port doesn't reproduce the original exactly): inside
+    `_initialState`, when invoked from `UNSAFE_componentWillReceiveProps`
+    as `_initialState(nextProps)`, `_getCollateralRatio`/
+    `_getInitialCollateralRatio` read `this._getFeedPrice()`/
+    `this._getMaintenanceRatio()`, which read `this.props` - still the
+    OLD props at that exact point in the class lifecycle, not yet
+    reassigned to `nextProps` - so the freshly recomputed `debt`/
+    `collateral` (from `nextProps.quoteAssetObj`/`backingAssetObj`) get
+    divided by a feed price computed from the OLD `quoteAssetObj`/
+    `backingAssetObj`, a genuine (if obscure and likely unintentional)
+    inconsistency that only manifests when `quoteAssetObj`'s id changes
+    while mounted. Hooks have no equivalent "old `this.props` alongside
+    a new `nextProps`" transitional window; faithfully reproducing it
+    would require threading a second, ref-tracked "previous render's
+    props" object through this whole call graph for a narrow edge case,
+    so this port uses the single, current props throughout instead.
+    Dropped as confirmed dead (grepped): `confirmClicked` (never bound
+    anywhere); `_maximizeDebt` (flagged by its own `// Usage?` comment in
+    the original, confirmed never called and never wired to
+    `BorrowModalView`, unlike its sibling `_maximizeCollateral`); the
+    `Immutable` import (`Immutable.is`, used only inside the dropped
+    SCU - the separate named `{List}` import from the same package is
+    still used and kept); `ChainTypes`/`BindToChainState`/`PropTypes`
+    imports (superseded by manual resolution/TS interfaces);
+    `ModalWrapper`'s `state.open` (set, never read - `state.smallScreen`
+    is genuinely read, kept). `ModalWrapper` → `BorrowModalWrapper`:
+    `React.forwardRef`+`useImperativeHandle` exposes `.show()`, matching
+    `DepositModal.tsx`'s established precedent, for the one real ref-
+    based caller (`Account/MarginPosition.tsx`'s
+    `modalRef.current.show()`); `UNSAFE_componentWillMount`'s
+    `window.innerHeight <= 800` computation becomes a lazy `useState`
+    initializer rather than a mount effect, to keep its pre-first-render
+    timing intact (a caller-side quirk worth naming, not something this
+    port changes: the real callers all pass raw, unresolved string ids
+    for `quoteAssetObj`/`backingAssetObj`, which `BorrowModalWrapper`'s
+    own render body separately, and independently of
+    `BorrowModalContainer`'s chain resolution, compares directly against
+    `accountObj`'s balance-map keys to find `coreBalance`/
+    `bitAssetBalance`).
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~132 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started, `Account/` now fully ported: `Modal/`
-  (2 more: `CreatePoolModal.jsx`, `BorrowModal.jsx`), `Blockchain/`
-  non-operations (~13), `Registration/` (11), root `components/` (9),
-  `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
-  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
+  directories) not yet started, `Account/` and `Modal/` now fully
+  ported: `Blockchain/` non-operations (~13), `Registration/` (11),
+  root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
+  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
+  smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
