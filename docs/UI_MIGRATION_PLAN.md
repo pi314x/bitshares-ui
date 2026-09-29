@@ -4466,13 +4466,31 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` file removed.
-- Remaining long tail (~153 more `.jsx` files outside
+- `Modal/` batch 1 (3 files, smallest first): `JSONModal.jsx`,
+  `BaseModal.jsx`, `BrowserSupportModal.jsx` → `.tsx`. `JSONModal.jsx`
+  was already a plain functional component (a pure PropTypes → TS
+  interface conversion). `BaseModal.jsx` is a long-deprecated stub (its
+  real implementation removed per
+  github.com/bitshares/bitshares-ui/issues/1942) - its commented-out
+  imports/propTypes describing the old implementation are kept as inert
+  comments, not deleted. `BrowserSupportModal.jsx`: `_openLink`'s
+  `window.open(...).opener = null` (no null check in the original - it
+  would throw if the popup were blocked) is preserved via an `any` cast
+  rather than adding a null guard, since TS's `Window | null` return
+  type would otherwise force a behavior-changing null check. `App.jsx`
+  passes an unused `showModal` prop this component has always ignored -
+  kept in the type as accepted-but-unused, matching the original.
+  Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+  `any`-type warnings only), full Jest suite green (5,532/5,532), `yarn
+  build` shows only the 2 known pre-existing `charting_library` errors.
+  Old `.jsx` files removed.
+- Remaining long tail (~150 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (21), `Blockchain/` non-operations (~13), `Registration/` (11), root
-  `components/` (9), `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/`
-  (7), `Account/CreditOffer/` (7), `Showcases/` (6), and smaller
-  directories.
+  (18 more), `Blockchain/` non-operations (~13), `Registration/` (11),
+  root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
+  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
+  smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the

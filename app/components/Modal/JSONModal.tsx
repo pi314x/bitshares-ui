@@ -1,10 +1,26 @@
-import React from "react";
-import PropTypes from "prop-types";
+// TypeScript port of the legacy JSONModal.jsx (Phase 8,
+// docs/UI_MIGRATION_PLAN.md). Already a plain functional component in
+// the original - this is a pure type-annotation conversion (PropTypes ->
+// a TS interface with the same required/optional/default shape), no
+// logic changes.
+import * as React from "react";
 import counterpart from "counterpart";
 import {Modal, Button} from "bitshares-ui-style-guide";
 import Inspector from "react-json-inspector";
 
-export default function JSONModal({operation, visible, hideModal, title}) {
+interface JSONModalProps {
+    visible: boolean;
+    hideModal: () => void;
+    operation?: any;
+    title?: string | null;
+}
+
+export default function JSONModal({
+    operation = [],
+    visible,
+    hideModal,
+    title = null
+}: JSONModalProps) {
     return (
         <Modal
             title={title || counterpart.translate("explorer.block.op")}
@@ -21,15 +37,3 @@ export default function JSONModal({operation, visible, hideModal, title}) {
         </Modal>
     );
 }
-
-JSONModal.propTypes = {
-    visible: PropTypes.bool.isRequired,
-    hideModal: PropTypes.func.isRequired,
-    operation: PropTypes.any,
-    title: PropTypes.string
-};
-
-JSONModal.defaultProps = {
-    title: null,
-    operation: []
-};
