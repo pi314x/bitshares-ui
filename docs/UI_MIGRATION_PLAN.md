@@ -4632,10 +4632,114 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~141 more `.jsx` files outside
+- `Modal/` batch 5 (3 files): `DirectDebitClaimModal.jsx`,
+  `SettleModal.jsx`, `DirectDebitModal.jsx` → `.tsx`. Grep-verified: no
+  `extends <ClassName>` matches beyond plain `React.Component`.
+  - `DirectDebitClaimModal.tsx`: security-sensitive per AGENTS.md
+    (`onSubmit` submits an on-chain direct-debit claim transaction via
+    `ApplicationApi.claimWithdrawPermission`) - transcribed verbatim. Its
+    async `componentDidUpdate` (fetches the authorizing/withdraw-from
+    accounts, the withdrawal asset, and the payer's balance whenever a
+    new `operation` arrives while the modal is visible) becomes a
+    dependency-less `useEffect` (fires after every render, matching the
+    original's "runs on every update, never on mount" semantics) wrapping
+    an async IIFE, with the usual mount-flag-ref guard. The original's
+    `prevState.permissionId` comparison is read through a `stateRef`
+    mirror rather than a dedicated previous-value ref - since nothing
+    else in the file ever sets `permissionId` except this same effect,
+    the two are behaviorally identical in every case that occurs.
+    Dropped as confirmed dead (grepped): `state.to_name`, `state.error`,
+    `state.firstPeriodError`, `state.maxAmount`, `state
+    .current_period_expires` (distinct from the actively-used
+    `current_period_expires_date`), and imports `ChainStore`
+    (`FetchChain` from the same module is what's actually used),
+    `debounceRender` (never wrapped around the export), `AccountStore`.
+    `state.payerBalanceWarning` is read but never toggled - kept as real
+    (if permanently-`false`) state, matching the established treatment of
+    read-but-never-toggled fields. One TS-forced cast:
+    `String.prototype.replace.call(amount, /,/g, "")` needs an `as any`
+    on `String.prototype.replace`, since `amount`'s `any` type otherwise
+    makes `tsc` pick the wrong overload.
+  - `SettleModal.tsx`: security-sensitive per AGENTS.md (`onSubmit`
+    builds/submits an `asset_settle` operation via `WalletApi
+    .new_transaction()`/`WalletDb.process_transaction()`) - transcribed
+    verbatim. Same `AssetWrapper`/`UNSAFE_componentWillReceiveProps`-as-
+    `useEffect` structure as `ReserveAssetModal.tsx`/`CreateLockModal.tsx`
+    (earlier Modal batches). The trivial outer `SettleModal` class
+    (`render() { return <ModalContent {...this.props} />; }`) becomes a
+    trivial passthrough function. Dropped as confirmed dead: the
+    `ref="settlement_modal"` legacy string ref (never read). `showModal`
+    (passed by both real callers, `BuySell.tsx`/`AccountPortfolioList
+    .tsx`) is accepted but never read anywhere, matching the original.
+    One TS-forced adjustment: `parseInt(amount * Math.pow(...))` relied
+    on JS's implicit `ToString` coercion of a numeric argument to
+    `parseInt` - TS infers the product's type as `number` (not `any`)
+    despite `amount` itself being `any`, so `parseInt`'s `string`-typed
+    first parameter rejects it; wrapped in an explicit `String(...)`,
+    which performs the exact coercion `parseInt` would have done
+    implicitly. One lint-forced fix (required by `yarn lint:changed`,
+    which this file is now newly subject to): the original's `footer`
+    array put `key={"submit"}` on the inner `<Button>` instead of the
+    outer `<Tooltip>`, the actual array element (`react/jsx-key`) - added
+    `key={"submit"}` to the `<Tooltip>` too rather than moving it.
+  - `DirectDebitModal.tsx`: security-sensitive per AGENTS.md (`onSubmit`
+    submits an on-chain withdraw-permission create/update transaction via
+    `ApplicationApi.createWithdrawPermission`/`updateWithdrawPermission`)
+    - transcribed verbatim. `connect(Component, {listenTo: [AccountStore,
+    SettingsStore], getProps})` replaced by a Container using the
+    established multi-store `useAltStore` pattern; `getProps()
+    .passwordAccount` dropped as confirmed dead (grabbed but never read).
+    `componentDidUpdate` runs two independent checks on every update
+    (never on mount) and becomes one dependency-less `useEffect`: the
+    first, comparing `currentAccount` to `prevProps.currentAccount`,
+    needed an actual dedicated "previous props" ref (unlike state, props
+    have no existing mirror to read through); the second, comparing
+    `prevState.permissionId`, uses the same `stateRef`-mirror reasoning
+    as `DirectDebitClaimModal.tsx` above. `_checkBalance` was invoked as
+    a `setState(update, this._checkBalance)` callback, guaranteeing it
+    always read the just-applied `amount`/`asset` rather than whatever
+    state existed before - since hooks' `setState` is async and the
+    `stateRef` mirror only catches up on the *next* render (too late for
+    these callers), the ported `doCheckBalance` instead takes an optional
+    overrides object for the fields a given call site just changed,
+    falling back to `stateRef.current` for the rest. Dropped as
+    confirmed dead: `state.error`, `state.feeStatus`, `state.maxAmount`;
+    `componentDidMount`/`componentWillUnmount` and the `_isMounted` flag
+    they toggle (written three times, read nowhere); `onTrxIncluded` and
+    the `TransactionConfirmStore` import (bound in the constructor, but
+    `TransactionConfirmStore.listen` is never actually called anywhere,
+    so the listener is never registered and the method is unreachable).
+    `state.feeAmount` is read in several places but never updated after
+    its initial value - kept as real (if permanently-constant) state,
+    matching the established treatment. `_setTotal(asset_id, balance_id)`
+    only declares two parameters though its one call site bound four
+    arguments - the extra `fee`/`feeID` args were always silently
+    discarded, same simplification as `IssueModal.tsx` (earlier Modal
+    batch); with that passthrough dropped, `render()`'s `fee`/`feeID`
+    locals became provably dead computations (grep-verified, no other
+    reader), which in turn made `balance_fee` - assigned in the branches
+    that depended on `feeID` - dead too. Those branches also happen to
+    contain a real, TypeScript-incompatible bug: `balance_fee` is used
+    without ever being declared anywhere in the original file, which (ES
+    modules always running in strict mode) is a `ReferenceError` at the
+    moment of assignment rather than silent global creation - since the
+    value was already provably unused regardless of whether that
+    assignment threw, dropping the dead branches (rather than keeping an
+    inert `let balance_fee` around) removes the latent crash without
+    changing anything the UI actually renders. Same category of forced
+    judgment call as the bare-`account`-identifier fix in
+    `JoinCommitteeModal.tsx`/`JoinWitnessesModal.tsx` (earlier Modal
+    batches): TypeScript refuses to compile an assignment to an
+    undeclared identifier at all, so the original bug can't be preserved
+    verbatim the way this migration usually preserves bugs.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~138 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (9 more), `Blockchain/` non-operations (~13), `Registration/` (11),
+  (6 more), `Blockchain/` non-operations (~13), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
