@@ -4572,10 +4572,70 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~144 more `.jsx` files outside
+- `Modal/` batch 4 (3 files): `CreateLockModal.jsx`,
+  `SetDefaultFeeAssetModal.jsx`, `ReportModal.jsx` → `.tsx`.
+  Grep-verified: no `extends <ClassName>` matches beyond plain
+  `React.Component`.
+  - `CreateLockModal.tsx`: security-sensitive per AGENTS.md (`onSubmit`
+    submits an on-chain ticket-creation/lock transaction via
+    `ApplicationApi.createTicket`) - transcribed verbatim. Same
+    `AssetWrapper`/`UNSAFE_componentWillReceiveProps`-as-`useEffect`
+    structure as `ReserveAssetModal.tsx` (previous Modal batch). Drops
+    the same kind of confirmed-dead `state.asset` field, plus
+    `state.numberOfPeriods` (set once, never initialized or read
+    elsewhere).
+  - `SetDefaultFeeAssetModal.tsx`: `connect(Component, {listenTo:
+    [SettingsStore, AccountStore], getProps})` replaced by
+    `useAltStore` calls plus `currentAccount` resolution matching the
+    original `getProps`. **Dropped as confirmed dead**:
+    `componentDidUpdate`'s `accountChanged` check - `this.props.account`
+    is never actually passed by either real caller (both pass
+    `currentAccount`; `account` isn't even declared in
+    `propTypes`/`defaultProps`), so it always short-circuits to falsy
+    before the unchecked `prevProps.account.get("id")` is ever
+    evaluated - the whole branch, and the balance re-fetch it would
+    have triggered, is unreachable in practice (and is also why it
+    never throws despite the missing null check). One real
+    `componentDidUpdate` concern (resyncing `selectedAssetId` when
+    `current_asset` changes) becomes a `useEffect` with its own
+    mount-flag ref, per the "componentDidUpdate never fires on mount"
+    pattern established for `AccountSelector.tsx`/
+    `JoinWitnessesModal.tsx`. One TS-forced addition (found via
+    `yarn typecheck`, not grepped ahead of time): both real callers
+    also pass a `className` prop this component never read even in the
+    original (plain JS tolerates an extra prop silently) - added to the
+    type as accepted-but-unused.
+  - `ReportModal.tsx`: `shouldComponentUpdate` here isn't a pure
+    performance guard like every other instance dropped elsewhere in
+    this migration - it also runs a real side effect (`getLogs()` + an
+    `html2canvas` screen capture) whenever `visible` transitions from
+    `false` to `true`. The re-render-gating half is dropped as usual;
+    the side-effect half becomes a `useEffect` keyed on `visible`,
+    relying on the dependency array itself to only fire on actual
+    `visible` changes (a true-to-false transition re-fires the effect
+    too, but is filtered out by the same `visible &&` guard the
+    original used), with the same mount-skip treatment as
+    `componentDidUpdate`-style effects elsewhere in this batch. **Two
+    preserved-verbatim quirks**, both grep-verified against the
+    original: `decriptionArea`'s hardcoded `if (true)` (with a comment
+    showing the condition it used to be) unconditionally shows that
+    section; `screenshotArea`'s bare `<text>` tag (an SVG element used
+    outside any `<svg>`, echoing a quirk already found and preserved in
+    `AccountSignedMessages.tsx` earlier this migration) renders the
+    *literal string* `"this.state.imageURI"`, not an interpolated
+    `{state.imageURI}` - almost certainly a typo, not corrected here.
+    Also noted: `ReportModal` is not imported or referenced anywhere
+    else in the codebase (grep-verified) - ported faithfully regardless,
+    since removing genuinely orphaned components is a Phase 9 concern,
+    not part of a mechanical Phase 8 port.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~141 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` now fully ported: `Modal/`
-  (12 more), `Blockchain/` non-operations (~13), `Registration/` (11),
+  (9 more), `Blockchain/` non-operations (~13), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
