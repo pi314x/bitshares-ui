@@ -5071,10 +5071,78 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~132 more `.jsx` files outside
+- `Blockchain/` batch 1 (4 files, the first of this directory's
+  non-operations long tail; `Blockchain/operations/` is ported
+  separately and untouched here): `FeesContainer.jsx`, `Fees.jsx`,
+  `BlockContainer.jsx`, `Block.jsx` → `.tsx`. Grouped together because
+  `FeesContainer` imports `Fees` and `BlockContainer` imports `Block` -
+  importer and imported ported together, in one commit, by the same
+  agent.
+  - `FeesContainer.tsx`/`BlockContainer.tsx`: both were trivial
+    `AltContainer`-only wrappers (no `BindToChainState`) - replaced by
+    this migration's standard `useAltStore` adapter hook
+    (`SettingsStore`/`BlockchainStore` respectively), the same
+    replacement already used throughout `Explorer/`. `FeesContainer`'s
+    original `inject.settings` was a *static* value (evaluated once at
+    `render()` time, so effectively frozen until the rarely-remounted
+    parent re-rendered) while `BlockContainer`'s `inject.blocks` was a
+    *function* (`() => BlockchainStore.getState().blocks`, so always
+    fresh on every store change) - `useAltStore` makes both always-fresh,
+    a strict improvement for `FeesContainer` that its one real caller
+    (`Explorer.tsx`'s tab list, mounting it with no props) can't observe
+    as a regression. `BlockContainer.tsx` keeps the original's missing
+    `parseInt` radix on `txIndex` (present on `height`) verbatim.
+  - `Fees.tsx`: `FeeGroup = BindToChainState(FeeGroup)` (required
+    `globalObject: ChainTypes.ChainObject.isRequired`, `defaultProps:
+    {globalObject: "2.0.0"}`, never actually passed by this file's one
+    caller so always resolves the default) becomes a `FeeGroup`
+    (container) + `FeeGroupCore` split via `ChainStore.getObject` +
+    `useChainStoreTick()`, gated on `undefined` only (a resolved `null`
+    renders through), blank `<span/>` fallback (no `tempComponent`/
+    `show_loader` at the wrap site). Its `shouldComponentUpdate` (pure
+    `Immutable.is` guard, no side effect) dropped entirely. `settings`/
+    `opIds`/`title` are plain props BindToChainState never touched -
+    unchanged. `Fees` itself (no state/lifecycle) became a plain function.
+  - `Block.tsx`: `TransactionList`'s `shouldComponentUpdate` (pure
+    `block.id` guard) dropped entirely, same reasoning. `Block =
+    BindToChainState(Block)` (required
+    `dynGlobalObject: ChainTypes.ChainObject.isRequired`; `blocks`/
+    `height` are plain, non-`ChainTypes` `PropTypes.object.isRequired`/
+    `PropTypes.number.isRequired`, so `BindToChainState` never gated on
+    them) becomes `Block` (container, kept as the default export name
+    since every real caller does `import Block from "./Block"`) +
+    `BlockCore`, same gating pattern as `FeeGroup` above. `Block`'s own
+    `shouldComponentUpdate` (compares the same four values `render()`
+    actually depends on) dropped entirely. `componentDidMount` → a
+    mount-only effect (fetch the initial block; register the two global
+    `react-scroll` listeners, including the already-inert "begin" one -
+    kept rather than dropped, since removing a live registration on a
+    shared event emitter is an observable change the original didn't
+    make; no `.deregister()` on unmount, preserved verbatim).
+    `UNSAFE_componentWillReceiveProps` → a mount-skip effect on
+    `[height]`. Hooks-forced judgment call (documented in the file
+    header): the original's `_getBlock` there reads `this.props.blocks`
+    from *before* the incoming prop update commits, while the hook
+    version necessarily reads the current, already-updated `blocks` -
+    inconsequential in practice since `BlockchainStore`'s block cache
+    only ever grows. `componentDidUpdate` → a dependency-less, mount-skip
+    effect (re-runs after every update, exactly like the original).
+    Legacy string ref (`ref="blockInput"`) → `React.useRef
+    <HTMLInputElement>`. Method names had their `_` prefix dropped
+    (`_getBlock` → `getBlock`, etc.), matching this migration's
+    established convention.
+  - Not security-sensitive per AGENTS.md: grepped all four files for
+    `WalletApi`, `WalletDb`, `ApplicationApi`, `.add_type_operation`,
+    `process_transaction` - none appear; all four are read-only
+    fee-schedule/block-explorer display components.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~128 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` and `Modal/` now fully
-  ported: `Blockchain/` non-operations (~13), `Registration/` (11),
+  ported: `Blockchain/` non-operations (~9), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
