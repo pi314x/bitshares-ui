@@ -6815,6 +6815,88 @@ compromise, not silent scope-narrowing.
     exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
   - `Account/CreditOffer/` is now fully ported (7/7 files).
+- `Showcases/` batch 3 (2 files, out of the directory's 6): `DirectDebit.jsx`
+  → `DirectDebit.tsx`, `Showcase.jsx` → `Showcase.tsx`. Two other batches
+  were ported concurrently by separate background agents in this same
+  directory (`Barter.jsx` alone; `Borrow.jsx`+`Htlc.jsx` together) and may
+  land as separate commits around this one; `ShowcaseGrid.jsx` is held
+  back for the orchestrating session, since it imports `Showcase.jsx` and
+  depends on all 4 of the other files in the directory being ported first.
+  - `DirectDebit.jsx` is security-sensitive per AGENTS.md: it dispatches a
+    real on-chain transaction via `ApplicationApi.deleteWithdrawPermission(
+    permission.id, permission.withdraw_from_account,
+    permission.authorized_account)` from `handleDeleteProposal` (a
+    payer deleting their own mandate) - grep-confirmed the file's only
+    `ApplicationApi.*` call site; creating/updating a mandate and claiming
+    a period's payment are delegated entirely to the already-ported
+    `<DirectDebitModal>`/`<DirectDebitClaimModal>`, which build/broadcast
+    their own operations independently. The argument-construction call
+    site is preserved byte-for-byte. No password/private-key/brainkey
+    material is read or logged anywhere in the file (every `console.*`
+    call grepped: a typo'd `console.log("delete permissin")`, `console.log
+    ("first period is not started")`, and `console.error(err)` - none logs
+    credential material). `Showcase.jsx` is a small presentational leaf
+    (verified by reading it, not assumed) - not security-sensitive.
+  - `DirectDebit.jsx`'s `componentDidMount() { this._update(); }` and its
+    no-argument `UNSAFE_componentWillReceiveProps() { this._update(); }`
+    (inspects nothing, but `_update` itself only ever reads
+    `props.currentAccount`) are combined into one
+    `useEffect(() => { update(); }, [currentAccount])`, deliberately NOT a
+    bare no-dependency-array effect (unlike `Dashboard/
+    SimpleDepositWithdraw.tsx`'s `componentDidUpdate() {
+    ReactTooltip.rebuild(); }` precedent) - `componentWillReceiveProps`,
+    with or without inspecting its argument, only fires on new props from
+    the parent, never from this component's own `setState`, whereas a
+    no-deps effect would also re-run after every internal state change
+    (filter keystrokes, modal open/close), re-issuing the two
+    `Apis.instance().db_api().exec(...)` network calls on each one - a
+    real behavior change the original never had. Keying the effect on
+    `[currentAccount]` (the only prop `_update` reads) reproduces "once on
+    mount, then again whenever a relevant prop changes" without that
+    regression.
+  - Dropped as confirmed dead: the `Switch`/`Tooltip` imports from
+    `bitshares-ui-style-guide` in `DirectDebit.jsx` (grepped: neither name
+    appears anywhere else in the file outside the import list).
+  - Preserved verbatim, not "fixed": `DirectDebit.jsx`'s `dataSource
+    .filter(...)` call (meant to apply `filterString`) never assigns its
+    result back to `dataSource`, so the `<Table>` always renders the full,
+    unfiltered list - a pre-existing no-op; the "Claimed" column's
+    `sorter` reads `a.rawData...` for both `available1` and `available2`
+    (never `b`), making it an always-`0`, always-a-no-op sort - its now-
+    unused second parameter is dropped rather than kept as an
+    underscore-prefixed placeholder, since this project's eslint config
+    has no `argsIgnorePattern` for `@typescript-eslint/no-unused-vars`;
+    antd's `<Table>` sorter type accepts a function declared with fewer
+    parameters than it's actually called with, so this has no behavioral
+    effect. `hideModal`'s `setState({..., operation: null})` patches a
+    state field that's never part of the initial state and never read in
+    `render()` - grep-confirmed dead but harmless, kept as an inert,
+    optional `DirectDebitState` field rather than dropped.
+  - `Showcase.jsx`'s `disabled` prop is declared `PropTypes.bool` but
+    `render()` also branches on `typeof this.props.disabled == "string"`
+    (using a truthy string as the `Tooltip` title) - preserved verbatim by
+    typing `disabled?: boolean | string` rather than narrowing it to just
+    `boolean`; not currently exercised by `ShowcaseGrid.jsx`'s call sites,
+    which only ever pass a `bool`.
+  - TS-forced adjustment: `Showcase.jsx`'s two `tabIndex={"0"}` (string)
+    values become `tabIndex={0}` (number) - React's `tabIndex` prop type
+    is `number` and TypeScript's JSX typings reject a string literal
+    there; the rendered `tabindex="0"` DOM attribute is unchanged.
+  - Both old `.jsx` originals removed in this commit (`git rm`). `App.jsx`
+    lazy-loads `DirectDebit.tsx` via its existing extensionless
+    `./components/Showcases/DirectDebit` import path, unaffected by the
+    extension change; `Showcase.jsx`'s only importer,
+    `ShowcaseGrid.jsx` (out of scope, held back), imports it via an
+    extensionless relative path too, transparently resolved across
+    `.jsx`/`.tsx` by webpack/Babel (`tsconfig.json`'s `checkJs: false`
+    means `tsc` never type-checks that one remaining `.jsx` importer).
+  - Verified: `npx tsc --noEmit -p .` clean (0 errors repo-wide), `npx
+    eslint app/components/Showcases/DirectDebit.tsx
+    app/components/Showcases/Showcase.tsx` clean (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite green
+    (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
+    exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~70 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
