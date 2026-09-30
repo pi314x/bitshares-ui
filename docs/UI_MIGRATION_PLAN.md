@@ -5851,6 +5851,129 @@ compromise, not silent scope-narrowing.
     files intentionally kept (see above) - not yet wired into the app's
     import graph, since `PredictionMarkets.jsx` still imports the old
     `.jsx` versions.
+- `PredictionMarkets/` batch 2 (2 files, out of the directory's 7):
+  `CreateMarketModal.jsx`, `AddOpinionModal.jsx` → `.tsx`. Both
+  security-sensitive per AGENTS.md: `CreateMarketModal.tsx`'s
+  `createAsset` builds and submits the on-chain `AssetActions
+  .createAsset(...)` call that creates the new prediction-market asset;
+  `AddOpinionModal.tsx`'s `createOrder` builds and submits on-chain order
+  transactions via `MarketsActions.createLimitOrder2(...)` (buy/"yes"
+  path) and `MarketsActions.createPredictionShort(...)` (short-and-sell/
+  "no" path) - all transaction-building logic (argument order, values,
+  and the `Asset`/`Price`/`LimitOrderCreate`/flag/permission computations
+  feeding it) transcribed verbatim; nothing sensitive is logged in either
+  file. This completes the second of two concurrent partial batches on
+  this directory (batch 1, landed separately: `ResolveModal.jsx`,
+  `PredictionMarketDetailsTable.jsx`, `PredictionMarketsOverviewTable
+  .jsx`) - no file overlap between the two. `PredictionMarkets.jsx`/
+  `PMAssetsContainer.jsx` - which import every file in this directory,
+  including both batches' - are still deliberately untouched, pending a
+  later step once both batches have landed. Per that plan, **the old
+  `.jsx` originals are intentionally left in place** alongside the new
+  `.tsx` files for this commit (not `git rm`'d) - `PredictionMarkets.jsx`
+  still imports the `.jsx` versions by their extensionless paths, and
+  only the `PredictionMarkets.jsx`/`PMAssetsContainer.jsx` conversion step
+  will remove them. Confirmed via `grep -rn` across `app` that no file
+  other than `PredictionMarkets.jsx` imports either of these two
+  components.
+  - Both files: `class X extends Modal` extended antd's `Modal` class
+    component directly (`bitshares-ui-style-guide`'s `Modal` export is a
+    bare re-export of `antd`'s `Modal`, verified by reading
+    `node_modules/bitshares-ui-style-guide/app/bitshares-ui-style-guide
+    /Modal/index.js` and antd's own `Modal.js`, which defines no
+    lifecycle method besides `render()`) - since each file's own
+    `render()` unconditionally overrides antd's, this is behaviorally
+    identical to `extends React.Component`; ported as plain function
+    components rendering `<Modal>` as a child element, matching every
+    other Modal-rendering file in this migration. Neither file used
+    `connect()`/`BindToChainState`, and neither needs a `stateRef` mirror
+    - every handler is only invoked from a freshly-rendered closure in
+    direct response to user interaction, so it always sees state as of
+    the latest render (same reasoning as `Modal/SettleModal.tsx`).
+  - `CreateMarketModal.tsx`: no `componentDidMount`/`componentDidUpdate`/
+    `shouldComponentUpdate` in the original. `PropTypes` replaced by an
+    interface; `currentAccount`/`symbols` weren't marked `.isRequired`
+    even though the code uses both without a null guard - kept optional
+    to match the original's actual (unguarded) prop types, with an
+    `as any` cast at each unguarded use site rather than adding a
+    defensive check that wasn't there. Preserved verbatim, not "fixed" -
+    a real bug: `onSubmit` called `this._createAsset().call(this)`, i.e.
+    it *invoked* `_createAsset()` first (dispatching the actual
+    `AssetActions.createAsset(...)` call synchronously, exactly as
+    intended), then tried to call `.call(this)` on the `undefined`
+    `_createAsset()` returns (it has no `return` statement) - always
+    throwing `TypeError: Cannot read properties of undefined (reading
+    'call')` immediately afterwards, with no other observable effect
+    (the request has already been dispatched by that point; a synchronous
+    throw from a React onClick handler just stops there). TypeScript
+    can't compile a literal `.call()` on `createAsset()`'s `void` return,
+    so it's reproduced via an explicit `as any` cast on the call
+    expression, preserving the exact same runtime throw. Also TS-forced:
+    `handleChange`'s dynamic `marketOptions[event.target.name] = ...` /
+    `marketOptions.description[event.target.name] = ...` writes need
+    `as any` on the indexed object, since the field name comes from the
+    DOM event rather than a literal.
+  - `AddOpinionModal.tsx`: `PropTypes`/`ChainTypes.ChainAccount
+    .isRequired` replaced by an interface; `currentAccount` is typed as
+    the resolved Immutable account object (`any`), matching the one real
+    caller. `opinion` (declared in `propTypes`/`defaultProps` but
+    grep-confirmed never read anywhere in the file) is dropped, along
+    with the now-unused `ChainTypes`/`PropTypes` imports and three
+    grep-confirmed-dead imports the original never used at all:
+    `Switch` (from `bitshares-ui-style-guide`), `ChainStore`/`FetchChain`
+    (from `bitsharesjs`). `componentDidMount` (calls
+    `_updateStateFromProps()` unconditionally on mount) and
+    `componentDidUpdate` (calls the same function, but only when
+    `preselectedOpinion`/`preselectedAmount`/`preselectedProbability`
+    changed) collapse into a single `useEffect` keyed on those three
+    props with *no* mount-skip guard - an ordinary `useEffect` already
+    fires once on mount (reproducing `componentDidMount`) and again
+    whenever a dependency changes (reproducing `componentDidUpdate`'s
+    gating), since both lifecycle methods delegate to the identical
+    function. Preserved verbatim, not "fixed" - two real bugs in the
+    original's state keys: (1) `handleAmountChange`/
+    `handleProbabilityChange` mutate `state.newOpinionParameters` *in
+    place* and then call `setState({newOpinionParameter: ...})` -
+    misspelled, missing the trailing "s", so neither call actually
+    patches the real `newOpinionParameters` key; since `setState` always
+    triggers a re-render regardless of which keys it patches, and the
+    mutated object already *is* `state.newOpinionParameters` by
+    reference, the displayed value still updates correctly - reproduced
+    by mutating the object referenced by `state.newOpinionParameters` in
+    place and then forcing a re-render, without needing to include that
+    key in the patch either. (2) The initial state's `wrongPropability:
+    false` (misspelled "Propability") is grep-confirmed dead - never read
+    anywhere - while `handleProbabilityChange` instead sets
+    `wrongProbability` (correctly spelled, a *different* key, never
+    given an initial value in the original, so it started as `undefined`
+    until the first call), which is what `render()` actually reads; the
+    dead misspelled field is dropped, and the real field is initialized
+    to `false` here (behaviorally identical to the original's implicit
+    `undefined` for every check it feeds). TS-forced fix (an undeclared-
+    identifier bug, same category as `Modal/DirectDebitModal.tsx`'s
+    `balance_fee`): the `createPredictionShort(...).then()` error-
+    notification branch references `buyAssetAmount`/`buyAsset.symbol`,
+    neither ever declared anywhere in the file - in the original this is
+    a real `ReferenceError` whenever that branch runs, silently swallowed
+    as an unhandled promise rejection (no `.catch` on this particular
+    `.then()`, unlike the buy branch), so no notification is ever shown
+    for a failed short-and-sell order. TypeScript refuses to compile a
+    reference to an undeclared identifier at all, so `buyAssetAmount`/
+    `buyAsset` are declared as `let ...: any` (both `undefined`,
+    matching their original implicit value) immediately before use -
+    `buyAsset.symbol` then still throws (a `TypeError` rather than the
+    original's `ReferenceError`, but with the same observable outcome:
+    the branch stays broken, no notification ever appears), the closest
+    technically-possible reproduction of "this branch has always been
+    dead" rather than silently fixing it into a working notification.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors. Old `.jsx` files
+    intentionally kept (see above) - not yet wired into the app's import
+    graph, since `PredictionMarkets.jsx` still imports the old `.jsx`
+    versions.
 - Remaining long tail (~91 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
