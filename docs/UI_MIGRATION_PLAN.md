@@ -5374,14 +5374,72 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~114 more `.jsx` files outside
+- `Registration/` batch 2 (3 files): `AccountRegistration.jsx`,
+  `AccountRegistrationForm.jsx`, `AccountRegistrationConfirm.jsx` →
+  `.tsx`.
+  - `AccountRegistration.tsx`: not security-sensitive itself (only holds
+    UI-flow state and forwards `accountName`/`password` to its two
+    children, which are the files that actually touch `WalletDb`/
+    `AccountActions`). `UNSAFE_componentWillMount`
+    (`SettingsActions.changeSetting`) + `componentDidMount`
+    (`ReactTooltip.rebuild()`) combined into one mount-only `useEffect`
+    (both independent, unconditional side effects). `shouldComponentUpdate`
+    (pure `are_equal_shallow` guard) dropped.
+  - `AccountRegistrationForm.tsx`: security-sensitive per AGENTS.md -
+    `state.generatedPassword` is a real auto-generated wallet password
+    (`` `P${key.get_random_key().toWif()}` ``), computed once via a
+    `useState` lazy initializer (matching `Account/CreateAccountPassword
+    .tsx`'s established pattern), never logged (grepped, zero
+    `console.*` calls in this file). `connect(Component, {listenTo:
+    [AccountStore], getProps: () => ({})})` - `getProps` returns nothing,
+    so its only real effect is forcing a re-render on `AccountStore`
+    changes (the component reads `AccountStore.getMyAccounts()` directly
+    in render) - replicated with `useAltStore(AccountStore)` called
+    purely for that re-render side effect. Dropped as confirmed dead:
+    `this.accountNameInput = null` (constructor-only, never read again),
+    and `isValid()`'s `if (!WalletDb.getWallet()) { valid = valid; }` - a
+    self-assignment with zero effect either way (also something
+    `no-self-assign` would reject outright), taking the now-unused
+    `WalletDb` import with it.
+  - `AccountRegistrationConfirm.tsx`: security-sensitive per AGENTS.md -
+    `createAccount` calls `AccountActions.createAccountWithPassword(name,
+    password, ...)` with the raw password, and `unlockAccount` calls
+    `WalletDb.validatePassword(password, true, name)` directly -
+    transcribed verbatim; the file's one `console.log` only logs the
+    error object, never the password. Same `connect`→`useAltStore`
+    re-render-only treatment as `AccountRegistrationForm.tsx`.
+    `shouldComponentUpdate` (pure `state.confirmed` comparison) dropped.
+    **Significant dead-code finding** (traced, not assumed): `state
+    .registrarAccount` is read in `createAccount` but never initialized
+    in the constructor and never set anywhere else in the file (not a
+    prop either) - it is always `undefined`, making the entire `if
+    (this.state.registrarAccount)` branch, including the `onFinishConfirm`
+    method and the `TransactionConfirmStore.listen(this.onFinishConfirm)`
+    call that would be the only thing to ever invoke it, permanently
+    unreachable - dropped that whole branch and `onFinishConfirm`,
+    keeping only the always-taken `else` branch's body inline.
+    `props.toggleConfirmed` (passed by the real caller, declared in the
+    original's `propTypes`) is never read - the class has its own
+    same-named `toggleConfirmed` handler for its own local checkbox
+    state, shadowing the prop entirely - kept as accepted-but-unused.
+    **Preserved verbatim, not "fixed"**: the "copy password" button reads
+    `this.state.generatedPassword`, a state field that belongs to the
+    *sibling* file (`AccountRegistrationForm`) and was never declared or
+    set in this component - it's always `undefined` here (a real,
+    pre-existing copy-paste bug), while the `<Input.TextArea>` right
+    above it correctly shows the real password via `props.password` -
+    the field is declared in the TS state interface purely so the
+    reference compiles, and is deliberately never populated.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~111 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, and `Blockchain/`
   non-operations now fully ported:
-  `Registration/` (6 more: `AccountRegistration.jsx`,
-  `AccountRegistrationForm.jsx`, `AccountRegistrationConfirm.jsx`,
-  `WalletRegistration.jsx`, `WalletRegistrationConfirm.jsx`,
-  `WalletRegistrationForm.jsx`),
+  `Registration/` (3 more: `WalletRegistration.jsx`,
+  `WalletRegistrationConfirm.jsx`, `WalletRegistrationForm.jsx`),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.

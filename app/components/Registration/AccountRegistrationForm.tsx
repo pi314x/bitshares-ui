@@ -1,114 +1,145 @@
-import React from "react";
-import PropTypes from "prop-types";
-import {connect} from "alt-react";
+// TypeScript/functional-component port of the legacy
+// AccountRegistrationForm.jsx (Phase 8, docs/UI_MIGRATION_PLAN.md).
+// Mechanical, no logic changes.
+//
+// Security-sensitive per AGENTS.md: `state.generatedPassword` is a real
+// wallet password, auto-generated once via `bitsharesjs`'s `key` module
+// (`` `P${key.get_random_key().toWif()}` ``) - computed once through a
+// `useState` lazy initializer (matching the established pattern from
+// `Account/CreateAccountPassword.tsx`), never logged (grepped this file
+// for `console.` - no matches at all), only ever rendered into a
+// disabled, copy-only text area and forwarded to `props.continue(...)`
+// on submit, exactly as the original did.
+//
+// `connect(AccountRegistrationForm, {listenTo: [AccountStore], getProps:
+// () => ({})})` - `getProps` returns an empty object, so the only
+// observable effect of this `connect` wrap is forcing a re-render
+// whenever `AccountStore` changes (the component reads `AccountStore
+// .getMyAccounts()` directly in its render body, not through props) -
+// replicated with `useAltStore(AccountStore)`, called purely for its
+// re-render-on-change side effect (its returned state is intentionally
+// unused, matching the original's empty `getProps()`).
+//
+// `UNSAFE_componentWillMount` (dispatches `SettingsActions.changeSetting`)
+// and `componentDidMount` (`ReactTooltip.rebuild()`) are combined into one
+// mount-only `useEffect`, same treatment as `AccountRegistration.tsx`.
+// `shouldComponentUpdate` (a pure `are_equal_shallow` guard) dropped - no
+// hooks equivalent, never changes final rendered output.
+//
+// Dropped as confirmed dead (grepped):
+// - `this.accountNameInput = null` (constructor-only, never read or
+//   reassigned anywhere else in the file).
+// - `isValid()`'s `if (!WalletDb.getWallet()) { valid = valid; }` - a
+//   self-assignment with zero effect regardless of whether the branch is
+//   taken (also something a linter's `no-self-assign` rule would reject
+//   outright in this ported form) - dropped as a provably inert no-op,
+//   not merely "probably dead," taking the now-unused `WalletDb` import
+//   with it.
+import * as React from "react";
 import AccountStore from "stores/AccountStore";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {ChainStore, key} from "bitsharesjs/es";
+import {ChainStore, key} from "bitsharesjs";
 import ReactTooltip from "react-tooltip";
-import utils from "common/utils";
 import SettingsActions from "actions/SettingsActions";
-import WalletDb from "stores/WalletDb";
 import AccountNameInput from "./../Forms/AccountNameInputStyleGuide";
 import AccountSelect from "../Forms/AccountSelect";
 import LoadingIndicator from "../LoadingIndicator";
 import Icon from "../Icon/Icon";
 import CopyButton from "../Utility/CopyButton";
 import {Form, Input, Button, Tooltip} from "bitshares-ui-style-guide";
+import {useAltStore} from "../../next/hooks/useAltStore";
 
-class AccountRegistrationForm extends React.Component {
-    static propTypes = {
-        continue: PropTypes.func.isRequired
-    };
+interface AccountRegistrationFormState {
+    validAccountName: boolean;
+    accountName: string;
+    registrarAccount: any;
+    loading: boolean;
+    generatedPassword: string;
+    confirmPassword: string;
+    passwordConfirmed?: boolean;
+}
 
-    constructor() {
-        super();
-        this.state = {
+interface AccountRegistrationFormProps {
+    continue: (result: {accountName: string; password: string}) => void;
+}
+
+function AccountRegistrationForm({continue: onContinue}: AccountRegistrationFormProps) {
+    useAltStore<any>(AccountStore);
+
+    const [state, setState] = React.useState<AccountRegistrationFormState>(
+        () => ({
             validAccountName: false,
             accountName: "",
             registrarAccount: null,
             loading: false,
-            generatedPassword: `P${key.get_random_key().toWif()}`,
+            generatedPassword: `P${(key as any).get_random_key().toWif()}`,
             confirmPassword: ""
-        };
-        this.onSubmit = this.onSubmit.bind(this);
-        this.onRegistrarAccountChange = this.onRegistrarAccountChange.bind(
-            this
-        );
-        this.onAccountNameChange = this.onAccountNameChange.bind(this);
-        this.onConfirmation = this.onConfirmation.bind(this);
-        this.accountNameInput = null;
-    }
+        })
+    );
 
-    UNSAFE_componentWillMount() {
-        SettingsActions.changeSetting({
+    const mergeState = (patch: Partial<AccountRegistrationFormState>) =>
+        setState(prev => ({...prev, ...patch}));
+
+    React.useEffect(() => {
+        (SettingsActions as any).changeSetting({
             setting: "passwordLogin",
             value: true
         });
-    }
+        (ReactTooltip as any).rebuild();
+    }, []);
 
-    componentDidMount() {
-        ReactTooltip.rebuild();
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !utils.are_equal_shallow(nextState, this.state);
-    }
-
-    onAccountNameChange(e) {
-        const state = {};
+    const onAccountNameChange = (e: any) => {
+        const patch: Partial<AccountRegistrationFormState> = {};
         if (e.valid !== undefined) {
-            state.validAccountName = e.valid;
+            patch.validAccountName = e.valid;
         }
         if (e.value !== undefined) {
-            state.accountName = e.value;
+            patch.accountName = e.value;
         }
-        this.setState(state);
-    }
+        mergeState(patch);
+    };
 
-    onRegistrarAccountChange(registrarAccount) {
-        this.setState({registrarAccount});
-    }
+    const onRegistrarAccountChange = (registrarAccount: any) => {
+        mergeState({registrarAccount});
+    };
 
-    onSubmit(e) {
-        e.preventDefault();
-        if (this.isValid()) {
-            this.props.continue({
-                accountName: this.state.accountName,
-                password: this.state.generatedPassword
-            });
-        }
-    }
-
-    onConfirmation(e) {
-        const value = e.currentTarget.value;
-        this.setState({
-            confirmPassword: value,
-            passwordConfirmed: value === this.state.generatedPassword
-        });
-    }
-
-    isValid() {
-        const firstAccount = AccountStore.getMyAccounts().length === 0;
-        let valid = this.state.validAccountName;
-        if (!WalletDb.getWallet()) {
-            valid = valid;
-        }
+    const isValid = () => {
+        const firstAccount = (AccountStore as any).getMyAccounts().length === 0;
+        let valid: any = state.validAccountName;
         if (!firstAccount) {
-            valid = valid && this.state.registrarAccount;
+            valid = valid && state.registrarAccount;
         }
         return valid;
-    }
+    };
 
-    renderAccountCreateForm() {
-        const {registrarAccount} = this.state;
+    const onSubmit = (e: any) => {
+        e.preventDefault();
+        if (isValid()) {
+            onContinue({
+                accountName: state.accountName,
+                password: state.generatedPassword
+            });
+        }
+    };
 
-        const myAccounts = AccountStore.getMyAccounts();
+    const onConfirmation = (e: any) => {
+        const value = e.currentTarget.value;
+        mergeState({
+            confirmPassword: value,
+            passwordConfirmed: value === state.generatedPassword
+        });
+    };
+
+    const renderAccountCreateForm = () => {
+        const {registrarAccount} = state;
+
+        const myAccounts = (AccountStore as any).getMyAccounts();
         const firstAccount = myAccounts.length === 0;
-        const valid = this.isValid();
+        const valid = isValid();
         let isLTM = false;
         const registrar = registrarAccount
-            ? ChainStore.getAccount(registrarAccount)
+            ? (ChainStore as any).getAccount(registrarAccount)
             : null;
         if (registrar) {
             if (registrar.get("lifetime_referrer") === registrar.get("id")) {
@@ -117,23 +148,23 @@ class AccountRegistrationForm extends React.Component {
         }
 
         const getConfirmationPasswordHelp = () => {
-            return this.state.confirmPassword && !this.state.passwordConfirmed
+            return state.confirmPassword && !state.passwordConfirmed
                 ? counterpart.translate("wallet.confirm_error")
                 : "";
         };
 
-        const getConfirmationPasswordValidateStatus = () => {
-            return this.state.confirmPassword && !this.state.passwordConfirmed
+        const getConfirmationPasswordValidateStatus = (): any => {
+            return state.confirmPassword && !state.passwordConfirmed
                 ? "error"
                 : "";
         };
 
         return (
             <div>
-                <Form onSubmit={this.onSubmit} layout={"vertical"}>
+                <Form onSubmit={onSubmit} layout={"vertical"}>
                     <AccountNameInput
                         cheapNameOnly={firstAccount}
-                        onChange={this.onAccountNameChange}
+                        onChange={onAccountNameChange}
                         accountShouldNotExist
                         placeholder={counterpart.translate("account.name")}
                         label={
@@ -166,32 +197,15 @@ class AccountRegistrationForm extends React.Component {
                             style={{paddingRight: "50px"}}
                             rows={2}
                             id="password"
-                            value={this.state.generatedPassword}
+                            value={state.generatedPassword}
                         />
                         <CopyButton
-                            text={this.state.generatedPassword}
+                            text={state.generatedPassword}
                             tip="tooltip.copy_password"
                             dataPlace="top"
                             className="button registration-layout--copy-password-btn"
                         />
                     </Form.Item>
-                    {/*<span className="inline-label generated-password-field">*/}
-                    {/*<textarea*/}
-                    {/*id="password"*/}
-                    {/*rows="2"*/}
-                    {/*readOnly*/}
-                    {/*disabled*/}
-                    {/*defaultValue={this.state.generatedPassword}*/}
-                    {/*/>*/}
-                    {/*<CopyButton*/}
-                    {/*text={this.state.generatedPassword}*/}
-                    {/*tip="tooltip.copy_password"*/}
-                    {/*dataPlace="top"*/}
-                    {/*/>*/}
-                    {/*</span>*/}
-                    {/*<label className="left-label" htmlFor="confirmPassword">*/}
-                    {/*<Translate content="wallet.confirm_password" />*/}
-                    {/*</label>*/}
                     <Form.Item
                         label={counterpart.translate("wallet.confirm_password")}
                         help={getConfirmationPasswordHelp()}
@@ -204,25 +218,10 @@ class AccountRegistrationForm extends React.Component {
                             type="password"
                             name="password"
                             id="confirmPassword"
-                            value={this.state.confirmPassword}
-                            onChange={this.onConfirmation}
+                            value={state.confirmPassword}
+                            onChange={onConfirmation}
                         />
                     </Form.Item>
-                    {/*<span className="inline-label">*/}
-                    {/*<input*/}
-                    {/*type="password"*/}
-                    {/*name="password"*/}
-                    {/*id="confirmPassword"*/}
-                    {/*value={this.state.confirmPassword}*/}
-                    {/*onChange={this.onConfirmation}*/}
-                    {/*/>*/}
-                    {/*</span>*/}
-                    {/*{this.state.confirmPassword &&*/}
-                    {/*!this.state.passwordConfirmed ? (*/}
-                    {/*<div className="has-error">*/}
-                    {/*<Translate content="wallet.confirm_error" />*/}
-                    {/*</div>*/}
-                    {/*) : null}*/}
 
                     {firstAccount ? null : (
                         <div className="full-width-content form-group no-overflow">
@@ -232,7 +231,7 @@ class AccountRegistrationForm extends React.Component {
                             <AccountSelect
                                 id="account"
                                 account_names={myAccounts}
-                                onChange={this.onRegistrarAccountChange}
+                                onChange={onRegistrarAccountChange}
                             />
                             {registrarAccount && !isLTM ? (
                                 <div
@@ -244,7 +243,7 @@ class AccountRegistrationForm extends React.Component {
                             ) : null}
                         </div>
                     )}
-                    {this.state.loading ? (
+                    {state.loading ? (
                         <LoadingIndicator type="three-bounce" />
                     ) : (
                         <Button
@@ -252,7 +251,7 @@ class AccountRegistrationForm extends React.Component {
                             type="primary"
                             disabled={
                                 !valid ||
-                                !this.state.passwordConfirmed ||
+                                !state.passwordConfirmed ||
                                 (registrarAccount && !isLTM)
                             }
                         >
@@ -262,10 +261,10 @@ class AccountRegistrationForm extends React.Component {
                 </Form>
             </div>
         );
-    }
+    };
 
-    renderAccountCreateText() {
-        const myAccounts = AccountStore.getMyAccounts();
+    const renderAccountCreateText = () => {
+        const myAccounts = (AccountStore as any).getMyAccounts();
         const firstAccount = myAccounts.length === 0;
 
         return (
@@ -284,23 +283,14 @@ class AccountRegistrationForm extends React.Component {
                 )}
             </div>
         );
-    }
+    };
 
-    render() {
-        return (
-            <div>
-                {this.renderAccountCreateText()}
-                {this.renderAccountCreateForm()}
-            </div>
-        );
-    }
+    return (
+        <div>
+            {renderAccountCreateText()}
+            {renderAccountCreateForm()}
+        </div>
+    );
 }
 
-export default connect(AccountRegistrationForm, {
-    listenTo() {
-        return [AccountStore];
-    },
-    getProps() {
-        return {};
-    }
-});
+export default AccountRegistrationForm;
