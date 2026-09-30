@@ -5474,11 +5474,48 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~108 more `.jsx` files outside
+- Root `components/` batch 1 (3 files): `Help.jsx`, `LoadingIndicator.jsx`,
+  `News.jsx` → `.tsx`. None security-sensitive per AGENTS.md (grepped for
+  `WalletApi`/`WalletDb`/`ApplicationApi`/`.add_type_operation`/
+  `process_transaction`/`PrivateKey`/`brainkey` - none appear).
+  - `Help.tsx`: rendered via several `<Route exact
+    path="/help[/:path1[/:path2[/:path3]]]" component={Help} />` entries
+    in `App.jsx`, which inject `match` as a prop.
+  - `LoadingIndicator.tsx`: **preserved verbatim, not "fixed"**:
+    `state.progress` is initialized to `0` and never updated anywhere
+    (grepped) - the progress-indicator `<span>` always renders "0".
+    Separately, the `with-progress` CSS class is only ever added when
+    `this.progress > 0`, but `this.progress` (no `.state`) is a distinct,
+    never-assigned instance property (almost certainly a typo for the
+    state field above) - always `undefined`, so that branch never runs.
+    A function component has no `this` at all, so this specific broken
+    reference can't be transcribed literally - simplified to the
+    behaviorally identical constant (the class is never added). This is
+    the one case in this migration so far where TypeScript's lack of a
+    `this` context, not its type system, forces a change to an otherwise
+    "preserve every bug verbatim" case. The unreachable `break;`
+    statements after each `case`'s `return` are dropped as syntactically
+    meaningless.
+  - `News.tsx`: `componentDidMount`/`componentWillUnmount` (resize
+    listener) combined into one mount-only `useEffect` with a cleanup
+    function. `@hiveio/hive-js` ships no type declarations - added to
+    `app/types/vendor-shims.d.ts` (the established pattern for such
+    packages) rather than casting at each call site. Preserved verbatim:
+    `smartTitle`'s truncation computes `Math.floor(width - 450) / 6`, not
+    `Math.floor((width - 450) / 6)` - the division happens *after*
+    flooring, which can hand `.slice()` a non-integer end index (silently
+    truncated by `.slice()` itself) - not "fixed" here.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~105 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, and `Registration/` now fully ported:
-  root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
+  root `components/` (6 more: `SyncError.jsx`, `QRAddressScanner.jsx`,
+  `PriceAlertNotifications.jsx`, `InitError.jsx`, `PrivateKeyView.jsx`,
+  `LoginSelector.jsx`), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
 
