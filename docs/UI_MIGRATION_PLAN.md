@@ -5598,12 +5598,67 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~99 more `.jsx` files outside
+- `Forms/` batch 1 (3 files): `MyAccounts.jsx`, `AccountSelect.jsx`,
+  `RefcodeInput.jsx` → `.tsx`. None security-sensitive per AGENTS.md.
+  - `MyAccounts.tsx`: `BindToChainState(MyAccounts)` (required `accounts:
+    ChainTypes.ChainAccountsList`) replaced by the established
+    `resolveAccountsList` + `useChainStoreTick()` Container+Core pattern
+    (per-file local copy, per this migration's self-containment
+    convention) - since the list resolution is always synchronous and
+    never leaves the resolved value `undefined`, there's no "still
+    loading" gate to replicate here (unlike a single `ChainAccount`/
+    `ChainObject` prop).
+  - `AccountSelect.tsx`: `shouldComponentUpdate` (pure props-comparison
+    guard) dropped. `selected` (read in `render()` but never declared in
+    the original's `propTypes`) added to the TS props type as a real,
+    optional prop - grep-verified at least one real caller
+    (`Modal/ProposalModal.tsx`) does pass it. Dropped as confirmed dead
+    (grepped across every file that imports this component, not just
+    this one): the imperative `value()`/`reset()` instance methods and
+    the legacy string ref `ref="account-selector"` - no caller anywhere
+    passes a `ref` to `<AccountSelect>`, so no `forwardRef`+
+    `useImperativeHandle` is needed (unlike `Modal/DepositModal.tsx`/
+    `Modal/SendModal.tsx`, which do have real ref-based callers);
+    `state.selected` goes with them, since `render()` only ever read
+    `props.selected`, never `state.selected`. TS-forced addition: an
+    `id` prop (accepted-but-unused, passed by
+    `Registration/AccountRegistrationForm.tsx`, found via `yarn
+    typecheck` once this component's props became strictly typed).
+  - `RefcodeInput.tsx`: **orphaned** - grepped every file in the app;
+    `RefcodeInput` is referenced only inside comments (an already-
+    disabled `<RefcodeInput>` block in `Account/CreateAccount.tsx`) and
+    never actually imported or rendered anywhere. Ported faithfully
+    regardless, matching this migration's established treatment of
+    orphaned components (e.g. `Modal/ReportModal.tsx`) - removing
+    genuinely orphaned files is a Phase 9 concern. Notable: the
+    original's `static propTypes` referenced `PropTypes` without ever
+    importing the `prop-types` package - a module-load-time
+    `ReferenceError` had this file ever actually been imported (it never
+    was). Since this migration always replaces `propTypes` with a
+    TypeScript interface rather than literal runtime `PropTypes` objects
+    for every file, this bug simply has no equivalent to preserve or fix
+    here. Dropped as confirmed dead: `value()`/`clear()`, the legacy
+    string ref, and the `placeholder` prop (declared, never read).
+    Preserved verbatim: `isValidRefcode()` always returns `true`, so its
+    "invalid referral code" error branch can never trigger - the
+    original called it with a discarded, never-declared-prop argument,
+    dropped at the call site since TypeScript won't compile an extra
+    argument to a typed zero-parameter function (mechanical, no behavior
+    change, same category as other discarded-bind-arg trims elsewhere in
+    this migration).
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~96 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, and root `components/` now fully
-  ported: `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
-  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
+  ported: `Forms/` (5 more: `PubKeyInput.jsx`, `AccountNameInput.jsx`,
+  `AccountNameInputStyleGuide.jsx`, `PasswordInput.jsx`,
+  `PasswordInputStyleGuide.jsx`), `PredictionMarkets/` (7), `Dashboard/`
+  (7), `Account/CreditOffer/` (7), `Showcases/` (6), and smaller
+  directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
