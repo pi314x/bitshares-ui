@@ -5254,10 +5254,104 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~123 more `.jsx` files outside
+- `Blockchain/` batch 3 (4 files): `BlockTime.jsx`, `Operation.jsx`,
+  `MemoText.jsx`, `AssetOwnerUpdate.jsx` → `.tsx`. Not security-sensitive
+  per AGENTS.md, with one narrow exception: grepped all four files for
+  `WalletApi`/`WalletDb`/`ApplicationApi`/`.add_type_operation`/
+  `process_transaction` - none appear; `MemoText.tsx` calls
+  `PrivateKeyStore.decodeMemo(memo)`, which internally decrypts via
+  `WalletDb.decryptTcomb_PrivateKey` inside `PrivateKeyStore` itself
+  (not in this file) - transcribed verbatim, decrypted text only ever
+  rendered, never logged.
+  - `BlockTime.tsx`: `connect(Component, {listenTo: [BlockchainStore],
+    getProps})` becomes a `BlockTimeContainer`/`BlockTime` (Core) split
+    using `useAltStore(BlockchainStore)`, computing `blockHeader =
+    blockchainState.blockHeaders.get(block_number)` directly in the
+    Container's render body. `UNSAFE_componentWillMount`'s
+    `BlockchainActions.getHeader.defer(...)` (only fired when no
+    `blockHeader` is cached yet) becomes a mount-only `useEffect`,
+    preserving the original's quirk of never re-fetching on a later
+    `block_number` prop change. `shouldComponentUpdate` (a pure boolean
+    guard) dropped entirely, per this migration's standard treatment.
+  - `Operation.tsx`: three original classes. `TransactionLabel`'s
+    `shouldComponentUpdate` (pure guard) dropped. `Row =
+    BindToChainState(Row)` (required `dynGlobalObject:
+    ChainTypes.ChainObject`, `defaultProps: {dynGlobalObject: "2.1.0",
+    tempComponent: "tr"}`) becomes `RowContainer`/`RowCore`, resolving
+    `dynGlobalObject` via `ChainStore.getObject` (defaulting to "2.1.0" -
+    grep-confirmed no real caller ever passes this prop explicitly)
+    under `useChainStoreTick()`, gated on `undefined` with a `<tr />`
+    fallback per the wrap site's `tempComponent: "tr"` (`Row` renders as
+    a `<tr>` inside real `<table>`/`<tbody>` wrappers in
+    `Explorer/Blocks.tsx`, `TransactionConfirm.jsx`, and
+    `Transfer/InvoicePay.tsx`, where a bare `<span/>` fallback would be
+    invalid HTML - exactly what `BindToChainState.jsx`'s own header
+    comment says `tempComponent` exists for). `Row`'s own
+    `shouldComponentUpdate` (pure guard) dropped; its
+    `fee.amount = parseInt(fee.amount, 10)` in-place mutation of the
+    `fee` prop is preserved verbatim. `Operation = connect(Operation,
+    {listenTo: [SettingsStore], getProps})` becomes
+    `OperationContainer`/`OperationCore` using
+    `useAltStore(SettingsStore)` for `marketDirections`, same pattern as
+    `AccountOrders.tsx`. `Operation`'s `defaultProps` (`op: []`,
+    `current: ""`, `block: null`, `hideOpLabel: false`,
+    `csvExportMode: false`) are applied via destructuring defaults, then
+    re-merged into the props object handed to `opComponents(...)`,
+    matching how several already-ported `./operations` components (e.g.
+    `AccountCreate.tsx`) read `props.current`/`props.marketDirections`
+    off it. `Operation`'s own `shouldComponentUpdate` (pure guard)
+    dropped; its paired `UNSAFE_componentWillReceiveProps`
+    (`forceUpdate()` when `marketDirections` changed) dropped too as a
+    forced judgment call - that `forceUpdate()` was already fully
+    redundant in the original, since `shouldComponentUpdate` itself
+    independently re-renders whenever `marketDirections` differs, and a
+    function component re-renders on every prop change regardless.
+  - `MemoText.tsx`: `MemoTextStoreWrapper` (a trivial one-line
+    `connect()` passthrough, no behavior of its own) collapses into a
+    single `MemoTextContainer` using `useAltStore(WalletUnlockStore)`.
+    `MemoText`'s `shouldComponentUpdate` (comparing `memo`/
+    `wallet_locked`) dropped as a pure guard; `wallet_locked` itself was
+    grep-confirmed read *only* inside that dropped guard, never in
+    `render()` - dropped as a value entirely (not forwarded into the
+    Core), since the re-render it existed to trigger after a wallet
+    unlock is achieved instead by `MemoTextContainer` re-rendering
+    unconditionally on every `WalletUnlockStore` change.
+    `componentDidMount`'s `ReactTooltip.rebuild()` becomes a mount-only
+    `useEffect`, called unconditionally before the `!memo` early return
+    per React's rules of hooks.
+  - `AssetOwnerUpdate.tsx`: `BindToChainState(AssetOwnerUpdate)`
+    (required `account`/`currentOwner`, both `ChainTypes.ChainAccount`,
+    no `tempComponent`/`show_loader`) becomes
+    `AssetOwnerUpdateContainer`/`AssetOwnerUpdateCore`. A local
+    `resolveAccount` helper re-implements `BindToChainState.jsx`'s
+    singular `chain_accounts` resolution branch (the "#123" → "1.2.123"
+    shorthand rewrite, and the single-key-Map-with-a-"name" shortcut) -
+    distinct from the `resolveAccountsList` helper already used in
+    `ProposalModal.tsx`/`NestedApprovalState.tsx` for the *list* variant,
+    which has no such special-casing in the original HOC. Both resolved
+    accounts gate the render on `undefined` with a blank `<span/>`
+    fallback (rendered inside a `Panel` in `Asset.tsx`, not a table, so
+    unlike `Operation.tsx`'s `Row` a bare `<span/>` is fine here).
+    `account` is grep-confirmed dead as a *value* in the original class
+    body (declared in `propTypes` only to make `BindToChainState` block
+    rendering until it resolves, never read in `render()`/any method) -
+    still resolved and gated on for that blocking behavior, but not
+    forwarded into the Core. The class's `constructor()` took no `props`
+    argument (never called `super(props)`) - a harmless pre-existing
+    quirk, dropped along with the constructor itself (a function
+    component has none). `onAccountNameChanged(key, name)`/
+    `onAccountChanged(key, account)` were generic, `.bind(this, key)`-
+    partially-applied methods with exactly one real call site each -
+    inlined as two single-purpose handlers.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~119 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` and `Modal/` now fully
-  ported: `Blockchain/` non-operations (~4), `Registration/` (11),
+  ported, `Blockchain/` non-operations now fully ported too:
+  `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
