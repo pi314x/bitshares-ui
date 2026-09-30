@@ -5554,14 +5554,56 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~102 more `.jsx` files outside
+- Root `components/` batch 3 (3 files, completing the directory):
+  `PriceAlertNotifications.jsx`, `PrivateKeyView.jsx`, `LoginSelector.jsx`
+  → `.tsx`.
+  - `PriceAlertNotifications.tsx`: not security-sensitive. This component
+    never renders anything (`render()` always returned `null`) - its
+    whole purpose was a side effect (firing notifications, dispatching
+    `SettingsActions.setPriceAlert`) that the original ran directly
+    inside `render()`, unconditionally, on *every* render including
+    mount - translated to a `useEffect` keyed on `[priceAlert,
+    allMarketStats]` with no mount-skip guard, since the original's
+    behavior already includes the mount case.
+  - `PrivateKeyView.tsx`: security-sensitive per AGENTS.md - `onShow`
+    unlocks the wallet and extracts the raw private key via `WalletDb
+    .getPrivateKey(pubkey).toWif()` into component state so it can be
+    shown/QR-coded - transcribed verbatim, never logged (grepped, zero
+    `console.*` calls). Dropped as confirmed dead: `ref={modalId}` (a
+    dynamic-key legacy string ref, never read). Two TS-forced changes at
+    the `<QrcodeModal>` call site: `state.wif` (`string | null`) cast
+    past that component's `string | undefined` prop type; and its
+    `showModal` prop dropped entirely, since the already-ported
+    `QrcodeModal.tsx` declares no such prop at all (confirmed unread
+    there) - passing it started failing as an excess-property error
+    rather than being silently ignored the way plain JS tolerated it.
+  - `LoginSelector.tsx`: not itself security-sensitive, but its "Unlock"
+    button dispatches `WalletUnlockActions.unlock()` - transcribed
+    verbatim like every other such call site in this migration.
+    `connect(Component, {listenTo: [AccountStore], getProps})` -
+    `currentAccount` is only ever read inside the *already-commented-out*
+    `componentDidUpdate` (kept as an inert comment, matching
+    `Account/CreateAccount.tsx`'s precedent for such blocks) - replicated
+    with a bare `useAltStore(AccountStore)` call for its re-render-only
+    side effect. Dropped as confirmed dead: `state.step` (set once, never
+    read); `onSelect` (never called, taking the otherwise-unused
+    `history` prop with it); the entire `UNSAFE_componentWillMount`/
+    `componentWillUnmount`/`isIncognito(...)` effect (its only purpose
+    was populating `state.incognito`, never read anywhere); `FlagImage`
+    (defined, never referenced in `render()`). Simplified `render()`'s
+    `const translator = require("counterpart");` to reuse the file's own
+    top-level `counterpart` import (the same module either way) rather
+    than a second, redundant `require()` call.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~99 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
-  non-operations, and `Registration/` now fully ported:
-  root `components/` (3 more: `PriceAlertNotifications.jsx`,
-  `PrivateKeyView.jsx`, `LoginSelector.jsx`), `Forms/` (8),
-  `PredictionMarkets/` (7), `Dashboard/` (7), `Account/CreditOffer/` (7),
-  `Showcases/` (6), and smaller directories.
+  non-operations, `Registration/`, and root `components/` now fully
+  ported: `Forms/` (8), `PredictionMarkets/` (7), `Dashboard/` (7),
+  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
