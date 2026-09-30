@@ -7008,6 +7008,116 @@ compromise, not silent scope-narrowing.
     (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
     exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
+- `Showcases/` batch 1 (1 file, out of the directory's 6): `Barter.jsx`
+  (1,592 lines) → `Barter.tsx` (1,838 lines), the largest single file
+  ported so far in this migration. Ported concurrently with two other
+  delegated agents working
+  on the rest of this directory in separate worktrees
+  (`Borrow.jsx`+`Htlc.jsx`; `DirectDebit.jsx`+`Showcase.jsx`) - no file
+  overlap with either batch. `App.jsx` lazy-loads this file directly as a
+  route (`webpackChunkName: "settings"`), not through any sibling
+  `Showcases/` file, so it had no dependency on the other two batches.
+  - Security-sensitive per AGENTS.md: `onSubmit` dispatches
+    `ApplicationApi.transfer_list(transfer_list, state.proposal_fee
+    .asset_id)` - a lower-level transaction-building/broadcasting API (not
+    the usual `XActions.method()` Alt.js dispatcher), building a multi-
+    party "barter" proposal (several transfers bundled into one
+    `proposal_create`). Every line of `transfer_list` construction feeding
+    into it (the escrow-payment leg, per-item `from_barter`/`to_barter`
+    legs, `Asset({real, asset_id, precision}).getAmount()` amount math,
+    `feeAsset`/`propose_account` wiring, the escrow-refund leg) is
+    preserved byte-for-byte - only `this.state.X` → `state.X` and
+    `this.setState(...)` → `mergeState(...)` mechanical substitutions were
+    made. The file's only `console.*` call (`console.log(from_barter)`,
+    inside the on-screen fee-total helper) logs the barter line-item array
+    only, never a password/private key/brainkey, and the file never
+    touches `WalletDb`/wallet-unlock/key-import flows - kept as-is.
+  - `AccountStore` is read only via two imperative
+    `AccountStore.getState().currentAccount` calls (mount-time default,
+    and `onSubmit`'s `proposer`) - grep-confirmed there is no
+    `connect(Barter, {listenTo: [AccountStore], ...})` anywhere in the
+    original (`export default class Barter extends Component` directly),
+    so no `useAltStore` call was added.
+  - **Preserved bug, not fixed**: the original's `render()` defines a
+    local `const fee = from => {...}` (used for the on-screen total-fee
+    display), but `onSubmit` is a separate class method with no access to
+    `render()`'s local scope. `onSubmit`'s escrow-payment fallback,
+    `this.state.escrow_payment_changed ? ... : fee(true)`, therefore
+    references a `fee` identifier genuinely out of scope in that method -
+    a real `ReferenceError: fee is not defined` at runtime, grep-confirmed
+    (`fee` is declared nowhere but inside `render()`). Net effect in
+    production today: clicking "Propose" with escrow enabled and the
+    escrow-payment field never manually touched throws before
+    `ApplicationApi.transfer_list(...)` is ever reached - no transaction
+    is built or broadcast on that path. Porting every method into one
+    shared function-component scope (this migration's standard structure)
+    would *silently cure* this bug, since `onSubmit` and the real `fee`
+    closure would become textual siblings sharing one scope - exactly the
+    kind of silent behavior change AGENTS.md's "preserve every bug/quirk
+    verbatim" rule forbids for this security-sensitive file. Following the
+    exact precedent set in `Wallet/ImportKeys.tsx`'s `_parseWalletJson`
+    (see that file's header comment and this doc's "Eighth slice:
+    Transfer/Send" entry), a small helper, `referenceErrorLikeOriginal
+    (name)`, reproduces the identical *observable* effect (throwing `new
+    ReferenceError(\`${name} is not defined\`)`) at the exact point `fee`
+    would have been evaluated. Unlike `ImportKeys.tsx`'s version (which
+    returns an `Error` for the caller to `throw`), this one has a `never`
+    return type and throws directly, fitting inline in the ternary
+    expression it replaces.
+  - Dropped as dead (grep-confirmed): `onTrxIncluded` (bound in the
+    constructor, defined as a method, but never actually invoked anywhere
+    - not registered as a `TransactionConfirmStore` listener, not called
+    from `onSubmit` or anywhere else) referenced a `TransactionConfirmStore`
+    not imported anywhere in the file (a second, unrelated `ReferenceError`
+    bug, but on a method that's never called, so it never manifests) -
+    dropped entirely. `balanceError()` (checked whether any barter row has
+    a balance error) is also grep-confirmed dead: its only call site is
+    commented out right where `isSubmitNotValid` is built ("//
+    balanceError() ||") - dropped rather than kept as ESLint-flagged inert
+    code.
+  - Dropped as already-inert: `multiplier={from_barter.length}`/
+    `multiplier={to_barter.length}`, passed to three `<FeeAssetSelector>`
+    instances. Neither the already-ported `Utility/FeeAssetSelector.tsx`
+    nor the pre-migration `FeeAssetSelector.jsx` it replaced (checked via
+    `git show` on the commit immediately before that port) ever read a
+    `multiplier` prop - a complete no-op on both sides for as long as
+    `Barter.jsx` has existed. Since editing that already-ported,
+    out-of-scope file isn't permitted here, and the prop never had any
+    effect to lose, it's dropped from all three call sites.
+  - Other preserved quirks (not "fixed"): `state.amount_index`/
+    `amount_counter` are dead state - `amount_index` is read once per
+    render purely to generate React `key`s via a local, per-render
+    `amount_index++`, never written back via `setState`; `amount_counter`
+    is initialized and never read or written anywhere else.
+    `state.hasPoolBalance` (read by the escrow `<AmountSelector>`'s
+    `error` prop) is never present in the initial state and never set by
+    any `setState` call - always `undefined` in practice.
+    `addFromAmount`/`addToAmount` push new barter rows that omit
+    `*_hasPoolBalance`/`*_balanceError` entirely, unlike the initial row.
+    `_checkBalance` has a duplicated, dead `if (!asset || !account)
+    return;` guard, and an unused `fee_asset_id` parameter. The dead
+    `from_barter.length === 500 && to_barter.length === 500` branch
+    (explicitly `// deactivate for now` in the original) is kept, along
+    with its `props.style` read (added to `BarterProps` as a real optional
+    field, undeclared in the original's absent `propTypes`).
+    `checkAmountValid`'s `String.prototype.replace.call(item.from_amount,
+    /,/g, "")` (coercing a possibly-numeric `from_amount` via `ToString`,
+    rather than a direct `.replace()` call) is kept verbatim, cast through
+    `any` only because TypeScript can't resolve `.call` against
+    `replace`'s overloaded signature. `toAmountSelector`'s map callback
+    computes a local `assetSymbol` that's genuinely never read (its
+    `.push()` calls `item.to_asset.get("symbol")` directly instead) - the
+    dead assignment is dropped (ESLint-forced), the redundant `.get(...)`
+    call is kept.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors (verified with
+    `resolve.symlinks: false` temporarily added to `webpack.config.js` for
+    this one local build run only, to work around this worktree's
+    `node_modules` being a symlink to the main checkout, same as prior
+    batches - not committed).
 - Remaining long tail (~70 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
