@@ -5139,10 +5139,125 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~128 more `.jsx` files outside
+- `Blockchain/` batch 2 (5 files): `BidCollateralOperation.jsx`,
+  `AssetPublishFeed.jsx`, `AssetResolvePrediction.jsx`,
+  `ProposedOperation.jsx`, `TransactionConfirm.jsx` → `.tsx`. Ported
+  concurrently with `Blockchain/` batch 1 in a separate worktree; no file
+  overlap, rebased cleanly.
+  - Not security-sensitive per AGENTS.md (`BidCollateralOperation.tsx`,
+    `AssetPublishFeed.tsx`, `AssetResolvePrediction.tsx`,
+    `ProposedOperation.tsx`): grepped all four for `WalletApi`,
+    `WalletDb`, `ApplicationApi`, `.add_type_operation`,
+    `process_transaction` - none appear; each only dispatches a flux
+    action creator (`AssetActions.bidCollateral`/`publishFeed`/
+    `assetGlobalSettle`) or delegates read-only rendering to the
+    already-ported `Blockchain/operations/` directory via `opComponents`.
+  - `BidCollateralOperation.tsx`: a plain class (no `BindToChainState`),
+    wrapped only in the unchanged, out-of-scope `AssetWrapper(Component,
+    {propNames: ["asset", "core"], withDynamic: true})` HOC. Dropped as
+    confirmed dead (grepped): `removeBid()` - fully defined (identical
+    body to `_onBidCollateral` but hard-coded `0, 0` amounts), never
+    called anywhere in the file.
+  - `AssetPublishFeed.tsx`/`AssetResolvePrediction.tsx`: both wrap a
+    single required `account: ChainTypes.ChainAccount.isRequired` via
+    `BindToChainState(Component)`, replaced by a Container+Core split
+    gating on `resolvedAccount === undefined` with a blank `<span/>`
+    fallback, per `BindToChainState.jsx`'s exact "only `undefined` - still
+    resolving - blocks; a resolved `null` renders through" semantics
+    (neither class declares `defaultProps.tempComponent` nor
+    `{show_loader: true}`). `AssetPublishFeed.tsx` is also wrapped in the
+    unchanged, out-of-scope `AssetWrapper(Component)` (default
+    `propNames: ["asset"]`) around the Container, same treatment as
+    `SettleModal.tsx`. Not to be confused with the unrelated,
+    already-ported `Blockchain/operations/AssetPublishFeed.tsx` (a
+    read-only operation-row renderer) - this file is the standalone
+    feed-publishing form rendered by `Asset.tsx`.
+    `AssetResolvePrediction.tsx`'s `shouldComponentUpdate` (pure
+    `asset.id`/state-field guard, no side effect) dropped entirely, per
+    this migration's established precedent.
+  - `ProposedOperation.tsx`: two original classes (`Row`, `ProposedOperation`)
+    become `RowCore` and `ProposedOperation`, both plain functions (no
+    `BindToChainState`/`connect`). Dropped as confirmed dead (grepped):
+    `Row`'s constructor-bound `showDetails` method and its
+    `this.props.history.push(...)` call - defined and bound but never
+    wired to any `onClick`, and no real caller (`OperationAnt.js`,
+    `Blockchain/Transaction.tsx`, `Blockchain/operations/
+    ProposalCreate.tsx`, `Account/Proposals.tsx`) ever passes a `history`
+    prop either. `Row`'s `index`/`block`/`type`/`color`/`hideDate`/
+    `hideOpLabel` props are all passed down by `ProposedOperation` but
+    grep-confirmed never read inside `Row`'s own render body (only `id`,
+    `fee`, `hideFee`, `hideExpiration`, `expiration`, `info` are) - kept
+    as accepted-but-unused fields on `RowCoreProps` (not destructured,
+    so no unused-variable lint issue), matching the original class
+    exactly. In particular, `label_color`/`changeColor` are real, live
+    state (many `./operations` components genuinely call `changeColor(...)`
+    as a side effect, forcing a re-render), but the resulting `color`
+    prop passed down to `Row` is never actually rendered anywhere - an
+    existing, likely-unintended characteristic preserved verbatim rather
+    than "fixed". `opComponents(ops[op[0]], this.props, {...})`'s full
+    effective-props pass-through (including extra caller props this
+    component never itself names, e.g. `inverted`, `proposal`, `result`,
+    `fromComponent`) is reproduced via destructured defaults + `...rest`
+    spread into a reassembled `effectiveProps` object. TS-forced: the
+    original's `csvExportMode` branch read `this.props.key` for a `<div
+    key={...}>` - React never forwards a `key` prop into any component's
+    `props`, always `undefined` at runtime regardless and not nameable on
+    a TS props type - dropped, same precedent as `CreatePoolModal.tsx`'s
+    `SearchListItem` (Modal/ batch 8). `react-router-dom`'s `Link`
+    aliased through `React.ComponentType<any>` (this repo's recurring
+    `@types/react-router-dom` friction, same as `AccountPortfolioList.tsx`).
+  - `TransactionConfirm.tsx`: security-sensitive per AGENTS.md - the
+    app's single global transaction-confirmation dialog (mounted
+    unconditionally in `App.jsx`). `onConfirmClick` is the function that
+    submits a transaction: when `props.propose` is set, it resolves
+    `fee_paying_account` via `ChainStore.getAccount`, awaits
+    `transaction.update_head_block()`, then calls
+    `WalletDb.process_transaction(transaction.propose(propose_options),
+    null, true)`; otherwise it calls `TransactionConfirmActions.broadcast
+    (transaction, resolve, reject)` (the real network submission, inside
+    the unchanged, out-of-scope action) - both transcribed verbatim.
+    `_showQrCode`/`_hideQrCode` render the pending, unsigned transaction
+    as a QR code via `transaction.serialize()` - no keys, passwords or
+    brainkeys are read, logged, or embedded. `connect(TransactionConfirm,
+    {listenTo: () => [TransactionConfirmStore], getProps: () =>
+    TransactionConfirmStore.getState()})` becomes `useAltStore
+    (TransactionConfirmStore)`, read once in the exported wrapper and
+    spread as props into `TransactionConfirmCore`.
+    `shouldComponentUpdate`'s early `if (!nextProps.transaction) return
+    false` branch was investigated closely (this file's lifecycle methods
+    needed the most care per this batch): it is unreachable through any
+    real emitted store update - `transaction` only ever becomes falsy via
+    `TransactionConfirmStore.getInitialState()` (before the first
+    `shouldComponentUpdate` call, which never runs on the initial mount)
+    or via its exported `reset()`, which assigns `this.state` directly
+    rather than through Alt's `this.setState(...)`, so it never emits a
+    change event `connect`/`useAltStore` would see. The rest of the
+    method is a pure render-gating boolean with no other observable side
+    effect - dropped entirely, per this migration's established
+    precedent. `componentDidUpdate` becomes a dependency-less mount-skip
+    `useEffect` (runs after every update, matching the original); its
+    `showModal()` half (`state.isModalVisible`) is confirmed dead -
+    grepped, never read anywhere in `render()` - dropped, while its
+    `hideModal()` half's real effect (resetting `isErrorDetailsVisible`
+    on close) is kept. `UNSAFE_componentWillReceiveProps` (fires the
+    "transaction confirmed" toast the instant `broadcast && included`
+    first become true) becomes a mount-skip `useEffect` keyed on
+    `[broadcast, included, error]`, using a `prevIncludedRef` to carry the
+    previous `included` value across renders. Dropped as confirmed dead
+    (grepped): both legacy string refs (`ref="transactionConfirm"`,
+    `ref="modal"`, neither ever read via `this.refs.X`); the `Input`
+    import from `bitshares-ui-style-guide` (never referenced anywhere in
+    the original); the local `confirmButtonClass` variable computed in
+    `render()` - never applied to any element's `className` or read
+    anywhere else.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~123 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/` and `Modal/` now fully
-  ported: `Blockchain/` non-operations (~9), `Registration/` (11),
+  ported: `Blockchain/` non-operations (~4), `Registration/` (11),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
