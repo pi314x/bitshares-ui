@@ -6653,6 +6653,108 @@ compromise, not silent scope-narrowing.
     full Jest suite green (19/19 suites, 5,532/5,532 tests - matches the
     known-good baseline exactly), `yarn build` shows only the 2 known
     pre-existing `charting_library.esm` errors.
+- `Account/CreditOffer/` batch 3 (2 files, out of the directory's 7):
+  `CreateModal.jsx` → `CreateModal.tsx`, `CreditRightsList.jsx` →
+  `CreditRightsList.tsx`. Batches 1 (`CreditDebtList.jsx`+
+  `CreditOfferPage.jsx`, above) and 2 (`EditModal.jsx`, below) were ported
+  concurrently by separate background agents and landed as separate
+  commits ahead of this one; `CreditOfferList.jsx`/
+  `CreditOfferAccountPage.jsx` are held back for the orchestrating
+  session, since they import all of the above.
+  - `CreateModal.jsx` is security-sensitive per AGENTS.md: it dispatches
+    a real on-chain transaction via `CreditOfferActions.create(opData)`,
+    preserved exactly, including its `opData` assembly (fee-rate math,
+    collateral price/GCD reduction, whitelist encoding) and the one
+    `console.error(err)` in its `.catch()` (logs the caught error object
+    only, not secret material). `CreditRightsList.jsx` is not
+    security-sensitive (grepped: no `WalletDb`/wallet-unlock/key-import
+    call sites).
+  - Both files' `connect(Component, {listenTo, getProps})` become a
+    container calling `useAltStore` once per store. Both `listenTo`
+    `AccountStore` without ever reading `currentAccount`/`passwordAccount`
+    from it (grep-confirmed unused downstream in either file) -
+    `useAltStore(AccountStore)`'s return value is discarded in both
+    containers, purely to preserve the re-render-on-`AccountStore`-change
+    subscription, same precedent as `Account/CreateAccount.tsx` and
+    `Dashboard/Markets.tsx`'s `FeaturedMarkets`.
+  - **Live imperative ref API, grep-verified across the whole app, NOT
+    dropped as dead**: `CreateModal.jsx`'s two-layer `CreateModal` class +
+    `CreateModalConnectWrapper = connect(...)` renders
+    `<CreateModal {...props} ref={props.refCallback} />`, and
+    `Account/CreditOffer/CreditOfferList.jsx` (out of scope, untouched)
+    calls `this.create_modal.showModal()` with no arguments - the one live
+    call site anywhere in the app. `CreateModalCore` is wrapped in
+    `React.forwardRef` and exposes exactly that one method
+    (`showModal(modal = 1)`) via `useImperativeHandle`, matching this
+    migration's established live-ref conversion (e.g.
+    `Modal/BorrowModal.tsx`'s `BorrowModalWrapper`). `hideModal` has no
+    external caller anywhere and is not exposed on the ref.
+    `CreditRightsList.jsx` has no refs or imperative APIs at all
+    (grep-confirmed its only caller, `CreditOfferAccountPage.jsx`, passes
+    no `ref`).
+  - `CreditRightsList.jsx`'s `componentDidMount` (one-shot
+    `CreditOfferActions.getCreditDealsByOfferOwner(...)`) becomes a
+    mount-only `useEffect(() => {...}, [])`; no other lifecycle method
+    existed on either original class.
+  - The class's many `this.state.X` fields (`CreateModal.jsx`) are kept as
+    one combined state object updated via a `mergeState` shallow-merge
+    helper, same convention as `Utility/FeeAssetSelector.tsx`. Every
+    `this.setState(update, callback)` two-argument call in the original
+    (`onAmountChanged`/`onFeeChanged`/`_setTotal`, all ending in a
+    `_checkBalance` callback; `_addWhitelistItem`, ending in
+    `showModal(1)`) is replicated by calling the equivalent function
+    directly with the exact new values right after `mergeState` - safe
+    because in every case the "callback" only reads values that are
+    either the literal arguments just merged or state fields the same
+    call leaves untouched, the same reasoning already documented in
+    `Utility/FeeAssetSelector.tsx`'s header comment. No `stateRef` mirror
+    was needed - every state read happens synchronously inside an event
+    handler, never inside an `async` function or a `useEffect` with a
+    narrower dependency array.
+  - Preserved verbatim, not "fixed" (bugs/quirks in `CreateModal.jsx`):
+    `_checkBalance`'s duplicated dead `if (!asset || !account) return;`
+    guard; `_delPawnItem`/`_delWhitelistItem`'s `==` (not `===`)
+    comparisons; `_delPawnItem`/`_addPawnItem`/`_addWhitelistItem`
+    mutating the `pawn_assets`/`whitelist` array (or an `Asset` instance
+    inside it) in place before `mergeState`; `min_loan` genuinely absent
+    from the initial state object (only set later, from
+    `_onMinLoanChange`); `_onPwanPriceChanged`'s typo'd name;
+    `state.account` seeded once from `props.account` and never re-synced
+    on prop changes (there is no `UNSAFE_componentWillReceiveProps`).
+  - Dropped as confirmed dead: `_renderCreateModal`'s balance `onClick`
+    originally did `_setTotal.bind(this, current_asset_id,
+    account_balances[...], feeAmount.getAmount({real: true}),
+    feeAmount.asset_id)`, even though `_setTotal(asset_id, balance_id)`
+    only ever reads its first two parameters - the 3rd/4th bound
+    arguments were always computed (pure, no side effects) and then
+    silently discarded. Replaced with a plain arrow function calling
+    `_setTotal` with only the two arguments it actually uses (also
+    sidesteps `Function.prototype.bind`'s TS typing rejecting more bound
+    arguments than the target function declares). That was `feeAmount`'s
+    only use inside `_renderCreateModal` (grep-confirmed), so it is also
+    dropped from that function's destructured `state` fields (still read
+    from `state` everywhere else it matters).
+  - TS-forced adjustment: `Price`'s constructor destructures `base`/
+    `quote` without default values, mixed with `real` which does have
+    one - TS's JS inference only picks up the defaulted property as
+    known, so `CreateModal.tsx` needs the same `Price as PriceUntyped` +
+    `const Price: any = PriceUntyped` cast already established in
+    `Exchange/Exchange.tsx`'s header comment for this exact pre-existing
+    gap. `Asset`'s constructor defaults every param, so it isn't affected.
+  - Both old `.jsx` originals removed in this commit (`git rm`).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on both files (0 errors after fixing several mechanical `prefer-const`
+    findings, one `react/display-name` finding on the new
+    `CreateModalCore` forward-ref component, and one
+    `@typescript-eslint/no-inferrable-types` finding; only expected
+    `@typescript-eslint/no-explicit-any` warnings remain), full Jest suite
+    green (19/19 suites, 5,532/5,532 tests - matches the known-good
+    baseline exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors (verified with `resolve.symlinks: false`
+    temporarily added to `webpack.config.js` for this one local build run
+    only, to work around this worktree's `node_modules` being a symlink
+    to the main checkout - see this batch's session notes; the change was
+    not committed).
 - Remaining long tail (~77 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
