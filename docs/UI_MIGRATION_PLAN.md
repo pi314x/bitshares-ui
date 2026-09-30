@@ -6387,11 +6387,77 @@ compromise, not silent scope-narrowing.
     green (19/19 suites, 5,532/5,532 tests - matches the known-good
     baseline exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
-- Remaining long tail (~84 more `.jsx` files outside
+- `Dashboard/` batch 3 (final 2 files, completing the directory):
+  `Markets.jsx` → `Markets.tsx`, `DashboardPage.jsx` → `DashboardPage.tsx`.
+  Ported directly by the orchestrating session (not delegated), since
+  `Markets.jsx` imports `MarketsTable.jsx` (ported in batch 1) and
+  `DashboardPage.jsx` imports `Markets.jsx` - both had to wait for their
+  dependency to land first.
+  - Not security-sensitive per AGENTS.md: grepped both files for
+    `WalletApi`, `WalletDb`, `.add_type_operation`, `process_transaction`
+    - none appear. Neither file builds or signs a transaction; they only
+    assemble/display market lists.
+  - `Markets.tsx`: `connect(...)` on `StarredMarkets`/`FeaturedMarkets` is
+    replaced by inline `useAltStore(...)` calls in each component's own
+    body (no separate Container/Core split needed for `StarredMarkets`;
+    `FeaturedMarkets` splits into a store-subscribing wrapper plus a
+    `FeaturedMarketsCore` holding the original's `chainID`/`markets`
+    state and lifecycle logic). `FeaturedMarkets`'s `listenTo`s
+    `MarketsStore` without ever reading anything from it in `getProps()`
+    - `useAltStore(MarketsStore)`'s return value is discarded, purely to
+    preserve the re-render-on-`MarketsStore`-change subscription (same
+    precedent as `Account/CreateAccount.tsx`'s `useAltStore(AccountStore);`).
+    `shouldComponentUpdate` (a pure re-render guard - no
+    `componentDidUpdate` in this file for it to also gate) is dropped
+    entirely. `UNSAFE_componentWillMount` (calls `this.update()`) and
+    `UNSAFE_componentWillReceiveProps(nextProps)` (calls
+    `this.update(nextProps)` unconditionally, no field comparison) are
+    combined into one mount-flag-guarded `useEffect` keyed on `[markets,
+    quotes]` - since `quotes` is a brand-new array literal on every
+    `DashboardPage.tsx` render, this effect in practice re-fires on every
+    parent render, exactly matching the original non-`PureComponent`
+    class's unconditional `UNSAFE_componentWillReceiveProps` firing on
+    every parent re-render. `TopMarkets` is exported but grep-confirmed
+    never imported/rendered anywhere else in the app - ported faithfully
+    anyway, consistent with this migration's established handling of
+    orphaned-but-exported code (e.g. `Forms/RefcodeInput.tsx`).
+  - Preserved verbatim, not "fixed": `FeaturedMarketsCore`'s
+    `_getMarkets`'s testnet fallback branch (`chainID !== "4018d784"`)
+    returns a plain JS array of `[base, quote]` tuples, while the mainnet
+    branch returns an Immutable Map (`props.markets`, from `SettingsStore`
+    - the subsequent code calls `.has()`/`.set()` on it). The following
+    `.filter(market => ... market.base)` reads a `.base` property that
+    doesn't exist on a plain array's tuple elements (always `undefined`),
+    and would go on to call `.has()`/`.set()` - methods a plain array
+    doesn't have - if actually reached on testnet. A real, reachable-on-
+    testnet-only bug in the original, typed loosely (`any`) and
+    transcribed exactly rather than unified into one consistent type.
+  - `DashboardPage.tsx`: `connect(DashboardPage, {listenTo: [AccountStore,
+    SettingsStore], getProps() {...}})` replaced by a Container+Core
+    split calling `useAltStore` once per store. No `BindToChainState`
+    existed in the original, so no `useChainStoreTick()` translation was
+    needed. Receives no props of its own (rendered as a plain route
+    `component={DashboardPage}` by `App.jsx` - only react-router's own
+    `match`/`location`/`history` would be implicitly injected, none of
+    which the original ever read, so none are declared here either,
+    matching `PredictionMarkets/PMAssetsContainer.tsx`'s precedent for
+    unread route props).
+  - Both old `.jsx` originals removed in this commit (`git rm`) -
+    grep-confirmed no importer anywhere in the app references either by
+    an explicit `.jsx` extension (one comment-only reference in
+    `MarketsTable.tsx`'s header, not an import).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on both files (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite green
+    (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
+    exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
+  - `Dashboard/` is now fully ported (7/7 files).
+- Remaining long tail (~77 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
-  non-operations, `Registration/`, root `components/`, `Forms/`, and
-  `PredictionMarkets/` now fully ported: `Dashboard/` (7),
+  non-operations, `Registration/`, root `components/`, `Forms/`,
+  `PredictionMarkets/`, and `Dashboard/` now fully ported:
   `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
