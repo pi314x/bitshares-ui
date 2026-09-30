@@ -17,10 +17,17 @@
 // `_unlockAccount` (`WalletDb.validatePassword` +
 // `WalletUnlockActions.checkLock.defer()`) are transcribed verbatim.
 //
-// `AccountNameInput` here resolves from `Forms/AccountNameInput.jsx`
+// `AccountNameInput` here resolves from `Forms/AccountNameInput.tsx`
 // (not `AccountNameInputStyleGuide.jsx`, as in `CreateAccount.tsx`) -
-// still a class component with the same nested `ref="nameInput"`
-// pattern, so the same `useRef()` translation applies.
+// now itself ported (Forms/ batch, later than this file) to a
+// `forwardRef`+`useImperativeHandle` function component exposing
+// `getValue` directly. Updated here (same commit as that port) from the
+// original two-hop `ref={(ref) => {accountNameInputRef.current = ref
+// .refs.nameInput;}}` (reaching into a class instance's legacy
+// `this.refs`) to a plain `ref={accountNameInputRef}`, since a function
+// component has no `.refs` to reach into and the new ref already *is*
+// the exposed `{getValue}` handle - `accountNameInputRef.current
+// .getValue()` below is otherwise unchanged.
 //
 // Dropped as confirmed dead (found while porting): `_renderAccountCreateText`
 // is fully defined but never called anywhere in the original - unlike
@@ -295,11 +302,7 @@ function CreateAccountPassword({history}: CreateAccountPasswordCoreProps) {
                     noValidate
                 >
                     <AccountNameInput
-                        ref={(ref: any) => {
-                            if (ref) {
-                                accountNameInputRef.current = ref.refs.nameInput;
-                            }
-                        }}
+                        ref={accountNameInputRef}
                         cheapNameOnly={!!firstAccount}
                         onChange={onAccountNameChange}
                         accountShouldNotExist={true}

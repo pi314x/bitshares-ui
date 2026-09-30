@@ -34,9 +34,16 @@
 // The `this.accountNameInput` (nested callback ref reading a *child*
 // class component's own `this.refs.nameInput`) and `ref="password"`
 // (read via `.value()` in `onSubmit`) refs are real and load-bearing -
-// translated to `useRef()` object refs. Both targets
-// (`AccountNameInputStyleGuide`/`PasswordInput`) are still class
-// components, so this still works. The commented-out `ref="refcode"`
+// translated to `useRef()` object refs. `AccountNameInputStyleGuide.tsx`
+// has since been ported too (a later Forms/ batch) to a `forwardRef`+
+// `useImperativeHandle` function component exposing `getValue` directly -
+// updated here, in that same commit, from the two-hop `ref={(ref) => {
+// accountNameInputRef.current = ref.refs.nameInput;}}` to a plain
+// `ref={accountNameInputRef}`, since a function component has no
+// `.refs` to reach into. `PasswordInput` was already passed a plain,
+// non-nested `ref={passwordRef}` here, so once it's ported the same way
+// this call site needs no further change - only that file's own
+// definition does. The commented-out `ref="refcode"`
 // (on a `<RefcodeInput>` that is itself commented out in `render()`) is
 // preserved as an inert comment, exactly as in the original - `this.refs
 // .refcode` can therefore never actually be non-null, so `createAccount`'s
@@ -345,11 +352,7 @@ function CreateAccount({history}: CreateAccountCoreProps) {
                     )}
                 </p>
                 <AccountNameInput
-                    ref={(ref: any) => {
-                        if (ref) {
-                            accountNameInputRef.current = ref.refs.nameInput;
-                        }
-                    }}
+                    ref={accountNameInputRef}
                     cheapNameOnly={!!firstAccount}
                     onChange={onAccountNameChange}
                     accountShouldNotExist={true}

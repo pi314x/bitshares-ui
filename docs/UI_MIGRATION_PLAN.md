@@ -5650,15 +5650,107 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~96 more `.jsx` files outside
+- `Forms/` batch 2 (5 files, completing the directory): `PubKeyInput.jsx`,
+  `AccountNameInput.jsx`, `AccountNameInputStyleGuide.jsx`,
+  `PasswordInput.jsx`, `PasswordInputStyleGuide.jsx` → `.tsx`.
+  - `PubKeyInput.tsx`: not itself security-sensitive (validates a
+    *public* key), renders the security-sensitive `PrivateKeyView` as a
+    child. Forced judgment call (TypeScript-incompatible bug, same
+    category as `Modal/JoinCommitteeModal.tsx`'s bare-identifier fix):
+    the fallback placeholder referenced `counterpart` without ever
+    importing it - grep-verified dormant (both real callers always pass
+    `placeholder` explicitly) but TypeScript refuses to compile the
+    undeclared reference at all, so the missing import was added (the
+    obvious intended fix, a no-op for both real call sites either way).
+    Also TS-forced: `onAction`'s `this.state.valid` read, though the
+    class never initialized `this.state` anywhere - also grep-verified
+    dormant (`this.props.onAction && this.state.valid && ...` never
+    evaluates past the first falsy `onAction` for either real caller) -
+    a function component has no ambient `this.state` to read from, so
+    this specific broken reference can't be transcribed literally; the
+    already-dead condition is dropped, keeping `event.preventDefault()`
+    and the surrounding real checks intact. Dropped as confirmed dead:
+    `ref="user_input"` (never read).
+  - `AccountNameInput.tsx`/`AccountNameInputStyleGuide.tsx`: two
+    near-identical files (see their own header comments for full
+    details). `BindToChainState`-free `AltContainer` wraps become
+    `useAltStore(AccountStore)` Containers. Both expose `getValue` via
+    `forwardRef`+`useImperativeHandle` - the one confirmed-live piece of
+    an otherwise-dead imperative API (`setValue`/`clear`/`focus`/`valid`
+    dropped, grep-verified unreachable both internally and via every
+    real caller) - since `Account/CreateAccount.tsx` and
+    `Account/CreateAccountPassword.tsx` (both already-ported) reach
+    `.getValue()` through a two-hop `ref={(ref) => {x.current = ref.refs
+    .nameInput;}}` pattern that only worked because the target was still
+    a class component; both caller files are updated in this same commit
+    to a plain `ref={x}`, since a function component has no `.refs` to
+    reach into. `shouldComponentUpdate` in both files isn't a pure
+    performance guard: it also gates whether `componentDidUpdate`'s
+    `onChange({valid: ...})` side effect fires (React skips
+    `componentDidUpdate` whenever `shouldComponentUpdate` returns
+    `false`) - replicated for free by keying the replacement `useEffect`
+    on that exact same field list, since a dependency array already only
+    re-fires on an actual change. `validateAccountName`'s direct
+    `this.state.error = ...`/`this.state.warning = ...` mutation-before-
+    `setState` produces a real, subtle quirk (the first-ever validation
+    always reports `valid: true`, since `getError()`'s stale-`state
+    .value` check short-circuits before the freshly-mutated `state.error`
+    is ever considered) - replicated by giving each file's `stateRef`
+    mirror the same direct-mutation treatment for this one function,
+    rather than "fixing" it to always use fresh values. `AccountNameInputStyleGuide.tsx`'s `render()` had two `return`
+    statements; the second (a plain `<div>`/`<input>` layout) is
+    unreachable dead code following the first's unconditional `return` -
+    dropped entirely.
+  - `PasswordInput.tsx`: security-sensitive per AGENTS.md - handles the
+    raw password, never logged (grepped, zero `console.*` calls). Its
+    `value()` (real, called via ref from `Account/CreateAccount.tsx`) is
+    kept via `forwardRef`+`useImperativeHandle`; `clear()`/`focus()`/
+    `valid()` dropped as confirmed dead (grepped every caller and this
+    file itself). `value()`/`clear()` read/write the live DOM node
+    directly (`useRef<HTMLInputElement>()`), bypassing the
+    React-controlled `state.value` the input is bound to - preserved
+    verbatim, including `clear()`'s consequently-quirky direct DOM
+    mutation of a controlled input. `handleChange` computes password-
+    strength `score` from the *stale* `state.value` rather than the
+    freshly-read DOM value - a genuine one-keystroke-behind strength
+    display, preserved by using the closure-captured `state.value`
+    exactly as the original's synchronous `this.state.value` read did.
+    `zxcvbn-async` ships no type declarations - added to `app/types
+    /vendor-shims.d.ts`; its "strength" `<progress>` needed a `max={5}`
+    (number, not the original's string `"5"`) and an `as any` cast for
+    `min="0"` (not a real `<progress>` HTML attribute at all, so
+    TypeScript's DOM typings reject it outright even though real browsers
+    just ignore it).
+  - `PasswordInputStyleGuide.tsx`: security-sensitive per AGENTS.md.
+    **Deliberate deviation from "preserve every bug verbatim"**: two
+    `console.log` calls printed the *raw plaintext password* directly
+    (`calculatePasswordScore`'s `console.log(score, strength.score,
+    passwordScore, password)`, and `getConfirmPasswordErrorMessage`'s
+    `console.log(password, confirmPassword, ...)`) - AGENTS.md's
+    unconditional "never log ... passwords" instruction governs what
+    this port itself writes, so unlike every other bug/quirk kept
+    verbatim throughout this migration, these two calls are dropped
+    rather than transcribed. A third, harmless `console.log(validation)`
+    (only `{errorMessage, valid}`, never the password) is kept. No
+    imperative API exists on this class at all, and its one real caller
+    never passes a `ref` either - dropped as confirmed dead:
+    `ref="password"`/`ref="confirmPassword"` (never read anywhere in the
+    file). `handlePasswordChange`/`handleConfirmPasswordChange` used
+    `setState(update, callback)` to guarantee validation always saw the
+    fresh value - replicated with optional override parameters on the
+    validation helpers (the change handlers pass the just-typed value
+    explicitly; `render()`'s direct calls fall back to current state,
+    exactly as before).
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~91 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
-  non-operations, `Registration/`, and root `components/` now fully
-  ported: `Forms/` (5 more: `PubKeyInput.jsx`, `AccountNameInput.jsx`,
-  `AccountNameInputStyleGuide.jsx`, `PasswordInput.jsx`,
-  `PasswordInputStyleGuide.jsx`), `PredictionMarkets/` (7), `Dashboard/`
-  (7), `Account/CreditOffer/` (7), `Showcases/` (6), and smaller
-  directories.
+  non-operations, `Registration/`, root `components/`, and `Forms/` now
+  fully ported: `PredictionMarkets/` (7), `Dashboard/` (7),
+  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
