@@ -5509,15 +5509,59 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~105 more `.jsx` files outside
+- Root `components/` batch 2 (3 files): `SyncError.jsx`, `InitError.jsx`,
+  `QRAddressScanner.jsx` → `.tsx`. None security-sensitive per AGENTS.md
+  (grepped, none of the wallet/transaction APIs appear).
+  - `SyncError.tsx`: `connect(Component, {listenTo: [BlockchainStore,
+    SettingsStore], getProps})` - only `apis`/`apiServer` (from
+    `SettingsStore`) are actually read anywhere in the file; `getProps()`
+    also fetched `rpc_connection_status`/`defaultConnection`/
+    `apiLatencies`, all confirmed dead - replicated with
+    `useAltStore(SettingsStore)` plus a bare `useAltStore(BlockchainStore)`
+    call purely for its re-render-on-change side effect. Dropped as
+    confirmed dead: `triggerModal` (defined *twice* with the same name,
+    the second silently shadowing the first per plain JS semantics -
+    neither is ever called, both reference a `this.refs.ws_modal` that's
+    never set on anything); `render()`'s local `options` (a pure,
+    side-effect-free computation never referenced in the returned JSX);
+    and, transitively, `onChangeWS`/`onReloadClick` - `onChangeWS` is
+    passed to the already-ported `Settings/AccessSettings.tsx` as
+    `onChange`, but that component's own header comment already
+    documents `onChange` as never read there, and nothing else in this
+    file calls `onChangeWS` either. **Preserved verbatim, not "fixed"**
+    (pre-existing, already flagged when `AccessSettings.tsx` was ported):
+    this file's `<WebsocketAddModal>` call never passes `changeConnection`,
+    which that component's `onRemoveSubmit` calls when the removed node
+    was the active one - a latent crash if triggered, cast past with
+    `as any` rather than inventing a handler that wasn't there.
+  - `InitError.tsx`: same `connect`→`useAltStore` translation, but here
+    every field `getProps()` returns is genuinely used. `UNSAFE_
+    componentWillReceiveProps` (dispatches `SettingsActions.showWS(...)`
+    when the connection just opened and `apiServer` changed) becomes a
+    mount-skip `useEffect` keyed on `[apiServer]`. Dropped as confirmed
+    dead: `ref="ws_modal"` (never read). **Preserved verbatim**: this
+    file's own `<WebsocketAddModal>` call likewise never passes
+    `api`/`removeNode`/`isRemoveNodeModalVisible`/`onRemoveNodeClose`/
+    `changeConnection` - checked that component's internals confirm this
+    only leaves its "remove node" sub-modal permanently closed and
+    unreachable, the same category of pre-existing gap as `SyncError
+    .tsx`'s, cast past the same way.
+  - `QRAddressScanner.tsx`: `label` (declared in `propTypes`, passed as
+    `label="Scan"` by both real callers) is never read anywhere in the
+    file - kept as accepted-but-unused. `react-qr-reader` ships no type
+    declarations - added to `app/types/vendor-shims.d.ts`.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~102 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, and `Registration/` now fully ported:
-  root `components/` (6 more: `SyncError.jsx`, `QRAddressScanner.jsx`,
-  `PriceAlertNotifications.jsx`, `InitError.jsx`, `PrivateKeyView.jsx`,
-  `LoginSelector.jsx`), `Forms/` (8), `PredictionMarkets/` (7),
-  `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
-  smaller directories.
+  root `components/` (3 more: `PriceAlertNotifications.jsx`,
+  `PrivateKeyView.jsx`, `LoginSelector.jsx`), `Forms/` (8),
+  `PredictionMarkets/` (7), `Dashboard/` (7), `Account/CreditOffer/` (7),
+  `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the

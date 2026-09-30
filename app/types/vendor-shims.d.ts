@@ -35,3 +35,4 @@ declare module "highcharts/modules/heatmap";
 declare module "react-scroll";
 declare module "string-similarity";
 declare module "@hiveio/hive-js";
+declare module "react-qr-reader";
