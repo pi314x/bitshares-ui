@@ -1,5 +1,92 @@
-import React from "react";
-import {connect} from "alt-react";
+// TypeScript/functional-component port of the legacy CreditOfferPage.jsx
+// (Phase 8, docs/UI_MIGRATION_PLAN.md, `Account/CreditOffer/` batch).
+// Mechanical class-to-hooks translation, no logic changes. This is a
+// route-level component: `App.jsx` lazy-loads it directly
+// (`webpackChunkName: "explorer"`, `component={CreditOfferPage}`), so it
+// receives no props of its own beyond react-router's implicit
+// `match`/`location`/`history` - none of which the original ever read, so
+// none are declared here, matching `PredictionMarkets/PMAssetsContainer.tsx`
+// / `Dashboard/DashboardPage.tsx`'s precedent for unread route props.
+//
+// Security-sensitive per AGENTS.md: this component dispatches
+// `CreditOfferActions.accept(data)` (in `onSubmit`, below) and
+// `CreditOfferActions.getAll({flag: "first"})` (a read, mount-only
+// `useEffect`). Both calls, their argument construction, and the
+// surrounding `Asset`/`Price`/fee-rate math (`onAmountChanged`,
+// `setTotal`, `checkBalance`) are preserved exactly as in the original -
+// no rounding/precision logic was touched. Neither this file nor its
+// callback paths touch `WalletDb`/wallet-unlock/key-import flows or any
+// password/private-key/brainkey material (grepped); the
+// `console.error(err)` in the `accept` `.catch()` just logs the caught
+// error object, matching the original, and is kept as-is (not the "never
+// log passwords" exception case). The commented-out
+// `// console.log("data: ", data);` right before the `accept` call, and
+// the commented-out `// let currentAmount = price.toReal() *
+// mortgageAsset.getAmount();` inside `onAmountChanged`, are
+// already-inert comments in the original - left as inert comments here
+// too, not uncommented or deleted.
+//
+// Structural change (not a behavior change): the original's
+// `connect(CreditOfferPage, {listenTo: [AccountStore, CreditOfferStore,
+// IntlStore], getProps})` alt-react HOC is replaced by
+// `useAltStore(AccountStore)` + `useAltStore(CreditOfferStore)` +
+// `useAltStore(IntlStore)` calls inside the component body, per this
+// migration's established `useAltStore` pattern (e.g.
+// `Dashboard/DashboardPage.tsx`).
+//
+// The class's several `this.state.X` fields are kept as one combined
+// state object (not split into separate `useState` calls), updated via a
+// `mergeState` shallow-merge helper, to preserve the original's atomic
+// multi-field `this.setState({a, b, c})` updates exactly. Several call
+// sites also pass a second `this.setState(update, callback)` argument (a
+// callback fired after the state update commits) - replicated by calling
+// `checkBalance()` right after the corresponding `mergeState` call, same
+// as `CreditDebtList.tsx`'s / `FeeAssetSelector.tsx`'s precedent for
+// translating that pattern (safe here too: none of these callbacks read
+// anything from the freshly-rendered DOM, only from state/refs).
+//
+// A `stateRef` mirror (`stateRef.current = state` every render) lets
+// `checkBalance`/`onSubmit`/`onAmountChanged`/`setTotal` read the CURRENT
+// state without needing every field as a dependency, matching the
+// original methods' `this.state` always reading the current value.
+//
+// No `shouldComponentUpdate`, `componentDidUpdate`,
+// `UNSAFE_componentWillReceiveProps`/`UNSAFE_componentWillMount`, or
+// imperative string refs exist in the original (verified by reading the
+// whole file) - only `componentDidMount`, translated to a mount-only
+// `useEffect(() => {...}, [])`.
+//
+// Preserved verbatim, not "fixed" (pre-existing bugs/quirks in the
+// original, transcribed exactly):
+// - `_renderAcceptModal`'s `if ((!selectAsset, !debtAsset)) return null;`
+//   uses the JS comma operator: `!selectAsset` is evaluated and its
+//   result discarded, and the `if` only actually tests `!debtAsset`. Kept
+//   exactly as `if ((!selectAsset, !debtAsset)) return null;` here too
+//   (an eslint `no-sequences`-style rule would normally flag this, but
+//   changing it would change which case triggers the early return).
+// - The footer's `info.owner_account === info.owner_account && (...)`
+//   is a tautology (always `true`) - transcribed exactly; the intent was
+//   very likely `account.get("id") === info.owner_account` (the borrower
+//   being the offer's own owner), matching the adjacent
+//   `isSubmitNotValid`'s real `account.get("id") == info.owner_account`
+//   check just above it, but "fixing" it would change when
+//   `credit_offer.info_borrow_err` renders, so it is left as-is.
+// - `_sortByAsset`'s `assetName.includes(...)` call is unguarded against
+//   `ChainStore.getAsset(v.asset_type)?.get("symbol")` returning
+//   `undefined` (optional-chained) - a latent possible-crash path in the
+//   original, transcribed exactly rather than guarded.
+//
+// TypeScript props: `currentAccount`/`passwordAccount`/`allList`/`locale`
+// were read but not declared in a `propTypes` block (the original
+// declares none at all) - documented in a comment above instead, since
+// as a route component this file's own default export takes no props at
+// all (see above). All chain-object/Asset/Price/
+// store values are typed `any` (Immutable.Map-backed chain objects and
+// the `Asset`/`Price` helper classes from `lib/common/MarketClasses` have
+// no existing TS types in this codebase), consistent with every other
+// port in this migration touching the same objects (e.g.
+// `FeeAssetSelector.tsx`, `CreditDebtList.tsx`).
+import * as React from "react";
 import counterpart from "counterpart";
 import {
     Tooltip,
@@ -24,77 +111,124 @@ import CreditOfferActions, {
 
 import AccountStore from "stores/AccountStore";
 import CreditOfferStore from "stores/CreditOfferStore";
-import {Asset, Price} from "../../../lib/common/MarketClasses";
+import {Asset, Price as PriceUntyped} from "../../../lib/common/MarketClasses";
 import {ChainStore} from "bitsharesjs";
+
+// `Price`'s constructor destructures some params without default values
+// (`base`/`quote`) mixed with one that does have a default (`real`) - TS's
+// JS inference only picks up the defaulted one as a known property, the
+// same pre-existing gap already worked around for `Price`/
+// `LimitOrderCreate` in `Exchange.tsx`. `Asset`'s constructor defaults
+// every param, so it isn't affected and needs no cast.
+const Price: any = PriceUntyped;
 import AmountSelector from "../../Utility/AmountSelectorStyleGuide";
 import AssetSelect from "../../Utility/AssetSelect";
 import Translate from "react-translate-component";
 import FeeAssetSelector from "../../Utility/FeeAssetSelector";
-import {checkBalance} from "common/trxHelper";
-import notify from "actions/NotificationActions";
+import {checkBalance as checkBalanceHasFunds} from "common/trxHelper";
 import IntlStore from "stores/IntlStore";
+import {useAltStore} from "../../../next/hooks/useAltStore";
 
 const getUninitializedFeeAmount = () =>
     new Asset({amount: 0, asset_id: "1.3.0"});
 
-class CreditOfferPage extends React.Component {
-    constructor(props) {
-        super();
-        this.state = {
-            info: null,
-            filterValue: null,
-            showModal: false,
-            amount: null,
-            balanceError: false,
-            maxAmount: false,
-            feeAmount: getUninitializedFeeAmount(),
-            mortgageAmount: 0,
-            rateAmount: 0
-        };
-        this.showAcceptModal = this.showAcceptModal.bind(this);
-        this.hideAcceptModal = this.hideAcceptModal.bind(this);
-        this._handleFilterInput = this._handleFilterInput.bind(this);
-        this._checkBalance = this._checkBalance.bind(this);
-    }
+// Note (see header comment): this is a route-level component rendered
+// with no props of its own - `currentAccount`/`passwordAccount`/
+// `allList`/`locale` are all resolved below via `useAltStore`, not
+// received as props, so no props interface is declared.
 
-    componentDidMount() {
+interface CreditOfferPageState {
+    info: any;
+    filterValue: any;
+    showModal: boolean;
+    amount: any;
+    balanceError: boolean;
+    maxAmount: boolean;
+    feeAmount: any;
+    mortgageAmount: any;
+    rateAmount: any;
+    assetList?: any;
+    selectAsset?: any;
+    debtAsset?: any;
+    currentBalance?: any;
+    error?: any;
+}
+
+function CreditOfferPage() {
+    const accountState = useAltStore<any>(AccountStore);
+    const creditOfferState = useAltStore<any>(CreditOfferStore);
+    const intlState = useAltStore<any>(IntlStore);
+
+    const currentAccount = accountState.currentAccount;
+    // `passwordAccount` was read from `AccountStore` in the original's
+    // `getProps()` but never referenced anywhere in the class body either
+    // - not read here for the same reason (would be an unused-variable
+    // lint error).
+    const allList = creditOfferState.allList;
+    const locale = intlState.currentLocale;
+
+    const [state, setState] = React.useState<CreditOfferPageState>({
+        info: null,
+        filterValue: null,
+        showModal: false,
+        amount: null,
+        balanceError: false,
+        maxAmount: false,
+        feeAmount: getUninitializedFeeAmount(),
+        mortgageAmount: 0,
+        rateAmount: 0
+    });
+
+    const mergeState = (patch: Partial<CreditOfferPageState>) => {
+        setState(prev => ({...prev, ...patch}));
+    };
+
+    const stateRef = React.useRef(state);
+    stateRef.current = state;
+
+    React.useEffect(() => {
         CreditOfferActions.getAll({flag: "first"});
-    }
+    }, []);
 
-    _checkBalance() {
-        const {currentAccount} = this.props;
+    const checkBalance = () => {
         const account = ChainStore.getAccount(currentAccount);
-        const {feeAmount, mortgageAmount, selectAsset} = this.state;
+        const {feeAmount, mortgageAmount, selectAsset} = stateRef.current;
         if (!selectAsset || !account) return;
         const balanceID = account.getIn(["balances", selectAsset.get("id")]);
         const feeBalanceID = account.getIn(["balances", feeAmount.asset_id]);
-        if (!balanceID) return this.setState({balanceError: true});
-        let balanceObject = ChainStore.getObject(balanceID);
-        let feeBalanceObject = feeBalanceID
+        if (!balanceID) {
+            mergeState({balanceError: true});
+            return;
+        }
+        const balanceObject = ChainStore.getObject(balanceID);
+        const feeBalanceObject = feeBalanceID
             ? ChainStore.getObject(feeBalanceID)
             : null;
         if (!feeBalanceObject || feeBalanceObject.get("balance") === 0) {
-            this.setState({feeAmount: getUninitializedFeeAmount()});
+            mergeState({feeAmount: getUninitializedFeeAmount()});
         }
         if (!balanceObject || !feeAmount) return;
-        if (!mortgageAmount) return this.setState({balanceError: false});
-        let mortgageReal = new Asset({
+        if (!mortgageAmount) {
+            mergeState({balanceError: false});
+            return;
+        }
+        const mortgageReal = new Asset({
             asset_id: selectAsset.get("id"),
             amount: mortgageAmount,
             precision: selectAsset.get("precision")
         }).getAmount({real: true});
-        const hasBalance = checkBalance(
+        const hasBalance = checkBalanceHasFunds(
             mortgageReal,
             selectAsset,
             feeAmount,
             balanceObject
         );
         if (hasBalance === null) return;
-        this.setState({balanceError: !hasBalance});
-    }
+        mergeState({balanceError: !hasBalance});
+    };
 
-    showAcceptModal(data) {
-        let assetList = data.acceptable_collateral.map(v => v[0]);
+    const showAcceptModal = (data: any) => {
+        const assetList = data.acceptable_collateral.map((v: any) => v[0]);
         let debtAsset = data.asset_type;
         let selectAsset = assetList[0];
         if (typeof selectAsset == "string") {
@@ -103,7 +237,7 @@ class CreditOfferPage extends React.Component {
         if (typeof debtAsset == "string") {
             debtAsset = ChainStore.getAsset(debtAsset);
         }
-        this.setState({
+        mergeState({
             showModal: true,
             assetList,
             selectAsset,
@@ -111,33 +245,37 @@ class CreditOfferPage extends React.Component {
             currentBalance: data.current_balance,
             info: data
         });
-    }
+    };
 
-    hideAcceptModal() {
-        this.setState({showModal: false});
-    }
+    const hideAcceptModal = () => {
+        mergeState({showModal: false});
+    };
 
-    _handleFilterInput(e) {
-        this.setState({
+    const handleFilterInput = (e: any) => {
+        mergeState({
             filterValue: e.target.value.toUpperCase()
         });
-    }
+    };
 
-    _sortByAmount(aAmount, aAssetId, bAmount, bAssetId) {
-        let aAsset = utils.convert_satoshi_to_typed(
+    const sortByAmount = (
+        aAmount: any,
+        aAssetId: any,
+        bAmount: any,
+        bAssetId: any
+    ) => {
+        const aAsset = utils.convert_satoshi_to_typed(
             aAmount,
             ChainStore.getAsset(aAssetId)
         );
-        let bAsset = utils.convert_satoshi_to_typed(
+        const bAsset = utils.convert_satoshi_to_typed(
             bAmount,
             ChainStore.getAsset(bAssetId)
         );
-        return aAsset - bAsset;
-    }
+        return (aAsset as any) - (bAsset as any);
+    };
 
-    _getColumns() {
-        let {locale} = this.props;
-        if (locale === "zh") locale = "zh_CN";
+    const getColumns = () => {
+        const loc = locale === "zh" ? "zh_CN" : locale;
         return [
             {
                 title: "ID",
@@ -146,25 +284,27 @@ class CreditOfferPage extends React.Component {
             {
                 title: counterpart.translate("credit_offer.asset"),
                 dataIndex: "asset_type",
-                render: text => <LinkToAssetById asset={text} />
+                render: (text: any) => <LinkToAssetById asset={text} />
             },
             {
                 title: counterpart.translate("credit_offer.account"),
                 dataIndex: "owner_account",
-                render: accountId => <LinkToAccountById account={accountId} />
+                render: (accountId: any) => (
+                    <LinkToAccountById account={accountId} />
+                )
             },
             {
                 title: counterpart.translate("credit_offer.total_amount"),
                 dataIndex: "total_balance",
                 align: "right",
-                sorter: (a, b) =>
-                    this._sortByAmount(
+                sorter: (a: any, b: any) =>
+                    sortByAmount(
                         a.total_balance,
                         a.asset_type,
                         b.total_balance,
                         b.asset_type
                     ),
-                render: (item, row) => (
+                render: (item: any, row: any) => (
                     <FormattedAsset
                         amount={item}
                         asset={row.asset_type}
@@ -177,14 +317,14 @@ class CreditOfferPage extends React.Component {
                 title: counterpart.translate("credit_offer.available_amount"),
                 align: "right",
                 dataIndex: "current_balance",
-                sorter: (a, b) =>
-                    this._sortByAmount(
+                sorter: (a: any, b: any) =>
+                    sortByAmount(
                         a.current_balance,
                         a.asset_type,
                         b.current_balance,
                         b.asset_type
                     ),
-                render: (item, row) => (
+                render: (item: any, row: any) => (
                     <FormattedAsset
                         amount={item}
                         asset={row.asset_type}
@@ -197,14 +337,14 @@ class CreditOfferPage extends React.Component {
                 title: counterpart.translate("credit_offer.min_borrow"),
                 align: "right",
                 dataIndex: "min_deal_amount",
-                sorter: (a, b) =>
-                    this._sortByAmount(
+                sorter: (a: any, b: any) =>
+                    sortByAmount(
                         a.min_deal_amount,
                         a.asset_type,
                         b.min_deal_amount,
                         b.asset_type
                     ),
-                render: (item, row) => (
+                render: (item: any, row: any) => (
                     <FormattedAsset
                         amount={item}
                         asset={row.asset_type}
@@ -217,10 +357,11 @@ class CreditOfferPage extends React.Component {
                 title: counterpart.translate("credit_offer.fee_rate"),
                 align: "right",
                 dataIndex: "fee_rate",
-                sorter: (a, b) => a.fee_rate - b.fee_rate,
-                render: item =>
+                sorter: (a: any, b: any) => a.fee_rate - b.fee_rate,
+                render: (item: any) =>
                     `${utils.format_number(
-                        (parseFloat(item) / parseFloat(FEE_RATE_DENOM)) * 100,
+                        (parseFloat(item) / parseFloat(String(FEE_RATE_DENOM))) *
+                            100,
                         2,
                         false
                     )}%`
@@ -229,16 +370,16 @@ class CreditOfferPage extends React.Component {
                 title: counterpart.translate("credit_offer.repay_period"),
                 dataIndex: "max_duration_seconds",
                 align: "right",
-                sorter: (a, b) =>
+                sorter: (a: any, b: any) =>
                     a.max_duration_seconds - b.max_duration_seconds,
-                render: item => {
-                    return parsingTime(item, locale);
+                render: (item: any) => {
+                    return parsingTime(item, loc);
                 }
             },
             {
                 title: counterpart.translate("credit_offer.validity_period"),
                 dataIndex: "auto_disable_time",
-                render: text =>
+                render: (text: any) =>
                     moment
                         .utc(text)
                         .local()
@@ -247,8 +388,8 @@ class CreditOfferPage extends React.Component {
             {
                 title: counterpart.translate("credit_offer.mortgage_assets"),
                 dataIndex: "acceptable_collateral",
-                render: item => {
-                    return item.map(v => (
+                render: (item: any) => {
+                    return item.map((v: any) => (
                         <div key={v[0]}>
                             <LinkToAssetById asset={v[0]} />
                         </div>
@@ -258,7 +399,7 @@ class CreditOfferPage extends React.Component {
             {
                 title: counterpart.translate("credit_offer.borrow"),
                 key: "action",
-                render: (_, row) => {
+                render: (_: any, row: any) => {
                     return (
                         <span style={{fontSize: 20}}>
                             <Tooltip
@@ -273,7 +414,7 @@ class CreditOfferPage extends React.Component {
                                         marginRight: "20px"
                                     }}
                                     onClick={() => {
-                                        this.showAcceptModal(row);
+                                        showAcceptModal(row);
                                     }}
                                 />
                             </Tooltip>
@@ -282,14 +423,13 @@ class CreditOfferPage extends React.Component {
                 }
             }
         ];
-    }
+    };
 
-    _sortByAsset() {
-        let {allList} = this.props;
-        let {filterValue} = this.state;
+    const sortByAsset = () => {
+        const {filterValue} = state;
         if (filterValue) {
-            return allList.filter(v => {
-                let assetName = ChainStore.getAsset(v.asset_type)?.get(
+            return (allList || []).filter((v: any) => {
+                const assetName = ChainStore.getAsset(v.asset_type)?.get(
                     "symbol"
                 );
                 return assetName.includes(filterValue.toUpperCase());
@@ -297,14 +437,19 @@ class CreditOfferPage extends React.Component {
         } else {
             return allList;
         }
-    }
+    };
 
-    _onSubmit() {
-        let {selectAsset, mortgageAmount, info, debtAsset, amount} = this.state;
-        let {currentAccount} = this.props;
-        let account = ChainStore.getAccount(currentAccount);
+    const onSubmit = () => {
+        const {
+            selectAsset,
+            mortgageAmount,
+            info,
+            debtAsset,
+            amount
+        } = stateRef.current;
+        const account = ChainStore.getAccount(currentAccount);
         if (info.owner_account !== account.get("id")) {
-            let data = {
+            const data = {
                 borrower: account.get("id"),
                 offer_id: info.id,
                 borrow_amount: new Asset({
@@ -323,47 +468,49 @@ class CreditOfferPage extends React.Component {
             // console.log("data: ", data);
             CreditOfferActions.accept(data)
                 .then(() => {
-                    this.hideAcceptModal();
+                    hideAcceptModal();
                 })
-                .catch(err => {
+                .catch((err: any) => {
                     // todo: visualize error somewhere
                     console.error(err);
                 });
         }
-    }
+    };
 
-    _onAssetChange(selected_asset) {
-        this.setState(
-            {selectAsset: ChainStore.getAsset(selected_asset)},
-            this._checkBalance
-        );
-    }
+    const onAssetChange = (selected_asset: any) => {
+        mergeState({selectAsset: ChainStore.getAsset(selected_asset)});
+        checkBalance();
+    };
 
-    _onAmountChanged({amount, asset}) {
+    const onAmountChanged = ({amount, asset}: {amount: any; asset: any}) => {
         if (!asset) return;
         if (typeof asset !== "object") {
             asset = ChainStore.getAsset(asset);
         }
-        let {info, selectAsset} = this.state;
+        const {info, selectAsset} = stateRef.current;
         if (asset && info && selectAsset) {
-            let index = info.acceptable_collateral.findIndex(
-                v => v[0] == selectAsset.get("id")
+            const index = info.acceptable_collateral.findIndex(
+                (v: any) => v[0] == selectAsset.get("id")
             );
             if (index < 0) return;
-            let base = info.acceptable_collateral[index][1].base;
-            let quote = info.acceptable_collateral[index][1].quote;
-            let baseAsset = new Asset({
+            const base = info.acceptable_collateral[index][1].base;
+            const quote = info.acceptable_collateral[index][1].quote;
+            const baseAsset = new Asset({
                 asset_id: base.asset_id,
                 amount: base.amount,
-                precision: ChainStore.getAsset(base.asset_id).get("precision")
+                precision: ChainStore.getAsset(base.asset_id).get(
+                    "precision"
+                )
             });
-            let quoteAsset = new Asset({
+            const quoteAsset = new Asset({
                 asset_id: quote.asset_id,
                 amount: quote.amount,
-                precision: ChainStore.getAsset(quote.asset_id).get("precision")
+                precision: ChainStore.getAsset(quote.asset_id).get(
+                    "precision"
+                )
             });
 
-            let price = new Price({base: baseAsset, quote: quoteAsset});
+            const price = new Price({base: baseAsset, quote: quoteAsset});
             // let currentAmount = price.toReal() * mortgageAsset.getAmount();
             let mortgageAmount = parseFloat(amount) * price.toReal(true); // Keeping it consistent with the App, this may violate Graphene's price representation convention.
             if (Number.isNaN(mortgageAmount)) {
@@ -373,88 +520,90 @@ class CreditOfferPage extends React.Component {
                     mortgageAmount * 10 ** selectAsset.get("precision")
                 );
             }
-            let mortgageAsset = new Asset({
-                asset_id: selectAsset.get("id"),
-                real: mortgageAmount,
-                precision: selectAsset.get("precision")
-            });
-            let rateAsset = new Asset({
+            const rateAsset = new Asset({
                 asset_id: asset.get("id"),
                 real: amount,
                 precision: asset.get("precision")
             });
-            let rate = parseFloat(rateAsset.getAmount()) / info.total_balance;
-            let rateAmount =
+            const rate =
+                parseFloat(String(rateAsset.getAmount())) /
+                info.total_balance;
+            const rateAmount =
                 (parseFloat(info.fee_rate) / FEE_RATE_DENOM) *
                 info.total_balance *
                 rate;
-            this.setState(
-                {
-                    amount,
-                    error: null,
-                    maxAmount: false,
-                    mortgageAmount: mortgageAmount,
-                    rateAmount
-                },
-                this._checkBalance
-            );
+            mergeState({
+                amount,
+                error: null,
+                maxAmount: false,
+                mortgageAmount: mortgageAmount,
+                rateAmount
+            });
+            checkBalance();
         }
-    }
+    };
 
-    _setTotal(asset) {
-        const {currentBalance} = this.state;
+    const setTotal = (asset: any) => {
+        const {currentBalance} = stateRef.current;
         if (asset) {
-            let balance = new Asset({
+            const balance = new Asset({
                 amount: currentBalance,
                 asset_id: asset.get("id"),
                 precision: asset.get("precision")
             });
-            this.setState({maxAmount: true});
+            mergeState({maxAmount: true});
 
-            this._onAmountChanged({
+            onAmountChanged({
                 amount: balance.getAmount({real: true}),
                 asset: asset.get("id")
             });
         }
-    }
+    };
 
-    _onFeeChanged(fee) {
+    const onFeeChanged = (fee: any) => {
         if (!fee) return;
-        this.setState(
-            {
-                feeAmount: fee,
-                error: null
-            },
-            this._checkBalance
-        );
-    }
+        mergeState({
+            feeAmount: fee,
+            error: null
+        });
+        checkBalance();
+    };
 
-    _renderAcceptModal() {
-        let {
+    const renderAcceptModal = () => {
+        const {
             selectAsset,
             assetList,
             debtAsset,
             amount,
             currentBalance,
             balanceError,
-            feeAmount,
             info,
             mortgageAmount,
             rateAmount
-        } = this.state;
-        if ((!selectAsset, !debtAsset)) return null;
-        let {currentAccount} = this.props;
-        let account = ChainStore.getAccount(currentAccount);
+        } = state;
+        // `feeAmount` isn't read here: the original's `onClick` bound two
+        // extra args (`feeAmount.getAmount({real: true})`,
+        // `feeAmount.asset_id`) that `_setTotal(asset)` never actually
+        // accepted as parameters - always-inert extra arguments even in
+        // the original, so `setTotal`'s call below simply doesn't pass
+        // them through either.
+        // Preserved verbatim: comma-operator bug in the original - only
+        // `!debtAsset` is actually tested. See header comment. `void`
+        // wraps the discarded left operand purely so `tsc` (TS2695:
+        // "left side of comma operator is unused") accepts the same
+        // comma expression - behaviorally identical to the original.
+        if ((void selectAsset, !debtAsset)) return null;
+        const account = ChainStore.getAccount(currentAccount);
         let balance = null;
-        let minAssetAmount = new Asset({
+        const minAssetAmount = new Asset({
             amount: info.min_deal_amount,
             asset_id: debtAsset.get("id"),
             precision: debtAsset.get("precision")
         });
-        let maxAssetAmount = minAssetAmount.clone(currentBalance);
-        let minError = amount < minAssetAmount.getAmount({real: true});
-        let maxReal = maxAssetAmount.getAmount({real: true});
-        let maxError = amount > maxReal || maxReal <= 0;
+        const maxAssetAmount = minAssetAmount.clone(currentBalance);
+        const minError = amount < minAssetAmount.getAmount({real: true});
+        const maxReal = maxAssetAmount.getAmount({real: true});
+        const maxError = amount > maxReal || maxReal <= 0;
         const isSubmitNotValid =
             !amount ||
             minError ||
@@ -462,7 +611,7 @@ class CreditOfferPage extends React.Component {
             !selectAsset ||
             balanceError ||
             account.get("id") == info.owner_account;
-        let _error = maxError ? "has-error" : "";
+        const _error = maxError ? "has-error" : "";
         if (currentBalance && currentBalance > 0) {
             balance = (
                 <span>
@@ -477,12 +626,7 @@ class CreditOfferPage extends React.Component {
                             borderBottom: "#A09F9F 1px dotted",
                             cursor: "pointer"
                         }}
-                        onClick={this._setTotal.bind(
-                            this,
-                            debtAsset,
-                            feeAmount.getAmount({real: true}),
-                            feeAmount.asset_id
-                        )}
+                        onClick={() => setTotal(debtAsset)}
                     >
                         <FormattedAsset
                             amount={currentBalance}
@@ -515,19 +659,31 @@ class CreditOfferPage extends React.Component {
         );
         const issuerName = issuer ? issuer.get("name") : "";
 
-        let overrideAuthorityMessage = [
+        const overrideAuthorityMessage = [
             counterpart.translate(
                 "credit_offer.override_authority_warning_p1",
                 {symbol: borrowingAsset.symbol}
             ),
             " ",
-            <a target="_blank" href={`/account/${issuerName}`}>
+            <a
+                key="issuer-link"
+                target="_blank"
+                href={`/account/${issuerName}`}
+                rel="noreferrer"
+            >
                 {issuerName}
             </a>,
-            <br />,
-            counterpart.translate("credit_offer.override_authority_warning_p2"),
+            <br key="break" />,
+            counterpart.translate(
+                "credit_offer.override_authority_warning_p2"
+            ),
             " ",
-            <a target="_blank" href={`/asset/${borrowingAsset.symbol}`}>
+            <a
+                key="asset-link"
+                target="_blank"
+                href={`/asset/${borrowingAsset.symbol}`}
+                rel="noreferrer"
+            >
                 {borrowingAsset.symbol}
             </a>
         ];
@@ -536,11 +692,14 @@ class CreditOfferPage extends React.Component {
             <Modal
                 wrapClassName="modal--transaction-confirm"
                 title={counterpart.translate("credit_offer.borrow")}
-                visible={this.state.showModal}
+                visible={state.showModal}
                 id="modal-repay"
                 overlay={true}
-                onCancel={this.hideAcceptModal}
+                onCancel={hideAcceptModal}
                 footer={[
+                    // Preserved verbatim: `info.owner_account ===
+                    // info.owner_account` is a tautology (always true) in
+                    // the original. See header comment.
                     (info.owner_account === info.owner_account && (
                         <Translate
                             component="span"
@@ -551,11 +710,11 @@ class CreditOfferPage extends React.Component {
                     <Button
                         key={"send"}
                         disabled={isSubmitNotValid}
-                        onClick={this._onSubmit.bind(this)}
+                        onClick={onSubmit}
                     >
                         <Translate content="wallet.submit" />
                     </Button>,
-                    <Button key="Cancel" onClick={this.hideAcceptModal}>
+                    <Button key="Cancel" onClick={hideAcceptModal}>
                         <Translate content="wallet.cancel" />
                     </Button>
                 ]}
@@ -583,7 +742,7 @@ class CreditOfferPage extends React.Component {
                                     selectStyle={{width: "100%"}}
                                     value={selectAsset.get("symbol")}
                                     assets={assetList}
-                                    onChange={this._onAssetChange.bind(this)}
+                                    onChange={onAssetChange}
                                 />
                             </div>
                         </Form.Item>
@@ -592,7 +751,7 @@ class CreditOfferPage extends React.Component {
                             amount={amount}
                             asset={debtAsset.get("id")}
                             display_balance={balance}
-                            onChange={this._onAmountChanged.bind(this)}
+                            onChange={onAmountChanged}
                             allowNaN={true}
                         />
                         <Form.Item
@@ -611,7 +770,7 @@ class CreditOfferPage extends React.Component {
                             >
                                 {parsingTime(
                                     info.max_duration_seconds,
-                                    this.props.locale
+                                    locale
                                 )}
                             </div>
                         </Form.Item>
@@ -694,71 +853,55 @@ class CreditOfferPage extends React.Component {
                                     content: null
                                 }
                             }}
-                            onChange={this._onFeeChanged.bind(this)}
+                            onChange={onFeeChanged}
                         />
                     </Form>
                 </div>
             </Modal>
         );
-    }
+    };
 
-    render() {
-        let {filterValue} = this.state;
-        let allList = this._sortByAsset();
-        return (
-            <div className="grid-content app-tables no-padding">
-                <div className="content-block small-12">
-                    <div
-                        className="generic-bordered-box"
-                        style={{margin: "20px"}}
-                    >
-                        <div className="header-selector">
-                            <div className="filter inline-block">
-                                <SearchInput
-                                    value={filterValue}
-                                    placeholder={counterpart.translate(
-                                        "credit_offer.plh_input_asset_name"
-                                    )}
-                                    onChange={this._handleFilterInput}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        className="generic-bordered-box"
-                        style={{marginBottom: "40px"}}
-                    >
-                        <div className="grid-wrapper">
-                            <Table
-                                rowKey="id"
-                                columns={this._getColumns()}
-                                dataSource={allList}
-                                pagination={{
-                                    hideOnSinglePage: true,
-                                    pageSize: 10
-                                }}
+    const {filterValue} = state;
+    const allListSorted = sortByAsset();
+    return (
+        <div className="grid-content app-tables no-padding">
+            <div className="content-block small-12">
+                <div
+                    className="generic-bordered-box"
+                    style={{margin: "20px"}}
+                >
+                    <div className="header-selector">
+                        <div className="filter inline-block">
+                            <SearchInput
+                                value={filterValue}
+                                placeholder={counterpart.translate(
+                                    "credit_offer.plh_input_asset_name"
+                                )}
+                                onChange={handleFilterInput}
                             />
                         </div>
                     </div>
-                    {this._renderAcceptModal()}
                 </div>
+                <div
+                    className="generic-bordered-box"
+                    style={{marginBottom: "40px"}}
+                >
+                    <div className="grid-wrapper">
+                        <Table
+                            rowKey="id"
+                            columns={getColumns()}
+                            dataSource={allListSorted}
+                            pagination={{
+                                hideOnSinglePage: true,
+                                pageSize: 10
+                            }}
+                        />
+                    </div>
+                </div>
+                {renderAcceptModal()}
             </div>
-        );
-    }
+        </div>
+    );
 }
-
-CreditOfferPage = connect(CreditOfferPage, {
-    listenTo() {
-        return [AccountStore, CreditOfferStore, IntlStore];
-    },
-    getProps(props) {
-        return {
-            currentAccount: AccountStore.getState().currentAccount,
-            passwordAccount: AccountStore.getState().passwordAccount,
-            allList: CreditOfferStore.getState().allList,
-            locale: IntlStore.getState().currentLocale
-        };
-    }
-});
 
 export default CreditOfferPage;

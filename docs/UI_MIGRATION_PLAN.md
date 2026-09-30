@@ -6453,6 +6453,123 @@ compromise, not silent scope-narrowing.
     exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
   - `Dashboard/` is now fully ported (7/7 files).
+- `Account/CreditOffer/` batch 1 (2 files, out of the directory's 7):
+  `CreditDebtList.jsx` → `CreditDebtList.tsx`, `CreditOfferPage.jsx` →
+  `CreditOfferPage.tsx`. Both are independent leaves in this directory -
+  neither imports the other, nor `CreditOfferList.jsx`,
+  `CreditOfferAccountPage.jsx`, `CreateModal.jsx`, `EditModal.jsx`, or
+  `CreditRightsList.jsx`. Ported concurrently with two other delegated
+  agents working on the rest of this directory in separate worktrees
+  (`CreateModal.jsx`+`CreditRightsList.jsx`; `EditModal.jsx` alone) - no
+  file overlap with either batch. Per the same partial-directory-batch
+  precedent as `PredictionMarkets/`'s batches 1-2, the other 5 `.jsx`
+  files in this directory - including both this batch's and the other two
+  batches' - are left in place, pending a later step once all batches
+  have landed.
+  - Security-sensitive per AGENTS.md: `CreditDebtList.tsx` dispatches
+    `CreditOfferActions.repay(data)` (in `onSubmit`) and
+    `CreditOfferActions.getCreditDealsByBorrower(...)` (a read, mount-only
+    `useEffect`); `CreditOfferPage.tsx` dispatches
+    `CreditOfferActions.accept(data)` (in `onSubmit`) and
+    `CreditOfferActions.getAll({flag: "first"})` (a read, mount-only
+    `useEffect`). All four calls, their argument construction, and the
+    surrounding `Asset`/`Price`/fee-rate math are preserved exactly - no
+    rounding/precision logic touched. Neither file touches
+    `WalletDb`/wallet-unlock/key-import flows or password/private-key/
+    brainkey material (grepped); the `console.error(err)` calls in each
+    action's `.catch()` just log the caught error object and are kept
+    as-is. The commented-out `// console.log("data: ", data);` lines
+    (one per file) are already-inert comments in the originals, left
+    inert here too.
+  - Structural change in both files: the original's `connect(Component,
+    {listenTo, getProps})` alt-react HOC is replaced by one
+    `useAltStore(Store)` call per listened store, per this migration's
+    established pattern. `CreditOfferPage.tsx` is a route-level component
+    (`App.jsx` lazy-loads it directly as `component={CreditOfferPage}`,
+    `webpackChunkName: "explorer"`) - it receives no props of its own
+    (no `propTypes` in the original either, and react-router's implicit
+    `match`/`location`/`history` are never read), matching
+    `Dashboard/DashboardPage.tsx`'s precedent for unread route props.
+    `CreditDebtList.tsx`'s sole caller (`CreditOfferAccountPage.jsx`,
+    out of scope) only ever passes an `account` prop; `currentAccount`/
+    `passwordAccount`/`dealsByBorrower` (and `allList`/`locale` in
+    `CreditOfferPage.tsx`) are always store-derived, matching alt-react's
+    `connect` prop-precedence rule (store props always win - see
+    `AccountPortfolioList.tsx`'s header comment for the worked example).
+    Each class's multiple `this.state.X` fields are kept as one combined
+    state object via a `mergeState` shallow-merge helper (not split into
+    separate `useState` calls), to preserve the originals' atomic
+    multi-field `this.setState({a, b})` updates exactly; several call
+    sites also used `this.setState(update, callback)` - replicated by
+    calling the balance-check function immediately after the matching
+    `mergeState` call, same as `FeeAssetSelector.tsx`'s established
+    precedent for that translation. A `stateRef` mirror
+    (`stateRef.current = state` every render) lets callbacks read current
+    state without extra dependencies, matching the originals' `this.state`
+    always reading current values. Neither original had
+    `shouldComponentUpdate`, `componentDidUpdate`,
+    `UNSAFE_componentWillReceiveProps`/`UNSAFE_componentWillMount`, or
+    imperative string refs (verified by reading both files whole) - only
+    `componentDidMount`, translated to a mount-only `useEffect(() => {},
+    [])` in each.
+  - Preserved verbatim, not "fixed" (documented in each file's header
+    comment): `CreditDebtList.tsx`'s `renderTotalAmount`/`renderFeeRate`
+    build an `else`-branch JSX expression but never `return` it (a
+    pre-existing dead-code bug, implicitly returns `undefined`).
+    `CreditOfferPage.tsx`'s `renderAcceptModal` has `if ((!selectAsset,
+    !debtAsset)) return null;` - a comma-operator bug where only
+    `!debtAsset` is actually tested (kept as `if ((void selectAsset,
+    !debtAsset)) return null;`, the `void` added purely so `tsc` accepts
+    the same comma expression - TS2695 otherwise rejects an "unused" left
+    operand - behaviorally identical to the original). Its footer also has
+    `info.owner_account === info.owner_account && (...)`, a tautology
+    (always `true`) very likely meant to be
+    `account.get("id") === info.owner_account` (matching the adjacent
+    `isSubmitNotValid` check just above it) - transcribed exactly rather
+    than "fixed", since that would change when
+    `credit_offer.info_borrow_err` renders. `_sortByAsset`'s
+    `assetName.includes(...)` call stays unguarded against
+    `ChainStore.getAsset(...)?.get("symbol")` returning `undefined` - a
+    latent possible-crash path in the original, transcribed exactly.
+  - Both files also drop one now-genuinely-unused `feeAmount` destructure
+    each (in `renderRepayModal`/`renderAcceptModal`): the originals'
+    `onClick` handlers bound extra arguments
+    (`feeAmount.getAmount({real: true})`, `feeAmount.asset_id`) to
+    `_setTotal`, which never actually declared those extra parameters -
+    always-inert arguments even in the originals - so the new inline
+    arrow-function `onClick`s simply don't pass them through, which is
+    what makes the local `feeAmount` destructure newly unused (documented
+    inline at each site).
+  - TypeScript-forced adjustments: `Asset#getAmount()`'s return type is
+    inferred as `number` from the plain-JS `MarketClasses.js` class (no
+    hand-written `.d.ts`), so the originals' several
+    `parseFloat(cAsset.getAmount())`/`parseInt(...)`/
+    `parseFloat(FEE_RATE_DENOM)` calls (implicitly coercing a number to a
+    string, same as JS always did internally) needed an explicit
+    `String(...)` wrap to satisfy `parseFloat`/`parseInt`'s `string`
+    parameter type - the same workaround already established for
+    `InvoicePay.tsx`/`Blocks.tsx`. Separately, `Price`'s constructor
+    destructures `{base, quote, real = false} = {}` - TS's JS-inference
+    only picks up `real` (the one parameter with its own default) as a
+    known property of the inferred parameter type, dropping `base`/
+    `quote` entirely, so `new Price({base, quote})` fails an excess-
+    property check. `CreditOfferPage.tsx` casts the imported `Price` to
+    `any` (`const Price: any = PriceUntyped;`) exactly as `Exchange.tsx`
+    already does for the same reason, documented with a comment pointing
+    at that precedent. `Asset`'s own constructor defaults every
+    parameter, so it isn't affected and needed no cast.
+  - Both old `.jsx` originals removed in this commit (`git rm`) -
+    grep-confirmed no importer anywhere in the app references either by
+    an explicit `.jsx` extension (the sole importer,
+    `CreditOfferAccountPage.jsx`, uses an extensionless relative import,
+    resolved transparently across `.jsx`/`.tsx` by Webpack/Babel per
+    `tsconfig.json`'s `checkJs: false`).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on both files (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite green
+    (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
+    exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~77 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
