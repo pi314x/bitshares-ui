@@ -5434,12 +5434,50 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~111 more `.jsx` files outside
+- `Registration/` batch 3 (3 files, completing the directory):
+  `WalletRegistration.jsx`, `WalletRegistrationConfirm.jsx`,
+  `WalletRegistrationForm.jsx` → `.tsx`.
+  - `WalletRegistration.tsx`: not security-sensitive itself (only
+    UI-flow state forwarded to its two children). Same
+    `UNSAFE_componentWillMount`+`componentDidMount`-combined-into-one-
+    mount-effect and dropped-pure-`shouldComponentUpdate` treatment as
+    `AccountRegistration.tsx`/`WalletRegistration.tsx`'s siblings.
+    `toggleConfirmed(checkbox)`'s computed-key toggle
+    (`setState({[checkbox]: !state[checkbox]})`) uses a `stateRef`
+    mirror so it always flips the *current* value.
+  - `WalletRegistrationConfirm.tsx`: not security-sensitive per AGENTS.md
+    (grepped, none of `WalletApi`/`WalletDb`/`ApplicationApi`/
+    `.add_type_operation`/`process_transaction` appear) - only renders
+    three confirmation checkboxes and delegates the actual backup-file
+    download to the already-ported `Wallet/Backup.tsx`'s `Download`.
+  - `WalletRegistrationForm.tsx`: security-sensitive per AGENTS.md - the
+    real wallet-creation flow. `onSubmit` reads the user-entered
+    `state.password` and, when no wallet exists yet, calls
+    `createWallet(password)` → `WalletActions.setWallet("default",
+    password)` before creating the first account via `WalletUnlockActions
+    .unlock()` + `AccountActions.createAccount(...)` - transcribed
+    verbatim. Grepped every `console.*` call in the file: none ever
+    include the password, only static strings or the caught error
+    object. `componentWillUnmount`'s `this.unmounted` flag (read inside
+    an async `.then()` to avoid a post-unmount `setState`) becomes a
+    `useRef` flipped in a mount-only effect's cleanup function. Dropped
+    as confirmed dead: `ref="password"` (never read anywhere);
+    `state.showIdenticon` (toggled, never read - the same dead field,
+    same name, as the already-dropped `state.show_identicon` in
+    `Account/CreateAccount.tsx`, earlier Account/ batch);
+    `renderDropdown(myAccounts, isLTM)`'s unused `isLTM` parameter
+    (passed by its one call site, never read inside the function body);
+    the `Input` import from `bitshares-ui-style-guide` (never referenced
+    as `<Input>` anywhere in the original file either - a pre-existing
+    dead import).
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~108 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started, `Account/`, `Modal/`, and `Blockchain/`
-  non-operations now fully ported:
-  `Registration/` (3 more: `WalletRegistration.jsx`,
-  `WalletRegistrationConfirm.jsx`, `WalletRegistrationForm.jsx`),
+  directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
+  non-operations, and `Registration/` now fully ported:
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.
