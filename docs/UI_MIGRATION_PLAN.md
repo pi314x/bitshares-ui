@@ -6570,6 +6570,89 @@ compromise, not silent scope-narrowing.
     (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
     exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
+- `Account/CreditOffer/` batch 2 (1 file, out of the directory's 7):
+  `EditModal.jsx` → `EditModal.tsx`. Two other concurrent batches
+  (`CreateModal.jsx`+`CreditRightsList.jsx`; `CreditDebtList.jsx`+
+  `CreditOfferPage.jsx`, the latter landed separately as batch 1) were in
+  flight in the same directory at the same time and are out of scope for
+  this entry.
+  - Security-sensitive per AGENTS.md: `_onSubmit` still calls the real
+    `CreditOfferActions.update(opData)`, with `opData`'s construction
+    (delta amount, fee rate, min deal amount, the gcd-reduced
+    `acceptable_collateral` price ratios, `acceptable_borrowers`, fee
+    asset, and the "drop `delta_amount` when it is exactly 0" step)
+    transcribed unchanged. No password/private-key/brainkey material is
+    involved (grepped - doesn't touch `WalletDb`/wallet-unlock/key-import
+    flows); the one `console.error(err)` just logs the caught error
+    object, kept as-is.
+  - Two original classes: `EditModal` → `EditModalCore`, a
+    `React.forwardRef<EditModalHandle, EditModalCoreProps>` function
+    component. `CreditOfferList.jsx`'s `showEditModal(data)` holds an
+    imperative ref and calls only `.initModal(data)` on it (grepped app-
+    wide for `.initModal(`/`.showModal(`/`.hideModal(` on an
+    `edit_modal`/`EditModal` ref - `showModal`/`hideModal` are only ever
+    called on `this` from inside the class itself) - so, matching
+    `SendModal.tsx`'s established `refCallback` +
+    `React.useImperativeHandle` pattern (one of the very few other files
+    in the app using this exact whole-instance-ref convention),
+    `EditModalHandle` exposes exactly `{initModal}`. `EditModalConnectWrapper`
+    (`connect(..., {listenTo: [AccountStore, SettingsStore], getProps})`)
+    → a thin `EditModal` function component. Grepped every `this.props.`
+    read in the original class: only `id` and `currentLocale` (the
+    `DatePicker`'s `zh_CN` locale) are ever read - `currentAccount`/
+    `passwordAccount`, both produced by the original `getProps` from
+    `AccountStore.getState()`, are computed but never read anywhere in
+    the class. Since `listenTo: [AccountStore]` therefore only ever
+    affected how often this modal re-rendered, never what it rendered,
+    it's dropped entirely; only `SettingsStore` is read, via
+    `useAltStore`, for `currentLocale`.
+  - `setState(patch, callback)` two-arg calls whose callback
+    (`_checkBalance`) reads fields the very same `setState` call is also
+    about to change (`onAmountChanged`, `onFeeChanged`, `_setTotal`) are
+    translated by giving `_checkBalance` an optional `overrides` argument
+    merged over `stateRef.current`, with each call site passing exactly
+    the patch it just applied - simulating what `this.state` would look
+    like once React's class `setState` callback actually ran, without
+    needing an extra render.
+  - Confirmed-dead code dropped (grepped, not assumed):
+    `_getAvailableAssets(state = this.state)` is fully defined but never
+    called anywhere else in the file (only its own definition, no call
+    site) - dropped along with the `utils` import it was the sole user
+    of. `_setTotal`'s call site bound two extra arguments
+    (`feeAmount.getAmount({real: true})`, `feeAmount.asset_id`) that
+    `_setTotal(asset_id, balance_id)`'s own signature never declares a
+    parameter for (JS silently drops unused extra call arguments) - since
+    that was `state.feeAmount`'s only read anywhere in `_renderEditModal`,
+    `feeAmount` is no longer destructured there either.
+  - Preserved verbatim, not "fixed": `_onPwanPriceChanged` keeps its
+    original misspelling ("Pwan" instead of "Pawn") - a private method
+    name never read outside this file. `pawn_assets`/`whitelist` continue
+    to be mutated in place (`.splice`/`.push`) before being handed back
+    into `mergeState` with the same array reference, matching the
+    original class's identical mutate-then-`setState` pattern - safe here
+    because `mergeState` always spreads into a brand-new state object, so
+    `useState`'s setter never bails out on reference equality.
+  - TS-forced adjustments: every `new Asset(...)`/`new Price(...)` call
+    (from `lib/common/MarketClasses.js`) needed the established `new
+    (Asset as any)(...)`/`new (Price as any)(...)` cast (see e.g.
+    `Utility/FormattedPrice.tsx`, `Utility/PriceInput.tsx`,
+    `DepositWithdraw/xbtsx/XbtsxWithdrawModal.tsx`) to avoid TS
+    misinferring the constructor's parameter shape from other call sites
+    in the same JS file. `DatePicker`'s `disabledDate={(current: any) =>
+    ...}` matches the same `any` annotation already used in
+    `HtlcModal.tsx`/`DirectDebitModal.tsx`. `catch (err: any)` in
+    `_onSubmit` is explicit since `err.toString()` is called on it and
+    `strict`'s `useUnknownInCatchVariables` would otherwise type a bare
+    `catch (err)` as `unknown`.
+  - The old `.jsx` original is removed in this commit (`git rm`) -
+    `CreditOfferList.jsx` (the only importer, grepped) imports it via an
+    extensionless relative path, unaffected by the extension change.
+  - Verified: `npx tsc --noEmit -p .` clean (0 errors repo-wide), `npx
+    eslint app/components/Account/CreditOffer/EditModal.tsx` clean (0
+    errors, only expected `@typescript-eslint/no-explicit-any` warnings),
+    full Jest suite green (19/19 suites, 5,532/5,532 tests - matches the
+    known-good baseline exactly), `yarn build` shows only the 2 known
+    pre-existing `charting_library.esm` errors.
 - Remaining long tail (~77 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
