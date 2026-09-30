@@ -5974,11 +5974,110 @@ compromise, not silent scope-narrowing.
     intentionally kept (see above) - not yet wired into the app's import
     graph, since `PredictionMarkets.jsx` still imports the old `.jsx`
     versions.
-- Remaining long tail (~91 more `.jsx` files outside
+- `PredictionMarkets/` batch 3 (final 2 files, completing the directory):
+  `PredictionMarkets.jsx` (756 lines) → `.tsx`, `PMAssetsContainer.jsx`
+  (195 lines) → `.tsx`. These are the two "dependent" files deliberately
+  held back from both prior batches' delegated agents, since both import
+  every one of the 5 already-ported leaf files (`PMAssetsContainer.jsx`
+  additionally imports `PredictionMarkets.jsx` itself) - ported directly
+  by the orchestrating session rather than delegated, once all 5 leaves
+  existed as `.tsx`.
+  - Security-sensitive per AGENTS.md: `PredictionMarkets.tsx`'s
+    `onResolveMarket` dispatches a real on-chain transaction
+    (`AssetActions.assetGlobalSettle(asset, account, price)`); it also
+    dispatches `MarketsActions.cancelLimitOrders` (`onCancelOpinion`) and
+    subscribes/unsubscribes markets (`getMarketOpinions`). None of these
+    log or persist key/password material - transcribed verbatim.
+    `PMAssetsContainer.tsx` itself only fetches/lists asset data (no
+    transaction-building), same as its original.
+  - `connect(Component, {listenTo() {return [AssetStore, MarketsStore]},
+    getProps() {...}})` on both files is replaced by an outer store-
+    subscribing wrapper calling `useAltStore` once per store (this
+    migration's established multi-store pattern), spreading the passed-in
+    props first and the store-derived props after - matching alt-react's
+    own `<Component {...this.props} {...this.getNextProps()} />` merge
+    order (see `Account/AccountPortfolioList.tsx`'s header comment for
+    the precedent this follows). In `PredictionMarkets.tsx` this means the
+    store-derived `assets` (independently re-read from `AssetStore`)
+    always overrides the `assets` prop `PMAssetsContainer.tsx` itself
+    already passed down - both ultimately read the same
+    `AssetStore.getState().assets`, so the redundant double-subscription
+    across the two files is a behavioral no-op, preserved rather than
+    simplified away.
+  - Both files are wrapped with `bindToCurrentAccount` at their own
+    export, same as the originals - `PMAssetsContainer.tsx`'s wrapping
+    gates rendering behind a loaded `currentAccount` without ever reading
+    or forwarding it to `<PredictionMarkets>`; `PredictionMarkets.tsx`
+    independently re-resolves and reads `currentAccount` itself. This
+    double-gating (present in the original two-file structure) is kept
+    verbatim.
+  - `componentDidUpdate`'s `prevProps.marketLimitOrders !==
+    this.props.marketLimitOrders` guard (`PredictionMarkets.jsx`) and
+    `prevProps.assets !== this.props.assets && this.state.fetchAllAssets`
+    guard (`PMAssetsContainer.jsx`) both become mount-skip `useEffect`s
+    keyed on the same field(s) each original compared, using the
+    established `isMountRef` guard and reading current-but-not-a-
+    dependency state through a `stateRef` mirror inside the effect body
+    (`_updateOpinionsList`'s `this.state.selectedPredictionMarket`;
+    `PMAssetsContainer`'s `this.state.fetchAllAssets`/
+    `.lastAssetSymbol`).
+  - `getMarketOpinions` (async, may span multiple ticks) reads
+    `this.state.subscribedMarket` via the same `stateRef` mirror, to
+    decide whether to unsubscribe a previously-subscribed market first.
+    Every other instance method in both files reads/writes state
+    synchronously within a single event-handler invocation and uses the
+    plain closure-captured `state`/`mergeState`, matching the original's
+    single-invocation `this.state`/`this.setState` usage.
+  - Two `setState(update, callback)` call sites
+    (`handleUnknownHousesToggleChange`'s `() =>
+    this.props.fetchAllAssets()` and `onMarketAction`'s row-action branch
+    `() => this.getMarketOpinions(market)` in `PredictionMarkets.jsx`;
+    `fetchAllAssets()`'s `() => setTimeout(...)` in
+    `PMAssetsContainer.jsx`) had callbacks that never actually read the
+    just-committed state - each is replicated by calling the callback
+    body immediately after the state update, since React's commit-order
+    guarantee was never actually load-bearing for any of them.
+  - Dead field dropped: `PredictionMarkets.jsx`'s `state.loading` (set in
+    the constructor, never read or updated anywhere else - grepped).
+  - Preserved verbatim (not "fixed"): `state.initialOpinion` was read once
+    (passed as `<AddOpinionModal opinion={...}>`) but never initialized
+    or set anywhere - always `undefined`. Since `AddOpinionModal.tsx`'s
+    own earlier port (batch 2) already confirmed this `opinion` prop is
+    dead and dropped it from that file's props type entirely, the
+    always-`undefined` prop assignment is dropped here too (there is
+    nothing left on the receiving end for it to do).
+  - Preserved verbatim (not "fixed"): `_filterMarkets`'s search-term
+    matching is genuinely broken - it concatenates `accountName` with
+    `asset.condition`/`asset.description` (neither is a real field; the
+    actual text lives at `asset.forPredictions.description.{condition,
+    main}`, so both are always `undefined`), uppercases the result, then
+    checks `.indexOf(this.state.searchTerm)` against the *un-uppercased*
+    search term (so it only ever matches if the user types in all caps) -
+    and the resulting boolean is stored in a variable named `noMatch` but
+    actually means "a match WAS found", so `if (noMatch) return false;`
+    excludes markets on a search *hit*, backwards from the evident
+    intent. Transcribed exactly.
+  - `_isValidPredictionMarketAsset` uses no `this` at all - kept as a
+    plain local function of its `asset` argument, same as the original's
+    effectively-static instance method.
+  - Both old `.jsx` originals for this batch, and all 5 leaf `.jsx`
+    originals kept pending through the prior two batches, are removed in
+    this commit (`git rm`, all 7 at once) - grep-confirmed no importer
+    anywhere in the app references any of the 7 by an explicit `.jsx`
+    extension.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors after fixing several mechanical `prefer-const` findings on
+    `let` bindings the original never reassigned; only expected
+    `@typescript-eslint/no-explicit-any` warnings remain), full Jest suite
+    green (19/19 suites, 5,532/5,532 tests - matches the known-good
+    baseline exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
+  - `PredictionMarkets/` is now fully ported (7/7 files).
+- Remaining long tail (~84 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
-  non-operations, `Registration/`, root `components/`, and `Forms/` now
-  fully ported: `PredictionMarkets/` (7), `Dashboard/` (7),
+  non-operations, `Registration/`, root `components/`, `Forms/`, and
+  `PredictionMarkets/` now fully ported: `Dashboard/` (7),
   `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
