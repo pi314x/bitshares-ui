@@ -5347,11 +5347,41 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
-- Remaining long tail (~119 more `.jsx` files outside
+- `Registration/` batch 1 (5 files): `RegistrationSelector.jsx`,
+  `WalletBlockSelection.jsx`, `WalletHeaderSelection.jsx`,
+  `AccountBlockSelection.jsx`, `AccountHeaderSelection.jsx` → `.tsx`.
+  Not security-sensitive per AGENTS.md (grepped for `WalletApi`/
+  `WalletDb`/`ApplicationApi`/`.add_type_operation`/`process_transaction`
+  - none appear; these only toggle a local "which registration path is
+  highlighted" UI state and delegate navigation to react-router).
+  - `WalletBlockSelection.tsx`/`AccountBlockSelection.tsx`/
+    `WalletHeaderSelection.tsx`/`AccountHeaderSelection.tsx`: all four
+    were already plain functional components in the original - purely
+    mechanical `PropTypes`->TS conversions, no logic changes.
+  - `RegistrationSelector.tsx`: rendered via `<Route path="/registration"
+    exact component={RegistrationSelector} />` in `App.jsx`
+    (react-router-dom v5), which injects `history`/`location`/`match` as
+    props - `props.history.push(...)` is real, not dead. Dropped as
+    confirmed dead (grepped): `static contextTypes = {router: PropTypes
+    .object.isRequired}` (the legacy React context API) - `this.context`
+    is never read anywhere in the file, so it has no hooks/functional
+    equivalent to port. `props.children`'s early-return branch is never
+    actually exercised by the one real call site (`<Route
+    component={...}>` never supplies `children`), but it's a real
+    conditional gated on a real, explicitly typed/defaulted prop, so it's
+    kept as-is rather than treated as dead code.
+  - Verified: `yarn typecheck` clean, `eslint` clean (0 errors, expected
+    `any`-type warnings only), full Jest suite green (5,532/5,532),
+    `yarn build` shows only the 2 known pre-existing `charting_library`
+    errors. Old `.jsx` files removed.
+- Remaining long tail (~114 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started, `Account/` and `Modal/` now fully
-  ported, `Blockchain/` non-operations now fully ported too:
-  `Registration/` (11),
+  directories) not yet started, `Account/`, `Modal/`, and `Blockchain/`
+  non-operations now fully ported:
+  `Registration/` (6 more: `AccountRegistration.jsx`,
+  `AccountRegistrationForm.jsx`, `AccountRegistrationConfirm.jsx`,
+  `WalletRegistration.jsx`, `WalletRegistrationConfirm.jsx`,
+  `WalletRegistrationForm.jsx`),
   root `components/` (9), `Forms/` (8), `PredictionMarkets/` (7),
   `Dashboard/` (7), `Account/CreditOffer/` (7), `Showcases/` (6), and
   smaller directories.

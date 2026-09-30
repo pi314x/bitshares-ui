@@ -1,10 +1,18 @@
-import React from "react";
-import PropTypes from "prop-types";
+// TypeScript port of the legacy WalletBlockSelection.jsx (Phase 8,
+// docs/UI_MIGRATION_PLAN.md). Already a plain functional component -
+// mechanical PropTypes->TS conversion only, no logic changes.
+import * as React from "react";
 import Translate from "react-translate-component";
 import {Button} from "bitshares-ui-style-guide";
 import counterpart from "counterpart";
 
-export default function WalletBlockSelection(props) {
+interface WalletBlockSelectionProps {
+    active: boolean;
+    onSelect: () => void;
+    onChangeActive: () => void;
+}
+
+export default function WalletBlockSelection(props: WalletBlockSelectionProps) {
     return (
         <div
             className="wallet-block-registration"
@@ -66,9 +74,3 @@ export default function WalletBlockSelection(props) {
         </div>
     );
 }
-
-WalletBlockSelection.propTypes = {
-    active: PropTypes.bool.isRequired,
-    onSelect: PropTypes.func.isRequired,
-    onChangeActive: PropTypes.func.isRequired
-};

@@ -1,10 +1,20 @@
-import React from "react";
-import PropTypes from "prop-types";
+// TypeScript port of the legacy AccountBlockSelection.jsx (Phase 8,
+// docs/UI_MIGRATION_PLAN.md). Already a plain functional component -
+// mechanical PropTypes->TS conversion only, no logic changes.
+import * as React from "react";
 import Translate from "react-translate-component";
 import {Button} from "bitshares-ui-style-guide";
 import counterpart from "counterpart";
 
-export default function AccountBlockSelection(props) {
+interface AccountBlockSelectionProps {
+    active: boolean;
+    onSelect: () => void;
+    onChangeActive: () => void;
+}
+
+export default function AccountBlockSelection(
+    props: AccountBlockSelectionProps
+) {
     return (
         <div
             className="account-block-registration"
@@ -66,9 +76,3 @@ export default function AccountBlockSelection(props) {
         </div>
     );
 }
-
-AccountBlockSelection.propTypes = {
-    active: PropTypes.bool.isRequired,
-    onSelect: PropTypes.func.isRequired,
-    onChangeActive: PropTypes.func.isRequired
-};
