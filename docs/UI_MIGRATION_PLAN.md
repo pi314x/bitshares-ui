@@ -6897,6 +6897,117 @@ compromise, not silent scope-narrowing.
     (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
     exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
+- `Showcases/` batch 4 (2 files, out of the directory's 6): `Borrow.jsx` →
+  `Borrow.tsx`, `Htlc.jsx` → `Htlc.tsx`. Ported concurrently by a separate
+  background agent alongside `Showcases/` batch 3
+  (`DirectDebit.jsx`/`Showcase.jsx`) and a third, `Barter.jsx`-only batch,
+  per the same three-way split noted in batch 3's entry above. Neither
+  file imports the other or is imported by anything in this directory;
+  both are route-level components `App.jsx` lazy-loads directly.
+  - `Borrow.jsx` is security-sensitive per AGENTS.md: `showBorrowModal`
+    calls the real `WalletUnlockActions.unlock()` before revealing the
+    borrow modal when no account is yet known - the exact
+    unlock-then-proceed flow (`.then` sets `isBorrowBaseModalVisible:
+    true`, `.catch` silently no-ops) is transcribed verbatim, not
+    restructured; no key/password/brainkey material is read, logged, or
+    persisted here. `Htlc.jsx` itself never calls
+    `HtlcActions.create`/`redeem`/`extend` (the real on-chain HTLC
+    create/redeem/extend transaction dispatch) - that lives entirely in
+    the already-ported `Modal/HtlcModal.tsx`; this file's `showModal`
+    only prefetches the `to`/`from` accounts and transfer asset into
+    `ChainStore`'s cache (via `FetchChainObjects`) before opening that
+    modal with the selected `{type, payload}` - that prefetch-then-open
+    sequencing is preserved exactly. Every `console.*` call in both files
+    was grepped: `Htlc.jsx`'s one `console.log("Loading HTLC table for",
+    accountId)` (under `__DEV__`) only logs an account id, never
+    credential material - kept, per AGENTS.md's rule that only logging of
+    actual secret material must be dropped.
+  - `Borrow.jsx`: `connect(Borrow, {listenTo: [AccountStore], getProps})`
+    becomes a `BorrowContainer` calling `useAltStore(AccountStore)` and
+    computing `currentAccount` the same way `getProps()` did
+    (`state.currentAccount || state.passwordAccount`), passed into a
+    `debounceRender`-wrapped `BorrowCore` - the same "outer wrapper
+    gathers stores, inner component stays a plain `debounceRender`-wrapped
+    function" shape used by `AccountPortfolioList.tsx`/`MyMarkets.tsx`.
+    `componentDidMount`/`componentDidUpdate` both call the same
+    `focusDiv()` with no extra gating - combined into one dependency-less
+    `useEffect` that runs after every render. The two legacy string refs
+    (`ref="next"`/`ref="previous"`, read via `ReactDOM.findDOMNode(...)`)
+    become real `useRef`s still read through `ReactDOM.findDOMNode(...)`,
+    the same translation already established for `CollapsibleTable.tsx`.
+    Dropped as confirmed dead (grepped): the `AssetWrapper` import, which
+    appears only on its own `import` line and is never referenced
+    anywhere else in the file. Preserved verbatim, not "fixed", two
+    pre-existing bugs: `<Icon name="steps[current].icon" />` (a literal
+    string, not an interpolated `{steps[current].icon}`), and the legend
+    `try`/`catch` in `render()`, whose `catch` branch reassigns `legend`
+    to the raw, un-split translated string that the surrounding JSX then
+    unconditionally calls `.map(...)` on - a pre-existing latent crash if
+    that branch is ever actually reached. One TS-forced cast: the
+    outermost `<div>`'s inline `style` includes `align: "center"`, not a
+    real CSS property (React silently drops it, same before and after) -
+    cast `as React.CSSProperties` rather than dropped.
+  - `Htlc.jsx`: `shouldComponentUpdate(np, ns)` (comparing
+    `props.currentAccount`, `JSON.stringify(state.htlc_list)`,
+    `state.isModalVisible`, `state.tableIsLoading`, `state.filterString`)
+    is a pure re-render guard that also gates whether `componentDidUpdate`
+    (which unconditionally calls `_update()`, per its own "always update,
+    relies on push from backend when account permission change" comment)
+    runs at all. The gating half is dropped; `componentDidUpdate`'s side
+    effect becomes a `useEffect` keyed on exactly the same five fields
+    `shouldComponentUpdate` compared, calling `update()` inside - this
+    reproduces the gating without reimplementing the boolean logic, and
+    also reproduces its recursive "settle" behavior (since `update()`
+    itself rewrites two of that effect's own dependencies,
+    `htlc_list`/`tableIsLoading`, the effect keeps re-firing exactly as
+    `componentDidUpdate` would keep getting re-invoked in the original,
+    until the values stop changing). `componentDidMount() { this._update();
+    }` becomes its own separate mount-only `useEffect(() => { update(); },
+    [])`. Combined with the dependency-keyed effect above (which, like any
+    `useEffect`, also runs once after the very first render regardless of
+    its dependencies "just" being populated for the first time), `update()`
+    ends up invoked twice in quick succession on mount, instead of the
+    original class's single `componentDidMount`-only mount call (a class's
+    `componentDidUpdate` never fires on the same mount that
+    `componentDidMount` does) - a genuine, minor behavior difference from
+    literally translating two separately-specified lifecycle methods,
+    called out explicitly since it doesn't fit this migration's usual
+    "preserve every quirk exactly" rule. Harmless in practice: `update()`
+    is idempotent (always fully recomputes `htlc_list` from the current
+    `currentAccount`/`ChainStore` state), so the extra call just re-fetches
+    the same table data once more before it settles. `connect()`-based
+    account resolution was already handled upstream: the original wraps
+    the whole class in `bindToCurrentAccount(Htlc)` (already ported to
+    `.tsx`, a Container+Core+`debounceRender` HOC of its own), which this
+    port keeps calling unchanged (`export default bindToCurrentAccount(
+    Htlc)`) - no separate Container/Core split was needed inside this file
+    itself. Preserved verbatim, not "fixed", several further pre-existing
+    bugs: `hideModal`'s `setState({isModalVisible: false, operation:
+    null})` sets an undeclared `operation` key (the real field is
+    `operationData`), so the cached operation is never actually cleared on
+    hide - kept via a targeted `as any` cast; `render()`'s `dataSource
+    .length && dataSource.filter(...)` discards the `.filter(...)` call's
+    return value, making the whole statement a no-op (the original's own
+    "if filter is chained to map, possible bugs..." comment is kept
+    alongside it); the `amount` column's `sorter` reads
+    `a.rawData.op[1].amount.amount`, but `rawData` (the raw HTLC chain
+    object) has no `op` field, only `.transfer`/`.conditions` - would throw
+    if ever actually invoked; `!!this.state.errorMessage` in `render()`
+    checks a field never declared in state (always `undefined`, so that
+    error `<span>` can never render) - kept via an `as any` read rather
+    than adding a real `errorMessage` field to `HtlcState`.
+  - Both old `.jsx` originals removed in this commit (`git rm`).
+    Grep-confirmed neither file is imported anywhere in the app besides
+    `App.jsx`'s two lazy-loaded route imports and two comment-only
+    mentions in the already-ported `Modal/BorrowModal.tsx`/
+    `Modal/HtlcModal.tsx` header comments.
+  - Verified: `npx tsc --noEmit -p .` clean (0 errors repo-wide), `npx
+    eslint app/components/Showcases/Borrow.tsx
+    app/components/Showcases/Htlc.tsx` clean (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite green
+    (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
+    exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~70 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
