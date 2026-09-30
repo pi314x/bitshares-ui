@@ -7118,12 +7118,73 @@ compromise, not silent scope-narrowing.
     this one local build run only, to work around this worktree's
     `node_modules` being a symlink to the main checkout, same as prior
     batches - not committed).
-- Remaining long tail (~70 more `.jsx` files outside
+- `Showcases/` batch 5 (final 1 file, completing the directory):
+  `ShowcaseGrid.jsx` → `ShowcaseGrid.tsx`. Ported directly by the
+  orchestrating session (not delegated), since it imports `Showcase.jsx`
+  (ported in batch 3), the only internal dependency in this directory.
+  - Not security-sensitive per AGENTS.md: this component only lays out a
+    grid of navigation tiles, most of which just call `history.push(...)`
+    to already-ported destination routes; the one tile with real logic
+    ("paper wallet") calls `createPaperWalletAsPDF(account)`, an existing,
+    separately-owned utility this file doesn't modify. Grepped for
+    `WalletDb`/`WalletApi`/`.add_type_operation`/`process_transaction` -
+    none appear.
+  - `connect(ShowcaseGrid, {listenTo: [AccountStore], getProps() {...}})`
+    → `useAltStore(AccountStore)` in an outer wrapper, passed to a
+    `ShowcaseGridCore` function (Container+Core split).
+  - `UNSAFE_componentWillMount` (resolves `ChainStore.getAccount(this
+    .props.currentAccount)` once, synchronously, before the first paint)
+    and `UNSAFE_componentWillReceiveProps(np)` (re-resolves only when
+    `np.currentAccount !== this.props.currentAccount`, a guarded
+    comparison) do the same resolution work and collapse into one
+    `useEffect(() => {...}, [currentAccount])` - it naturally fires once
+    on mount and again only when `currentAccount` changes, replicating
+    both original methods without extra guard logic. Not preserved (a
+    mechanical, unavoidable class-to-hooks consequence, not an
+    application-level bug): the original resolved synchronously before
+    first paint, so `render()` never saw a not-yet-resolved account; a
+    `useEffect` runs after first paint, so this port's first render
+    briefly shows every tile's "please login" disabled state for one
+    frame even when an account is already available - the same one-tick-
+    later timing difference implicit in every other
+    `UNSAFE_componentWillMount` → mount-only-`useEffect` translation
+    throughout this migration.
+  - No `BindToChainState`/ChainStore subscription existed in the original
+    (verified: no `ChainStore.subscribe` anywhere in this file) - it only
+    re-resolves `ChainStore.getAccount` when the identifying
+    `currentAccount` *name* prop itself changes, never in response to a
+    live chain-data tick, so `useChainStoreTick()` is deliberately NOT
+    added here (would introduce a re-render-on-every-chain-tick behavior
+    the original never had).
+  - `thiz.props.history.push(...)` (the class's `let thiz = this;`
+    closure workaround, used inside several tile `target` callbacks
+    defined as plain functions) becomes `useHistory()`
+    (`react-router-dom`), this migration's established replacement for
+    `withRouter`/`this.props.history` - `ShowcaseGrid` is rendered
+    directly as a route (`app/App.jsx`'s `component={ShowcaseGrid}`), so
+    `history` was always implicitly injected by react-router.
+  - TS-forced adjustment: the outer `<div style={{align: "center"}}>`
+    uses `align`, not a real CSS property (browsers silently ignore it -
+    the original likely meant `textAlign`, but this was never "fixed" at
+    runtime either); TypeScript's `CSSProperties` typing rejects it
+    outright, cast with `as React.CSSProperties` to preserve the
+    original's inert markup exactly.
+  - Old `.jsx` original removed in this commit (`git rm`) - grep-
+    confirmed no importer anywhere in the app references it by an
+    explicit `.jsx` extension (one comment-only reference in
+    `Showcase.tsx`'s header, not an import).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
+  - `Showcases/` is now fully ported (6/6 files).
+- Remaining long tail (~64 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, root `components/`, `Forms/`,
-  `PredictionMarkets/`, `Dashboard/`, and `Account/CreditOffer/` now
-  fully ported: `Showcases/` (6) and smaller directories.
+  `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`, and
+  `Showcases/` now fully ported: smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
