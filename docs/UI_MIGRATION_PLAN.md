@@ -6755,12 +6755,72 @@ compromise, not silent scope-narrowing.
     only, to work around this worktree's `node_modules` being a symlink
     to the main checkout - see this batch's session notes; the change was
     not committed).
-- Remaining long tail (~77 more `.jsx` files outside
+- `Account/CreditOffer/` batch 4 (final 2 files, completing the
+  directory): `CreditOfferList.jsx` → `CreditOfferList.tsx`,
+  `CreditOfferAccountPage.jsx` → `CreditOfferAccountPage.tsx`. Ported
+  directly by the orchestrating session (not delegated), since
+  `CreditOfferList.jsx` imports `CreateModal.jsx`/`EditModal.jsx` (batches
+  3/2) and `CreditOfferAccountPage.jsx` imports `CreditOfferList.jsx`/
+  `CreditDebtList.jsx`/`CreditRightsList.jsx` (batches 1/3) - both had to
+  wait for every other file in the directory to land first.
+  - Security-sensitive per AGENTS.md: `CreditOfferList.tsx` dispatches
+    `CreditOfferActions.disabled(...)`/`.delete(...)` (real on-chain
+    transactions, from the "operate" column's icon buttons) and the
+    read-only `CreditOfferActions.getCreditOffersByOwner(...)` (on
+    mount). No password/private-key/brainkey material involved (grepped
+    - doesn't touch `WalletDb`/wallet-unlock/key-import flows); the
+    actual credit-offer create/update transaction building lives in the
+    already-ported `CreateModal.tsx`/`EditModal.tsx`, not this file -
+    it only opens those modals and forwards `account`.
+    `CreditOfferAccountPage.tsx` is not security-sensitive itself (only
+    lays out three already-ported tabs, forwarding `account` to each).
+  - `connect(CreditOfferList, {listenTo: [AccountStore, CreditOfferStore,
+    IntlStore], getProps() {...}})` → `useAltStore(...)` calls for all
+    three stores in an outer wrapper, passed to a `CreditOfferListCore`
+    function (Container+Core split). `getProps()` doesn't derive
+    `account` itself, so there's no store-vs-passed-in-prop precedence
+    conflict to replicate for it - it's passed straight through from the
+    caller.
+  - `this.create_modal`/`this.edit_modal` (legacy plain-instance-property
+    refs, set via `refCallback={e => { if (e) this.create_modal = e; }}`)
+    become `React.useRef<CreateModalHandle | null>`/
+    `useRef<EditModalHandle | null>`, with the exact same `refCallback`
+    prop shape passed through unchanged to `<CreateModal>`/`<EditModal>`
+    - both of those files' own ports (batches 2/3) already accept and
+    forward a `refCallback` prop themselves, so no caller-side
+    restructuring was needed here (unlike the earlier
+    `Forms/AccountNameInput.tsx` two-hop `.refs.x` case).
+  - `componentDidMount`'s one-shot `this._loadList(true)` becomes a plain
+    mount-only `useEffect(() => {...}, [])` - not a mount-skip pattern,
+    since `componentDidMount` only ever fires once, unlike
+    `componentDidUpdate`.
+  - Preserved verbatim, not "fixed": `_getColumns`' `fee_rate` column
+    divides by `FEE_RATE_DENOM` (a plain JS numeric constant, no
+    `.d.ts`), `String(...)`-wrapped only because TypeScript infers it as
+    `number` and `parseFloat` requires a `string` argument - same
+    TS-forced adjustment already applied in `CreditOfferPage.tsx` (batch
+    1), not a behavior change.
+  - `connect(CreditOfferAccountPage, {})` - an empty options object, no
+    `listenTo`, no `getProps` - is grep-confirmed a pure no-op wrapper
+    (nothing to subscribe to or inject), so it's dropped entirely rather
+    than translated to a `useAltStore` call.
+  - Both old `.jsx` originals removed in this commit (`git rm`) -
+    grep-confirmed no importer anywhere in the app references either by
+    an explicit `.jsx` extension (two comment-only references in
+    `CreditRightsList.tsx`/`CreateModal.tsx`'s headers, not imports).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on both files (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite green
+    (19/19 suites, 5,532/5,532 tests - matches the known-good baseline
+    exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
+  - `Account/CreditOffer/` is now fully ported (7/7 files).
+- Remaining long tail (~70 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, root `components/`, `Forms/`,
-  `PredictionMarkets/`, and `Dashboard/` now fully ported:
-  `Account/CreditOffer/` (7), `Showcases/` (6), and smaller directories.
+  `PredictionMarkets/`, `Dashboard/`, and `Account/CreditOffer/` now
+  fully ported: `Showcases/` (6) and smaller directories.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
