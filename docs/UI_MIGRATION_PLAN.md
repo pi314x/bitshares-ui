@@ -6073,6 +6073,155 @@ compromise, not silent scope-narrowing.
     baseline exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
   - `PredictionMarkets/` is now fully ported (7/7 files).
+- `Dashboard/` batch 1 (3 files, out of the directory's 7): `AccountCard.jsx`
+  (76 lines), `DashboardAccountsOnly.jsx` (211 lines), `MarketsTable.jsx`
+  (603 lines) → `.tsx`. `Markets.jsx` and `DashboardPage.jsx` are
+  deliberately held back (both still `.jsx`, `Markets.jsx` imports
+  `MarketsTable.jsx` extensionless and `DashboardPage.jsx` imports
+  `Markets.jsx`) - safe because `tsconfig.json`'s `checkJs: false` means
+  neither is type-checked by `tsc`, and webpack/Babel resolve extensionless
+  imports across `.jsx`/`.tsx` transparently either way.
+  - Not security-sensitive per AGENTS.md: none of the three touch wallet
+    unlock, key import/export, backup, or transaction signing/
+    serialization - `AccountCard`/`DashboardAccountsOnly` only render
+    account lists, `MarketsTable` only renders/sorts a market list and
+    toggles UI-only settings (star/hide/flip a market).
+  - `AccountCard.tsx`: the original's `BindToChainState(AccountCard)`
+    HOC (resolving the required `account` prop, `ChainTypes
+    .ChainAccount.isRequired`) is replaced by a small container calling
+    `useChainStoreTick()` and a `resolveAccountProp` helper that
+    reproduces `BindToChainState`'s own `ChainAccount` resolution
+    verbatim (the `#<digits>` → `1.2.<digits>` rewrite and the
+    single-entry `{name: ...}` Map unwrap, both otherwise unexercised by
+    this file's only real caller, `Wallet/Brainkey.tsx`, which always
+    passes a plain name string - grep-confirmed). `autosubscribe` is
+    passed through as `undefined` (not hardcoded `true`), matching that
+    `AccountCard` never declared a `defaultProps.autosubscribe` (unlike
+    `BindToCurrentAccount.tsx`'s unrelated `bindToCurrentAccount`, whose
+    own `defaultProps = {autosubscribe: true}` justifies that
+    substitution there but not here). While unresolved, renders a bare
+    `<span />`, matching `BindToChainState`'s fallback for a required prop
+    with no `tempComponent`/`show_loader` option (same as the established
+    `Utility/AccountName.tsx` precedent for a `BindToChainState`-wrapped
+    required prop). `withRouter` is replaced by `useHistory()`
+    (`Dashboard/DashboardList.tsx`'s established precedent) inside the
+    core component; the outer default export keeps `withRouter` only to
+    supply `history` down to that core component, cast to
+    `React.ComponentType<any>` (the same `@types/react-router-dom`
+    casting friction already documented in `Utility/Tabs.tsx` and others).
+  - `DashboardAccountsOnly.tsx`: the outer `AccountsContainer` class
+    wrapping `<AltContainer stores={[AccountStore, SettingsStore,
+    MarketsStore]} inject={{...}}>` is replaced by a function component
+    calling `useAltStore` once per store, spreading the container's own
+    received props first and the store-derived props after (matching
+    `alt-container`'s own `cloneElement` merge order,
+    `node_modules/alt-container/src/mixinContainer.js`: injected props
+    always win). `SettingsStore`/`MarketsStore` are kept as bare
+    `useAltStore(...)` re-render triggers (same treatment
+    `DashboardList.tsx` gives `WalletUnlockStore`), since their only
+    original `inject` value (`currentEntry`) turned out to be dead.
+    - Dead code dropped (grep-confirmed no other reference anywhere in
+      `app/`): `currentEntry` (injected from `SettingsStore`, seeded into
+      `Accounts`' constructor state, never read in `render()`),
+      `_onSwitchType` (`currentEntry`'s only writer besides the
+      constructor, never invoked by anything), and `onlyAccounts` (the
+      flag the bottom `DashboardAccountsOnly` wrapper passed down, never
+      read by `AccountsContainer` or `Accounts`).
+    - `shouldComponentUpdate` (pure re-render guard, gated nothing else)
+      is dropped, per this migration's established treatment of pure perf
+      guards. `componentDidMount`'s resize-listener registration becomes
+      a mount-only `useEffect` with a functional `setWidth` update
+      replicating the original's "only update if changed" bail-out.
+    - Preserved verbatim (not "fixed"), two quirks needing a narrow
+      TypeScript cast to keep compiling without changing runtime
+      behavior: (1) the "Contacts" tab's `<DashboardList accounts=
+      {contacts.toArray()}>` call passes a *plain* JS array (`Immutable
+      .Set.toArray()`) into `DashboardList.tsx`'s `accounts: List<string>`
+      prop, whose `resolveAccounts` does `ids.map(...).toArray()` - this
+      throws at runtime for a plain array (`Array.prototype.map` doesn't
+      return something with `.toArray()`). This is a pre-existing bug in
+      the already-ported `DashboardList.tsx` (out of this batch's scope;
+      the legacy `DashboardList.jsx` tolerated a plain array fine, since
+      its own `BindToChainState` wrapper's list resolution only ever
+      calls `.forEach()`), not something introduced here - the call site
+      is left exactly as broken as before, only cast (`as unknown as
+      List<string>`) to satisfy `tsc`, which now checks both sides of
+      this call for the first time. (2) `state.width` starts `null` (not
+      `undefined`), passed straight through to `DashboardList`'s
+      `width?: number` prop exactly as before (`null` does not trigger
+      that prop's own `= 2000` default, since JS default parameters only
+      substitute for `undefined`) via an `as any` cast, rather than
+      switching the initial state to `undefined` and silently changing
+      that first-paint column layout.
+  - `MarketsTable.tsx`: the original's `connect(MarketsTable, {listenTo,
+    getProps})` becomes a Container+Core split (`MarketsTableContainer`
+    calling `useAltStore` once per store, `MarketsTableCore` doing
+    everything else), spreading passed-in props first and store-derived
+    props after (alt-react's own `<Component {...this.props}
+    {...this.getNextProps()} />` precedence). `marketDirections`
+    (destructured in the original `getProps` but grep-confirmed never
+    read anywhere in this file) is dropped as dead.
+    - `UNSAFE_componentWillMount`/`componentWillUnmount`'s
+      `ChainStore.subscribe(this.update)`/`unsubscribe` become a
+      mount-only `useEffect`; `UNSAFE_componentWillReceiveProps(nextProps)`
+      (`this.update(nextProps)`) becomes a mount-skip `useEffect` (the
+      established `isMountRef` guard) keyed on every field `update()`
+      actually reads (`markets`, `hiddenMarkets`, `isFavorite`,
+      `allMarketStats`, `starredMarkets`, `forceDirection`) - the
+      original ran on every parent re-render regardless, but since
+      `update()`'s only effect is a pure function of exactly those
+      fields, this produces the same final state with less redundant
+      work.
+    - Preserved verbatim (not "fixed"), a subtle prop-timing bug in the
+      original `update(nextProps)`: every computed market-row field reads
+      the local `props` variable (`nextProps || this.props`, i.e. the
+      *new* incoming props when called via `componentWillReceiveProps`)
+      **except** `isStarred`, which reads `this.props.starredMarkets`
+      directly - the component's *old*, not-yet-updated props at that
+      point in React's lifecycle. So `row.isStarred` lags one update
+      behind every other field specifically when `starredMarkets` is what
+      changed. Reproduced with a `prevStarredMarketsRef` that is only
+      advanced to the new value *after* `update()` runs, so the very call
+      that observes a `starredMarkets` change still sees the old value for
+      `isStarred`, exactly like `this.props.starredMarkets` would have.
+      On the mount/`ChainStore`-subscription path (`nextProps` was always
+      `null` in the original, so `props`/`this.props` were identical) a
+      `propsRef` mirror supplies the same current-props snapshot for both.
+    - Preserved verbatim (not "fixed"): `sort`'s inner `convert` helper
+      reassigns its `price` parameter from a `string` to a `number` once
+      it sees a `"k"` suffix, then immediately calls `.includes("M")` on
+      that now-numeric value - which throws for any price string
+      containing `"k"` (`Number.prototype.includes` doesn't exist),
+      reachable whenever a user sorts the "Price" column
+      (`sortFunctions.priceValue`) on a market whose displayed price is
+      large enough for `utils.price_text` to render a `"k"` suffix. Left
+      exactly as broken as the original; `convert`'s parameter is typed
+      `any` (a narrow, deliberate TypeScript-forced adjustment - the
+      reassignment doesn't type-check otherwise). Also preserved: `sort`'s
+      dead `aPrice === null`/`bPrice === null` branches (`convert` never
+      actually returns `null`), and `update()`'s "only `setState` when
+      `props.markets && props.markets.size > 0`" guard (a caller passing
+      an empty/plain-array `markets` prop, e.g. `Markets.jsx`'s
+      `TopMarkets: <MarketsTable markets={[]} />`, leaves
+      `state.markets`/`state.showFlip` exactly as they were rather than
+      clearing them).
+    - Dead code dropped (grep-confirmed no call site anywhere in this
+      file): `_setInterval`/`_clearInterval` (and the
+      `statsChecked`/`statsInterval` fields they touched) were never
+      invoked from any lifecycle method or event handler, and additionally
+      referenced `MarketsActions`, which this file never imports - calling
+      either would already have thrown `ReferenceError` in the original.
+    - `@types/react-router-dom`'s `Link` isn't assignable to `JSX.Element`
+      under this repo's `@types/react` version (a `key: Key | null` vs
+      `key: string | null` mismatch); cast to `React.ComponentType<any>`,
+      the same handling `Utility/MarketLink.tsx` already established for
+      this exact friction.
+  - Verified: `npx tsc --noEmit -p .` clean (0 errors repo-wide), `eslint`
+    clean on all 3 files (0 errors; only expected
+    `@typescript-eslint/no-explicit-any` warnings remain), full Jest suite
+    green (19/19 suites, 5,532/5,532 tests - matches the known-good
+    baseline exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~84 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
