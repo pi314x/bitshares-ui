@@ -5745,6 +5745,112 @@ compromise, not silent scope-narrowing.
     `any`-type warnings only), full Jest suite green (5,532/5,532),
     `yarn build` shows only the 2 known pre-existing `charting_library`
     errors. Old `.jsx` files removed.
+- `PredictionMarkets/` batch 1 (3 files, out of the directory's 7):
+  `ResolveModal.jsx`, `PredictionMarketDetailsTable.jsx`,
+  `PredictionMarketsOverviewTable.jsx` → `.tsx`. None security-sensitive
+  per AGENTS.md - grepped each file for `Actions\.`/`Api\.`/`WalletApi`/
+  `WalletDb`/`ApplicationApi`/`add_type_operation`/`process_transaction`;
+  the only hit across all three is `PredictionMarketsOverviewTable.jsx`'s
+  `MarketsActions.getTicker(...)`, a read-only ticker lookup, not a
+  transaction-submitting call. All three are display/UI-delegation
+  components: their action buttons call `onResolveMarket`/`onOppose`/
+  `onCancel`/`onMarketAction` prop callbacks with the row's data, and it
+  is the (not-yet-ported) caller `PredictionMarkets.jsx` that actually
+  builds/signs/submits transactions in response. This is a partial
+  directory batch: a second agent is concurrently porting
+  `CreateMarketModal.jsx`/`AddOpinionModal.jsx` on the same branch in a
+  separate worktree (no file overlap with this batch), and
+  `PredictionMarkets.jsx`/`PMAssetsContainer.jsx` - which import every
+  file in this directory, including both this batch's and the other
+  agent's - are deliberately left untouched for a later step once both
+  batches have landed. Per that plan, **the old `.jsx` originals are
+  intentionally left in place** alongside the new `.tsx` files for this
+  commit (not `git rm`'d) - `PredictionMarkets.jsx` still imports the
+  `.jsx` versions by their extensionless paths, and only the
+  `PredictionMarkets.jsx`/`PMAssetsContainer.jsx` conversion step will
+  remove them, once it repoints those two files' imports at the new
+  `.tsx` files. Confirmed via `grep -rn` across `app` that no file other
+  than `PredictionMarkets.jsx` imports any of these three components.
+  - `ResolveModal.tsx`: structural change - the original
+    `class ResolveModal extends Modal` (`Modal` here is antd's `Modal`,
+    re-exported by `bitshares-ui-style-guide`) inherits from a
+    third-party class purely to get a `React.Component` base (the
+    constructor only calls `super(props)`, and `render()` is fully
+    overridden to return a `<Modal>` *element* - a different, ordinary
+    JSX usage of the same import, not `this`); no inherited `Modal`
+    method is ever called, so dropping the inheritance for a plain
+    function component rendering `<Modal>` as a child element is
+    behavior-preserving. Preserved as a real bug (not "fixed"):
+    `this.state.inProgress` is read in `render()` (both footer buttons'
+    `disabled`, the `<Modal>`'s `closable`) but is never included in the
+    constructor's initial state and never written anywhere else in the
+    file (grep-verified - only these two reads exist) - always
+    `undefined` for the component's whole lifetime; replicated as a
+    literal `undefined` constant rather than inventing a `useState` for
+    a value provably never written. Also preserved: `resolveParameters
+    .asset_id` is captured once from the initial `predictionMarket` prop
+    and never re-synced on a later prop change (no effect updates it),
+    replicated with a `useState` lazy initializer. `predictionMarket` is
+    `PropTypes.any.isRequired` but also has `defaultProps` of `null` - a
+    contradiction already present in the original, kept as `any` with
+    the same `= null` default.
+  - `PredictionMarketDetailsTable.tsx`: plain `Component` in the
+    original with no constructor/state and no `BindToChainState`/
+    `useChainStoreTick` equivalent of its own - it only reads
+    `ChainStore.getAccount(...)` synchronously inside `render()`/sorter
+    callbacks, relying on the parent (`PredictionMarkets.jsx`, itself
+    chain-subscribed) to re-render it; ported as a plain function
+    component with no hooks, preserving that exact "re-renders only when
+    the parent re-renders" behavior. `currentAccount`
+    (`ChainTypes.ChainAccount.isRequired`) is never resolved by a
+    `BindToChainState` wrap in this file either - the real caller
+    already passes an already-resolved `Immutable.Map` account (via its
+    own `bindToCurrentAccount` wrap), so it's typed loosely as `any`
+    rather than adding chain resolution that was never present here.
+    Preserved verbatim, not cleaned up: the `sorter_inactive` key on
+    several columns isn't part of antd `Table`'s column API (only
+    `sorter` is read), so those columns carry an inert, never-invoked
+    comparator - kept as-is since it's column config data, not a dead
+    variable/method.
+  - `PredictionMarketsOverviewTable.tsx`: same "no `BindToChainState`/
+    `useChainStoreTick` of its own, `currentAccount` typed as `any`"
+    treatment as `PredictionMarketDetailsTable.tsx` above. Dropped as
+    confirmed dead (grepped the whole file - only its own definition
+    matches): the `onRowAction` class-field arrow function, never read
+    in `render()` or passed to any child. `componentDidUpdate`
+    (refetches tickers when `predictionMarkets.length` changes) becomes
+    a mount-skipping `useEffect` keyed on `predictionMarkets.length` -
+    the dependency array reproduces the length comparison for free, and
+    an `isMountRef` guard replicates `componentDidUpdate` never firing
+    on the initial mount (so, exactly as before, no ticker is ever
+    fetched for the initially-rendered markets until the array length
+    changes at least once - preserved verbatim, not "fixed"). Preserved
+    verbatim as a real, load-bearing bug: the "already loaded?" guard
+    `!(market.asset.id in Object.keys(this.tickersLoaded))` uses `in` on
+    an *array* (what `Object.keys()` returns), testing numeric indices
+    rather than values, so it is true for essentially every real asset
+    id and never actually skips a re-fetch. Also preserved verbatim: the
+    `.then()` handler's `Object.assign(this.tickersLoaded,
+    this.state.ticker)` mutates `this.tickersLoaded` in place (the
+    target/first argument) and returns that same object, which is then
+    also handed to `setState({ticker})` - so `this.tickersLoaded` and
+    `this.state.ticker` end up aliased to the identical mutable object
+    after the first ticker resolves; replicated with a `tickersLoadedRef`
+    (mirroring the original instance field) and a `tickerRef` mirror of
+    the `ticker` state (read inside `.then()` so it sees state current
+    at resolution time, not a stale closure value), passing
+    `tickersLoadedRef.current` as `Object.assign`'s mutation target
+    exactly as the original passed `this.tickersLoaded`. The
+    `debounceRender(PredictionMarketsOverviewTable, 150, {leading:
+    false})` wrap is kept, applied to the ported function component.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint`
+    clean (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only
+    the 2 known pre-existing `charting_library.esm` errors. Old `.jsx`
+    files intentionally kept (see above) - not yet wired into the app's
+    import graph, since `PredictionMarkets.jsx` still imports the old
+    `.jsx` versions.
 - Remaining long tail (~91 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
