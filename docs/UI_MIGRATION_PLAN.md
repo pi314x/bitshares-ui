@@ -6222,6 +6222,171 @@ compromise, not silent scope-narrowing.
     green (19/19 suites, 5,532/5,532 tests - matches the known-good
     baseline exactly), `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
+- `Dashboard/` batch 2 (2 files, out of the directory's 7):
+  `SimpleDepositBlocktradesBridge.jsx` (677 lines) and
+  `SimpleDepositWithdraw.jsx` (806 lines) → `.tsx`. Both are gateway
+  deposit/withdraw modal components rendered from `Exchange/Exchange.tsx`
+  (and, for the bridge file, also `Account/AccountPortfolioList.tsx`).
+  Neither file imports the other and neither is imported by any other
+  `Dashboard/` file - independent of each other and of the directory's
+  remaining 5 files (ported separately, concurrently).
+  - Security-sensitive per AGENTS.md (`SimpleDepositWithdraw.tsx` only):
+    `onSubmit` dispatches a real on-chain withdraw transaction via
+    `AccountActions.transfer(...)` - transcribed verbatim. Grepped every
+    `console.*` call in both files: all log generic error objects/API
+    responses only, no password/key/brainkey material.
+    `SimpleDepositBlocktradesBridge.tsx` is not security-sensitive in the
+    direct sense (no `AccountActions.transfer`/`WalletDb`/signing calls
+    anywhere) - it only requests/displays a gateway deposit address and
+    shows estimated bridge-conversion amounts.
+  - `SimpleDepositWithdraw.jsx`'s `class DepositWithdrawContent extends
+    DecimalChecker` is a LIVE use (unlike most `extends X` patterns
+    already dropped elsewhere in this migration, e.g.
+    `Modal/DepositModal.tsx`'s `DepositModalContent extends DecimalChecker`,
+    where nothing from the base class was actually called) - the
+    withdraw-amount `<input>`'s `onKeyPress={this.onKeyPress.bind(this)}`
+    genuinely is `DecimalChecker.onKeyPress`. Following the established
+    precedent (`Exchange/ExchangeInput.tsx`), `onKeyPress` is inlined as a
+    plain local function; `DecimalChecker.onPaste`/`.getNumericEventValue`
+    are grep-confirmed unused in this file and not ported. `onKeyPress`
+    doesn't read `allowNaN` at all (only `onPaste` does), so no
+    `allowNaN` prop/default was needed here, unlike `ExchangeInput.tsx`.
+  - Both files' `BindToChainState` wrapping (`sender`/`asset` required in
+    both; `balance` not required and `coreAsset`/`globalObject` required-
+    but-otherwise-unread in `SimpleDepositWithdraw.jsx` only) is replaced
+    by a Container function calling `useChainStoreTick()` plus direct
+    `ChainStore.getAccount`/`getAsset`/`getObject` resolution, with the
+    same `<span />` fallback for an unresolved required prop
+    (`options.show_loader` wasn't passed in either original) - the
+    established pattern from `Modal/WithdrawModalNew.tsx`'s
+    `WithdrawModalAccountContainer`. `coreAsset`/`globalObject`
+    (`SimpleDepositWithdraw.jsx` only) are grep-confirmed never read
+    anywhere else in that file - they exist purely to gate
+    `BindToChainState`'s "resolved" check (`globalObject` defaults to
+    `"2.0.0"`, the chain's *global_property_object* singleton, despite
+    being typed `ChainTypes.ChainAsset` - a pre-existing naming/typing
+    mismatch, preserved, not fixed, since `ChainStore.getAsset("2.0.0")`
+    just calls `getObject("2.0.0")` internally and resolves fine either
+    way) - still resolved and still gate rendering, but not forwarded as
+    props since nothing downstream reads them.
+  - `SimpleDepositWithdraw.jsx` additionally had a second, independent
+    `connect(DepositWithdrawContent, {listenTo: [SettingsStore],
+    getProps() {...}})` layer (for `fee_asset_symbol`), applied *before*
+    `BindToChainState` wraps the result - folded into the same Container
+    via `useAltStore(SettingsStore)` (no naming collision with the
+    chain-resolved props, so merge order is immaterial).
+    `SimpleDepositBlocktradesBridge.jsx`'s analogous `StoreWrapper`
+    (`connect(StoreWrapper, {listenTo: [SettingsStore], getProps}})`,
+    itself wrapping the already-`BindToChainState`-wrapped bridge
+    component) gets the same `useAltStore(SettingsStore)` treatment,
+    picking `currentBridge` from `props.bridges` (falling back to
+    `.first()`) and spreading `currentBridge.toJS()` onto the Container's
+    props exactly as the original's override order
+    (`{...others} {preferredBridge} {...currentBridge.toJS()}`, last
+    spread wins).
+  - **A carefully-verified, genuine pre-existing bug in
+    `SimpleDepositBlocktradesBridge.jsx`'s constructor**: `constructor(
+    props) { super(); ... inputCoinType: props.inputCoinType ||
+    this.props.preferredBridge, ... }` calls `super()` WITHOUT `props`,
+    so `this.props` is `undefined` inside the constructor (a well-known
+    React footgun) until React assigns it after the constructor returns -
+    referencing `this.props.preferredBridge` would throw, UNLESS
+    `props.inputCoinType` (the constructor's own parameter) is already
+    truthy, short-circuiting the `||` first. Grepped the real call chain:
+    `StoreWrapper` always spreads `...currentBridge.toJS()` onto this
+    component's props *after* its own `inputCoinType`, so the crash path
+    is never actually reached for the one real caller - but it's a latent
+    landmine in the original. Function components have no equivalent
+    "props not yet assigned" phase to replicate, so the port computes
+    `inputCoinType: props.inputCoinType || props.preferredBridge` using
+    the real, always-valid `props` both times - behaviorally identical
+    for the only call path that exists, while removing a bug hooks simply
+    cannot reproduce.
+  - **A carefully-verified, genuine pre-existing quirk in
+    `SimpleDepositBlocktradesBridge.jsx`'s `_estimateOutput()`/
+    `_estimateInput()`**: unlike `_getDepositLimit(data)`/
+    `_getDepositAddress(data)` (which take a `data` argument and read
+    `inputCoinType`/`outputCoinType` from it), these two take NO parameter
+    at all and always read `this.state` directly - so `componentDidMount`/
+    `UNSAFE_componentWillReceiveProps`/`shouldComponentUpdate`'s calls
+    passing `this.props`/`np`/`ns` are silently ignored, and since
+    `this.state` is never updated synchronously within the same method
+    that just called `this.setState(...)`, every such call actually reads
+    the OLD (pre-update) coin types - a real staleness bug, preserved (not
+    fixed) via an optional `src` parameter defaulting to the ambient
+    `state` closure (which, in a function component, is likewise never
+    updated mid-render, reproducing the same "stale, pre-commit" read).
+    The one call site that genuinely needs the freshly-committed value
+    (`_onAmountChange`'s `setState(update, callback)` pattern) explicitly
+    passes `stateRef.current` (synchronously mirrored inside `mergeState`,
+    same convention as `Utility/FeeAssetSelector.tsx`). One small,
+    explicitly-documented, unavoidable divergence remains: the
+    `shouldComponentUpdate`-mirroring effect (keyed on
+    `[state.inputCoinType, state.outputCoinType]`) necessarily runs on a
+    LATER render than the `UNSAFE_componentWillReceiveProps`-mirroring
+    effect's own `mergeState`, so by the time it fires, its `state`
+    closure already reflects the new coin types (whereas the original's
+    `shouldComponentUpdate` runs before any commit, so `this.state` is
+    stale there too) - hooks have no equivalent of "read state before
+    this render's own commit" across two independently-keyed effects
+    reacting to the same change. Both effects still fire regardless, and
+    both `_estimateOutput`/`_estimateInput`'s own `.then()` handlers
+    always end up calling `mergeState` again with authoritative,
+    freshly-fetched values, so final displayed behavior is unaffected.
+  - `shouldComponentUpdate`'s embedded side effect (fires the same 3
+    methods as `UNSAFE_componentWillReceiveProps`, but keyed on a STATE
+    transition rather than a PROPS transition) is kept as a second,
+    separate mount-skip `useEffect` per the task's explicit instruction,
+    not merged with the props-transition effect; its own boolean-return
+    re-render gate is dropped, per this migration's established rule for
+    non-pure `shouldComponentUpdate`s.
+  - `SimpleDepositWithdraw.jsx`'s `UNSAFE_componentWillReceiveProps`
+    also patched `state.gateFee`/`state.intermediateAccount` - grep-
+    confirmed dead (every real read of a gate-fee/intermediate-account
+    value in this file goes through `this.props.gateFee`/
+    `this.props.intermediateAccount`, never the state fields of the same
+    name) - dropped from the patch, same treatment as
+    `Modal/ReserveAssetModal.tsx`'s dropped, confirmed-dead `state.asset`
+    field. `getDepositAddress`/`requestDepositAddress`/`validateAddress`
+    (`common/gatewayMethods.js`) call sites need `as any` casts (TS
+    infers `getDepositAddress`'s return as `void`, can't be tested for
+    truthiness; `requestDepositAddress`'s destructured `selectedGateway`
+    param has no default so TS infers it required though it's genuinely
+    optional at runtime) - the same `as any` treatment already established
+    for this module elsewhere (e.g.
+    `DepositWithdraw/piratecash/PiratecashWithdrawModal.tsx`,
+    `Modal/DepositModal.tsx`).
+  - Dropped as confirmed dead: `SimpleDepositWithdraw.jsx`'s outer
+    `export default class SimpleDepositWithdrawModal`'s `state.open`/
+    `show()`/`onClose()` (grep-confirmed dead across the WHOLE app -
+    `render()` uses `this.props.visible`, never `this.state.open`; no
+    caller anywhere holds a `ref` and calls `.show()`); both files'
+    `_renderWithdraw()`/`_renderDeposit()`-adjacent large commented-out
+    `this.props.fiatModal` JSX blocks (`SimpleDepositWithdraw.jsx`,
+    referencing `WithdrawFiatOpenLedger`/`DepositFiatOpenLedger`, neither
+    even imported) along with the now-orphaned `_openRegistrarSite`
+    method (referenced only inside those comments); the outer `render()`'s
+    own unused `assetName` computation (`SimpleDepositWithdraw.jsx`,
+    shadowed/recomputed independently inside `_renderWithdraw()`/
+    `_renderDeposit()`); `SimpleDepositBlocktradesBridge.jsx`'s `onClose()`
+    (grep-confirmed unbound anywhere in that file, no ref-based caller
+    either).
+  - TS-forced adjustment: `<textarea rows="3" ...>` (`SimpleDepositWithdraw.jsx`'s
+    memo field) becomes `rows={3}` (a number literal) - React's
+    `TextareaHTMLAttributes` types `rows` as `number`, same adjustment
+    already made in several other `.tsx` ports in this migration (e.g.
+    `Modal/IssueModal.tsx`, `Modal/SendModal.tsx`).
+  - Both old `.jsx` originals are removed in this commit (`git rm`) -
+    grep-confirmed no importer anywhere in the app references either by
+    an explicit `.jsx` extension.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on both files (0 errors after fixing several mechanical `prefer-const`
+    findings and one intentionally-unused destructured binding via
+    `eslint-disable-next-line`; only expected
+    `@typescript-eslint/no-explicit-any` warnings remain), full Jest suite
+    green (19/19 suites, 5,532/5,532 tests - matches the known-good
+    baseline exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~84 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
