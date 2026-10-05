@@ -7435,13 +7435,91 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
-- Remaining long tail (~54 more `.jsx` files outside
+- `Console/`, `BrowserNotifications/`, `Modal/View/` (4 files, all
+  complete): `Console.jsx`, `BrowserNotifications.jsx`,
+  `BrowserNotificationsContainer.jsx`, `Modal/View/BorrowModalView.jsx`
+  -> `.tsx`.
+  - `Console.tsx`: a developer debug console that `eval()`s arbitrary JS
+    with `WalletApi`/`ApplicationApi`/`DebugApi` and the raw chain
+    `db`/`network` objects exposed into the eval'd scope via
+    `evalInContext` - preserved exactly as a sensitive-by-design
+    capability per AGENTS.md, not sandboxed/restricted/expanded. Grepped
+    every `console.*` call: one live `console.log("... evt", evt)` (the
+    raw keydown event) and two already-commented-out `// DEBUG
+    console.log(...)` lines, none logging password/key/brainkey
+    material (this console has no password/key UI of its own) - all
+    carried over unchanged. Grepped the whole app for
+    `components/Console`/`from "./Console"` (any casing): this component
+    has **no callers anywhere** - not wired into any route/screen,
+    ported standalone as asked. Three string refs
+    (`console_div`/`console_form`/`console_input`), grep-confirmed used
+    only internally - plain `useRef`s. `componentDidUpdate` (unconditional
+    focus+scroll on every update) -> dependency-free `useEffect` behind
+    an `isMountRef` guard. Module-level `cmd_history`/
+    `cmd_history_position` kept as module-level `let`s (shared across
+    instances, as in the original). Two pre-existing bugs preserved
+    verbatim, not fixed: `cmd_history.pushState("")` in `run()` (`Array`
+    has no `pushState` - throws every time a command runs, after the
+    eval try/catch but before the state commit - `cmd_history` typed
+    `any` so `tsc` allows the call through unchanged) and
+    `on_cmd_keyup`/`run()` reading `this.refs.console_input.props.value`
+    (a string ref on a host `<textarea>` resolves to the real DOM node,
+    which has no `.props` - throws `TypeError` on every keyup/submit).
+    Both almost certainly explain why this component was never actually
+    wired up anywhere.
+  - `BrowserNotifications.tsx`/`BrowserNotificationsContainer.tsx`: a
+    `Notification`-API wrapper (via `notifyjs`) popping a desktop
+    notification on an incoming transfer; grepped for `WalletDb`/
+    `WalletApi`/`Actions\.`/`ApplicationApi\.` - none appear, not
+    security-sensitive. The original's `BindToChainState
+    (BrowserNotifications)` wrapping (for its one required
+    `ChainTypes.ChainAccount` prop) is reproduced with
+    `useChainStoreTick()` + a direct `ChainStore.getAccount(...)` call,
+    matching `WithdrawModalNew.tsx`'s `WithdrawModalAccountContainer`
+    precedent (confirmed via `AccountStore.js` that the only real caller
+    always passes a plain account-name string, so `BindToChainState
+    .jsx`'s generic multi-shape handling isn't needed here) - split into
+    an outer resolver + inner component so the inner one only actually
+    mounts once `account` resolves, reproducing `BindToChainState`'s
+    real mount semantics (fresh `UNSAFE_componentWillMount`-equivalent
+    permission request, fresh mount-skip guard) rather than always
+    mounting and branching on the return value. `Container`'s original
+    `AltContainer` listened to `stores={[AccountStore]}` only, reading
+    `SettingsStore` purely through a one-off `inject` getter - preserved
+    by subscribing to `AccountStore` via `useAltStore` but reading
+    `SettingsStore.getState().settings` as a plain, non-subscribed call,
+    so (as before) a `SettingsStore`-only change doesn't by itself
+    trigger a re-render/re-propagation. `UNSAFE_componentWillReceiveProps`
+    -> a `useEffect` on `[account, settings]` behind an `isMountRef`
+    guard, using a `prevAccountRef` to recover `this.props.account`
+    (the pre-commit value) for the diff.
+  - `Modal/View/BorrowModalView.tsx`: already a plain function component,
+    so only typed + renamed - no hooks/lifecycle translation needed. Not
+    security-sensitive (grepped, no `WalletDb`/`WalletApi`/`Actions\.`/
+    `ApplicationApi\.`): purely presentational, delegates every
+    signing/`WalletApi` call to its already-ported caller, `Modal/
+    BorrowModal.tsx` (grepped its exact `<BorrowModalView ...>` call site
+    to match every prop/shape it actually supplies). Preserved verbatim:
+    every callback prop is invoked as `onX.bind(this)` in the JSX, a
+    no-op left over from when this was presumably a class method (`this`
+    is `undefined` here, ES module strict mode) - kept, but a bare `this`
+    has no implicit type under this repo's `tsc` settings even when cast
+    (`TS2683`, raised on the reference itself), so each is written as
+    `.bind(undefined)`, the literal value `this` always evaluates to
+    here - not a behavior change.
+  - Verified: `tsc --noEmit` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only
+    the 2 known pre-existing `charting_library.esm` errors.
+- Remaining long tail (~50 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
-  non-operations, `Registration/`, root `components/`, `Forms/`,
-  `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
-  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`, and
-  `Login/` now fully ported: smaller directories only.
+  directories) not yet started, `Account/`, `Modal/` (non-`View/`),
+  `Blockchain/` non-operations, `Registration/`, root `components/`,
+  `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
+  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
+  `Login/`, `Console/`, and `BrowserNotifications/` now fully ported:
+  smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the

@@ -1,4 +1,46 @@
-import React from "react";
+// TypeScript port of the legacy BorrowModalView.jsx (Phase 8,
+// docs/UI_MIGRATION_PLAN.md). Mechanical translation only - this was
+// already a plain function component (not a class), so no hooks/lifecycle
+// translation was needed, just adding types and the `.tsx` extension.
+//
+// Not security-sensitive per AGENTS.md: grepped for `WalletDb`,
+// `WalletApi`, `Actions\.`, `ApplicationApi\.` - none appear. Purely
+// presentational: renders the borrow-amount/collateral/ratio form and
+// delegates every state change and the actual `WalletApi`/signing calls
+// to its caller, `Modal/BorrowModal.tsx` (already ported), via the
+// callback props below.
+//
+// Prop types were derived from two sources: the original's destructured
+// parameter list (which fields exist, grouped the same way by the
+// original's own "Objects / Strings, Floats and Numbers / Bool Flags /
+// Callbacks" comments) and `BorrowModal.tsx`'s actual call site (grepped
+// `<BorrowModalView` there) to confirm every prop it supplies and its
+// real shape - e.g. `newPosition` is passed as `state.newPosition ||
+// null`, so it's typed optional/nullable; `disableHelp` is passed through
+// from `BorrowModalCoreProps.disableHelp?: any`, kept loose as `any` to
+// match. Immutable-map-shaped objects (`accountObj`, `backingAssetObj`,
+// etc., and `errors`) are typed `any`, matching how `BorrowModal.tsx`
+// itself types them (`accountObj: any`, etc. in its own
+// `BorrowModalCoreProps`) rather than introducing a stricter shape this
+// migration hasn't established elsewhere.
+//
+// Preserved verbatim (not "fixed"): every callback prop is invoked as
+// `onX.bind(this)` in the JSX (e.g. `onClick={onPayDebt.bind(this)}`) -
+// a no-op carried over from the original .jsx, where this was already a
+// standalone function component, not a class method, so `this` is
+// `undefined` here (ES module strict mode) and `.bind(undefined)` just
+// returns an equivalent bound function. Harmless, but kept exactly as
+// written rather than dropped, per this migration's "preserve every
+// quirk verbatim" rule. TypeScript-forced adjustment: a bare `this`
+// reference inside a plain (non-method) function has no implicit type
+// under this repo's `tsc` settings (TS2683, even when cast with
+// `as any`, since the error is raised on the reference itself) - every
+// `.bind(this)` is written as `.bind(undefined)` instead, which is the
+// exact, statically-known value `this` always evaluates to at this
+// position (module scope, strict mode) - not a behavior change, just
+// spelling out the constant explicitly so `tsc` doesn't need to infer
+// `this`'s type at all.
+import * as React from "react";
 import Translate from "react-translate-component";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import utils from "common/utils";
@@ -17,6 +59,48 @@ import {
     Col
 } from "bitshares-ui-style-guide";
 import asset_utils from "../../../lib/common/asset_utils";
+
+interface BorrowModalViewProps {
+    // Objects
+    accountObj: any;
+    backingAssetObj: any;
+    collateralBalanceObj: any;
+    debtBalanceObj: any;
+    quoteAssetObj: any;
+    newPosition?: any;
+    errors: any;
+
+    // Strings, Floats and Numbers
+    collateral: any;
+    collateral_ratio: any;
+    debtAmount: any;
+    backingPrecision: any;
+    maintenanceRatio: any;
+    remainingBackingBalance: any;
+    remainingDebtBalance: any;
+    target_collateral_ratio: any;
+    unlockedInputType: string;
+
+    // Bool Flags
+    disableHelp?: any;
+    isRatioLocked: boolean;
+    isOriginalBelowMCR: boolean;
+    isPredictionMarket: boolean;
+    isValid: boolean;
+    useTargetCollateral: boolean;
+
+    // Callbacks
+    onPayDebt: (...args: any[]) => any;
+    onMaximizeCollatereal: (...args: any[]) => any;
+    onBorrowChange: (...args: any[]) => any;
+    onLockChangeDebt: (...args: any[]) => any;
+    onCollateralChange: (...args: any[]) => any;
+    onLockChangeCollateral: (...args: any[]) => any;
+    onRatioChange: (...args: any[]) => any;
+    onLockChangeCR: (...args: any[]) => any;
+    onSetUseTCR: (...args: any[]) => any;
+    onTCRatioChange: (...args: any[]) => any;
+}
 
 export function BorrowModalView({
     // Objects
@@ -58,8 +142,8 @@ export function BorrowModalView({
     onLockChangeCR,
     onSetUseTCR,
     onTCRatioChange
-}) {
-    let quotePrecision = utils.get_asset_precision(
+}: BorrowModalViewProps) {
+    const quotePrecision = utils.get_asset_precision(
         quoteAssetObj.get("precision")
     );
 
@@ -91,7 +175,7 @@ export function BorrowModalView({
                     <span>
                         <Translate
                             component="a"
-                            onClick={onPayDebt.bind(this)}
+                            onClick={onPayDebt.bind(undefined)}
                             content="borrow.pay_max_debt"
                         />
                         &nbsp;
@@ -121,7 +205,7 @@ export function BorrowModalView({
                 <span>
                     <Translate
                         component="a"
-                        onClick={onMaximizeCollatereal.bind(this)}
+                        onClick={onMaximizeCollatereal.bind(undefined)}
                         content="borrow.use_max"
                     />
                     &nbsp;
@@ -229,7 +313,7 @@ export function BorrowModalView({
                 <AmountSelector
                     label="transaction.borrow_amount"
                     amount={debtAmount.toString()}
-                    onChange={onBorrowChange.bind(this)}
+                    onChange={onBorrowChange.bind(undefined)}
                     asset={quoteAssetObj.get("id")}
                     assets={[quoteAssetObj.get("id")]}
                     display_balance={bitAssetBalanceText}
@@ -240,12 +324,12 @@ export function BorrowModalView({
                             ? false
                             : true
                     }
-                    onLockChange={onLockChangeDebt.bind(this)}
+                    onLockChange={onLockChangeDebt.bind(undefined)}
                 />
                 <AmountSelector
                     label="transaction.collateral"
                     amount={collateral.toString()}
-                    onChange={onCollateralChange.bind(this)}
+                    onChange={onCollateralChange.bind(undefined)}
                     asset={backingAssetObj.get("id")}
                     assets={[backingAssetObj.get("id")]}
                     display_balance={backingBalanceText}
@@ -256,7 +340,7 @@ export function BorrowModalView({
                             ? false
                             : true
                     }
-                    onLockChange={onLockChangeCollateral.bind(this)}
+                    onLockChange={onLockChangeCollateral.bind(undefined)}
                     validateStatus={errors.collateral_balance ? "error" : ""}
                     help={
                         errors.collateral_balance
@@ -294,7 +378,7 @@ export function BorrowModalView({
                                                 : collateral_ratio
                                         }
                                         tabIndex={3}
-                                        onChange={onRatioChange.bind(this)}
+                                        onChange={onRatioChange.bind(undefined)}
                                         className="input-group-unbordered-before"
                                         addonBefore={
                                             <Icon
@@ -309,7 +393,7 @@ export function BorrowModalView({
                                                         : "lock"
                                                 }
                                                 onClick={onLockChangeCR.bind(
-                                                    this
+                                                    undefined
                                                 )}
                                                 style={{fontSize: "20px"}}
                                             />
@@ -335,7 +419,7 @@ export function BorrowModalView({
                                         style={{marginBottom: 8}}
                                     >
                                         <Checkbox
-                                            onClick={onSetUseTCR.bind(this)}
+                                            onClick={onSetUseTCR.bind(undefined)}
                                             checked={useTargetCollateral}
                                             tabIndex={4}
                                         >
@@ -359,7 +443,7 @@ export function BorrowModalView({
                                             }
                                             tabIndex={5}
                                             onChange={onTCRatioChange.bind(
-                                                this
+                                                undefined
                                             )}
                                         />
                                     ) : null}
@@ -372,7 +456,7 @@ export function BorrowModalView({
                                 min={0}
                                 max={maintenanceRatio * 100}
                                 value={collateral_ratio}
-                                onChange={onRatioChange.bind(this)}
+                                onChange={onRatioChange.bind(undefined)}
                             />
                         </Form.Item>
                     </React.Fragment>
