@@ -8194,6 +8194,49 @@ core files shows only pre-existing-pattern
 pre-existing, unrelated `no-unused-vars` error in `gatewayUtils.js`'s
 untouched `getGatewayStatusByAsset()` (not introduced by this change).
 
+**Follow-up fix (independent verification pass):** the removal above
+missed one orphaned locale namespace — the top-level `openledger.*`
+key (12 scalar strings: `deposit_amount`, `deposit_details`,
+`deposit_none`, `header_fiat`, `header_transaction_history`, `loading`,
+`refresh_transaction_history`, `retry`, `show_transaction_history`,
+`status`, `withdraw_amount`, `withdraw_none`), used exclusively by the
+now-deleted `OpenLedgerFiatDepositWithdrawal.jsx`/
+`OpenLedgerFiatTransactionHistory.jsx`. It sits outside the `gateway.*`
+scope the removal pass pruned, so it was missed there. Removed from
+all 10 `locale-*.json` files; `gateway.assets.open/gdex/rudex` and
+`apiConfig.js`'s `openledgerAPIs` remain untouched and in use (the
+former renders dynamically in `Utility/AssetName.tsx` for any
+still-held legacy gateway-backed asset; the latter still backs
+`Dashboard/SimpleDepositWithdraw.tsx`'s address validation). Verified:
+tsc 0 errors, 19/19 suites passing (5,392/5,392 — down from 5,416 as
+expected, same characterization-suite mechanism), all 10 locale files
+re-validated as parseable JSON.
+
+**Follow-up port (same pass):** the final completeness sweep also
+found `DepositWithdraw/XbtsFiat.jsx` still unported — Xbtsx is an
+in-scope gateway (unlike the 6 dropped above), but this file had been
+skipped over both Phase 7's Xbtsx batch and the gateway-removal pass's
+own scope. Ported to `XbtsFiat.tsx`: `BindToChainState(XbtsFiat)` (two
+required `ChainTypes.ChainAccount`/`ChainTypes.ChainAsset` props)
+replaced by a `XbtsFiatContainer`/`XbtsFiat` Container+Core split using
+`useChainStoreTick()` + `ChainStore.getAccount`/`ChainStore.getAsset`,
+matching this migration's established `BindToChainState` replacement
+pattern; the two string refs (`this.refs.amount`/`this.refs.iban`)
+became `useRef<HTMLInputElement>`. Security-sensitive per AGENTS.md
+(`_onSubmit` builds a real `AccountActions.transfer(...)` call) —
+verified byte-for-byte against the original: same argument order, same
+`utils.get_asset_precision(...)`-based amount scaling, same
+`new Buffer(...)` memo encoding (provider/ticker/IBAN), same min/max
+guard. Verified: tsc 0 errors, eslint 0 errors (only expected
+`any`-warnings), 19/19 suites / 5,392 tests passing, `yarn build` shows
+only the 2 known pre-existing `charting_library.esm` errors.
+
+With both follow-ups landed, `app/components/**/*.jsx` is down to
+exactly 2 files: `Utility/BindToChainState.jsx` and
+`Utility/DecimalChecker.jsx` — both deliberately deferred infra,
+intentionally left as-is for Phase 9 to remove once nothing references
+them.
+
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
   `bitshares-ui-style-guide` external dependency (superseded by the new
