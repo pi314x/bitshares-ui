@@ -7644,6 +7644,197 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
+- `Exchange/` (final 4 files, directory complete):
+  `ExchangeHeaderCollateral.jsx`, `QuoteSelectionModal.jsx`,
+  `TradingViewPriceChart.jsx`, `ExchangeContainer.jsx` -> `.tsx`. None of
+  the four import each other - all independent leaves, each ported in
+  isolation. This completes `app/components/Exchange/` (every other
+  `.jsx` file in it was already ported across earlier Phase 4 slices).
+  - `ExchangeHeaderCollateral.tsx`: the collateral-ratio stat shown in
+    the Exchange header for a call/settle market. Not security-sensitive
+    (grepped, no `WalletDb`/`WalletApi`/`Actions\.`/`ApplicationApi\.`).
+    Two original classes, both `BindToChainState`-wrapped with no
+    options (the "no option" blank-`<span/>`-while-loading case, e.g.
+    `Blockchain/Fees.tsx`'s `FeeGroupContainer`): the outer
+    `ExchangeHeaderCollateral` resolves `object` via `ChainStore.
+    getObject` + `useChainStoreTick()`; the inner `MarginPosition`
+    becomes its own `Container`+`Core` split resolving `debtAsset`/
+    `collateralAsset` via `ChainStore.getAsset` with an independent
+    `useChainStoreTick()` of its own (both original wraps really do
+    subscribe to `ChainStore` separately). The original's exact
+    prop-merge order (explicit props, then a full `{...this.props}`
+    spread *after*) is preserved on both levels. Lint-forced trim:
+    `render()`'s local `d` (`get_asset_amount(co.debt, debtAsset)`) was
+    already dead in the original (computed, never read in the returned
+    JSX - distinct from `_getCollateralRatio`'s own, separate local `d`)
+    - dropped to satisfy `no-unused-vars`, no behavior change.
+  - `QuoteSelectionModal.tsx`: the modal for reordering/adding/removing
+    preferred quote ("base") assets shown in the market list. Not
+    security-sensitive. Calls `SettingsActions.modifyPreferedBases` from
+    all four handlers (`_onMoveUp`/`_onMoveDown`/`_onRemove`/`_onAdd`),
+    transcribed with the exact same `{oldIndex, newIndex}`/`{remove}`/
+    `{add}` payloads. No lifecycle methods in the original, so a direct
+    class-to-function translation. `showModal` (passed by the one real
+    caller, `MyMarkets.tsx`) is grep-confirmed never read anywhere in
+    the original - kept as accepted-but-unused, same treatment as other
+    Modal ports (see `Modal/ProposalModal.tsx`'s precedent). Preserved
+    bug: `_onFoundBackingAsset` sets `isValid` via `setState`, but the
+    component's real, read state field is the similarly-named but
+    distinct `valid` (never written after its initial `false`) - a
+    pre-existing typo kept verbatim, not unified into one correctly-named
+    field. Lint-forced: the single-element `footer` array's `<Button>`
+    had no `key` in the original (a then-unlinted `.jsx` file) -
+    `react/jsx-key` is a real error under this file's new lint coverage,
+    so `key="close"` was added (inert with one array element).
+  - `TradingViewPriceChart.tsx`: the TradingView-library-backed price
+    chart. Calls `SettingsActions.addChartLayout` (`onSubmitConfirmation`,
+    and again in `onRow`'s click handler) and `SettingsActions.
+    deleteChartLayout` (`handleDelete`) to persist/delete saved chart
+    layouts - UI preference data, not wallet/key material; both
+    transcribed verbatim. The third-party charting library itself
+    (`require("../../../charting_library/charting_library.esm")`) stays
+    excluded from `tsc` (`tsconfig.json`'s own `exclude`) and from the
+    webpack build per the 2 known pre-existing `charting_library.esm`
+    build errors - untouched, as expected. DOM-ref-to-third-party-library
+    handling checked against this directory's already-ported siblings
+    first: `DepthHighChart.tsx` (Highcharts via `react-highcharts`) uses
+    a `React.useRef<any>(null)` for its chart-instance ref. This file's
+    TradingView widget was never attached via a React ref in the
+    original either - `new TradingView.widget({container: "tv_chart",
+    ...})` finds its container by DOM id, unchanged - so `this.tvWidget`
+    becomes `tvWidgetRef` (`useRef<any>(null)`), and the one real ref
+    (`<Input ref={...}>` for the save-layout name field, read back via
+    `.current.state.value`) reuses `Wallet/ImportKeys.tsx`'s identical-
+    shape `wifInputRef` precedent. `componentDidMount`/
+    `componentWillUnmount` merge into one mount-only effect whose
+    cleanup reads a `propsRef` mirror (not the mount-time closure) so it
+    always calls `dataFeed.clearSubs()` on whatever `dataFeed` is
+    *current* at unmount. `UNSAFE_componentWillReceiveProps` becomes a
+    second, mount-skipped effect keyed on `[props.marketReady,
+    props.dataFeed]`; it preserves a genuine pre-existing quirk where
+    `loadTradingView`'s `mobile`/`chartZoom`/`chartTools` reads go
+    through `this.props` directly rather than through its own `props`
+    parameter (used for everything else) - reproduced via a second,
+    defaulted `instanceProps` parameter sourced from an
+    `instancePropsRef` snapshot of the *pre-update* props, matching
+    `this.props` still holding the old value for the lifetime of
+    `UNSAFE_componentWillReceiveProps` in the original. Dropped as
+    confirmed dead: `_onWheel` (defined, rebound to `this._onWheel` at
+    the end of `loadTradingView`, but grepped app-wide - never attached
+    to any `addEventListener`/`onWheel`, so it never ran). `shouldComponentUpdate`
+    (a pure re-render guard, no `componentDidUpdate` in this file for it
+    to also gate) dropped per this migration's standing convention. The
+    original's `setState(..., callback)` wrapping the
+    `layoutName.current.state.value = null` ref mutation is simplified to
+    a plain post-`mergeState` call (no observable difference - the
+    mutation doesn't depend on a prior re-render, and `useState` has no
+    callback-form setter). `connect(TradingViewPriceChart, {listenTo:
+    [SettingsStore], getProps() {return {charts: ...};}})` becomes an
+    outer wrapper calling `useAltStore(SettingsStore)`, store value
+    spread after the caller's own props (established precedent).
+  - `ExchangeContainer.tsx`: the `/market/:marketID` route entry point -
+    resolves the quote/base asset pair, wires the market-data
+    subscription/listener lifecycle, and renders the already-ported
+    `Exchange.tsx`. Every `MarketsActions.` call found by grep is
+    preserved in its original lifecycle phase:
+    `cancelLimitOrderSuccess`/`closeCallOrderSuccess`/`callOrderUpdate`/
+    `feedUpdate`/`settleOrderUpdate` wired to the shared `bitsharesjs`
+    `EmitterInstance()` singleton's 5 events in the mount effect and
+    unwired in that same effect's cleanup; `subscribeMarket.defer` from
+    `_subToMarket` (called from both the mount effect and the
+    resubscribe-on-market-change effect); `unSubscribeMarket` from the
+    unmount cleanup (using the *current*, not mount-time, quote/base
+    asset ids - see below) and from the resubscribe effect (unsubscribing
+    the *previous* market before subscribing to the new one). Two
+    original classes:
+    1. `ExchangeContainer` (a pure `render()`, no lifecycle): was an
+       `AltContainer` over `[MarketsStore, AccountStore, SettingsStore,
+       WalletUnlockStore, IntlStore]` with a ~25-entry `inject` object,
+       split into an outer `ExchangeContainer` (no hooks - computes
+       `symbols` and renders the Page404 guard *before* touching any
+       store, matching the original never mounting its `AltContainer` at
+       all for a degenerate "same asset twice" URL - avoids the
+       conditional-hook-call problem a single component would hit) and
+       an inner `ExchangeContainerCore` (one `useAltStore` per listed
+       store, this migration's standard `AltContainer` replacement).
+       `GatewayStore` (read inside `inject` for `backedCoins`/
+       `bridgeCoins` but *not* in the `stores` list) is read via a plain,
+       non-subscribed `GatewayStore.getState()` each render, preserving
+       the exact quirk that a `GatewayStore`-only change never by itself
+       triggers a re-read here. `dataFeed: () => new DataFeed()` (a
+       function-valued `inject` entry, so a *new* `DataFeed` on every
+       single re-render of any of the five stores) is kept verbatim as
+       `new DataFeed()` computed directly in the render body, not
+       memoized away.
+    2. `ExchangeSubscriber = BindToChainState(ExchangeSubscriber,
+       {show_loader: true})` (required `currentAccount: ChainAccount`,
+       `quoteAsset`/`baseAsset`/`coreAsset: ChainAsset`, with
+       `defaultProps` for `currentAccount`/`coreAsset`) becomes a
+       `Container`+`Core` split (same approach as `Blockchain/Fees.tsx`/
+       `Modal/ProposalModal.tsx`): `Container` resolves all four via
+       `ChainStore.getAsset`/`getAccount` + `useChainStoreTick()`, gating
+       on *any* being `undefined` (not falsy - a resolved `null` still
+       renders through, `BindToChainState.jsx`'s exact semantics) with
+       the verbatim `{show_loader: true}` `<LoadingIndicator/>` + "Loading
+       ..." fallback. `coreAsset` is never actually passed by any real
+       caller (grepped), so it always resolves `defaultProps.coreAsset`,
+       `"1.3.0"`, same as before. `Core` is the original class body:
+       - `UNSAFE_componentWillMount` + `componentWillUnmount` merge into
+         one mount-only effect. The cleanup reads a `propsRef` mirror
+         (not the mount effect's own closed-over props) so it
+         unsubscribes from whatever market is *actually current* at
+         unmount - which can differ from the mount-time market, since
+         this component instance persists across a market switch
+         (the route param changes without remounting) - exactly the
+         case this task's brief flagged. The emitter listeners
+         registered in that same effect (`call-order-update`/
+         `settle-order-update`) likewise read `propsRef.current.
+         baseAsset`/`quoteAsset` dynamically on every invocation rather
+         than a one-time snapshot, matching a live class instance's
+         `this.props` always being current. `callListener`/
+         `limitListener`/`newCallListener`/`feedUpdateListener`/
+         `settleOrderListener`, and the shared `emitter =
+         EmitterInstance()` singleton, stay as module-level bindings
+         outside the component function - shared across every mounted
+         instance, the same pre-existing quirk as `Console.tsx`'s
+         module-level `cmd_history`.
+       - `UNSAFE_componentWillReceiveProps` becomes a second effect keyed
+         on `[props]` (the whole object): this component's props object
+         is only reconstructed when its parent (`ExchangeContainerCore`)
+         re-renders, which tracks how often the original's independently-
+         `ChainStore`-subscribed `BindToChainState` wrapper re-invoked
+         this lifecycle - while a purely-local `setState` here (e.g. from
+         `_subToMarket`) does not recreate that object, so the effect
+         correctly doesn't re-fire for that case either, matching a
+         class's `componentWillReceiveProps` never firing off its own
+         `setState`. Mount-skipped via the established `isMountRef`
+         guard. A `prevPropsRef`, updated at the end of every invocation,
+         stands in for `this.props` read *before* React would have
+         overwritten it with `nextProps` in the original - needed
+         because the original's `this.props.history.push(...)` call
+         (the prediction-market redirect) must use the *previous*
+         props' `history` object. The original's `if (!this.state.sub) {
+         return this._subToMarket(nextProps); }` early-return (skipping
+         the symbol-comparison branch below it) is reproduced with a
+         `do {...} while (false)` + `break`.
+    - Confirmed, preserved bug, TS-forced to keep rather than fix: the
+      `settle-order-update` listener calls `market_utils.isMarketAsset
+      (...)`, but the original file never imports `market_utils`
+      anywhere (grepped the whole file - unlike `Exchange.tsx`'s own
+      `import market_utils from "common/market_utils";`), so every real
+      firing of that event throws an uncaught `ReferenceError` in the
+      original, meaning `MarketsActions.settleOrderUpdate` is never
+      actually reached from it in practice. TypeScript resolves
+      identifiers statically, so the same omission would be a compile
+      error here rather than a runtime-only one - `declare const
+      market_utils: any;` (no accompanying `import`) satisfies `tsc`
+      without creating a real runtime binding, so the identical
+      `ReferenceError` still occurs at runtime, unchanged.
+  - Verified: `tsc --noEmit` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
 - `Utility/` batch 11 (4 files): `AssetWrapper.jsx`, `MarketStatsCheck
   .jsx`, `MarketPrice.jsx`, `MarketChangeComponent.jsx` -> `.tsx` (3 of
   4; see below). These four were part of batch 1's deferred mixin
@@ -7764,20 +7955,21 @@ compromise, not silent scope-narrowing.
     5,532/5,532 tests - matches the known-good baseline exactly),
     `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
-- Remaining long tail (~45 more `.jsx` files outside
+- Remaining long tail (~41 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/` (non-`View/`),
   `Blockchain/` non-operations, `Registration/`, root `components/`,
   `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
   `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
-  `Login/`, `Console/`, `BrowserNotifications/`, `QuickTrade/`, and
-  `Gateways/` now fully ported: smaller directories only. `Utility/`
-  itself is still not fully done: `BindToChainState.jsx`/`ChainTypes.js`
-  (infra, left as-is by design) and the deferred mixin cluster
-  (`DecimalChecker.jsx`, `AmountSelector.jsx`,
-  `AmountSelectorStyleGuide.jsx`, `EquivalentPrice.jsx`,
-  `EquivalentValueComponent.jsx`, plus their two external consumers
-  `Modal/DepositModal.jsx`/`Dashboard/SimpleDepositWithdraw.jsx`) remain.
+  `Login/`, `Console/`, `BrowserNotifications/`, `QuickTrade/`,
+  `Gateways/`, and `Exchange/` now fully ported:
+  smaller directories only. `Utility/` itself is still not fully
+  done: `BindToChainState.jsx`/`ChainTypes.js` (infra, left as-is by
+  design) and the deferred mixin cluster (`DecimalChecker.jsx`,
+  `AmountSelector.jsx`, `AmountSelectorStyleGuide.jsx`,
+  `EquivalentPrice.jsx`, `EquivalentValueComponent.jsx`, plus their
+  two external consumers `Modal/DepositModal.jsx`/`Dashboard/
+  SimpleDepositWithdraw.jsx`) remain.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
