@@ -7236,13 +7236,126 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
-- Remaining long tail (~64 more `.jsx` files outside
+- `Notifier/`, `Layout/`, `Page404/`, `Icon/` (6 files across 4 small
+  directories, all complete): `Notifier.jsx`, `NotifierContainer.jsx`,
+  `Incognito.jsx`, `NewsHeadline.jsx`, `Page404.jsx`, `Icon.jsx` ->
+  `.tsx`. Grep-verified: no `extends <ClassName>` matches; none of the 6
+  are security-sensitive per AGENTS.md (grepped each for `WalletDb`/
+  `WalletApi`/`Actions\.`/`ApplicationApi\.` - the only hit anywhere is
+  `NewsHeadline.jsx`'s `SettingsActions.hideNewsHeadline(...)`, which
+  only persists a dismissed-news-item hash to local settings).
+  - `Icon.tsx`: this migration's first port of a *widely-used shared leaf
+    component* - grepped app-wide for every importer of `Icon/Icon` (any
+    extensionless spelling) - ~50 files - and for every `<Icon .../>`
+    usage inside exactly those files (excluding the unrelated `Icon`
+    several other files import from `bitshares-ui-style-guide`/antd
+    under the same local name). Nothing unusual turned up (no `ref=`, no
+    caller ever sets the declared-but-unused `inverse` prop), so
+    `IconProps` is kept at least as permissive as the original's loose
+    `propTypes` (every field optional, a `size` union widened with a
+    plain `string` fallback, an index signature) - no caller needed any
+    change. Two TS-forced loosenings surfaced by `tsc` against real call
+    sites: `onClick` also accepts `null` (`AccountPortfolioList.tsx`
+    passes `onClick={isMyAccount ? modalAction : null}`) and `className`
+    also accepts `null` (`AccessSettings.tsx`'s `className={ping.color}`
+    is `string | null`); the DOM `<span>`'s own `onClick` attribute only
+    accepts `undefined`, so `props.onClick || undefined` converts at
+    that one boundary only (no behavioral difference). `shouldComponentUpdate`
+    (pure render-gate, no `componentDidUpdate` to replicate) dropped
+    entirely; `defaultProps = {title: null}` dropped as a no-op (the only
+    read, `this.props.title != null`, already treats `undefined` and
+    `null` identically via loose inequality); `PropTypes` runtime
+    validation replaced by the TS interface.
+  - `Notifier.tsx`/`NotifierContainer.tsx`: `BindToChainState(Notifier)`
+    (no options - required-prop fallback is a bare `<span />`) becomes a
+    default-exported container under `useChainStoreTick()` wrapping a
+    `NotifierCore` presentational component, adapted from
+    `WithdrawModalNew.tsx`'s `WithdrawModalAccountContainer` pattern;
+    `BindToChainState`'s generic `"#123"`-shorthand/bare-`name`-`Map`
+    account-id special-casing is dropped as grep-confirmed dead for this
+    component specifically - its only caller anywhere in the app,
+    `NotifierContainer.jsx`, always passes a plain name string (or
+    `null`) straight from `AccountStore`'s `currentAccount`, and
+    `NotifierContainer` itself has exactly one caller anywhere
+    (`Exchange.tsx`'s `<AccountNotifications />`, no props). The
+    `AltContainer`/`inject` wrapping in `NotifierContainer.jsx` becomes
+    `useAltStore(AccountStore)`, same translation as `FormattedPrice.tsx`.
+    `shouldComponentUpdate` (pure render-gate, no `componentDidUpdate`)
+    dropped entirely, along with its now-unused `immutable` import.
+    `UNSAFE_componentWillReceiveProps` (pulses an "account-notify"
+    Foundation notification on a brand-new `fill_order` in the account's
+    history) only ever fired on updates, never on mount - replicated
+    with a mount-skip `useEffect` keyed on `account`, using a ref to keep
+    the previously-seen value available for the comparison. Added
+    `react-foundation-apps/src/notification` to `app/types/vendor-
+    shims.d.ts` (its sibling `.../utils/foundation-api` was already
+    declared).
+  - `Page404.tsx`: `connect(Page404, {listenTo: [SettingsStore],
+    getProps})` -> an outer wrapper calling `useAltStore(SettingsStore)`,
+    same `connect` -> hook translation precedent as
+    `AccountPortfolioList.tsx`'s header comment (store-derived `theme`
+    always wins over any same-named caller prop, moot here since none of
+    the four call sites ever pass one). `defaultProps = {subtitle:
+    "page_not_found_subtitle"}` becomes a default-parameter destructure.
+    TS-forced adjustment: `<Link>` wrapping a nested `<Translate
+    component="button" .../>` tripped a `@types/react`/`@types/react-
+    router-dom` JSX-element-key-type mismatch ("Link cannot be used as a
+    JSX component") - worked around with the same `Link as
+    React.ComponentType<any>` cast already established in
+    `Utility/MarketLink.tsx`.
+  - `NewsHeadline.tsx`: `connect(NewsHeadline, {listenTo: [SettingsStore],
+    getProps})` -> `useAltStore(SettingsStore)`, same translation.
+    Dropped as confirmed dead: the imported `getGateways` (never
+    referenced anywhere else in the file, and `onChainConfig.js` doesn't
+    even export a function by that name - grepped its `export {...}`
+    list - so this was always an `undefined` import); `getNewsFromGitHub`
+    (a full method whose only reference anywhere is a commented-out call
+    in `componentDidMount`, never actually invoked). `componentDidMount`'s
+    surviving call, `getNewsThroughAsset()`, becomes a mount-only
+    `useEffect`; that function reads `this.props.hiddenNewsHeadline`
+    only *after* its `await getNotifications()` resolves (the CURRENT
+    prop value at resolution time, not whatever it was when the effect
+    fired), replicated with the established `stateRef` mirror pattern
+    rather than a plain closure. `static getDerivedStateFromProps`
+    (re-filters `state.news` whenever `props.hiddenNewsHeadline.size`
+    changes) is replicated with a render-phase conditional `setState`
+    guarded by a `useRef`, the same "adjust state during render"
+    translation already used for `SignedMessage.tsx`'s
+    `UNSAFE_componentWillReceiveProps`. `shouldComponentUpdate` (pure
+    render-gate) dropped entirely. Preserved verbatim (not "fixed"):
+    `filterNews`'s `{...Object.values(news).filter(...)}` spreads a
+    filtered array into an object literal (producing numeric-string keys
+    rather than a real array - behaviorally identical for the
+    `Object.keys`/`Object.values` calls made against it elsewhere in this
+    file); `new Date(item.begin_date.split(".").reverse())`/`...end_date...`
+    pass a `string[]` directly into the `Date` constructor rather than
+    joining it first - not a documented overload (forcing an `as any`
+    cast purely to satisfy `tsc`; the runtime call is unchanged), but
+    verified directly against this Node/V8 version that it still parses
+    into the intended date via V8's lenient array-to-string coercion; the
+    `urls.forEach(...)` loop reassigning `content` from a string to a
+    JSX element on its first URL match, then calling `.split()` on it
+    again for any further match (only correct for a single match per
+    news item).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors (this worktree's
+    `node_modules` was initially a symlink to the main checkout's, which
+    breaks `yarn build` specifically - replaced with a real hardlinked
+    copy via `cp -al` for this build run, per the established
+    workaround). `Notifier/`, `Layout/`, and `Page404/` are now each
+    fully ported (every `.jsx` file they contained); `Icon/` still has
+    one non-`.jsx` file out of scope for this batch
+    (`Icon/PulseIcon.js`).
+- Remaining long tail (~58 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, root `components/`, `Forms/`,
   `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
-  `Showcases/`, and `Poolmart/` now fully ported: smaller directories
-  only.
+  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, and `Page404/` now
+  fully ported: smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
