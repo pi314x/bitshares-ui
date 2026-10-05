@@ -1,5 +1,7 @@
 import {hot} from "react-hot-loader";
 import React from "react";
+import {Provider} from "react-redux";
+import {reduxStore} from "./store/reduxStore";
 import App from "./App";
 import IntlActions from "actions/IntlActions";
 import WalletManagerStore from "stores/WalletManagerStore";
@@ -308,4 +310,19 @@ AppInit = connect(
     }
 );
 AppInit = supplyFluxContext(alt)(AppInit);
-export default hot(module)(AppInit);
+
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): makes the Redux store (currently
+// holding only migrated, non-security-sensitive slices - see
+// `./store/reduxStore.ts`'s header) available to any component using
+// `react-redux`'s `useSelector`/`useDispatch`, alongside the existing
+// Alt.js flux context `supplyFluxContext` provides above - both stacks
+// run simultaneously for the duration of the store-by-store migration.
+function AppInitWithReduxProvider(props) {
+    return (
+        <Provider store={reduxStore}>
+            <AppInit {...props} />
+        </Provider>
+    );
+}
+
+export default hot(module)(AppInitWithReduxProvider);

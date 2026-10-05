@@ -8238,14 +8238,97 @@ intentionally left as-is for Phase 9 to remove once nothing references
 them.
 
 ### Phase 9 — Legacy removal & dependency cleanup
-- Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
-  `bitshares-ui-style-guide` external dependency (superseded by the new
-  design system), `foundation-apps`, react-router v5, `Babel stage-0`
-  preset, react-hot-loader.
-- Bump Node/Electron off their EOL versions.
-- Exit criteria: `app-next/` promoted to `app/`; zero references to removed
-  packages; bundle-size and Lighthouse/perf comparison published against the
-  pre-migration baseline.
+
+**Scope correction (this entry replaces the original one-line bullet
+list above, which turned out to describe an idealized "delete
+everything" end state unreachable as a direct cleanup step).** A full
+completeness sweep after Phase 8 + the gateway removal found that
+every ported `.tsx` component (110 call sites) still reads live Alt.js
+stores via `useAltStore` (19 real `alt.createStore` stores, 20
+`alt.createActions` actions files - see `next/hooks/useAltStore.ts`'s
+own header: "so there is one source of truth while both stacks are
+live" was always the design, not a temporary shim), and
+`bitshares-ui-style-guide` is still the active UI kit in 194 files.
+Deleting Alt.js or the style guide now would crash the app; actually
+removing them requires rewriting the state layer to Redux Toolkit and
+replacing the UI kit across 194 call sites - a second project
+comparable in size to Phases 1-8 combined. Put to the user explicitly
+(same as the gateway-removal fork); decision: **start the Alt.js →
+Redux Toolkit rewrite now**, non-security-sensitive stores first,
+`WalletDb.ts`/key-handling stores held back for extra scrutiny per
+AGENTS.md.
+
+**Migration pattern (store-level strangler fig, mirroring the
+component-level one):** for each Alt store/actions pair, write a Redux
+Toolkit slice (`app/store/slices/<name>Slice.ts`) holding the
+equivalent state shape, then rewrite the `app/stores/<Name>.js`/
+`app/actions/<Name>Actions.js` files in place to export an **Alt-shaped
+facade** - the exact same `getState()`/`listen(cb)`/`unlisten(cb)`
+methods on the store side, the exact same action-creator method names
+and `normalize()`/validation logic on the actions side - backed by
+`reduxStore.dispatch`/`reduxStore.subscribe` instead of Alt's real
+dispatcher. Every call site (both `useAltStore` hook components and any
+remaining direct `.listen()` callers, e.g. the still-legacy `App.jsx`)
+keeps working **completely unchanged** - zero call-site diff is the
+correctness signal for each migrated store, verified via `git diff
+--stat` on every known caller before committing. This means the
+`alt`/`alt-react`/`alt-instance` packages become removable once every
+store is migrated this way, even before any call site is switched to
+`useSelector`/`useDispatch` - that call-site cleanup can happen later,
+file by file, same as Phases 1-8 did for the component layer.
+
+Infra: `@reduxjs/toolkit@^1.9.7` + `react-redux@^8.1.3` added (the last
+major versions supporting React 16, which this app hasn't yet left -
+`react-redux@9` requires React 18). `app/store/reduxStore.ts`
+(`configureStore`, `serializableCheck`/`immutableCheck` both disabled -
+both stacks' data, old and new, routinely carries Immutable.js Maps)
+provides the single store instance; `<Provider store={reduxStore}>`
+wraps the whole tree in `AppInit.jsx`, alongside - not instead of -
+the existing `supplyFluxContext(alt)`.
+
+**Store/actions inventory (23 files; migration order, easiest/safest
+first):**
+- Not real migration targets: `BaseStore.js` (abstract mixin some
+  stores extend, not itself an `alt.createStore` instance - orphans
+  naturally once its last extender migrates, same as `DecimalChecker.jsx`
+  in Phase 8) and `tcomb_structs.js` (plain `tcomb` struct/validator
+  definitions used by wallet-backup JSON parsing, not a store/actions
+  pair at all).
+- **Tier 1 - non-security-sensitive, migrate first:**
+  `NotificationStore`/`NotificationActions` (**done**, this commit -
+  the template batch), `CachedPropertyStore`, `IntlStore`,
+  `BlockchainStore`, `PoolmartStore`, `AssetStore`, `GatewayStore`,
+  `AccountRefsStore`, `BalanceClaimActiveStore`, `CreditOfferStore`,
+  `TransactionConfirmStore`, `MarketsStore`, `AccountStore`,
+  `SettingsStore`.
+- **Tier 2 - security-sensitive (AGENTS.md), extra scrutiny before
+  each - fixed test vectors / byte-for-byte comparison against current
+  behavior, no store-shape "improvements" bundled in:** `AddressIndex`
+  (derives deposit addresses from keys), `BackupStore`,
+  `ImportKeysStore`, `BrainkeyStore`, `PrivateKeyStore`,
+  `WalletUnlockStore`, `WalletManagerStore`, and last/most carefully,
+  `WalletDb.ts` itself.
+- Once every store above is migrated (facade-backed, call sites still
+  untouched): switch call sites from `useAltStore`/direct
+  `.listen()` to `useSelector`/`useDispatch` file by file; then drop
+  the facades and delete `alt`/`alt-react`/`alt-instance.js`.
+- `bitshares-ui-style-guide` (194 files), `foundation-apps` (8 files),
+  react-router v5→v6, Babel stage-0 preset, and react-hot-loader
+  removal are separate, independent cleanup efforts (no ordering
+  dependency on the store migration above) - not started.
+- Bump Node/Electron off their EOL versions - not started.
+
+**Batch 1 verification (`NotificationStore`/`NotificationActions`):**
+`npx tsc --noEmit -p .` 0 errors; `eslint` on all 5 new/edited files 0
+errors (only expected `any`-warnings); `git diff --stat` on all 4 known
+call sites (`App.jsx`, `Blockchain/TransactionConfirm.tsx`,
+`Transfer/InvoicePay.tsx`, `Exchange/MyOpenOrders.tsx`) empty; 19/19
+suites / 5,392 tests passing; `yarn build` shows only the 2 known
+pre-existing `charting_library.esm` errors.
+
+- Exit criteria (unchanged from the original plan): zero references to
+  removed packages; bundle-size and Lighthouse/perf comparison
+  published against the pre-migration baseline.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
