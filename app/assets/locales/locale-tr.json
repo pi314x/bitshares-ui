@@ -1797,20 +1797,6 @@
         "wallet_unlock_different_block_chain": "This wallet was intended for a different block-chain; expecting %(expectedWalletId)s, but got %(actualWalletId)s",
         "worker_create_failure": "Çalışan oluşturulamadı: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "Depozito Tutarı",
-        "deposit_details": "Detaylar",
-        "deposit_none": "Depozito yok",
-        "header_fiat": "Fiat",
-        "header_transaction_history": "İşlem geçmişi",
-        "loading": "Loading...",
-        "refresh_transaction_history": "Yenile",
-        "retry": "Retry",
-        "show_transaction_history": "İşlem geçmişini göster",
-        "status": "Status",
-        "withdraw_amount": "Para Çekme Tutarı",
-        "withdraw_none": "Para çekme yok"
-    },
     "operation": {
         "annual_upgrade_account": "{account} yıllık üyeliğe yükseltildi.",
         "asset_claim_pool": "{account} claimed {amount} from asset {asset}'s fee pool",

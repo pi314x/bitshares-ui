@@ -1797,20 +1797,6 @@
         "wallet_unlock_different_block_chain": "This wallet was intended for a different block-chain; expecting %(expectedWalletId)s, but got %(actualWalletId)s",
         "worker_create_failure": "Failed to create worker: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "入金額",
-        "deposit_details": "詳細",
-        "deposit_none": "入金なし",
-        "header_fiat": "法定通貨",
-        "header_transaction_history": "取引履歴",
-        "loading": "ロード中...",
-        "refresh_transaction_history": "更新",
-        "retry": "再試行",
-        "show_transaction_history": "取引履歴を表示する",
-        "status": "ステータス",
-        "withdraw_amount": "出金額",
-        "withdraw_none": "出金なし"
-    },
     "operation": {
         "annual_upgrade_account": "{account}は年間会員にアップグレードしました",
         "asset_claim_pool": "{account} claimed {amount} from asset {asset}'s fee pool",

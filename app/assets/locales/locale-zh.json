@@ -1803,20 +1803,6 @@
         "wallet_unlock_different_block_chain": "此钱包适用于另一种区块链, 期望是%(expectedWalletId)s，实际是%(actualWalletId)s",
         "worker_create_failure": "工作提案创建失败: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "充值数量",
-        "deposit_details": "细节",
-        "deposit_none": "无充值",
-        "header_fiat": "法币",
-        "header_transaction_history": "交易历史",
-        "loading": "载入中…",
-        "refresh_transaction_history": "刷新",
-        "retry": "重试",
-        "show_transaction_history": "显示交易历史",
-        "status": "状态",
-        "withdraw_amount": "提币数量",
-        "withdraw_none": "没有提币"
-    },
     "operation": {
         "annual_upgrade_account": "{account} 升级到年度会员",
         "asset_claim_pool": "{account} 从资产{asset}手续费池中申领了 {amount} ",

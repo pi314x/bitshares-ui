@@ -1803,20 +1803,6 @@
         "wallet_unlock_different_block_chain": "Данный кошелёк был предназначен для другого блокчейна; ожидался %(expectedWalletId)s, но был получен %(actualWalletId)s",
         "worker_create_failure": "Не удалось создать работника: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "Сумма депозита",
-        "deposit_details": "Подробности",
-        "deposit_none": "Нет депозитов",
-        "header_fiat": "Фиат",
-        "header_transaction_history": "История транзакций",
-        "loading": "Загрузка...",
-        "refresh_transaction_history": "Обновить",
-        "retry": "Повторить попытку",
-        "show_transaction_history": "Показать историю транзакций",
-        "status": "Статус",
-        "withdraw_amount": "Сумма к выводу",
-        "withdraw_none": "Нет операций вывода"
-    },
     "operation": {
         "annual_upgrade_account": "{account} обновился до годового членства",
         "asset_claim_pool": "{account} востребовал {amount} из пула комиссий {asset}",

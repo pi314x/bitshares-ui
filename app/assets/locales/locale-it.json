@@ -1797,20 +1797,6 @@
         "wallet_unlock_different_block_chain": "This wallet was intended for a different block-chain; expecting %(expectedWalletId)s, but got %(actualWalletId)s",
         "worker_create_failure": "Failed to create worker: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "Deposit Amount",
-        "deposit_details": "Details",
-        "deposit_none": "No deposits",
-        "header_fiat": "Fiat",
-        "header_transaction_history": "Transaction history",
-        "loading": "Loading...",
-        "refresh_transaction_history": "Refresh",
-        "retry": "Retry",
-        "show_transaction_history": "Show transaction history",
-        "status": "Status",
-        "withdraw_amount": "Withdrawal Amount",
-        "withdraw_none": "No withdrawals"
-    },
     "operation": {
         "annual_upgrade_account": "{account} è stato promosso a membro annuale",
         "asset_claim_pool": "{account} claimed {amount} from asset {asset}'s fee pool",

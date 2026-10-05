@@ -1803,20 +1803,6 @@
         "wallet_unlock_different_block_chain": "Esta billetera estaba destinada a una block-chain diferente; esperando %(expectedWalletId)s, pero recibido %(actualWalletId)s",
         "worker_create_failure": "Error al crear trabajador: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "Monto de Deposito",
-        "deposit_details": "Detalles",
-        "deposit_none": "No hay depositos",
-        "header_fiat": "Fiat",
-        "header_transaction_history": "Historia de la transacciones",
-        "loading": "Cargando...",
-        "refresh_transaction_history": "Refrescar",
-        "retry": "Reintentar",
-        "show_transaction_history": "Mostrar historial de transacciones",
-        "status": "Estado",
-        "withdraw_amount": "Monto de Retiro",
-        "withdraw_none": "No hay retiros"
-    },
     "operation": {
         "annual_upgrade_account": "{account} fue actualizado a miembro anual",
         "asset_claim_pool": "{account} reclamado {amount} de activo {asset}'s cuota de piscina",
