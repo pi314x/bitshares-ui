@@ -7584,14 +7584,70 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
-- Remaining long tail (~47 more `.jsx` files outside
+- `Gateways/` (2 files, directory complete): `ServiceProviderExplanation.jsx`,
+  `GatewaySelectorModal.jsx` -> `.tsx`. Not security-sensitive per
+  AGENTS.md (grepped both: no `WalletDb`/`WalletApi`/`ApplicationApi`
+  calls). This `Gateways/` directory is the generic gateway/bridge
+  *selector* UI shown on app start (`App.jsx`'s `onRouteChanged`) asking
+  which external service providers the user is willing to see offered -
+  distinct from the specific gateway *integrations* under
+  `DepositWithdraw/{gdex,citadel,openledger,rudex,blocktrades,bitspark}`
+  that remain explicitly out of scope (see the Phase 7 "Scope note"
+  above); `DepositWithdraw/xbtsx` and `DepositWithdraw/piratecash` were
+  already migrated separately under Phase 7.
+  - `ServiceProviderExplanation.tsx`: a pure, stateless explainer block
+    with no lifecycle methods - a straight class-to-function translation.
+    Dropped as confirmed dead (grep-verified - each name appears only in
+    its own unused `import` line): `PropTypes`, `counterpart`, `Table`/
+    `Button`/`Radio`/`Modal`/`Checkbox`/`Collapse` (from
+    `bitshares-ui-style-guide`), and `ChainTypes` - none are referenced
+    anywhere in the original's `render()`.
+  - `GatewaySelectorModal.tsx`: the modal itself - an introduction page
+    (`ServiceProviderExplanation`) followed by a gateway/bridge selection
+    table (antd `Table` + `rowSelection`), gating a row's checkbox on
+    whether the on-chain config (`lib/chain/onChainConfig.js`'s
+    `getGatewayConfig`) marks that gateway deactivated. `connect
+    (GatewaySelectorModal, {listenTo: [SettingsStore], getProps})` is
+    replaced by `useAltStore<any>(SettingsStore)` (subscribe-only, value
+    discarded - same precedent as `FeeAssetSettings.tsx`) plus the same
+    `settings.get("filteredServiceProviders", [])`/`viewSettings.get(
+    "hasSeenExternalServices", false)` reads inlined in the component
+    body, preserving alt-react's store-always-wins prop precedence.
+    `componentDidMount`'s `_checkOnChainConfig()` becomes a mount-only
+    `useEffect`. Preserved verbatim: both `SettingsActions.changeSetting(
+    {setting: "filteredServiceProviders", ...})` call sites (`onNone()`:
+    `[]`; the table's `rowSelection.onChange`: `["all"]` when every row
+    is selected, else the raw selected-keys array) and the single
+    `SettingsActions.changeViewSetting({hasSeenExternalServices: true})`
+    call site (`onClose()`, gated on `!hasSeenExternalServices`);
+    `_getEnabledRowKeys()`'s array of real keys interleaved with
+    `undefined` entries (harmless for antd's `selectedRowKeys`); `onSubmit
+    ()` doing nothing but call `onClose()` (selections are already
+    written to the store live, on every checkbox click). Dropped as
+    confirmed dead: `Radio`/`Checkbox` imports (never rendered, grep
+    count 0) and `_getRowHeaders()`'s `"type"` column's genuinely
+    unreachable trailing `return` block (both branches of its preceding
+    `if/else` already return, so it can never execute - confirmed by
+    control flow alone, not data-dependent). TS-forced adjustment:
+    `branding.js`'s `getFaucet()` is typed `{url, show, editable}` via
+    `allowJs` inference, but the original dynamically reads a `.referrer`
+    field that type doesn't declare (always `undefined` in this
+    checkout); cast to `any` at that one call site to keep the same
+    runtime property access rather than narrowing the type or dropping
+    the dead-in-practice check.
+  - Verified: `tsc --noEmit` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
+- Remaining long tail (~45 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/` (non-`View/`),
   `Blockchain/` non-operations, `Registration/`, root `components/`,
   `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
   `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
-  `Login/`, `Console/`, `BrowserNotifications/`, and `QuickTrade/` now
-  fully ported: smaller directories only.
+  `Login/`, `Console/`, `BrowserNotifications/`, `QuickTrade/`, and
+  `Gateways/` now fully ported: smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
