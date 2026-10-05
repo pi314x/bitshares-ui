@@ -30,13 +30,19 @@ import transactionConfirmReducer from "./slices/transactionConfirmSlice";
 import balanceClaimActiveReducer from "./slices/balanceClaimActiveSlice";
 import poolmartReducer from "./slices/poolmartSlice";
 import creditOfferReducer from "./slices/creditOfferSlice";
+import blockchainReducer from "./slices/blockchainSlice";
+import assetReducer from "./slices/assetSlice";
+import gatewayReducer from "./slices/gatewaySlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
     transactionConfirm: transactionConfirmReducer,
     balanceClaimActive: balanceClaimActiveReducer,
     poolmart: poolmartReducer,
-    creditOffer: creditOfferReducer
+    creditOffer: creditOfferReducer,
+    blockchain: blockchainReducer,
+    asset: assetReducer,
+    gateway: gatewayReducer
 });
 
 export const reduxStore = configureStore({

@@ -8314,7 +8314,8 @@ source above has zero outbound cross-store action dependencies.
 - **Tier 1a - fully standalone (no inbound or outbound cross-store
   binding), migrate independently, any order:**
   `NotificationStore`/`NotificationActions` (**done**),
-  `BlockchainStore`, `AssetStore`, `GatewayStore` (in progress),
+  `BlockchainStore`/`BlockchainActions`, `AssetStore`/`AssetActions`,
+  `GatewayStore`/`GatewayActions` (**done**, batch 4 - see below),
   `PoolmartStore`/`PoolmartActions` (**done**),
   `CreditOfferStore`/`CreditOfferActions` (**done**).
 - **Tier 1b - connected pair, migrate together in one batch:**
@@ -8468,6 +8469,63 @@ errors. `CreditOfferStore.js`'s `onCreate`/`onDisabled`/`onUpdate`/
 handlers' pagination re-fetch (triggered when `result.end === false`)
 moved into `CreditOfferActions.ts` itself, right after the matching
 dispatch, since Redux reducers must stay pure - see that file's header.
+
+**Batch 4 (`BlockchainStore`/`BlockchainActions`, `AssetStore`/
+`AssetActions`, `GatewayStore`/`GatewayActions`):** same facade pattern
+as batch 1, applied to 3 stores at once since none of `BlockchainStore`,
+`AssetStore` or `GatewayStore` bind listeners to each other's actions
+(confirmed by each file's own `bindListeners` call referencing only its
+matching actions file). Two wrinkles batch 1 didn't have, both from
+these stores never calling `this.setState(...)` - under Alt's
+`createStoreFromClass`, a store that never sets `this.state` IS its own
+state object (`store.state !== undefined ? store.state : store`), so
+each slice's state shape is the original's instance fields verbatim,
+including non-reactive ones like `BlockchainStore`'s `maxBlocks`/
+`GatewayStore`'s `bridgeInputs`:
+- `BlockchainStore.onGetHeader` mutated a plain (non-Immutable) `Map` in
+  place; Immer doesn't auto-draft `Map`/`Set`, so a literal port would
+  silently stop notifying listeners (Alt's `emitChange()` fires on every
+  successful dispatch regardless of reference equality, unlike this
+  migration's `listen()` pattern) - fixed by reassigning to a new `Map`
+  with the same contents in `blockchainSlice.ts`'s `onGetHeader`, see its
+  file header.
+- `AssetActions`' `getAssetList`/`lookupAsset`/`getAssetsByIssuer` are
+  the only 3 of its 16 methods `AssetStore` ever bound a listener to; the
+  rest (`publishFeed`, `createAsset`, `updateAsset`, etc.) are
+  transaction-signing action creators whose `dispatch(true)`/
+  `dispatch(false)` calls were already complete no-ops under Alt (no
+  store anywhere binds to them) - dropped rather than wired to a
+  nonexistent reducer, while each method's actual promise-resolution
+  behavior (resolves to `undefined` vs. explicitly to `true`/`false`,
+  per method - see `AssetActions.ts`'s file header) is preserved exactly.
+  `GatewayStore`'s static `isAllowed`/`anyAllowed`/`isDown`/
+  `getOnChainConfig`/`getGlobalOnChainConfig`/`isAssetBlacklisted`
+  methods (copied onto the Alt store *instance* by
+  `alt/src/utils/AltUtils.js`'s `getInternalMethods`, which is why call
+  sites invoke them on the store, not the class) are replicated as
+  ordinary facade instance methods.
+
+Also fixed along the way (TypeScript-only, no behavior change): two
+Immutable.js-typed state fields per slice were retyped `any` after `npx
+tsc` revealed Immer's `Draft<T>` structurally matches `Immutable.List`/
+`Map` against the built-in `ReadonlyMap` interface and silently remaps
+them to a plain `Map`, dropping `List`-only methods; `BlockchainActions`/
+`AssetActions`/`GatewayActions`' `withDefer` helper (replicating Alt's
+free `action.defer(...)` on every action) needed an explicit return type
+so `.defer` type-checks at call sites; and `branding.js`'s
+`allowedGateway(gateway)` has no default parameter, so the facade's
+`anyAllowed()` passes `undefined` explicitly instead of omitting the
+argument (same runtime value, satisfies `tsc`'s arity check).
+
+**Batch 4 verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+all 9 new/edited files 0 errors (only expected `any`-warnings); `git
+diff --stat` on all 37 known call sites across both stores/actions pairs
+(`App.jsx`, every `Blockchain`/`Explorer`/`Exchange`/`Account`/
+`PredictionMarkets`/`Modal` component reading `BlockchainStore`/
+`BlockchainActions`/`AssetStore`/`AssetActions`/`GatewayStore`/
+`GatewayActions`, `lib/common/gatewayUtils.js`) empty; 19/19 suites /
+5,392 tests passing (same count as batch 1); `yarn build` shows only the
+2 known pre-existing `charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison
