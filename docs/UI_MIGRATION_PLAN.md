@@ -7512,14 +7512,86 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only
     the 2 known pre-existing `charting_library.esm` errors.
-- Remaining long tail (~50 more `.jsx` files outside
+- `QuickTrade/` (3 files, directory complete): `QuickTrade.jsx`,
+  `QuickTradeRouter.jsx`, `SellReceive.jsx` -> `.tsx`.
+  - `QuickTrade.tsx`: the "instant trade" card - pick a sell asset/amount
+    and a receive asset/amount, see the resulting price/fee breakdown and
+    matched order book slice, then submit a fill-or-kill limit order.
+    **Security-sensitive per AGENTS.md**: `handleSell()` builds the real
+    `LimitOrderCreate` and calls `MarketsActions.createLimitOrder2(order)`
+    - the actual on-chain trade-submission call - with the exact same
+    `for_sale`/`to_receive`/`expiration`/`seller`/`fee`/`fill_or_kill`
+    argument construction as the original, byte-for-byte (same `10 **
+    precision` scaling, same hardcoded `fee: {asset_id: "1.3.0", amount:
+    0}`, `fill_or_kill: true` unchanged), with the `.then()/.catch()` -
+    including the exact "wallet locked" error-message check - preserved
+    verbatim. `subToMarket()` preserves both
+    `MarketsActions.unSubscribeMarket(...)` and
+    `MarketsActions.subscribeMarket(baseAsset, quoteAsset, 3600, 0)` call
+    sites exactly (including a pre-existing hardcoded-vs-destructured
+    quirk, documented in-file rather than fixed), and
+    `componentWillUnmount`'s own `MarketsActions.unSubscribeMarket(...)`
+    cleanup call is preserved as an unmount-only effect.
+    `AssetActions.getAssetList.defer` stays debounced 150ms. Grepped
+    every `console.*` call: all `__DEV__`-gated debug logs or a generic
+    `console.error("order failed:", e)` catch-all - no password/key/
+    brainkey material, kept verbatim. `connect(QuickTrade, {listenTo:
+    [AssetStore, MarketsStore], getProps() {...}})` -> a
+    `QuickTradeStoreConnected` wrapper using `useAltStore` per store, with
+    store-derived props spread after `{...props}` (this migration's
+    established `connect` precedent);
+    `bindToCurrentAccount(QuickTrade)` reuses the already-ported
+    `Utility/BindToCurrentAccount.tsx` as the outermost wrapper, same
+    nesting order as the original. `getDerivedStateFromProps` is
+    replicated by mutating the `useState` object in place, unconditionally
+    on every render, before it's otherwise used - the same precedent
+    `WithdrawModalNew.tsx`'s `WithdrawModalCore` already established.
+  - `QuickTradeRouter.tsx`: the `/instant-trade[/:marketID]` route entry
+    point - parses `marketID` into a sell/receive symbol pair, 404s on a
+    degenerate same-asset-twice market, resolves both into chain `Asset`
+    objects, then renders `QuickTrade`. Not security-sensitive on its own
+    (no `WalletDb`/signing here), but its resolved assets feed
+    `QuickTrade.tsx`'s `assetToSell`/`assetToReceive` props that
+    `handleSell()` ultimately submits with, so the asset-resolution logic
+    is translated byte-for-byte rather than simplified. Traced
+    `BindToChainState(QuickTradeSubscriber, {show_loader: true})`'s actual
+    control flow rather than assuming from the option name: neither
+    `assetToSell` nor `assetToReceive` is marked `.isRequired`, so
+    `show_loader`'s loop body never runs for this usage - it has no
+    observable effect here, confirmed rather than assumed. One
+    `__DEV__`-gated `console.log("QuickTradeRouter", symbols)` call,
+    grep-confirmed no key material, kept verbatim.
+  - `SellReceive.tsx`: a pure, stateless leaf rendering the sell/receive
+    `AmountSelector3` pair plus the swap icon between them; only
+    `QuickTrade.tsx` renders it. Not security-sensitive (grepped: no
+    `WalletDb`, no transaction building/signing, no `console.*` calls at
+    all). `onReceiveAssetSearch`, read from props in the original despite
+    never being declared in `static propTypes`, is added to the new
+    `SellReceiveProps` interface as a real optional field. TS-forced,
+    confirmed-non-regression adjustments: `AmountSelector3`'s props
+    interface (already ported in an earlier batch) no longer declares
+    `assetInput`/`onAssetInputChange`/`placeholder`/`onImageError` -
+    diffing the pre-TypeScript `AmountSelector3.jsx` via git history shows
+    these were already destructured-but-unused dead props before this
+    migration touched either file, so they're dropped from both
+    `<AmountSelector3>` call sites (the still-live `sellImgName`/
+    `receiveImgName`/`onSwap`/`isSwappable` plumbing is untouched); `Icon`
+    style props move from `null` to `undefined` (both mean "no inline
+    style") and a non-functional CSS `align` entry is dropped from an
+    inline style object (browsers silently ignore `align` on a `<div>`).
+  - Verified: `tsc --noEmit` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
+- Remaining long tail (~47 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/` (non-`View/`),
   `Blockchain/` non-operations, `Registration/`, root `components/`,
   `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
   `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
-  `Login/`, `Console/`, and `BrowserNotifications/` now fully ported:
-  smaller directories only.
+  `Login/`, `Console/`, `BrowserNotifications/`, and `QuickTrade/` now
+  fully ported: smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
