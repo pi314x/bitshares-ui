@@ -7179,12 +7179,70 @@ compromise, not silent scope-narrowing.
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
   - `Showcases/` is now fully ported (6/6 files).
+- `Poolmart/` (2 files, directory complete): `LiquidityPools.jsx` (the
+  "/pools" page's pool listing/filter/pagination UI) and its trivial
+  `PoolmartPage.jsx` wrapper got the real `.jsx`→`.tsx` rewrite.
+  `PoolExchangeModal`/`PoolStakeModal` (the actual trade/stake actions,
+  which do involve on-chain signing) are reused exactly as before, not
+  touched - this directory only opens/closes them, same lower-risk
+  category as the already-ported `Explorer/LiquidityPools.tsx` and
+  `Account/AccountPools.tsx`.
+  - Security-sensitive per AGENTS.md (on-chain *reads*, not writes):
+    every `PoolmartActions.*` call site preserved byte-for-byte -
+    `PoolmartActions.getLiquidityPoolsByShareAsset.defer(filterShareAsset)`
+    and `PoolmartActions.getLiquidityPools.defer(filterAssetA,
+    filterAssetB, GetLimit, start)` inside the debounced fetch effect,
+    and `PoolmartActions.resetLiquidityPools()` inside
+    `resetLiquidityPools`, called from every filter/rows-change handler.
+    No other transaction-dispatch call sites exist in this directory
+    (grep-confirmed); the only real on-chain *writes* this screen can
+    reach are inside the already-ported, already-documented
+    `PoolExchangeModal.tsx`/`PoolStakeModal.tsx`.
+  - Structural change: the original's four layers (`connect(
+    LiquidityPoolsStoreWrapper, {listenTo: [PoolmartStore], getProps})`
+    wrapping `BindToChainState(LiquidityPools, {show_loader: true})`
+    wrapping a trivial passthrough `LiquidityPoolsStoreWrapper` class)
+    collapse into three functions, the same precedent set by
+    `Account/AccountPools.tsx`: `LiquidityPoolsContainer` (default
+    export, `useAltStore(PoolmartStore)`) feeding
+    `LiquidityPoolsChainContainer` (resolves `defaultAsset` via
+    `ChainStore.getAsset` under `useChainStoreTick()`, replicating
+    `BindToChainState`'s `options.show_loader` fallback exactly as read
+    from `BindToChainState.jsx`'s `render()` - `<LoadingIndicator />` +
+    `<span className="text-center">Loading ...</span>` inside a
+    Fragment, not the bare `<span />` fallback used by components ported
+    without that option) feeding the `LiquidityPools` core component.
+  - Dropped as confirmed dead (grep-evidenced, same findings already
+    documented for the equivalent fields in `Explorer/LiquidityPools.tsx`
+    and `Account/AccountPools.tsx`): `state.total` (set, never read - the
+    `<Table>`'s `pagination.total` uses `dataSource.length` instead); a
+    *local* `state.lastPoolId` (distinct from the `lastPoolId` *prop*
+    from `PoolmartStore`, which is kept - set only inside
+    `_resetLiquidityPools`, never read); the `tile` object (computed from
+    `hasLoggedIn` every render, never referenced again); the
+    connect-provided `liquidityPoolsLoading` prop (computed, never read
+    anywhere in the class).
+  - Preserved verbatim (not "fixed"): the legacy `GetLimit` typo (same
+    pre-existing bug as the `Explorer/LiquidityPools.tsx` and
+    `Account/AccountPools.tsx` ports - `GetLimit` was never actually set
+    anywhere, only lowercase `limit` was, so the rows-per-page selector
+    never affected how many pools the API returns per fetch, only the
+    antd `<Table>`'s client-side pagination) - kept as an explicit
+    `undefined` positional argument; the bare, zero-argument
+    `console.log();` at the top of the original `render()` - logs
+    nothing at all, not security-sensitive, kept as-is.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
 - Remaining long tail (~64 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, root `components/`, `Forms/`,
-  `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`, and
-  `Showcases/` now fully ported: smaller directories only.
+  `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
+  `Showcases/`, and `Poolmart/` now fully ported: smaller directories
+  only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
