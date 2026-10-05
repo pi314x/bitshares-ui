@@ -7349,13 +7349,99 @@ compromise, not silent scope-narrowing.
     fully ported (every `.jsx` file they contained); `Icon/` still has
     one non-`.jsx` file out of scope for this batch
     (`Icon/PulseIcon.js`).
-- Remaining long tail (~58 more `.jsx` files outside
+- `Login/` (4 files, directory complete): `AccountLogin.jsx`,
+  `DecryptBackup.jsx`, `WalletLogin.jsx`, `Login.jsx` → `.tsx`. Ported in
+  dependency order (`DecryptBackup`/`AccountLogin` first as independent
+  leaves, then `WalletLogin` which imports `DecryptBackup`, then `Login`
+  last, which imports both `AccountLogin` and `WalletLogin`), all 4 in
+  one commit.
+  - **The most security-sensitive batch so far per AGENTS.md**: this is
+    the wallet-unlock-by-password-login flow
+    (`AccountLogin.tsx`/`DecryptBackup.tsx`). Every `WalletDb
+    .validatePassword(...)`/`WalletDb.isLocked()`/`WalletUnlockActions
+    .change()` call site (both of `AccountLogin`'s, in `onPasswordEnter`,
+    and both of `DecryptBackup`'s, in `onRestore`/`onPassword`) is
+    preserved byte-for-byte: same arguments, same call order, same
+    surrounding control flow, including the original's two separate
+    `validatePassword` calls in `AccountLogin` (one immediate, one
+    repeated inside the 550ms `setTimeout`) rather than collapsing them.
+    Nothing new logs, persists, or caches any password/key material;
+    each password still lives only in component state for exactly as
+    long as the original kept it there. Grepped every `console.*` call
+    across all 4 files: exactly one, in `DecryptBackup.tsx`'s
+    `onPassword` `.catch()` (`console.error` logging the wallet *name*
+    and the thrown error/stack only, never the password or key material)
+    - kept verbatim. No password-logging `console.*` call was found
+    anywhere in this directory.
+  - `AccountLogin.tsx`'s `shouldComponentUpdate`/`componentDidUpdate`/
+    `UNSAFE_componentWillReceiveProps` interaction (all three present in
+    the original) was analyzed explicitly rather than assumed: dropping
+    `shouldComponentUpdate` (this migration's usual treatment for a pure
+    re-render guard) is safe here specifically because
+    `componentDidUpdate`'s own side effects (`ReactTooltip.rebuild()`,
+    idempotent; a `.focus()` call gated by its own `!previousProps.active
+    && this.props.active && ...` condition) can only newly fire when
+    `active` itself changes, which already makes the dropped
+    `shouldComponentUpdate`'s shallow-compare true on that same update -
+    unlike the sibling case this was checked against (`Forms/
+    AccountNameInput.tsx`'s `shouldComponentUpdate`, which gates a
+    `componentDidUpdate` that unconditionally calls a parent-visible
+    `onChange`, and was therefore replicated exactly via a matching
+    `useEffect` dependency array instead of dropped).
+  - `connect`/`AltContainer` → `useAltStore` Container+Core splits
+    throughout, with store-derived props always overriding same-named
+    explicit ones (verified for both alt-react's `connect` and
+    `alt-container`'s `AltContainer`, whose `render()` does `React
+    .cloneElement(children, this.getProps())` -
+    `node_modules/alt-container/src/AltContainer.js` - `cloneElement`'s
+    second argument overrides same-named existing props the same way).
+    `DecryptBackup.tsx` still subscribes to `WalletManagerStore` via
+    `useAltStore` even though its derived `wallet` prop is never read
+    anywhere (grep-confirmed, true in the original too) - kept purely
+    for the re-render-on-change side effect, this migration's established
+    treatment for such otherwise-unused stores.
+  - Dropped as confirmed dead (grepped/read in full): `AccountLogin.jsx`'s
+    `reset()` (never called, and unreachable from outside even in the
+    original) and `onAccountChanged` (bound but never referenced);
+    `WalletLogin.jsx`'s duplicated, never-read string ref
+    (`ref="file_input"`, present on two separate inputs that also share
+    the id `"backupFile"` - a pre-existing duplicate-id/duplicate-ref bug,
+    not introduced or fixed here); `DecryptBackup.tsx`'s unused
+    `Notification` import. No component in this directory exposes a
+    live, externally-used ref-based imperative API (grepped app-wide for
+    `Login/AccountLogin`, `Login/WalletLogin`, `Login/Login`,
+    `Login/DecryptBackup`, and for any ref into any of them: only
+    `app/App.jsx`'s `<Route path="/login" component={Login} />` renders
+    the tree, with no ref) - no `forwardRef`/`useImperativeHandle` needed
+    anywhere in this batch.
+  - TS-forced adjustments, all confirmed dead/inert rather than
+    behavior changes: `AccountLogin.tsx` drops `size`/`hideImage` (passed
+    to the already-ported, out-of-scope `Account/
+    AccountInputStyleGuide.tsx`, which declares and reads neither -
+    `AccountLogin.jsx` was the only call site anywhere passing them) and
+    maps a possibly-`null` `accountName` to `undefined` for that same
+    component's `value?: string` prop; `Login.tsx` drops the `loginPage`
+    prop passed to the already-ported, out-of-scope `Registration/
+    WalletHeaderSelection.tsx`/`AccountHeaderSelection.tsx` (neither
+    declares or reads it, and grepped back through their pre-TypeScript
+    `.jsx` originals - it was already dead before this migration);
+    `WalletLogin.tsx` casts `react-router-dom`'s `Link` through `any`
+    (the same `@types/react-router-dom`-vs-`@types/react` mismatch
+    worked around elsewhere, e.g. `LoginSelector.tsx`) and casts a
+    `new FileReader().readAsBinaryString` feature-detect through `any`
+    (TypeScript's newer "this condition will always return true" check).
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint`
+    clean (0 errors, only expected `@typescript-eslint/no-explicit-any`
+    warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
+    matches the known-good baseline exactly), `yarn build` shows only the
+    2 known pre-existing `charting_library.esm` errors.
+- Remaining long tail (~54 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/`, `Blockchain/`
   non-operations, `Registration/`, root `components/`, `Forms/`,
   `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
-  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, and `Page404/` now
-  fully ported: smaller directories only.
+  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`, and
+  `Login/` now fully ported: smaller directories only.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
