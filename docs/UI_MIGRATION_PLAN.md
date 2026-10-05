@@ -8286,28 +8286,66 @@ provides the single store instance; `<Provider store={reduxStore}>`
 wraps the whole tree in `AppInit.jsx`, alongside - not instead of -
 the existing `supplyFluxContext(alt)`.
 
-**Store/actions inventory (23 files; migration order, easiest/safest
-first):**
+**Store/actions inventory (23 files) and dependency graph.** A full
+codebase sweep (every store file grepped for references to any
+*other* store's actions, not just its own) found real cross-store
+`bindListeners`/`bindActions` bindings that constrain migration order
+- a store that binds a listener to another store's action can't be
+safely migrated until that other store's actions facade is updated to
+notify it explicitly (Alt's dispatcher did this automatically; a Redux
+facade has to do it by hand - see the `TransactionConfirmStore`/
+`BalanceClaimActiveStore` batch for the pattern). The graph:
+`AccountRefsStore`→`PrivateKeyActions`, `AccountStore`→
+`PrivateKeyActions`+`SettingsActions`+`WalletActions`,
+`BalanceClaimActiveStore`→`TransactionConfirmActions`,
+`IntlStore`→`SettingsActions`, `PrivateKeyStore`→`CachedPropertyActions`,
+`SettingsStore`→`IntlActions` (circular with `IntlStore`, which also
+depends on `SettingsActions` - these two must be migrated together),
+`WalletManagerStore`→`PrivateKeyActions`+`WalletActions`,
+`WalletUnlockStore`→`SettingsActions`. Everything not listed as a
+source above has zero outbound cross-store action dependencies.
+
 - Not real migration targets: `BaseStore.js` (abstract mixin some
   stores extend, not itself an `alt.createStore` instance - orphans
   naturally once its last extender migrates, same as `DecimalChecker.jsx`
   in Phase 8) and `tcomb_structs.js` (plain `tcomb` struct/validator
   definitions used by wallet-backup JSON parsing, not a store/actions
   pair at all).
-- **Tier 1 - non-security-sensitive, migrate first:**
-  `NotificationStore`/`NotificationActions` (**done**, this commit -
-  the template batch), `CachedPropertyStore`, `IntlStore`,
-  `BlockchainStore`, `PoolmartStore`, `AssetStore`, `GatewayStore`,
-  `AccountRefsStore`, `BalanceClaimActiveStore`, `CreditOfferStore`,
-  `TransactionConfirmStore`, `MarketsStore`, `AccountStore`,
-  `SettingsStore`.
+- **Tier 1a - fully standalone (no inbound or outbound cross-store
+  binding), migrate independently, any order:**
+  `NotificationStore`/`NotificationActions` (**done**),
+  `BlockchainStore`, `AssetStore`, `GatewayStore`, `PoolmartStore`,
+  `CreditOfferStore` (5 batched together - in progress).
+- **Tier 1b - connected pair, migrate together in one batch:**
+  `TransactionConfirmStore` + `BalanceClaimActiveStore` (the latter
+  binds to `TransactionConfirmActions.wasBroadcast` - in progress, see
+  commit for the explicit cross-notify pattern used).
+- **Tier 1c - circular pair, migrate together in one batch (bigger:
+  `SettingsStore` is 828 lines, widely used including by
+  `AppInit.jsx` itself):** `IntlStore` + `SettingsStore` - NOT yet
+  started. Each slice will need an `extraReducers`/`builder.addCase`
+  listening to the other's action, replacing the implicit
+  Alt `bindListeners` cross-binding - cleaner in Redux than the
+  explicit-dispatch workaround Tier 1b needed, since both sides are
+  migrated in the same batch and can import each other's slice
+  actions directly.
+- **Tier 1d - blocked on a Tier 2 counterpart, do NOT migrate until
+  that counterpart is ready:** `CachedPropertyStore` (depended on by
+  `PrivateKeyStore`, Tier 2), `AccountRefsStore`,
+  `AccountStore`, `WalletManagerStore` (all depend on `PrivateKeyActions`
+  and/or `WalletActions`, Tier 2). `MarketsStore` (1,563 lines) has no
+  cross-store binding found but is large/heavily used - treat as its
+  own dedicated batch once Tier 1a/b/c land, not bundled with anything
+  else.
 - **Tier 2 - security-sensitive (AGENTS.md), extra scrutiny before
   each - fixed test vectors / byte-for-byte comparison against current
   behavior, no store-shape "improvements" bundled in:** `AddressIndex`
   (derives deposit addresses from keys), `BackupStore`,
-  `ImportKeysStore`, `BrainkeyStore`, `PrivateKeyStore`,
-  `WalletUnlockStore`, `WalletManagerStore`, and last/most carefully,
-  `WalletDb.ts` itself.
+  `ImportKeysStore`, `BrainkeyStore`, `PrivateKeyStore` (unlocks
+  `CachedPropertyStore` once done), `WalletUnlockStore`,
+  `WalletManagerStore`, and last/most carefully, `WalletDb.ts` itself
+  (unlocks `AccountStore`/`AccountRefsStore` once `PrivateKeyStore`/
+  `WalletActions` are done).
 - Once every store above is migrated (facade-backed, call sites still
   untouched): switch call sites from `useAltStore`/direct
   `.listen()` to `useSelector`/`useDispatch` file by file; then drop
