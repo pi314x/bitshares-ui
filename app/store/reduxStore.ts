@@ -28,11 +28,15 @@ import {configureStore, combineReducers} from "@reduxjs/toolkit";
 import notificationReducer from "./slices/notificationSlice";
 import transactionConfirmReducer from "./slices/transactionConfirmSlice";
 import balanceClaimActiveReducer from "./slices/balanceClaimActiveSlice";
+import poolmartReducer from "./slices/poolmartSlice";
+import creditOfferReducer from "./slices/creditOfferSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
     transactionConfirm: transactionConfirmReducer,
-    balanceClaimActive: balanceClaimActiveReducer
+    balanceClaimActive: balanceClaimActiveReducer,
+    poolmart: poolmartReducer,
+    creditOffer: creditOfferReducer
 });
 
 export const reduxStore = configureStore({

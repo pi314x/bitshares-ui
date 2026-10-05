@@ -8314,8 +8314,9 @@ source above has zero outbound cross-store action dependencies.
 - **Tier 1a - fully standalone (no inbound or outbound cross-store
   binding), migrate independently, any order:**
   `NotificationStore`/`NotificationActions` (**done**),
-  `BlockchainStore`, `AssetStore`, `GatewayStore`, `PoolmartStore`,
-  `CreditOfferStore` (5 batched together - in progress).
+  `BlockchainStore`, `AssetStore`, `GatewayStore` (in progress),
+  `PoolmartStore`/`PoolmartActions` (**done**),
+  `CreditOfferStore`/`CreditOfferActions` (**done**).
 - **Tier 1b - connected pair, migrate together in one batch:**
   `TransactionConfirmStore` + `BalanceClaimActiveStore` (**done** - the
   latter binds to `TransactionConfirmActions.wasBroadcast`; see the
@@ -8448,6 +8449,25 @@ batch 1 template:
   `yarn build` (real `node_modules` copy, not the symlink used for
   tsc/lint/test) shows only the 2 known pre-existing
   `charting_library.esm` errors.
+
+**Batch 3 verification (`PoolmartStore`/`PoolmartActions` and
+`CreditOfferStore`/`CreditOfferActions`, migrated independently of each
+other):** `npx tsc --noEmit -p .` 0 errors; `eslint` on all 7 new/edited
+files 0 errors (only expected `any`-warnings); `git diff --stat` on all 9
+known call sites (`Explorer/LiquidityPools.tsx`,
+`Poolmart/LiquidityPools.tsx`, `Account/AccountPools.tsx`,
+`Account/CreditOffer/{CreditRightsList,CreditOfferList,CreateModal,
+CreditOfferPage,CreditDebtList,EditModal}.tsx`) empty, including the
+`.defer(...)`-based call sites against `PoolmartActions` (every
+`PoolmartActions` method now carries the same `.defer()` real Alt
+actions do); 19/19 suites / 5,392 tests passing (same count as batch 1);
+`yarn build` shows only the 2 known pre-existing `charting_library.esm`
+errors. `CreditOfferStore.js`'s `onCreate`/`onDisabled`/`onUpdate`/
+`onAccept`/`onRepay` handlers (pure side-effect chaining to a follow-up
+`CreditOfferActions` call, no state mutation) and all four `onGetXxx`
+handlers' pagination re-fetch (triggered when `result.end === false`)
+moved into `CreditOfferActions.ts` itself, right after the matching
+dispatch, since Redux reducers must stay pure - see that file's header.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison
