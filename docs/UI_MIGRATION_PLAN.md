@@ -3748,17 +3748,21 @@ compromise, not silent scope-narrowing.
     shows only the 2 known pre-existing `charting_library` errors. Old
     `.jsx` files removed.
 - This completes `app/components/Utility/`'s long tail (10 batches, 41
-  files ported, 1 dead file deleted) except for: `AssetWrapper.jsx`/
-  `BindToChainState.jsx`/`ChainTypes.js` (shared resolution
-  infrastructure, intentionally left as-is - the target of this
-  migration's `BindToChainState`-replacement pattern, not a migration
-  candidate itself), and the deferred mixin cluster (`DecimalChecker
-  .jsx`, `AmountSelector.jsx`, `AmountSelectorStyleGuide.jsx`,
-  `MarketStatsCheck.jsx`, `EquivalentPrice.jsx`, `EquivalentValueComponent
-  .jsx`, `MarketPrice.jsx`, `MarketChangeComponent.jsx`, plus their two
-  external consumers `Modal/DepositModal.jsx` and `Dashboard
-  /SimpleDepositWithdraw.jsx`) - see the "General rule adopted" note
-  under batch 1 above for why these are deferred together.
+  files ported, 1 dead file deleted) except for: `BindToChainState.jsx`/
+  `ChainTypes.js` (shared resolution infrastructure, intentionally left
+  as-is - the target of this migration's `BindToChainState`-replacement
+  pattern, not a migration candidate itself), and the deferred mixin
+  cluster (`DecimalChecker.jsx`, `AmountSelector.jsx`,
+  `AmountSelectorStyleGuide.jsx`, `EquivalentPrice.jsx`,
+  `EquivalentValueComponent.jsx`, plus their two external consumers
+  `Modal/DepositModal.jsx` and `Dashboard/SimpleDepositWithdraw.jsx`) -
+  see the "General rule adopted" note under batch 1 above for why these
+  are deferred together. `AssetWrapper.jsx`, `MarketStatsCheck.jsx`,
+  `MarketPrice.jsx`, and `MarketChangeComponent.jsx` - originally listed
+  in this deferred cluster - were ported in `Utility/` batch 11 below;
+  see that entry for how the remaining `extends MarketStatsCheck`
+  conflict with `EquivalentPrice.jsx`/`EquivalentValueComponent.jsx` was
+  handled.
 - `Account/` batch 1 (7 files, the smallest in the directory): `Statistics
   .jsx`, `AccountImage.jsx`, `AccountBalance.jsx`, `BalanceWrapper.jsx`,
   `AccountOrderRowDescription.jsx`, `Connections.jsx`, `Identicon.jsx` →
@@ -7640,6 +7644,126 @@ compromise, not silent scope-narrowing.
     warnings), full Jest suite green (19/19 suites, 5,532/5,532 tests -
     matches the known-good baseline exactly), `yarn build` shows only the
     2 known pre-existing `charting_library.esm` errors.
+- `Utility/` batch 11 (4 files): `AssetWrapper.jsx`, `MarketStatsCheck
+  .jsx`, `MarketPrice.jsx`, `MarketChangeComponent.jsx` -> `.tsx` (3 of
+  4; see below). These four were part of batch 1's deferred mixin
+  cluster (`AssetWrapper`/`MarketStatsCheck` are extended/wrapped by
+  several not-yet-converted consumers; `MarketPrice.jsx`'s `MarketStats`
+  class was extended by `MarketChangeComponent.jsx`). `Utility
+  /AmountSelector.jsx`, `AmountSelectorStyleGuide.jsx`, `EquivalentPrice
+  .jsx`, and `EquivalentValueComponent.jsx` remain out of scope for this
+  batch (held back for a follow-up batch, since those files also need
+  `DecimalChecker.jsx` inlining work) and are untouched, continuing to
+  import these four by their existing extensionless relative imports
+  (verified safe: `tsconfig.json` has `checkJs: false`).
+  - `AssetWrapper.tsx`: the HOC factory stays an exported plain function
+    (not a component itself), only its internals change. The original's
+    two layers of `BindToChainState`-wrapped class components
+    (`AssetsResolver`, resolving `propNames` entries from raw asset ids
+    via the `chain_assets`/`chain_assets_list` categories; and
+    `DynamicObjectResolver`, resolving a `dos` list of
+    `dynamic_asset_data_id`s for `withDynamic: true` callers into a
+    `getDynamicObject(id)` lookup) collapse into one function component
+    using `useChainStoreTick()` + direct `ChainStore.getAsset`/
+    `getObject` calls, matching `WithdrawModalNew.tsx`'s
+    `WithdrawModalAccountContainer` precedent for the "required chain
+    prop, no show_loader" blocking-render case, and this migration's
+    already-landed `Exchange/MarketRow.tsx` port (same
+    `AssetWrapper(..., {withDynamic: true})` shape, a different,
+    out-of-scope file ported in an earlier batch) for implementing
+    `getDynamicObject(id)` as a direct one-line `ChainStore.getObject(id)`
+    read instead of pre-building a `dos` list (grep-verified: no caller
+    anywhere reads a `dos` prop itself, only the `getDynamicObject`
+    callback it fed). Dropped as confirmed dead (grepped
+    `refs\.bound_component|\.bound_component` app-wide, no matches):
+    the legacy string ref on the wrapped component. Simplified (inert
+    for every current caller, grep-verified none of them reads
+    `props.children`): the original's `React.cloneElement`/
+    `React.Children.only` dance on a *fixed* single child collapses into
+    directly rendering `<Component {...finalProps} />`, which also drops
+    a pre-existing quirk where that `cloneElement`'s config always
+    included a self-referential `children` entry. Preserved verbatim:
+    the `chain_assets`/`chain_assets_list` resolution semantics,
+    including the `||`-based (not `??`) default fallback, the
+    "`undefined` blocks render, explicit `null` does not" required-prop
+    gate, and the sparse-array-starting-at-index-1 quirk for list mode
+    (same quirk already documented for `Utility/AssetSelect.tsx`/
+    `Account/BalanceWrapper.tsx`).
+  - `MarketPrice.tsx`: `connect(MarketPrice, {listenTo: [MarketsStore],
+    getProps})` -> `useAltStore(MarketsStore)`. The original's
+    `MarketStats` base class is retired (grepped `extends MarketStats`
+    app-wide: only `MarketPriceInner`, in this file, and
+    `MarketChangeComponent`, in this same batch, extended it - no
+    out-of-scope consumer, so safe to remove rather than keep as a
+    class, unlike `MarketStatsCheck` below). Its `shouldComponentUpdate`
+    was a pure re-render perf guard (dropped, per this migration's
+    established treatment) and its `componentWillUnmount` was confirmed
+    dead (`this.statsInterval` is only ever assigned `null`, never
+    reassigned, anywhere in either file - grep-verified). Its frozen-at-
+    mount `marketName` computation is preserved verbatim via a
+    `useState` lazy initializer, matching the `Utility/PriceInput.tsx`/
+    `FormattedTime.tsx` precedent for "compute once from initial props,
+    never recompute" behavior. `AssetWrapper(MarketPriceInner,
+    {propNames: ["quote", "base"]})` wrapping kept as-is.
+  - `MarketChangeComponent.tsx`: `connect(Market24HourChangeComponent,
+    {listenTo: [MarketsStore], getProps})` -> `useAltStore(MarketsStore)`.
+    Reading `render()`/`getValue()` closely shows neither the inherited
+    `MarketStats.marketName` nor the resolved `quote`/`base` props are
+    read anywhere outside the now-dropped `shouldComponentUpdate` (only
+    `props.marketStats` is read) - so, unlike `MarketPrice.tsx`, this
+    file needs none of `MarketStats`'s machinery at all once that pure
+    perf guard is dropped. `AssetWrapper(MarketChangeComponent,
+    {propNames: ["quote", "base"], defaultProps: {quote: "1.3.0"}})`
+    wrapping is kept as-is regardless, since it still has a real,
+    separate effect: blocking the subtree from rendering until both
+    assets resolve in `ChainStore`. Preserved verbatim (confirmed dead
+    by reading the class, not "fixed"): `fullPrecision`/`noDecimals`/
+    `hide_asset` default props were already unread anywhere in
+    `render()`/`getValue()` before this migration touched the file -
+    kept as unused optional fields on the new props interface. Dropped
+    as confirmed dead (grepped `refCallback` app-wide): the
+    `Market24HourChangeComponent` class's `ref={refCallback}` forwarding
+    to the inner component - the only in-scope JSX caller
+    (`Account/AccountPortfolioList.tsx`) never passes it.
+  - `MarketStatsCheck.tsx`: **kept as a typed ES6 class, not converted
+    to a function component/hook** - a deliberate, flagged deviation
+    from this batch's "convert to a function component" instruction.
+    `MarketStatsCheck` has no `render()` of its own; it is a mixin-style
+    base class providing only lifecycle hooks and helpers that manage
+    live `MarketsActions.getMarketStatsInterval(...)` subscriptions for
+    a subclass's `render()`. Grepping `extends MarketStatsCheck`
+    app-wide (per this plan's "General rule adopted" note under batch 1)
+    finds exactly two subclasses, both out of this batch's explicit
+    scope: `Utility/EquivalentPrice.jsx`'s `class EquivalentPrice extends
+    MarketStatsCheck` and `Utility/EquivalentValueComponent.jsx`'s
+    `class ValueComponent extends MarketStatsCheck` - both call
+    `super.shouldComponentUpdate(np)` and rely on *inheriting* this
+    class's React lifecycle methods for their live market-stats
+    subscriptions (consumed, per batch 1's note, by the real
+    `Modal/DepositModal.jsx`/`Dashboard/SimpleDepositWithdraw.jsx`
+    deposit/withdraw screens). Converting this class to a plain
+    function/hook would silently break both `extends` chains at runtime
+    (an inherited lifecycle method no longer on the prototype chain is
+    simply never called by React) with zero signal from `tsc`, `eslint`,
+    `yarn test`, or `yarn build` (confirmed via grep: no test anywhere
+    under `app/__tests__` references `EquivalentPrice`,
+    `EquivalentValueComponent`, `AmountSelector`, `BalanceValueComponent`,
+    `DepositModal`, or `SimpleDepositWithdraw`). So this file is ported
+    to TypeScript (typed, `.tsx`, same mechanical cleanup as the rest of
+    this batch) but kept as a class, exactly as this plan's own "General
+    rule adopted" note under batch 1 directs for a not-yet-converted
+    `extends` consumer - no logic changes, only type annotations added
+    (plus `prefer-const`/`{}`-type-ban fixes needed to satisfy `eslint`
+    once the file became a checked `.tsx`). `EquivalentPrice.jsx`/
+    `EquivalentValueComponent.jsx` remain this directory's next
+    candidates for a follow-up batch that converts them (and
+    `MarketStatsCheck` alongside them) together.
+  - Verified: `npx tsc --noEmit -p .` clean (0 errors repo-wide),
+    `eslint` clean (0 errors, only expected `@typescript-eslint/
+    no-explicit-any` warnings), full Jest suite green (19/19 suites,
+    5,532/5,532 tests - matches the known-good baseline exactly),
+    `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
 - Remaining long tail (~45 more `.jsx` files outside
   `Blockchain/operations/`, `Utility/`, and the excluded gateway
   directories) not yet started, `Account/`, `Modal/` (non-`View/`),
@@ -7647,7 +7771,13 @@ compromise, not silent scope-narrowing.
   `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
   `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
   `Login/`, `Console/`, `BrowserNotifications/`, `QuickTrade/`, and
-  `Gateways/` now fully ported: smaller directories only.
+  `Gateways/` now fully ported: smaller directories only. `Utility/`
+  itself is still not fully done: `BindToChainState.jsx`/`ChainTypes.js`
+  (infra, left as-is by design) and the deferred mixin cluster
+  (`DecimalChecker.jsx`, `AmountSelector.jsx`,
+  `AmountSelectorStyleGuide.jsx`, `EquivalentPrice.jsx`,
+  `EquivalentValueComponent.jsx`, plus their two external consumers
+  `Modal/DepositModal.jsx`/`Dashboard/SimpleDepositWithdraw.jsx`) remain.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
