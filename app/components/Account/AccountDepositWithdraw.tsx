@@ -1,12 +1,22 @@
 // TypeScript/functional-component port of the legacy
 // AccountDepositWithdraw.jsx (Phase 8, docs/UI_MIGRATION_PLAN.md).
-// Mechanical, no logic changes. Renders several still-`.jsx` gateway
-// bridge components (OpenledgerGateway, RuDexGateway, BitsparkGateway,
-// PiratecashGateway, XbtsxGateway, BlockTradesBridgeDepositRequest,
-// CitadelBridgeDepositRequest, GdexGateway) unchanged, as-is - those
+// Mechanical, no logic changes. Renders the still-`.jsx` gateway bridge
+// components (PiratecashGateway, XbtsxGateway) unchanged, as-is - those
 // gateway directories are out of scope for this migration (see
 // AGENTS.md), but this file itself lives under `Account/`, so it is
 // in scope.
+//
+// Gateway removal (pre-Phase 9, docs/UI_MIGRATION_PLAN.md): the
+// Openledger/RuDEX/BitSpark/BlockTrades/Citadel/GDEX service tabs this
+// file used to render (OpenledgerGateway, OpenLedgerFiatDepositWithdrawal,
+// OpenLedgerFiatTransactionHistory, RuDexGateway, BitsparkGateway,
+// BlockTradesBridgeDepositRequest, CitadelBridgeDepositRequest,
+// GdexGateway, plus their matching `olService`/`rudexService`/
+// `bitsparkService`/`btService`/`citadelService` state and
+// `*BackedCoins` props) were removed entirely along with those gateway
+// integrations - see the "Gateway removal" entry in
+// docs/UI_MIGRATION_PLAN.md. Pirate DEX and XBTS Native Chains are
+// untouched.
 //
 // Structural change (not a behavior change): the original's
 // `connect(DepositStoreWrapper, {listenTo: [AccountStore, SettingsStore,
@@ -54,21 +64,12 @@ import Translate from "react-translate-component";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useAltStore} from "../../next/hooks/useAltStore";
-import OpenledgerGateway from "../DepositWithdraw/OpenledgerGateway";
-import OpenLedgerFiatDepositWithdrawal from "../DepositWithdraw/openledger/OpenLedgerFiatDepositWithdrawal";
-import OpenLedgerFiatTransactionHistory from "../DepositWithdraw/openledger/OpenLedgerFiatTransactionHistory";
-import BlockTradesBridgeDepositRequest from "../DepositWithdraw/blocktrades/BlockTradesBridgeDepositRequest";
-import CitadelBridgeDepositRequest from "../DepositWithdraw/citadel/CitadelBridgeDepositRequest";
 import HelpContent from "../Utility/HelpContent";
 import AccountStore from "stores/AccountStore";
 import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
-import {openledgerAPIs} from "api/apiConfig";
-import RuDexGateway from "../DepositWithdraw/rudex/RuDexGateway";
 import GatewayStore from "stores/GatewayStore";
 import AccountImage from "../Account/AccountImage";
-import BitsparkGateway from "../DepositWithdraw/bitspark/BitsparkGateway";
-import GdexGateway from "../DepositWithdraw/gdex/GdexGateway";
 import PiratecashGateway from "../DepositWithdraw/piratecash/PiratecashGateway";
 import XbtsFiat from "../DepositWithdraw/XbtsFiat";
 import XbtsxGateway from "../DepositWithdraw/xbtsx/XbtsxGateway";
@@ -83,13 +84,8 @@ const WithdrawModalAny = WithdrawModal as any;
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 
 interface AccountDepositWithdrawState {
-    olService: any;
-    rudexService: any;
-    bitsparkService: any;
     piratecashService: any;
     xbtsxService: any;
-    btService: any;
-    citadelService: any;
     activeService: any;
 }
 
@@ -97,45 +93,30 @@ interface AccountDepositWithdrawCoreProps {
     account: any;
     contained?: boolean;
     servicesDown: any;
-    openLedgerBackedCoins: any;
-    rudexBackedCoins: any;
-    bitsparkBackedCoins: any;
     piratecashBackedCoins: any;
     xbtsxBackedCoins: any;
-    blockTradesBackedCoins: any;
-    citadelBackedCoins: any;
     viewSettings: any;
     currentAccount: any;
     backedCoins: any;
-    location?: any;
 }
 
 function AccountDepositWithdraw({
     account,
     contained = false,
     servicesDown,
-    openLedgerBackedCoins,
-    rudexBackedCoins,
-    bitsparkBackedCoins,
     piratecashBackedCoins,
     xbtsxBackedCoins,
     viewSettings,
     currentAccount,
-    backedCoins,
-    location
+    backedCoins
 }: AccountDepositWithdrawCoreProps) {
     const [state, setState] = React.useState<AccountDepositWithdrawState>(
         () => ({
-            olService: viewSettings.get("olService", "gateway"),
-            rudexService: viewSettings.get("rudexService", "gateway"),
-            bitsparkService: viewSettings.get("bitsparkService", "gateway"),
             piratecashService: viewSettings.get(
                 "piratecashService",
                 "gateway"
             ),
             xbtsxService: viewSettings.get("xbtsxService", "gateway"),
-            btService: viewSettings.get("btService", "bridge"),
-            citadelService: viewSettings.get("citadelService", "bridge"),
             activeService: viewSettings.get("activeService", 0)
         })
     );
@@ -155,16 +136,6 @@ function AccountDepositWithdraw({
         }
     }, []);
 
-    const toggleOLService = (service: any) => {
-        mergeState({olService: service});
-        (SettingsActions as any).changeViewSetting({olService: service});
-    };
-
-    const toggleRuDEXService = (service: any) => {
-        mergeState({rudexService: service});
-        (SettingsActions as any).changeViewSetting({rudexService: service});
-    };
-
     const togglePiratecashService = (service: any) => {
         mergeState({piratecashService: service});
         (SettingsActions as any).changeViewSetting({
@@ -177,23 +148,6 @@ function AccountDepositWithdraw({
         (SettingsActions as any).changeViewSetting({xbtsxService: service});
     };
 
-    const toggleBitSparkService = (service: any) => {
-        mergeState({bitsparkService: service});
-        (SettingsActions as any).changeViewSetting({
-            bitsparkService: service
-        });
-    };
-
-    const toggleBTService = (service: any) => {
-        mergeState({btService: service});
-        (SettingsActions as any).changeViewSetting({btService: service});
-    };
-
-    const toggleCitadelService = (service: any) => {
-        mergeState({citadelService: service});
-        (SettingsActions as any).changeViewSetting({citadelService: service});
-    };
-
     const onSetService = (e: any) => {
         mergeState({activeService: parseInt(e.target.value)});
         (SettingsActions as any).changeViewSetting({
@@ -202,178 +156,11 @@ function AccountDepositWithdraw({
     };
 
     const renderServices = (
-        openLedgerGatewayCoins: any,
-        rudexGatewayCoins: any,
-        bitsparkGatewayCoins: any,
         piratecashGatewayCoins: any,
         xbtsxGatewayCoins: any
     ) => {
         const serList: any[] = [];
-        const {
-            olService,
-            btService,
-            rudexService,
-            bitsparkService,
-            piratecashService,
-            xbtsxService,
-            citadelService
-        } = state;
-        serList.push({
-            name: "Openledger (OPEN.X)",
-            identifier: "OPEN",
-            template: (
-                <div className="content-block">
-                    <div
-                        className="service-selector"
-                        style={{marginBottom: "2rem"}}
-                    >
-                        <ul className="button-group segmented no-margin">
-                            <li
-                                onClick={() => toggleOLService("gateway")}
-                                className={
-                                    olService === "gateway" ? "is-active" : ""
-                                }
-                            >
-                                <a>
-                                    <Translate content="gateway.gateway" />
-                                </a>
-                            </li>
-                            <li
-                                onClick={() => toggleOLService("fiat")}
-                                className={
-                                    olService === "fiat" ? "is-active" : ""
-                                }
-                            >
-                                <Translate
-                                    component="a"
-                                    content="gateway.fiat"
-                                />
-                            </li>
-                        </ul>
-                    </div>
-
-                    {olService === "gateway" &&
-                    openLedgerGatewayCoins.length ? (
-                        <OpenledgerGateway
-                            account={account}
-                            coins={openLedgerGatewayCoins}
-                            provider="openledger"
-                        />
-                    ) : null}
-
-                    {olService === "fiat" ? (
-                        <div>
-                            <div style={{paddingBottom: 15}}>
-                                <Translate
-                                    component="h5"
-                                    content="gateway.fiat_text"
-                                    unsafe
-                                />
-                            </div>
-
-                            <OpenLedgerFiatDepositWithdrawal
-                                rpc_url={(openledgerAPIs as any).RPC_URL}
-                                account={account}
-                                issuer_account="openledger-fiat"
-                            />
-                            <OpenLedgerFiatTransactionHistory
-                                rpc_url={(openledgerAPIs as any).RPC_URL}
-                                account={account}
-                            />
-                        </div>
-                    ) : null}
-                </div>
-            )
-        });
-
-        serList.push({
-            name: "RuDEX (RUDEX.X)",
-            identifier: "RUDEX",
-            template: (
-                <div className="content-block">
-                    <div
-                        className="service-selector"
-                        style={{marginBottom: "2rem"}}
-                    >
-                        <ul className="button-group segmented no-margin">
-                            <li
-                                onClick={() => toggleRuDEXService("gateway")}
-                                className={
-                                    rudexService === "gateway"
-                                        ? "is-active"
-                                        : ""
-                                }
-                            >
-                                <a>
-                                    <Translate content="gateway.gateway" />
-                                </a>
-                            </li>
-                            <li
-                                onClick={() => toggleRuDEXService("fiat")}
-                                className={
-                                    rudexService === "fiat" ? "is-active" : ""
-                                }
-                            >
-                                <a>Fiat</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {rudexService === "gateway" && rudexGatewayCoins.length ? (
-                        <RuDexGateway
-                            account={account}
-                            coins={rudexGatewayCoins}
-                        />
-                    ) : null}
-
-                    {rudexService === "fiat" ? (
-                        <div>
-                            <Translate content="gateway.rudex.coming_soon" />
-                        </div>
-                    ) : null}
-                </div>
-            )
-        });
-
-        serList.push({
-            name: "BitSpark (SPARKDEX.X)",
-            identifier: "SPARKDEX",
-            template: (
-                <div className="content-block">
-                    <div
-                        className="service-selector"
-                        style={{marginBottom: "2rem"}}
-                    >
-                        <ul className="button-group segmented no-margin">
-                            <li
-                                onClick={() =>
-                                    toggleBitSparkService("gateway")
-                                }
-                                className={
-                                    bitsparkService === "gateway"
-                                        ? "is-active"
-                                        : ""
-                                }
-                            >
-                                <a>
-                                    <Translate content="gateway.gateway" />
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {bitsparkService === "gateway" &&
-                    bitsparkGatewayCoins.length ? (
-                        <BitsparkGateway
-                            account={account}
-                            coins={bitsparkGatewayCoins}
-                            provider="bitspark"
-                        />
-                    ) : null}
-                </div>
-            )
-        });
-
+        const {piratecashService, xbtsxService} = state;
         serList.push({
             name: "Pirate DEX",
             identifier: "PIRATE",
@@ -464,143 +251,10 @@ function AccountDepositWithdraw({
             )
         });
 
-        serList.push({
-            name: "BlockTrades",
-            identifier: "TRADE",
-            template: (
-                <div>
-                    <div className="content-block">
-                        <div
-                            className="service-selector"
-                            style={{marginBottom: "2rem"}}
-                        >
-                            <ul className="button-group segmented no-margin">
-                                <li
-                                    onClick={() =>
-                                        toggleBTService("bridge")
-                                    }
-                                    className={
-                                        btService === "bridge"
-                                            ? "is-active"
-                                            : ""
-                                    }
-                                >
-                                    <a>
-                                        <Translate content="gateway.bridge" />
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <BlockTradesBridgeDepositRequest
-                            gateway="blocktrades"
-                            issuer_account="blocktrades"
-                            account={account}
-                            initial_deposit_input_coin_type="btc"
-                            initial_deposit_output_coin_type="bts"
-                            initial_deposit_estimated_input_amount="1.0"
-                            initial_withdraw_input_coin_type="bts"
-                            initial_withdraw_output_coin_type="btc"
-                            initial_withdraw_estimated_input_amount="100000"
-                            initial_conversion_input_coin_type="bts"
-                            initial_conversion_output_coin_type="bitbtc"
-                            initial_conversion_estimated_input_amount="1000"
-                            params={location}
-                        />
-                    </div>
-                    <div className="content-block" />
-                </div>
-            )
-        });
-
-        serList.push({
-            name: "Citadel",
-            identifier: "CITADEL",
-            template: (
-                <div>
-                    <div className="content-block">
-                        <div
-                            className="service-selector"
-                            style={{marginBottom: "2rem"}}
-                        >
-                            <ul className="button-group segmented no-margin">
-                                <li
-                                    onClick={() =>
-                                        toggleCitadelService("bridge")
-                                    }
-                                    className={
-                                        citadelService === "bridge"
-                                            ? "is-active"
-                                            : ""
-                                    }
-                                >
-                                    <a>
-                                        <Translate content="gateway.bridge" />
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <CitadelBridgeDepositRequest
-                            gateway="citadel"
-                            issuer_account="citadel-wallet"
-                            account={account}
-                            initial_deposit_input_coin_type="xmr"
-                            initial_deposit_output_coin_type="citadel.monero"
-                            initial_deposit_estimated_input_amount="1.0"
-                            initial_withdraw_input_coin_type="citadel.monero"
-                            initial_withdraw_output_coin_type="xmr"
-                            initial_withdraw_estimated_input_amount="1.0"
-                        />
-                    </div>
-                    <div className="content-block" />
-                </div>
-            )
-        });
-
-        serList.push({
-            name: "GDEX",
-            identifier: "GDEX",
-            template: (
-                <div>
-                    <GdexGateway account={account} provider={"gdex"} />
-                </div>
-            )
-        });
-
         return serList;
     };
 
     const {activeService} = state;
-
-    const openLedgerGatewayCoins = openLedgerBackedCoins
-        .map((coin: any) => {
-            return coin;
-        })
-        .sort((a: any, b: any) => {
-            if (a.symbol < b.symbol) return -1;
-            if (a.symbol > b.symbol) return 1;
-            return 0;
-        });
-
-    const rudexGatewayCoins = rudexBackedCoins
-        .map((coin: any) => {
-            return coin;
-        })
-        .sort((a: any, b: any) => {
-            if (a.symbol < b.symbol) return -1;
-            if (a.symbol > b.symbol) return 1;
-            return 0;
-        });
-
-    const bitsparkGatewayCoins = bitsparkBackedCoins
-        .map((coin: any) => {
-            return coin;
-        })
-        .sort((a: any, b: any) => {
-            if (a.symbol < b.symbol) return -1;
-            if (a.symbol > b.symbol) return 1;
-            return 0;
-        });
 
     const piratecashGatewayCoins = piratecashBackedCoins
         .map((coin: any) => {
@@ -622,13 +276,7 @@ function AccountDepositWithdraw({
             return 0;
         });
 
-    const services = renderServices(
-        openLedgerGatewayCoins,
-        rudexGatewayCoins,
-        bitsparkGatewayCoins,
-        piratecashGatewayCoins,
-        xbtsxGatewayCoins
-    );
+    const services = renderServices(piratecashGatewayCoins, xbtsxGatewayCoins);
 
     const serviceNames: any[] = [];
     const options = services.map((services_obj, index) => {
@@ -822,17 +470,6 @@ function AccountDepositWithdrawContainer(
             }
             viewSettings={settingsState.viewSettings}
             backedCoins={gatewayState.backedCoins}
-            openLedgerBackedCoins={gatewayState.backedCoins.get("OPEN", [])}
-            rudexBackedCoins={gatewayState.backedCoins.get("RUDEX", [])}
-            bitsparkBackedCoins={gatewayState.backedCoins.get(
-                "SPARKDEX",
-                []
-            )}
-            blockTradesBackedCoins={gatewayState.backedCoins.get(
-                "TRADE",
-                []
-            )}
-            citadelBackedCoins={gatewayState.backedCoins.get("CITADEL", [])}
             piratecashBackedCoins={gatewayState.backedCoins.get(
                 "PIRATE",
                 []

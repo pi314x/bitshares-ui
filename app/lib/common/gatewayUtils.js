@@ -21,7 +21,7 @@ export function getGatewayName(asset) {
     let assetName =
         asset.get("symbol") === "PPY" ? "RUDEX.PPY" : asset.get("symbol");
 
-    if (hasGatewayPrefix(assetName)) {
+    if (hasGatewayPrefix(assetName) && availableGateways[prefix]) {
         return availableGateways[prefix].name;
     }
     return null;
@@ -110,16 +110,25 @@ export async function updateGatewayBackers(chain = "4018d784") {
     // Only fetch this when on desired chain, default to main chain
     if (!Apis.instance().chain_id) return;
     if (Apis.instance().chain_id.substr(0, 8) === chain) {
-        // Only one bridge so far, BlockTrades
-        if (Object.values(availableBridges).length !== 1) {
+        // Multiple bridges aren't supported yet; zero bridges (the
+        // current state, now that BlockTrades/TRADE has been removed) is
+        // fine and simply skips the bridge-update step below.
+        const bridgeIds = Object.keys(availableBridges);
+        if (bridgeIds.length > 1) {
             throw "Multiple bridges not yet supported!";
         }
-        availableBridges.TRADE.enabled = await availableBridges.TRADE.isEnabled();
-        if (availableBridges.TRADE.enabled) {
-            GatewayActions.fetchPairs.defer();
-            const isDisabled = await isGatewayTemporarilyDisabled("TRADE");
-            if (isDisabled) {
-                GatewayActions.temporarilyDisable("TRADE");
+        if (bridgeIds.length === 1) {
+            const bridgeId = bridgeIds[0];
+            const bridgeConfig = availableBridges[bridgeId];
+            bridgeConfig.enabled = await bridgeConfig.isEnabled();
+            if (bridgeConfig.enabled) {
+                GatewayActions.fetchPairs.defer();
+                const isDisabled = await isGatewayTemporarilyDisabled(
+                    bridgeId
+                );
+                if (isDisabled) {
+                    GatewayActions.temporarilyDisable(bridgeId);
+                }
             }
         }
         // Walk all Gateways

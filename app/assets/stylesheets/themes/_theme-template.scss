@@ -1930,25 +1930,6 @@
             }
         }
     }
-    .blocktrades-bridge input,
-    .blocktrades-bridge select {
-        color: $secondary-text-color;
-        border: 1px solid $secondary-text-color;
-        background-color: $panel-bg-color !important;
-        &.native-coin-types,
-        &.external-coin-types {
-            background-color: transparent !important;
-        }
-        > option {
-            color: $primary-text-color;
-            background-color: $panel-bg-color !important;
-        }
-        &:hover,
-        &:focus {
-            color: $primary-text-color; // box-shadow: 1px 2px 3px #000;
-            border: 2px solid $primary-text-color;
-        }
-    }
     .SimpleTrade__modal {
         .Modal__header {
             background-color: lighten($panel-bg-color, 5%);

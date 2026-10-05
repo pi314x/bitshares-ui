@@ -195,7 +195,6 @@ import BorrowModal from "../Modal/BorrowModal";
 import AccountNotifications from "../Notifier/NotifierContainer";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 import SimpleDepositWithdraw from "../Dashboard/SimpleDepositWithdraw";
-import SimpleDepositBlocktradesBridge from "../Dashboard/SimpleDepositBlocktradesBridge";
 import {Notification} from "bitshares-ui-style-guide";
 import PriceAlert from "./PriceAlert";
 import counterpart from "counterpart";
@@ -245,13 +244,11 @@ function getInitialExchangeState(props: any) {
     }
 
     return {
-        isDepositBridgeModalLoaded: false,
         isDepositModalLoaded: false,
         isPersonalizeModalLoaded: false,
         isMarketPickerModalLoaded: false,
         isBorrowQuoteModalLoaded: false,
         isBorrowBaseModalLoaded: false,
-        isDepositBridgeModalVisible: false,
         isDepositModalVisible: false,
         isPersonalizeModalVisible: false,
         isMarketPickerModalVisible: false,
@@ -391,10 +388,6 @@ function ExchangeInner(props: any) {
 
     const initial = React.useRef(getInitialExchangeState(props));
 
-    const [
-        isDepositBridgeModalLoaded,
-        setIsDepositBridgeModalLoaded
-    ] = React.useState(initial.current.isDepositBridgeModalLoaded);
     const [isDepositModalLoaded, setIsDepositModalLoaded] = React.useState(
         initial.current.isDepositModalLoaded
     );
@@ -411,10 +404,6 @@ function ExchangeInner(props: any) {
     const [isBorrowBaseModalLoaded, setIsBorrowBaseModalLoaded] = React.useState(
         initial.current.isBorrowBaseModalLoaded
     );
-    const [
-        isDepositBridgeModalVisible,
-        setIsDepositBridgeModalVisible
-    ] = React.useState(initial.current.isDepositBridgeModalVisible);
     const [isDepositModalVisible, setIsDepositModalVisible] = React.useState(
         initial.current.isDepositModalVisible
     );
@@ -535,7 +524,6 @@ function ExchangeInner(props: any) {
     const [marketPickerAsset, setMarketPickerAsset] = React.useState<any>(
         undefined
     );
-    const [buyModalType, setBuyModalType] = React.useState<any>(undefined);
     const [depositModalType, setDepositModalType] = React.useState<any>(
         undefined
     );
@@ -721,13 +709,11 @@ function ExchangeInner(props: any) {
             baseAsset,
             quoteAsset
         });
-        setIsDepositBridgeModalLoaded(freshState.isDepositBridgeModalLoaded);
         setIsDepositModalLoaded(freshState.isDepositModalLoaded);
         setIsPersonalizeModalLoaded(freshState.isPersonalizeModalLoaded);
         setIsMarketPickerModalLoaded(freshState.isMarketPickerModalLoaded);
         setIsBorrowQuoteModalLoaded(freshState.isBorrowQuoteModalLoaded);
         setIsBorrowBaseModalLoaded(freshState.isBorrowBaseModalLoaded);
-        setIsDepositBridgeModalVisible(freshState.isDepositBridgeModalVisible);
         setIsDepositModalVisible(freshState.isDepositModalVisible);
         setIsPersonalizeModalVisible(freshState.isPersonalizeModalVisible);
         setIsMarketPickerModalVisible(freshState.isMarketPickerModalVisible);
@@ -857,11 +843,6 @@ function ExchangeInner(props: any) {
         setIsBorrowBaseModalLoaded(true);
     };
     const hideBorrowBaseModal = () => setIsBorrowBaseModalVisible(false);
-    const showDepositBridgeModal = () => {
-        setIsDepositBridgeModalVisible(true);
-        setIsDepositBridgeModalLoaded(true);
-    };
-    const hideDepositBridgeModal = () => setIsDepositBridgeModalVisible(false);
     const showDepositModal = () => {
         setIsDepositModalVisible(true);
         setIsDepositModalLoaded(true);
@@ -1617,11 +1598,6 @@ function ExchangeInner(props: any) {
         showDepositModal();
     };
 
-    const onBuy = (type: string) => {
-        setBuyModalType(type);
-        showDepositBridgeModal();
-    };
-
     const getSettlementInfo = () => {
         let showCallLimit = false;
         if (feedPrice) {
@@ -1945,7 +1921,7 @@ function ExchangeInner(props: any) {
                     <BuySell
                         key={`actionCard_${actionCardIndex++}`}
                         onBorrow={baseIsBitAsset ? borrowBase : null}
-                        onBuy={() => onBuy("bid")}
+                        onBuy={() => {}}
                         onDeposit={() => onDeposit("bid")}
                         currentAccount={currentAccount}
                         backedCoin={backedCoins.find(
@@ -2087,7 +2063,7 @@ function ExchangeInner(props: any) {
                     <BuySell
                         key={`actionCard_${actionCardIndex++}`}
                         onBorrow={quoteIsBitAsset ? borrowQuote : null}
-                        onBuy={() => onBuy("ask")}
+                        onBuy={() => {}}
                         onDeposit={() => onDeposit("ask")}
                         currentAccount={currentAccount}
                         backedCoin={backedCoins.find(
@@ -3289,35 +3265,6 @@ function ExchangeInner(props: any) {
                                 ? base.get("symbol")
                                 : quote.get("symbol"))
                     )}
-                />
-            ) : null}
-
-            {isDepositBridgeModalVisible || isDepositBridgeModalLoaded ? (
-                <SimpleDepositBlocktradesBridge
-                    visible={isDepositBridgeModalVisible}
-                    hideModal={hideDepositBridgeModal}
-                    action="deposit"
-                    account={currentAccount.get("name")}
-                    sender={currentAccount.get("id")}
-                    asset={
-                        buyModalType === "bid"
-                            ? base.get("id")
-                            : quote.get("id")
-                    }
-                    modalId={
-                        "simple_bridge_modal" +
-                        (buyModalType === "bid" ? "" : "_ask")
-                    }
-                    balances={[
-                        buyModalType === "bid" ? baseBalance : quoteBalance
-                    ]}
-                    bridges={
-                        bridgeCoins.get(
-                            buyModalType === "bid"
-                                ? base.get("symbol")
-                                : quote.get("symbol")
-                        ) || null
-                    }
                 />
             ) : null}
 

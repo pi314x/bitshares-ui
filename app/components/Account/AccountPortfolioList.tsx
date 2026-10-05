@@ -7,7 +7,7 @@
 // `WalletDb`, `.add_type_operation`, `process_transaction` - none appear.
 // This component only orchestrates opening/closing the transaction-building
 // modals (`SendModal`, `WithdrawModal`, `DepositModal`, `BorrowModal`,
-// `SettleModal`, `ReserveAssetModal`, `SimpleDepositBlocktradesBridge`);
+// `SettleModal`, `ReserveAssetModal`);
 // the actual transaction building/signing lives inside those separately
 // owned (and separately ported/reviewed) components.
 //
@@ -69,7 +69,7 @@
 //   `this.props`/`this.state`/refs (pure functions of their `balances`
 //   argument), so per this migration's convention they're extracted to
 //   module scope as `sumCollateralBalances`/`sumVestingBalances`.
-// - All other instance methods (`_renderBalances`, `_renderBuy`,
+// - All other instance methods (`_renderBalances`,
 //   `_renderGatewayAction`, `_renderSendModal`, `_renderBorrowModal`,
 //   `_renderSettleModal`, `getHeader`, `toggleSortOrder`, `triggerSend`,
 //   `_onSettleAsset`, `_hideAsset`, `_burnAsset`, `_showDepositModal`,
@@ -154,7 +154,7 @@
 //   aValue))`, but transcribed exactly as written.
 // - `_hideDeleteModal`-style asymmetry is not present here, but a similar
 //   one is: `showBorrowModal`'s `borrow` object is cleared to `null` by
-//   `hideBorrowModal`, while every other `xxxAsset`/`bridgeAsset` state
+//   `hideBorrowModal`, while every other `xxxAsset` state
 //   field is simply left holding its last value after its modal is
 //   hidden (only the `isXxxModalVisible` flag flips) - exactly as in the
 //   original, not equalized here.
@@ -232,13 +232,11 @@ import GatewayStore from "stores/GatewayStore";
 import MarketsStore from "stores/MarketsStore";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import Icon from "../Icon/Icon";
-import PulseIcon from "../Icon/PulseIcon";
 import utils from "common/utils";
 import SendModal from "../Modal/SendModal";
 import SettingsActions from "actions/SettingsActions";
 import SettleModal from "../Modal/SettleModal";
 import DepositModal from "../Modal/DepositModal";
-import SimpleDepositBlocktradesBridge from "../Dashboard/SimpleDepositBlocktradesBridge";
 import WithdrawModal from "../Modal/WithdrawModalNew";
 import ZfApi from "react-foundation-apps/src/utils/foundation-api";
 import ReserveAssetModal from "../Modal/ReserveAssetModal";
@@ -270,13 +268,11 @@ function sumVestingBalances(balances: any): number {
 }
 
 interface AccountPortfolioListState {
-    isBridgeModalVisible: boolean;
     isSettleModalVisible: boolean;
     isBorrowModalVisible: boolean;
     isDepositModalVisible: boolean;
     isWithdrawModalVisible: boolean;
     isBurnModalVisible: boolean;
-    isBridgeModalVisibleBefore: boolean;
     isSettleModalVisibleBefore: boolean;
     isBorrowModalVisibleBefore: boolean;
     isDepositModalVisibleBefore: boolean;
@@ -286,7 +282,6 @@ interface AccountPortfolioListState {
     settleAsset: any;
     depositAsset: any;
     withdrawAsset: any;
-    bridgeAsset: any;
     allRefsAssigned: boolean;
     portfolioSort: any;
     portfolioSortDirection: any;
@@ -305,7 +300,6 @@ interface AccountPortfolioListCoreProps {
     orders: any;
     account: any;
     isMyAccount: boolean;
-    balances: any;
     extraRow?: any;
     callOrders?: any;
     // Store-derived - see header comment on prop-override order.
@@ -313,7 +307,6 @@ interface AccountPortfolioListCoreProps {
     viewSettings: any;
     backedCoins: any;
     bridgeCoins: any;
-    gatewayDown: any;
     allMarketStats: any;
 }
 
@@ -328,25 +321,21 @@ function AccountPortfolioListCore({
     orders,
     account,
     isMyAccount,
-    balances,
     extraRow,
     callOrders,
     settings,
     viewSettings,
     backedCoins,
     bridgeCoins,
-    gatewayDown,
     allMarketStats
 }: AccountPortfolioListCoreProps) {
     const [state, setState] = React.useState<AccountPortfolioListState>(
         () => ({
-            isBridgeModalVisible: false,
             isSettleModalVisible: false,
             isBorrowModalVisible: false,
             isDepositModalVisible: false,
             isWithdrawModalVisible: false,
             isBurnModalVisible: false,
-            isBridgeModalVisibleBefore: false,
             isSettleModalVisibleBefore: false,
             isBorrowModalVisibleBefore: false,
             isDepositModalVisibleBefore: false,
@@ -356,7 +345,6 @@ function AccountPortfolioListCore({
             settleAsset: "1.3.0",
             depositAsset: null,
             withdrawAsset: null,
-            bridgeAsset: null,
             allRefsAssigned: false,
             portfolioSort: viewSettings.get("portfolioSort", "value"),
             portfolioSortDirection: viewSettings.get(
@@ -390,17 +378,6 @@ function AccountPortfolioListCore({
         // Mount-only, matching the original's
         // UNSAFE_componentWillMount/componentWillUnmount pair.
     }, []);
-
-    const showBridgeModal = () => {
-        mergeState({
-            isBridgeModalVisible: true,
-            isBridgeModalVisibleBefore: true
-        });
-    };
-
-    const hideBridgeModal = () => {
-        mergeState({isBridgeModalVisible: false});
-    };
 
     const showWithdrawModal = () => {
         mergeState({
@@ -642,17 +619,10 @@ function AccountPortfolioListCore({
     ) => {
         e.preventDefault();
         mergeState({
-            [action === "bridge_modal"
-                ? "bridgeAsset"
-                : action === "deposit_modal"
+            [action === "deposit_modal"
                 ? "depositAsset"
                 : "withdrawAsset"]: asset
         } as Partial<AccountPortfolioListState>);
-
-        if (action === "bridge_modal") {
-            showBridgeModal();
-            return true;
-        }
 
         if (action === "deposit_modal") {
             showDepositModal();
@@ -660,71 +630,6 @@ function AccountPortfolioListCore({
         }
 
         showWithdrawModal();
-    };
-
-    const _renderBuy = (
-        symbol: any,
-        canBuy: any,
-        assetName: any,
-        emptyCell: any,
-        balance: any
-    ) => {
-        if (symbol === "BTS" && balance <= 1000000) {
-            // Precision of 5, 1 = 10^5
-            return (
-                <span>
-                    <a
-                        onClick={e =>
-                            _showDepositWithdraw(
-                                "bridge_modal",
-                                assetName,
-                                false,
-                                e
-                            )
-                        }
-                    >
-                        <PulseIcon
-                            onIcon="dollar"
-                            offIcon="dollar-green"
-                            title="icons.dollar.buy"
-                            duration={1000}
-                            className="icon-14px"
-                        />
-                    </a>
-                </span>
-            );
-        } else {
-            const modalAction = (e: any) =>
-                _showDepositWithdraw("bridge_modal", assetName, false, e);
-
-            const linkElement = (
-                <span>
-                    <Icon
-                        style={{
-                            cursor: isMyAccount ? "pointer" : "help"
-                        }}
-                        name="dollar"
-                        title="icons.dollar.buy"
-                        className="icon-14px"
-                        onClick={isMyAccount ? modalAction : null}
-                    />
-                </span>
-            );
-
-            if (canBuy && isMyAccount) {
-                return linkElement;
-            } else if (canBuy && !isMyAccount) {
-                return (
-                    <Tooltip
-                        title={counterpart.translate("tooltip.login_required")}
-                    >
-                        {linkElement}
-                    </Tooltip>
-                );
-            } else {
-                return emptyCell;
-            }
-        }
     };
 
     const _renderGatewayAction = (
@@ -973,20 +878,6 @@ function AccountPortfolioListCore({
             {
                 title: <Translate content="header.payments" />,
                 dataIndex: "payments",
-                align: "center",
-                render: (item: any) => {
-                    return <span style={{whiteSpace: "nowrap"}}>{item}</span>;
-                }
-            },
-            {
-                className: "column-hide-medium",
-                title: <Translate content="exchange.buy" />,
-                customizable: atLeastOneHas.buy
-                    ? undefined
-                    : {
-                          default: false
-                      },
-                dataIndex: "buy",
                 align: "center",
                 render: (item: any) => {
                     return <span style={{whiteSpace: "nowrap"}}>{item}</span>;
@@ -1248,8 +1139,6 @@ function AccountPortfolioListCore({
                 hasBalance &&
                 balanceObject.get("balance") != 0;
 
-            const canBuy = !!bridgeCoins.get(symbol);
-
             /* Asset and Backing Asset Prefixes */
             const options =
                 asset && asset.getIn(["bitasset", "options"])
@@ -1336,13 +1225,6 @@ function AccountPortfolioListCore({
                     <BalanceComponent balance={balance} asPercentage={true} />
                 ) : null,
                 payments: transferLink,
-                buy: _renderBuy(
-                    asset.get("symbol"),
-                    canBuy,
-                    assetName,
-                    emptyCell,
-                    balanceObject.get("balance")
-                ),
                 deposit: _renderGatewayAction(
                     "deposit",
                     canDeposit,
@@ -1485,8 +1367,6 @@ function AccountPortfolioListCore({
                                 ) ||
                             asset.get("symbol") == "BTS";
 
-                        const canBuy = !!bridgeCoins.get(asset.get("symbol"));
-
                         const notCore = asset.get("id") !== "1.3.0";
                         let {market} = assetUtils.parseDescription(
                             asset.getIn(["options", "description"])
@@ -1531,29 +1411,6 @@ function AccountPortfolioListCore({
                                 value: emptyCell,
                                 percent: emptyCell,
                                 payments: emptyCell,
-                                buy:
-                                    canBuy && isMyAccount ? (
-                                        <span>
-                                            <a
-                                                onClick={e =>
-                                                    _showDepositWithdraw(
-                                                        "bridge_modal",
-                                                        a,
-                                                        false,
-                                                        e
-                                                    )
-                                                }
-                                            >
-                                                <Icon
-                                                    name="dollar"
-                                                    title="icons.dollar.buy"
-                                                    className="icon-14px"
-                                                />
-                                            </a>
-                                        </span>
-                                    ) : (
-                                        emptyCell
-                                    ),
                                 deposit:
                                     canDeposit && isMyAccount ? (
                                         <span>
@@ -1687,14 +1544,9 @@ function AccountPortfolioListCore({
         );
     };
 
-    const currentBridges = bridgeCoins.get(state.bridgeAsset) || null;
-
     const balanceRows = _renderBalances(balanceList, optionalAssets, visible);
     const atLeastOneHas: any = {};
     balanceRows.forEach(_item => {
-        if (!!_item.buy && _item.buy !== "-") {
-            atLeastOneHas.buy = true;
-        }
         if (!!_item.deposit && _item.deposit !== "-") {
             if (_item.key == "BTS" && GatewayStore.anyAllowed()) {
                 atLeastOneHas.depositOnlyBTS =
@@ -1748,23 +1600,6 @@ function AccountPortfolioListCore({
                     />
                 )}
 
-                {/* Bridge modal */}
-                {(state.isBridgeModalVisible ||
-                    state.isBridgeModalVisibleBefore) && (
-                    <SimpleDepositBlocktradesBridge
-                        visible={state.isBridgeModalVisible}
-                        showModal={showBridgeModal}
-                        hideModal={hideBridgeModal}
-                        action="deposit"
-                        account={account.get("name")}
-                        sender={account.get("id")}
-                        asset={state.bridgeAsset}
-                        balances={balances}
-                        bridges={currentBridges}
-                        isDown={gatewayDown.get("TRADE")}
-                    />
-                )}
-
                 {/* Burn Modal */}
                 {(state.isBurnModalVisible ||
                     state.isBurnModalVisibleBefore) && (
@@ -1801,7 +1636,6 @@ export default function AccountPortfolioList(props: any) {
             viewSettings={settingsState.viewSettings}
             backedCoins={gatewayState.backedCoins}
             bridgeCoins={gatewayState.bridgeCoins}
-            gatewayDown={gatewayState.down}
             allMarketStats={marketsState.allMarketStats}
         />
     );

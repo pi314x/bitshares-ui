@@ -8045,6 +8045,155 @@ compromise, not silent scope-narrowing.
   `BindToChainState.jsx`/`ChainTypes.js`/`DecimalChecker.jsx` are
   infra/now-orphaned files intentionally left as-is, pending Phase 9.
 
+### Gateway removal (pre-Phase 9): BitKapital, Openledger, Bitspark, BlockTrades, Citadel, Gdex, RuDex dropped entirely
+
+**Why:** the Phase 7 "Scope note" above excluded 6 of the 7 non-Xbtsx/
+Piratecash gateway integrations (BlockTrades, Citadel, RuDex, Gdex,
+Bitspark — plus `BitKapital`, already-orphaned legacy code never in
+that list at all, and the separate BlockTrades "quick-buy" integration
+living under `Dashboard/`) from TypeScript-porting scope entirely,
+rather than scheduling them for a later phase. Left in place, they
+would have been stranded on the Alt.js legacy runtime that Phase 9
+deletes, blocking that phase's "zero references to removed packages"
+exit criterion. The user explicitly decided (direct question-and-
+answer, not inferred) to remove these integrations from the app
+entirely instead of ever porting them, so Phase 9 can proceed cleanly
+afterward. This is a feature removal, not a port, and is called out
+here as its own entry rather than folded into a Phase 8 batch.
+
+**What was removed:**
+- **Components** (26 files, plus one static redirect page, under
+  `DepositWithdraw/`): `BitKapital.jsx` and `WithdrawModal.jsx`
+  (both already fully orphaned before this removal), `OpenledgerGateway
+  .jsx`, and the entire `bitspark/`, `blocktrades/` (including its
+  `index.html` OAuth-redirect stub), `citadel/`, `gdex/`, `openledger/`,
+  and `rudex/` subdirectories (now-empty directories removed too).
+- **Orphaned support libs** (8 files under `lib/common/`):
+  `gdexMethods.js`, `GdexCache.js`, `RuDexMethods.js`,
+  `RuDexDepositAddressCache.js`, `BitsparkMethods.js`,
+  `CitadelDepositAddressCache.js`, plus `citadelMethods.js` and
+  `BitsparkDepositAddressCache.js` (both already fully orphaned before
+  this removal). `gatewayMethods.js`, `BlockTradesDepositAddressCache.js`,
+  `gatewayUtils.js`, and `assetGatewayMixin.js` are generic/shared
+  infra used by the kept gateways too (or, for
+  `BlockTradesDepositAddressCache.js`, by the generic
+  `Modal/DepositModal.tsx`) and were kept.
+- **`Dashboard/SimpleDepositBlocktradesBridge.tsx`** (a separate
+  BlockTrades "quick-buy" integration outside the `DepositWithdraw/`
+  tree) and its call sites in `Exchange/Exchange.tsx` and
+  `Account/AccountPortfolioList.tsx` — the component itself, its
+  modal-visibility state/handlers, and (in `AccountPortfolioList.tsx`)
+  the now-permanently-dead "Buy via bridge" table column/icons and
+  `_renderBuy` helper that only ever opened that modal.
+- **Config**: the `OPEN`/`RUDEX`/`SPARKDEX`/`GDEX`/`CITADEL` entries
+  from `lib/common/gateways.js`'s `availableGateways`, its `TRADE`
+  bridge entry from `availableBridges` (now `{}`), and the matching
+  `"TRADE"/"OPEN"/"RUDEX"/"GDEX"/"CITADEL"/"SPARKDEX"` entries from
+  `branding.js`'s `allowedGateway()` list. `api/apiConfig.js` dropped
+  the `rudexAPIs`/`bitsparkAPIs`/`citadelAPIs`/`gdex2APIs`/`gdexAPIs`
+  (legacy) exports. `gatewayUtils.js`'s `updateGatewayBackers()` had a
+  hard `if (Object.values(availableBridges).length !== 1) throw ...`
+  guard that assumed exactly one bridge always existed — generalized to
+  walk `Object.keys(availableBridges)` and only run the bridge-update
+  step when exactly one bridge is configured (still throwing for more
+  than one; silently skipping, not crashing, for zero — today's case).
+  `getGatewayName()`'s legacy `PPY` → `RUDEX` special-case now also
+  checks `availableGateways[prefix]` exists before reading `.name`, so
+  a held legacy `PPY` balance resolves to `null` (no displayed gateway
+  name) instead of touching a removed key.
+- **`Account/AccountDepositWithdraw.tsx`** (the heaviest edit, since it
+  was already ported to TypeScript): removed the
+  Openledger/RuDEX/BitSpark/BlockTrades/Citadel/GDEX imports, their
+  `serList` tabs, and their `olService`/`rudexService`/
+  `bitsparkService`/`btService`/`citadelService` state, toggle
+  handlers, and `*BackedCoins`/`*GatewayCoins` props/computations —
+  including from the `AccountDepositWithdrawState`/
+  `AccountDepositWithdrawCoreProps` interfaces, not just their call
+  sites. The "Pirate DEX" and "XBTS Native Chains" tabs (and their
+  state/handlers) are untouched.
+- **Stylesheets**: `components/_blocktrades.scss` and
+  `components/_bitkapital.scss` (the latter dedicated solely to the
+  already-orphaned `BitKapital.jsx`), both confirmed to have no
+  surviving consumers — the `div.service-selector`/`.set-cursor` rules
+  `_blocktrades.scss` also defined are harmless duplicates of rules
+  `_rudex.scss` (kept — see below) already provides. Their `@import`s
+  dropped from `components/_all.scss`, and the dead `.blocktrades-bridge`
+  rule block removed from `themes/_theme-template.scss`.
+- **Locale keys**: 47 `gateway.*` keys removed from all 10
+  `locale-*.json` files (the `bitspark`/`citadel`/`rudex` nested
+  objects in full, plus 44 scalar keys confirmed — by cross-referencing
+  each key's usage inside the removed files' prior content — to have
+  been exclusively referenced by code deleted in this pass, e.g.
+  `bitkapital_receive/text/withdraw`, `contact_TRADE`, `fiat`/
+  `fiat_text`, `bridge`/`bridge_text`, `support_block`/`support_gdex`,
+  `unavailable_CITADEL`/`unavailable_RUDEX`/`unavailable_TRADE`/
+  `unavailable_bridge`). Each file re-validated as parseable JSON
+  afterward.
+- **Help docs**: `help/ru/gateways/{openledger,rudex,spark}.md` and
+  their `toc.md` link (only `rudex.md` was actually linked). No other
+  locale under `help/` has gateway-specific docs for the removed
+  integrations.
+
+**What was deliberately kept, and why:**
+- `DepositWithdraw/XbtsFiat.jsx` — Xbtsx-specific (confirmed via its
+  `XbtsFiat: "1.2.1003283"` default prop), not Openledger, despite
+  living in the same directory as the removed files.
+- `api/apiConfig.js`'s `openledgerAPIs` export — `Dashboard/
+  SimpleDepositWithdraw.tsx` (generic, in-scope, untouched) hardcodes
+  `openledgerAPIs.BASE` purely as an address-*validation* endpoint,
+  unrelated to the removed Openledger gateway UI.
+- `api/apiConfig.js`'s `blockTradesAPIs` export — not in the user's
+  original removal list for this file, and still structurally required
+  by two generic/shared files this task does not otherwise touch:
+  `lib/common/gatewayMethods.js` (several functions default their `url`
+  param to `blockTradesAPIs.BASE...`; still imported by the kept
+  `Modal/DepositModal.tsx`/`Modal/WithdrawModalNew.tsx`) and
+  `actions/GatewayActions.js` (`fetchPairs()`, now permanently
+  unreachable since no bridge is ever configured, but still a live
+  class method referencing the import at module-load time). Removing
+  the export would have broken both at build/runtime for no behavior
+  change, since every call site that still exercises these functions
+  already passes its own explicit `url` instead of relying on the
+  BlockTrades default.
+- `stylesheets/components/_rudex.scss` — its `.rudex-*` classes are
+  dead, but it also defines generic `.set-cursor`/`div.service-selector`
+  rules reused by the kept `DepositWithdraw/piratecash/
+  PiratecashWithdrawModal.tsx` and `DepositWithdraw/xbtsx/
+  XbtsxWithdrawModal.tsx` (confirmed via grep for those class names in
+  both files).
+- `lib/common/scamAccounts.js`, `assets/asset-symbols/symbols.js`,
+  `Exchange/tradingViewClasses.js`'s "Openledger" display-name entry,
+  `Dashboard/MarketsTable.tsx`'s `OPEN.BTC`/`GDEX.BTC`/`RUDEX.`
+  market-symbol special-cases, `Transfer/InvoiceRequest.tsx`'s
+  `GDEX.USDT` entry, and `branding.js`'s `getMyMarketsQuotes()`
+  `gdexTokens`/`openledgerTokens`/`rudexTokens` arrays — all reference
+  on-chain asset symbols/addresses that exist independently of whether
+  the gateway deposit/withdraw UI exists, not gateway UI code; left
+  untouched.
+- `locale.gateway.unavailable_OPEN` — kept for the same reason as
+  `openledgerAPIs`: `Dashboard/SimpleDepositWithdraw.tsx` still
+  hardcodes this exact key for its "service is down" message.
+
+**Verification:** `npx tsc --noEmit -p .` clean (0 errors repo-wide,
+including the heaviest edit, `AccountDepositWithdraw.tsx`); a
+whole-app grep for every removed gateway's distinctive identifiers
+(`OpenledgerGateway`, `RuDexGateway`, `BitsparkGateway`,
+`CitadelGateway`, `GdexGateway`, `BlockTradesBridgeDepositRequest`,
+`SimpleDepositBlocktradesBridge`, `olService`, `rudexService`,
+`bitsparkService`, `btService`, `citadelService`) returns zero
+functional matches (only this doc and one explanatory header comment
+in `AccountDepositWithdraw.tsx`); full Jest suite green, 19/19 suites
+passing (5,416/5,532 tests — the ~116-test drop is expected and
+correct, not a regression: the `i18n/counterpartShim-test.js`
+characterization suite dynamically generates one test per key in
+`locale-en.json`/`locale-de.json`, so removing 47 keys from each
+directly shrinks that count); `yarn build` shows only the 2 known
+pre-existing `charting_library.esm` errors; `eslint` on the 7 edited
+core files shows only pre-existing-pattern
+`@typescript-eslint/no-explicit-any` warnings plus one confirmed
+pre-existing, unrelated `no-unused-vars` error in `gatewayUtils.js`'s
+untouched `getGatewayStatusByAsset()` (not introduced by this change).
+
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
   `bitshares-ui-style-guide` external dependency (superseded by the new

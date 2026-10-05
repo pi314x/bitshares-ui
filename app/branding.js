@@ -455,16 +455,10 @@ export function getAssetHideNamespaces() {
  */
 export function allowedGateway(gateway) {
     const allowedGateways = [
-        "TRADE",
-        "OPEN", // keep to display the warning icon, permanently disabled in gateways.js
-        "RUDEX", // keep to display the warning icon, permanently disabled in gateways.js
-        "GDEX",
         "PIRATE",
         "XBTSX",
         "IOB",
-        "CITADEL", // keep to display the warning icon, permanently disabled in gateways.js
-        "BRIDGE", // keep to display the warning icon, permanently disabled in gateways.js
-        "SPARKDEX" // keep to display the warning icon, permanently disabled in gateways.js
+        "BRIDGE" // keep to display the warning icon, permanently disabled in gateways.js
     ];
     if (!gateway) {
         // answers the question: are any allowed?
