@@ -8317,9 +8317,10 @@ source above has zero outbound cross-store action dependencies.
   `BlockchainStore`, `AssetStore`, `GatewayStore`, `PoolmartStore`,
   `CreditOfferStore` (5 batched together - in progress).
 - **Tier 1b - connected pair, migrate together in one batch:**
-  `TransactionConfirmStore` + `BalanceClaimActiveStore` (the latter
-  binds to `TransactionConfirmActions.wasBroadcast` - in progress, see
-  commit for the explicit cross-notify pattern used).
+  `TransactionConfirmStore` + `BalanceClaimActiveStore` (**done** - the
+  latter binds to `TransactionConfirmActions.wasBroadcast`; see the
+  "Batch 2" verification note below for the explicit cross-notify
+  pattern used).
 - **Tier 1c - circular pair, migrate together in one batch (bigger:
   `SettingsStore` is 828 lines, widely used including by
   `AppInit.jsx` itself):** `IntlStore` + `SettingsStore` - NOT yet
@@ -8363,6 +8364,90 @@ call sites (`App.jsx`, `Blockchain/TransactionConfirm.tsx`,
 `Transfer/InvoicePay.tsx`, `Exchange/MyOpenOrders.tsx`) empty; 19/19
 suites / 5,392 tests passing; `yarn build` shows only the 2 known
 pre-existing `charting_library.esm` errors.
+
+**Batch 2 (`BalanceClaimActiveStore`/`BalanceClaimActiveActions` +
+`TransactionConfirmStore`/`TransactionConfirmActions`, migrated
+together): cross-bound stores precedent.** `BalanceClaimActiveStore`
+bound its own `onTransactionBroadcasted` handler not only to its own
+actions but, via `bindListeners`, directly to
+**`TransactionConfirmActions.wasBroadcast`** - a different store's
+action. Alt's real dispatcher fires every listener bound to an action
+regardless of which store "owns" it, so once `wasBroadcast()` became a
+facade method dispatching straight into `transactionConfirmSlice`
+instead of going through that dispatcher, the implicit second listener
+on `BalanceClaimActiveStore` would silently stop firing unless
+reproduced explicitly. Two things made this pair non-trivial beyond the
+batch 1 template:
+  - **The cross-binding** is now wired explicitly in
+    `actions/TransactionConfirmActions.ts`'s `wasBroadcast(res)`: after
+    dispatching its own slice update, it directly calls
+    `balanceClaimActiveStore.onTransactionBroadcasted()` (the migrated
+    `BalanceClaimActiveStore` facade's own method, which reproduces the
+    original handler). This could **not** be done as "also dispatch a
+    second slice's reducer case" (the originally-proposed shape) because
+    `BalanceClaimActiveStore`'s `onTransactionBroadcasted` isn't a pure
+    state transition - it calls `refreshBalances()`, an async chain/DB
+    lookup (`Apis.instance().db_api().exec(...)`) that itself issues
+    further state updates once the lookup resolves. A reducer must be
+    synchronous and pure, so the orchestration stays as a plain method on
+    the store facade (exactly where it lived on the original Alt store
+    class) and the actions facade calls that method directly - making
+    the former implicit `bindListeners` wiring an explicit function call
+    instead. Traced by hand (also reasoned through in the commit
+    message): dispatching `TransactionConfirmActions.wasBroadcast(res)`
+    (1) dispatches `transactionConfirmSlice`'s `wasBroadcast` reducer
+    (`broadcasting: false, broadcast: true`), matching the original's
+    `onWasBroadcast` on `TransactionConfirmStore`, and (2) calls
+    `balanceClaimActiveStore.onTransactionBroadcasted()` →
+    `refreshBalances()`, which re-fetches balances and dispatches
+    `balanceClaimActiveSlice`'s `patchState` once they resolve, matching
+    the original's `onTransactionBroadcasted` on `BalanceClaimActiveStore`.
+    Grep-verified: `wasBroadcast`/`wasIncluded` have no live call sites
+    today (only referenced as the identity passed to `bindListeners`),
+    so this path is currently dead in practice, but is reproduced
+    faithfully for when it is used. **Precedent for future cross-bound
+    pairs** (e.g. `IntlStore`↔`SettingsStore`, named in this plan's own
+    migration order): migrate both stores in the same batch/commit;
+    reproduce the *listening* store's handler as a plain method on its
+    own migrated facade; have the *owning* action's facade method call
+    that method directly (not a second slice dispatch) whenever the
+    original handler itself isn't a pure reducer.
+  - **`BalanceClaimActiveStore`'s non-state instance fields**
+    (`pubkeys`, `addresses`, `no_balance_address`) were never part of
+    `this.state`/`getState()` on the original Alt store - they stayed as
+    plain instance fields on the singleton Alt store object. The migrated
+    facade (`stores/BalanceClaimActiveStore.ts`) keeps them the same way,
+    as plain fields on its own singleton facade instance, not in
+    `balanceClaimActiveSlice`'s Redux state.
+  - `TransactionConfirmStore` additionally used Alt's convention-based
+    `this.bindActions(TransactionConfirmActions)` (every `onXxx` method
+    auto-binds to the identically-named action `xxx`) and exported a
+    plain `reset()` method via `exportPublicMethods` - both reproduced
+    1:1 (every `onXxx` → one `transactionConfirmSlice` reducer case;
+    `reset()` on the facade dispatches a dedicated `resetState` reducer).
+
+  Verified: `npx tsc --noEmit -p .` 0 errors; `eslint` on all 7
+  new/edited files 0 errors (only expected `any`-warnings, plus one real
+  `prefer-const` fix); `git diff --stat` on all 18 known call sites
+  (`stores/WalletDb.ts`, `stores/WalletManagerStore.js`,
+  `components/Blockchain/TransactionConfirm.tsx`,
+  `components/Modal/SendModal.tsx`,
+  `components/DepositWithdraw/XbtsFiat.tsx`,
+  `components/Registration/WalletRegistrationForm.tsx`,
+  `components/Transfer/InvoicePay.tsx`,
+  `components/Account/CreateAccount.tsx`,
+  `components/Account/CreateAccountPassword.tsx`,
+  `components/Wallet/BalanceClaimActive.tsx`,
+  `components/Wallet/BalanceClaimByAsset.tsx`,
+  `components/Wallet/BalanceClaimSelector.tsx`,
+  `components/Wallet/ImportKeys.tsx`,
+  `components/Wallet/BalanceClaimAssetTotal.tsx`, plus comment-only
+  references in `Showcases/Barter.tsx`, `Modal/DirectDebitModal.tsx`,
+  `Modal/HtlcModal.tsx`, `Registration/AccountRegistrationConfirm.tsx`)
+  empty; 19/19 suites / 5,392 tests passing (same count as batch 1);
+  `yarn build` (real `node_modules` copy, not the symlink used for
+  tsc/lint/test) shows only the 2 known pre-existing
+  `charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison

@@ -26,9 +26,13 @@
 // slices.
 import {configureStore, combineReducers} from "@reduxjs/toolkit";
 import notificationReducer from "./slices/notificationSlice";
+import transactionConfirmReducer from "./slices/transactionConfirmSlice";
+import balanceClaimActiveReducer from "./slices/balanceClaimActiveSlice";
 
 const rootReducer = combineReducers({
-    notification: notificationReducer
+    notification: notificationReducer,
+    transactionConfirm: transactionConfirmReducer,
+    balanceClaimActive: balanceClaimActiveReducer
 });
 
 export const reduxStore = configureStore({
