@@ -7955,21 +7955,95 @@ compromise, not silent scope-narrowing.
     5,532/5,532 tests - matches the known-good baseline exactly),
     `yarn build` shows only the 2 known pre-existing
     `charting_library.esm` errors.
-- Remaining long tail (~41 more `.jsx` files outside
-  `Blockchain/operations/`, `Utility/`, and the excluded gateway
-  directories) not yet started, `Account/`, `Modal/` (non-`View/`),
-  `Blockchain/` non-operations, `Registration/`, root `components/`,
-  `Forms/`, `PredictionMarkets/`, `Dashboard/`, `Account/CreditOffer/`,
-  `Showcases/`, `Poolmart/`, `Notifier/`, `Layout/`, `Page404/`,
-  `Login/`, `Console/`, `BrowserNotifications/`, `QuickTrade/`,
-  `Gateways/`, and `Exchange/` now fully ported:
-  smaller directories only. `Utility/` itself is still not fully
-  done: `BindToChainState.jsx`/`ChainTypes.js` (infra, left as-is by
-  design) and the deferred mixin cluster (`DecimalChecker.jsx`,
-  `AmountSelector.jsx`, `AmountSelectorStyleGuide.jsx`,
-  `EquivalentPrice.jsx`, `EquivalentValueComponent.jsx`, plus their
-  two external consumers `Modal/DepositModal.jsx`/`Dashboard/
-  SimpleDepositWithdraw.jsx`) remain.
+- `Utility/` batch 12 (final 4 files, closing out the deferred mixin
+  cluster): `AmountSelector.jsx` → `.tsx`, `AmountSelectorStyleGuide.jsx`
+  → `.tsx`, `EquivalentPrice.jsx` → `.tsx`, `EquivalentValueComponent.jsx`
+  → `.tsx`. Ported directly by the orchestrating session (not
+  delegated), since all 4 depend on `AssetWrapper.tsx`/`MarketStatsCheck
+  .tsx` (`Utility/` batch 11) and were explicitly held back from that
+  batch pending this follow-up.
+  - Not security-sensitive per AGENTS.md: grepped all 4 for `WalletDb`,
+    `WalletApi`, `.add_type_operation`, `process_transaction` - none
+    appear. These are amount/price/value display and input controls;
+    the screens that use them to build transaction amounts own the
+    actual transaction-building logic themselves.
+  - `AmountSelector.tsx`/`AmountSelectorStyleGuide.tsx`: both `class
+    AmountSelector extends DecimalChecker` - the first files in this
+    migration where all three `DecimalChecker` methods
+    (`getNumericEventValue`/`onPaste`/`onKeyPress`) are genuinely live
+    at once. Inlined as plain local functions reading `allowNaN` from
+    each file's own props (grep-confirmed genuinely passed by many real
+    callers - `Showcases/Barter.tsx`, `Modal/SendModal.tsx`,
+    `Modal/HtlcModal.tsx`, `Modal/DirectDebitModal.tsx`/
+    `DirectDebitClaimModal.tsx`, `Modal/WithdrawModalNew.tsx`,
+    `Account/CreditOffer/*.tsx` all pass `allowNaN={true}`), same
+    pattern already established by `Exchange/ExchangeInput.tsx` for the
+    identical base class. `AmountSelector.tsx`'s inner `class
+    AssetSelector extends React.Component` (wrapped with
+    `AssetWrapper(AssetSelector, {asList: true})`) converts cleanly to a
+    function component (`shouldComponentUpdate` here is a pure re-render
+    guard, dropped). Both files' `componentDidMount() {
+    this.onAssetChange(this.props.asset); }` become a mount-only
+    `useEffect`. Grep-confirmed dead: no caller anywhere passes a `ref`/
+    `refCallback` to `AmountSelectorStyleGuide` (unlike its twin's inner
+    `AssetSelector`, which genuinely is referenced via `ref=
+    {this.props.refCallback}`) - the original never read
+    `this.props.refCallback` either, so nothing was dropped, just
+    confirmed absent.
+  - `EquivalentPrice.tsx`/`EquivalentValueComponent.tsx`: **deliberate
+    class-preservation deviation**, matching `Utility/` batch 11's own
+    `MarketStatsCheck.tsx` precedent (see that entry/file for the full
+    reasoning). `class EquivalentPrice extends MarketStatsCheck` and
+    `class ValueComponent extends MarketStatsCheck` both genuinely rely
+    on inheriting `MarketStatsCheck`'s lifecycle methods (live
+    `MarketsActions.getMarketStatsInterval(...)` subscriptions) and both
+    call `super.shouldComponentUpdate(np)` directly - converting either
+    to a function component would silently stop those lifecycle methods
+    from firing, with no compile-time or test signal. Both classes stay
+    ES6 classes here - typed, mechanically cleaned up, no logic changes
+    - completing the inheritance chain `MarketStatsCheck.tsx` already
+    anticipated. The outer wrapper layers in both files (`EquivalentPrice
+    .jsx`'s `AltContainer`-based `EquivalentPriceWrapper`;
+    `EquivalentValueComponent.jsx`'s `connect(..., {listenTo:
+    [MarketsStore]})`-wrapped `EquivalentValueComponent`;
+    `EquivalentValueComponent.jsx`'s `BindToChainState
+    (BalanceValueComponent, {keep_updating: true})`-wrapped
+    `BalanceValueComponent`) have no such inheritance and convert
+    cleanly to function components using `useAltStore`/
+    `useChainStoreTick()`+`ChainStore.getObject` per this migration's
+    established patterns. Preserved verbatim, not "fixed": grepped
+    `BindToChainState.jsx` for `keep_updating` - it recognizes no such
+    option, so `{keep_updating: true}` was already a pure no-op in the
+    original; the plain default fallback (`<span />` while `balance` is
+    unresolved) applies, same as any other `BindToChainState(Component)`
+    call with no recognized options.
+  - **Bonus finding, not acted on**: with these two files converted,
+    grepping the whole app for `extends DecimalChecker` now returns zero
+    live matches (only comment references, in this batch's own files and
+    in the already-ported `Modal/DepositModal.tsx`/`Dashboard/
+    SimpleDepositWithdraw.tsx`, both of which dropped the inheritance
+    entirely in their own earlier ports) - `Utility/DecimalChecker.jsx`
+    is now fully orphaned. Left in place rather than deleted: removing
+    genuinely-orphaned legacy files is a Phase 9 ("Legacy removal &
+    dependency cleanup") concern per this migration's established
+    precedent (e.g. `Modal/ReportModal.tsx`), not something done as a
+    side effect of a Phase 8 porting batch. `MarketStatsCheck.jsx`
+    remains non-orphaned (`EquivalentPrice.tsx`/`EquivalentValueComponent
+    .tsx` still extend it), so no equivalent note applies there.
+  - Verified: `yarn typecheck` clean (0 errors repo-wide), `eslint` clean
+    on all 4 files (0 errors, only expected
+    `@typescript-eslint/no-explicit-any` warnings), full Jest suite
+    green (19/19 suites, 5,532/5,532 tests - matches the known-good
+    baseline exactly), `yarn build` shows only the 2 known pre-existing
+    `charting_library.esm` errors.
+- Remaining long tail outside `Blockchain/operations/` and the excluded
+  gateway directories (`DepositWithdraw/{gdex,citadel,openledger,rudex,
+  blocktrades,bitspark}`, per the earlier explicit user scope
+  instruction): smaller directories only - every other directory listed
+  in this phase's batch history above is now fully ported. `Utility/`
+  itself is as complete as it will get within Phase 8:
+  `BindToChainState.jsx`/`ChainTypes.js`/`DecimalChecker.jsx` are
+  infra/now-orphaned files intentionally left as-is, pending Phase 9.
 
 ### Phase 9 — Legacy removal & dependency cleanup
 - Delete `app/` legacy tree, `alt-instance.js`, Alt.js deps, the
