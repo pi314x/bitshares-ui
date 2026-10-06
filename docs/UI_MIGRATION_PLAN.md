@@ -9833,18 +9833,59 @@ warnings); a new 3-test suite (renders children, passes through
 `style`-overridden border radius in both themes via `build-preview`
 (temporary demo, reverted after).
 
+**`design-system/Popover.tsx` - fourteenth component (done).** Next by
+usage (6 call sites). Not to be confused with `Utility/FormattedPrice.tsx`'s
+unrelated `Popover` import, which comes from the separate `react-popover`
+npm package (an `isOpen`/`onOuterAction`/`body` API, nothing like antd's)
+and isn't part of `bitshares-ui-style-guide` at all - excluded from scope
+entirely, confirmed via its import line rather than its component name.
+
+Grepped every real call site before designing this: `content` (always),
+an optional `title` header (about half of real call sites), `placement`
+of `"top"`/`"bottom"`/`"left"`/`"right"` only (no `Tooltip`-style
+`topLeft`/`topRight` corner placements), `trigger` of `"hover"` (the
+default) or `"click"` (one real call site, `Utility/FormattedAsset.tsx`),
+and `mouseEnterDelay={0.5}` at the two call sites that set it. Built as
+`Tooltip`'s sibling rather than sharing one implementation: real
+`content` here is sometimes interactive (a link, in
+`Explorer/Witnesses.tsx`) and one call site needs click-to-open/
+click-outside-to-close (reusing the `useClickOutside` hook) instead of
+hover - different enough from `Tooltip`'s simpler hover-only model that
+sharing one component would have meant threading a `title`/interactive-
+content/trigger-mode branch through it.
+
+Caught and fixed a real layout bug during `build-preview` verification,
+not the unit tests: `title` and `content` were both inline `<span>`
+elements, so with both set they rendered side by side on one line
+instead of stacking into a header row above a body row - invisible to
+the unit tests (which only assert both texts are present, not their
+visual arrangement) but immediately obvious once screenshotted. Fixed by
+making the bubble a column flex container with `title`/`content` as
+block-level rows, matching antd's actual header/body Popover layout.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (0
+warnings); a new 4-test suite (shows `content` on hover after
+`mouseEnterDelay` and hides on mouse leave, shows an optional `title`
+header alongside `content`, `trigger="click"` toggles open/closed on
+click while ignoring hover, a click-triggered popover closes on an
+outside click) - 33/33 suites, 5,458/5,458 tests; `yarn build` shows only
+the 2 known pre-existing `charting_library.esm` errors; visually verified
+hover and click triggers, with and without a title, in both themes via
+`build-preview` (temporary demo, reverted after) - this pass is what
+caught the title/content stacking bug above.
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Popover` (6 call sites) is next by usage), then begin
+component types (`Checkbox` (5 call sites) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
 treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`: grep every
-real call site's actual prop usage before deciding the new API's scope
-(never build out the old library's full surface speculatively), reuse
-existing conventions (tokens, `useClickOutside`-style hooks) over
-inventing new ones, a dedicated test file, and a `build-preview` visual
-check in both
+`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`/`Popover`:
+grep every real call site's actual prop usage before deciding the new
+API's scope (never build out the old library's full surface
+speculatively), reuse existing conventions (tokens, `useClickOutside`-
+style hooks) over inventing new ones, a dedicated test file, and a
+`build-preview` visual check in both
 themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
