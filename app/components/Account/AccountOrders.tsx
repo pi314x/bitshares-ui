@@ -18,7 +18,11 @@ import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
 import marketUtils from "common/market_utils";
 import Translate from "react-translate-component";
-import {Input, Icon, Table, Switch, Button} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Icon} from "../../design-system/Icon";
+import {Table} from "../../design-system/Table";
+import {Switch} from "../../design-system/Switch";
+import {Button} from "../../design-system/Button";
 import AccountOrderRowDescription from "./AccountOrderRowDescription";
 import CollapsibleTable from "../Utility/CollapsibleTable";
 import {groupBy, sumBy, meanBy} from "lodash-es";
@@ -635,7 +639,7 @@ function AccountOrders(props: AccountOrdersCoreProps) {
 
         return (
             <Table
-                columns={settleColumns}
+                columns={settleColumns as any}
                 dataSource={dataSource}
                 pagination={pagination}
                 footer={footer}
@@ -713,7 +717,7 @@ function AccountOrders(props: AccountOrdersCoreProps) {
             tables.push(
                 <div className="grid-wrapper" key="ungroupedTable">
                     <Table
-                        columns={columns}
+                        columns={columns as any}
                         dataSource={dataSource}
                         rowSelection={rowSelection}
                         pagination={pagination}
@@ -815,7 +819,7 @@ function AccountOrders(props: AccountOrdersCoreProps) {
                     <span className="action-buttons">
                         <Button
                             key="submit"
-                            type="primary"
+                            variant="accent"
                             onClick={cancelSelected}
                         >
                             <Translate content="account.cancel_orders" />
@@ -823,7 +827,6 @@ function AccountOrders(props: AccountOrdersCoreProps) {
                         &nbsp;
                         <Button
                             key="cancel"
-                            type="secondary"
                             onClick={resetSelected}
                         >
                             <Translate content="account.reset_orders" />

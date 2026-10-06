@@ -122,13 +122,11 @@ import {BitAssetOptions} from "./AccountAssetCreate";
 import assetConstants from "chain/asset_constants";
 import AssetWhitelist from "./AssetWhitelist";
 import AssetFeedProducers from "./AssetFeedProducers";
-import {
-    Modal,
-    Button,
-    Notification,
-    Switch,
-    Tooltip
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Notification} from "../../design-system/Notification";
+import {Switch} from "../../design-system/Switch";
+import {Tooltip} from "../../design-system/Tooltip";
 import Immutable from "immutable";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
@@ -1736,7 +1734,7 @@ function ConfirmModal({
     updateAsset
 }: ConfirmModalProps) {
     const footer = [
-        <Button type="primary" key="submit" onClick={updateAsset}>
+        <Button variant="accent" key="submit" onClick={updateAsset}>
             {counterpart.translate("global.confirm")}
         </Button>,
         <Button key="cancel" onClick={hideModal}>

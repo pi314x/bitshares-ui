@@ -22,7 +22,11 @@ import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {Button, Modal, Icon, Popover, Tooltip} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Modal} from "../../design-system/Modal";
+import {Icon} from "../../design-system/Icon";
+import {Popover} from "../../design-system/Popover";
+import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 interface AccountBrowsingModeProps {
@@ -106,7 +110,7 @@ function AccountBrowsingMode({usernameViewIcon}: AccountBrowsingModeProps) {
     };
 
     const footer = [
-        <Button key="ok" type="primary" onClick={handleClose}>
+        <Button key="ok" variant="accent" onClick={handleClose}>
             {counterpart.translate("modal.ok")}
         </Button>,
         <Button key="cancel" onClick={handleNeverShowAgain}>

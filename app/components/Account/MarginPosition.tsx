@@ -53,7 +53,8 @@ import Icon from "../Icon/Icon";
 import TotalBalanceValue from "../Utility/TotalBalanceValue";
 import {List} from "immutable";
 import {Link} from "react-router-dom";
-import {Tooltip, Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import asset_utils from "../../lib/common/asset_utils";
 
 const alignRight: React.CSSProperties = {textAlign: "right"};

@@ -10741,6 +10741,62 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `edit`/`poweroff`/`reload` glyphs), `yarn build` showing only the 2
 known pre-existing `charting_library.esm` errors.
 
+**Sixteenth migration batch** (`Account/`, 15 of its 19 remaining
+files - `CreateAccount.tsx`/`CreateAccountPassword.tsx` stay deferred
+with the wallet-sensitive batch, `CreditOffer/CreateModal.tsx`/
+`EditModal.tsx` stay deferred for `DatePicker`,
+`AccountReferralsTable.tsx` stays deferred for `Table`'s server-side-
+pagination gap): `AccountOrders.tsx` (`Input`/`Icon`/`Table`/`Switch`/
+`Button` - its own direct imports, independent of the still-deferred
+`CollapsibleTable` it also renders), `MarginPositionsTable.tsx`
+(`Popover`), `AccountSelector.tsx` (`Tooltip`/`Button`/`Input`/`Icon`/
+`Select`/`Form`), `AccountInputStyleGuide.tsx` (`Input`/`Form`),
+`AccountSignedMessages.tsx` (`Switch`), `AccountOverview.tsx`
+(`Switch`/`Tooltip`/`Button`), `AccountVoting.tsx` (`Switch`/
+`Tooltip`/`Button`/`Tabs`), `AccountPools.tsx` (`Table`/`Select`),
+`AccountPortfolioList.tsx` (`Tooltip`/`Icon`), `AccountBrowsingMode
+.tsx` (`Button`/`Modal`/`Icon`/`Popover`/`Tooltip`),
+`AccountAssetCreate.tsx` (`Switch`), `AccountAssetUpdate.tsx`
+(`Modal`/`Button`/`Notification`/`Switch`/`Tooltip`),
+`AccountSelectorAnt.tsx` (`Form`/`Input`), `MarginPosition.tsx`
+(`Tooltip`/`Icon`), and `Voting/Workers.tsx` (`Row`/`Col`/`Radio`/
+`Button`). No new design-system gaps this batch - every prop pattern
+hit here had already surfaced in an earlier one.
+
+Recurring, already-established fixes applied across this batch:
+`type="primary"` → `variant="accent"` (`AccountVoting.tsx` twice,
+`AccountBrowsingMode.tsx`, `AccountAssetUpdate.tsx`,
+`AccountSelector.tsx`); the `Select.Option` implicit-key-as-value gap
+at `AccountPools.tsx`'s "rows per page" dropdown (same shape as the
+eighth batch's 3 instances); `Select`'s `value` prop rejecting `null`
+(`AccountSelector.tsx`'s `value={selectedAccount ? ... : null}` →
+`undefined`); and the `align`-widened-to-`string` `Table` columns
+issue (`AccountOrders.tsx`, 2 call sites, `as any` cast).
+
+Two new, file-specific findings, both handled at the call site:
+`AccountSelector.tsx`'s `<Input editable={...} readOnly={(!editable
+).toString()}>` - `editable` is a confirmed-dead, non-standard DOM
+attribute antd silently forwarded (dropped); `readOnly` passed a
+*stringified* boolean, which HTML's native `readOnly` attribute
+treats as truthy for any non-empty string including `"false"` - a
+real pre-existing bug (this input has always ended up read-only
+whenever `editableInput` was set, regardless of its actual value),
+preserved verbatim with an `as any` cast rather than silently fixed,
+per this migration's standing "preserve bugs, don't fix them as a
+side effect of an unrelated change" rule. Also:
+`AccountSelector.tsx`'s `validateStatus={error ? "error" : null}` →
+`""` (the `ValidateStatus` union has no `null` member, but `""` is
+its own existing "no status" value - a type normalization, not a
+behavior change). `AccountSelectorAnt.tsx` also dropped `hasFeedback`
+per `Form.Item`'s already-documented scope boundary (same as
+`Utility/AssetInput.tsx` in the tenth batch).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,508/5,508 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

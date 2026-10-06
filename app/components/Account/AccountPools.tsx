@@ -61,7 +61,8 @@
 // change, but are never actually applied to `dataSource` in `render()` -
 // that's the original's own behavior, not a porting omission.
 import * as React from "react";
-import {Table, Select} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
+import {Select} from "../../design-system/Select";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
@@ -491,16 +492,16 @@ function AccountPools({
                                 value={state.limit}
                                 onChange={handleRowsChange}
                             >
-                                <Select.Option key={"10"}>
+                                <Select.Option key={"10"} value={"10"}>
                                     10 rows
                                 </Select.Option>
-                                <Select.Option key={"25"}>
+                                <Select.Option key={"25"} value={"25"}>
                                     25 rows
                                 </Select.Option>
-                                <Select.Option key={"50"}>
+                                <Select.Option key={"50"} value={"50"}>
                                     50 rows
                                 </Select.Option>
-                                <Select.Option key={"100"}>
+                                <Select.Option key={"100"} value={"100"}>
                                     100 rows
                                 </Select.Option>
                             </Select>

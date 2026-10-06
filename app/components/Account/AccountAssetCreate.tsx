@@ -113,7 +113,7 @@ import {Tabs, Tab} from "../Utility/Tabs";
 import AmountSelector from "../Utility/AmountSelector";
 import assetConstants from "chain/asset_constants";
 import {estimateFee} from "common/trxHelper";
-import {Switch} from "bitshares-ui-style-guide";
+import {Switch} from "../../design-system/Switch";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const GRAPHENE_MAX_SHARE_SUPPLY = new (big as any)(

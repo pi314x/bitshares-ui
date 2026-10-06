@@ -51,7 +51,7 @@ import {Tabs, Tab} from "../Utility/Tabs";
 import counterpart from "counterpart";
 import SignedMessageAction from "../../actions/SignedMessageAction";
 import SignedMessage from "../Account/SignedMessage";
-import {Switch} from "bitshares-ui-style-guide";
+import {Switch} from "../../design-system/Switch";
 
 interface AccountSignedMessagesState {
     tabsm_memo_key: any;

@@ -20,7 +20,8 @@
 // given - replicated by calling `.focus()` without a null-check, exactly
 // like the original's unguarded `this.refs.input.focus()`.
 import * as React from "react";
-import {Input, Form} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
 import counterpart from "counterpart";
 import ChainStore from "bitsharesjs/es/chain/src/ChainStore";
 import accountUtils from "../../lib/common/account_utils";

@@ -26,7 +26,7 @@ import utils from "common/utils";
 
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 import Immutable from "immutable";
-import {Popover} from "bitshares-ui-style-guide";
+import {Popover} from "../../design-system/Popover";
 
 const alignRight: React.CSSProperties = {textAlign: "right"};
 const alignLeft: React.CSSProperties = {textAlign: "left"};

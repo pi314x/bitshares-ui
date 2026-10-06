@@ -66,14 +66,12 @@ import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import accountUtils from "common/account_utils";
 import cnames from "classnames";
-import {
-    Tooltip,
-    Button,
-    Input,
-    Icon as AntIcon,
-    Select,
-    Form
-} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Icon as AntIcon} from "../../design-system/Icon";
+import {Select} from "../../design-system/Select";
+import {Form} from "../../design-system/Form";
 
 const MAX_LOOKUP_ATTEMPTS = 5;
 
@@ -702,7 +700,7 @@ function AccountSelector({
                 onSearch={onInputChanged}
                 placeholder={counterpart.translate("account.search")}
                 notFoundContent={counterpart.translate("global.not_found")}
-                value={selectedAccount ? selectedAccount.name : null}
+                value={selectedAccount ? selectedAccount.name : undefined}
                 disabled={disabledInput ? true : undefined}
             >
                 {optionsContainer}
@@ -733,11 +731,24 @@ function AccountSelector({
                 tabIndex={
                     !props.editable || !!props.disabled ? -1 : props.tabIndex
                 }
-                editable={
-                    !!editableInput ? editableInput.toString() : undefined
-                }
+                /* Dropped as confirmed dead: `editable` isn't a real HTML
+                 * or antd `Input` attribute (it just rendered as an
+                 * inert, non-standard DOM attribute under antd's loose
+                 * typing) - never read by anything, unlike `props
+                 * .editable` above/below, which is this component's own,
+                 * genuinely-used prop. */
+                /* Preserved verbatim, not "fixed": `.toString()` turns
+                 * this into the string "true"/"false", which HTML's
+                 * native readOnly attribute treats as truthy either way
+                 * (any non-empty string), so this has always made the
+                 * input read-only whenever editableInput is set,
+                 * regardless of its actual boolean value. Cast to keep
+                 * that exact (buggy) runtime behavior under the
+                 * stricter native `readOnly?: boolean` typing. */
                 readOnly={
-                    !!editableInput ? (!editableInput).toString() : undefined
+                    (!!editableInput
+                        ? (!editableInput).toString()
+                        : undefined) as any
                 }
             />
         );
@@ -821,7 +832,7 @@ function AccountSelector({
                     label={
                         props.label ? counterpart.translate(props.label) : ""
                     }
-                    validateStatus={error ? "error" : null}
+                    validateStatus={error ? "error" : ""}
                     help={error ? error : null}
                 >
                     {rightLabelContainer}
@@ -846,7 +857,7 @@ function AccountSelector({
                                 )}
                             >
                                 <Button
-                                    type="primary"
+                                    variant="accent"
                                     disabled={disabledAction}
                                     onClick={onAction}
                                 >

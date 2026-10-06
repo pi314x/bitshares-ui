@@ -27,7 +27,10 @@ import AssetName from "../../Utility/AssetName";
 import counterpart from "counterpart";
 import {EquivalentValueComponent} from "../../Utility/EquivalentValueComponent";
 import FormattedAsset from "../../Utility/FormattedAsset";
-import {Row, Col, Radio, Button} from "bitshares-ui-style-guide";
+import {Row} from "../../../design-system/Row";
+import {Col} from "../../../design-system/Col";
+import {Radio} from "../../../design-system/Radio";
+import {Button} from "../../../design-system/Button";
 import SearchInput from "../../Utility/SearchInput";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;

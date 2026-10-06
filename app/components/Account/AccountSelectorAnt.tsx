@@ -61,7 +61,8 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import counterpart from "counterpart";
 import accountUtils from "common/account_utils";
-import {Form, Input} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 
 interface AccountSelectorState {
     inputChanged: boolean;
@@ -237,7 +238,12 @@ function AccountSelector({
             <div>
                 <Form.Item
                     label={counterpart.translate(props.label)}
-                    hasFeedback
+                    /* Dropped: antd's `hasFeedback` (a check/cross/
+                     * spinner icon derived from validateStatus) - the
+                     * design-system `Form.Item` only colors its own
+                     * help text, not arbitrary children, per its own
+                     * header comment (see `Utility/AssetInput.tsx`'s
+                     * identical drop). */
                     validateStatus={
                         error ? "error" : account ? "success" : ""
                     }

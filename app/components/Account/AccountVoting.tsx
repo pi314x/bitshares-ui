@@ -141,7 +141,10 @@ import AccountSelector from "./AccountSelector";
 import Icon from "../Icon/Icon";
 import counterpart from "counterpart";
 import SettingsStore from "stores/SettingsStore";
-import {Switch, Tooltip, Button, Tabs} from "bitshares-ui-style-guide";
+import {Switch} from "../../design-system/Switch";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Button} from "../../design-system/Button";
+import {Tabs} from "../../design-system/Tabs";
 import AccountStore from "stores/AccountStore";
 import Witnesses from "./Voting/Witnesses";
 import Committee from "./Voting/Committee";
@@ -798,7 +801,7 @@ function AccountVoting({
                     }}
                 >
                     <Button
-                        type="primary"
+                        variant="accent"
                         onClick={onPublish}
                         tabIndex={4}
                         disabled={!isChanged() ? true : undefined}
@@ -854,7 +857,7 @@ function AccountVoting({
                     float: "right"
                 }}
             >
-                <Button type="primary" onClick={showCreateLockModal}>
+                <Button variant="accent" onClick={showCreateLockModal}>
                     <Translate content="voting.increase_voting_power" />
                 </Button>
             </div>
