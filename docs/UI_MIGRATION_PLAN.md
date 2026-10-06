@@ -10847,6 +10847,43 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Eighteenth migration batch**: `Exchange/BuySell.tsx` (`Button`/
+`Select`/`Popover`/`Tooltip`). A real scope correction first:
+`BuySell.tsx` was carried on the `DatePicker`-deferred list since the
+earlier session that first found `DatePicker` real at 6 files, but its
+own `import {DatePicker} from "antd"` is - and always was - a direct
+`antd` import, never routed through `bitshares-ui-style-guide` at all
+(unlike `Modal/HtlcModal.tsx`/`PredictionMarkets/CreateMarketModal
+.tsx`/`Account/CreditOffer/{Create,Edit}Modal.tsx`, which genuinely do
+import it from the wrapper package, and stay deferred). `DatePicker`
+blocks removing *that* dependency, not this one, so `BuySell.tsx`
+needed no `DatePicker` work at all to migrate its real
+`bitshares-ui-style-guide` imports. `Exchange/ScaledOrderTab.tsx` -
+the other file sharing this exact antd-direct `DatePicker` import -
+is still correctly deferred, but for an unrelated reason: it's this
+migration's third file (after `Transfer/InvoiceRequest.tsx`) still
+using antd's managed-form API (`Form.create()`/`getFieldDecorator()`/
+`validateFields()`) throughout its `<Form>`/`<Form.Item>` tree, which
+needs the same real state-management rewrite before any of its
+`Form`/`Input`/`Select`/`Button`/`Radio` imports can move.
+
+One real gap, fixed in the component: `Popover`'s controlled-
+visibility API (`visible`/`onVisibleChange`) - real at `BuySell.tsx`'s
+quick-deposit popover, which needs `onVisibleChange` to re-run
+`ReactTooltip.rebuild()` once newly-shown nested tooltips exist in the
+DOM. Added both props, following the same controlled/uncontrolled
+split `Select`'s `value` prop already established: when `visible` is
+passed, the component defers to the caller entirely (state changes
+only fire the callback); otherwise it manages its own open/closed
+state like before. New tests for both the uncontrolled-callback and
+the controlled-stays-open cases.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,510/5,510 (up from 5,508 - 2 new tests for `Popover`'s controlled-
+visibility support), `yarn build` showing only the 2 known
+pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

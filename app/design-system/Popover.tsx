@@ -16,6 +16,21 @@ export interface PopoverProps {
      * default/convention. */
     mouseEnterDelay?: number;
     className?: string;
+    /** Controls open/closed state externally - when provided, this
+     * component no longer manages its own visibility from hover/click,
+     * only calls `onVisibleChange` so the caller can. Real at one call
+     * site (`Exchange/BuySell.tsx`'s quick-deposit popover, `trigger=
+     * "click"` with `visible`/`onVisibleChange` both set - though
+     * nothing there ever drives `visible` from outside the callback
+     * itself, so this is "controlled" in shape only; still implemented
+     * as genuinely controlled, matching antd's own contract, rather
+     * than assuming that'll always hold). */
+    visible?: boolean;
+    /** Fires whenever this popover opens or closes, however triggered
+     * (hover, click, or an outside click while open) - real at the
+     * same call site, used there to re-run `ReactTooltip.rebuild()`
+     * once newly-shown nested tooltips exist in the DOM. */
+    onVisibleChange?: (visible: boolean) => void;
     children: React.ReactNode;
 }
 
@@ -48,10 +63,19 @@ export function Popover({
     trigger = "hover",
     mouseEnterDelay = 0.1,
     className,
+    visible: visibleProp,
+    onVisibleChange,
     children
 }: PopoverProps): JSX.Element {
-    const [visible, setVisible] = React.useState(false);
+    const [internalVisible, setInternalVisible] = React.useState(false);
+    const visible =
+        visibleProp !== undefined ? visibleProp : internalVisible;
     const showTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+
+    function setVisible(next: boolean) {
+        if (visibleProp === undefined) setInternalVisible(next);
+        if (onVisibleChange) onVisibleChange(next);
+    }
 
     const ref = useClickOutside<HTMLSpanElement>(
         () => setVisible(false),
@@ -75,7 +99,7 @@ export function Popover({
 
     function toggleOnClick() {
         if (trigger !== "click") return;
-        setVisible(v => !v);
+        setVisible(!visible);
     }
 
     React.useEffect(() => () => clearTimeout(showTimeoutRef.current), []);

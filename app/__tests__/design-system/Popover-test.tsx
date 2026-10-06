@@ -67,6 +67,46 @@ describe("design-system/Popover", () => {
         expect(queryByText("Details")).toBeNull();
     });
 
+    it("calls onVisibleChange on open and close, uncontrolled", () => {
+        const onVisibleChange = jest.fn();
+        const {getByText} = render(
+            <Popover
+                content="Details"
+                trigger="click"
+                onVisibleChange={onVisibleChange}
+            >
+                <span>Trigger</span>
+            </Popover>
+        );
+        fireEvent.click(getByText("Trigger"));
+        expect(onVisibleChange).toHaveBeenLastCalledWith(true);
+        expect(getByText("Details")).toBeTruthy();
+
+        fireEvent.click(getByText("Trigger"));
+        expect(onVisibleChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it("stays controlled by the visible prop, ignoring its own click toggle", () => {
+        const onVisibleChange = jest.fn();
+        const {getByText, queryByText} = render(
+            <Popover
+                content="Details"
+                trigger="click"
+                visible={true}
+                onVisibleChange={onVisibleChange}
+            >
+                <span>Trigger</span>
+            </Popover>
+        );
+        expect(getByText("Details")).toBeTruthy();
+
+        fireEvent.click(getByText("Trigger"));
+        // Controlled: a click still fires the callback, but the popover
+        // stays open until the caller passes visible={false} itself.
+        expect(onVisibleChange).toHaveBeenLastCalledWith(false);
+        expect(queryByText("Details")).toBeTruthy();
+    });
+
     it("closes a click-triggered popover on an outside click", () => {
         const {getByText, queryByText} = render(
             <div>

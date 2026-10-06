@@ -91,7 +91,10 @@ import {DatePicker} from "antd";
 import moment from "moment";
 import Icon from "../Icon/Icon";
 import SettleModal from "../Modal/SettleModal";
-import {Button, Select, Popover, Tooltip} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
+import {Popover} from "../../design-system/Popover";
+import {Tooltip} from "../../design-system/Tooltip";
 import ReactTooltip from "react-tooltip";
 import GatewayStore from "../../stores/GatewayStore";
 import {ChainStore} from "bitsharesjs";
@@ -1255,7 +1258,7 @@ function BuySellInner(props: BuySellProps) {
                                             onClick={(e: any) =>
                                                 onSubmit(true, e)
                                             }
-                                            type="primary"
+                                            variant="accent"
                                             style={{margin: 5}}
                                         >
                                             {isBid ? "Buy" : "Sell"}
