@@ -91,6 +91,22 @@ describe("design-system/Select", () => {
         expect(onSearch).toHaveBeenCalledWith("zzz");
     });
 
+    it("shows the option's value, not its children, as the closed label when optionLabelProp is value", () => {
+        const {getByText, queryByText} = render(
+            <Select
+                placeholder="Pick"
+                value="rudex"
+                optionLabelProp="value"
+            >
+                <Select.Option value="rudex">
+                    RuDex <span>(balance: 5)</span>
+                </Select.Option>
+            </Select>
+        );
+        expect(getByText("rudex")).toBeTruthy();
+        expect(queryByText("RuDex")).toBeNull();
+    });
+
     it("stays controlled when value is passed, ignoring its own selection state", () => {
         const {getByText} = render(
             <Select value="BTS" onChange={() => {}}>

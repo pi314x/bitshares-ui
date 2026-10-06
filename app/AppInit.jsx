@@ -34,7 +34,7 @@ import IntlStore from "stores/IntlStore";
 import intlData from "./components/Utility/intlData";
 import {IntlProvider} from "react-intl";
 import willTransitionTo from "./routerTransition";
-import {BodyClassName} from "bitshares-ui-style-guide";
+import {BodyClassName} from "./design-system/BodyClassName";
 import LoadingIndicator from "./components/LoadingIndicator";
 import InitError from "./components/InitError";
 import SyncError from "./components/SyncError";

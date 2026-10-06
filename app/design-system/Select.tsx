@@ -85,6 +85,13 @@ export interface SelectProps {
      * chosen. Real call sites use it to mirror free-typed text (not
      * limited to the listed options) back into their own state. */
     onSearch?: (value: string) => void;
+    /** `"value"` (the only value any real call site passes): shows the
+     * selected option's `value` as the closed trigger's label instead
+     * of its rendered `children` (antd's own default) - real call
+     * sites use this to keep extra decoration inside an option's
+     * `children` (e.g. a right-aligned balance) out of the collapsed
+     * trigger display. */
+    optionLabelProp?: "value";
     children?: React.ReactNode;
 }
 
@@ -103,6 +110,7 @@ function SelectBase({
     showArrow = true,
     onDropdownVisibleChange,
     onSearch,
+    optionLabelProp,
     children
 }: SelectProps) {
     const [open, setOpenState] = React.useState(false);
@@ -168,7 +176,11 @@ function SelectBase({
                         selected ? styles.value : styles.placeholder
                     }
                 >
-                    {selected ? selected.label : placeholder}
+                    {selected
+                        ? optionLabelProp === "value"
+                            ? String(selected.value)
+                            : selected.label
+                        : placeholder}
                 </span>
                 {showArrow ? (
                     <span className={styles.caret} aria-hidden="true">

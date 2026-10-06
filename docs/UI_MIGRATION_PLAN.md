@@ -10243,6 +10243,45 @@ Verified: `tsc` clean across the whole project, `eslint` 0 new errors
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Fourth migration batch** (outside `Modal/`, the app shell and two
+shared non-UI helpers): `App.jsx`/`AppInit.jsx` (`BodyClassName`,
+`App.jsx` also `Notification.config(...)`), `api/ApplicationApi.js`/
+`routerTransition.js` (`Notification.error(...)` only - neither file
+is a React component), and `lib/common/assetGatewayMixin.js` (`Select`/
+`Icon`, shared by every gateway-deposit/withdraw screen via its
+`gatewaySelector` helper - still consumed by several not-yet-migrated
+call sites, e.g. `DepositWithdrawAssetSelector.js`/`AccountSelector
+.tsx`, so this swap doesn't move those forward on its own, but Select's
+new `optionLabelProp` support below does).
+
+One more real `Select` gap, fixed in the component: `optionLabelProp`
+(real at 4 call sites, including `assetGatewayMixin.js`'s gateway
+picker and the as-yet-unmigrated `HtlcModal.tsx`/
+`DepositWithdrawAssetSelector.js`/`AccountSelector.tsx`) - antd shows
+the selected option's `value` as the closed trigger's label instead of
+its rendered `children` when set to `"value"` (every real call site's
+only setting); real usage pairs this with an `Option` whose `children`
+adds right-aligned decoration (a balance) that would look wrong
+collapsed into the trigger. Typed narrowly as `optionLabelProp?:
+"value"`, since no real call site passes anything else, with a new
+Jest test.
+
+`routerTransition.js` also needed 5 pre-existing, unrelated
+`no-unused-vars` fixes (three `new Promise((resolve, reject) => ...)`
+where `reject` was never called, two WebSocket event handlers with an
+unused `event` parameter) - not a side-effect cleanup of unrelated
+code (which AGENTS.md's lint guidance says to leave alone), but
+required here: `yarn lint:changed` (the CI gate) lints the *whole* of
+any file touched by a change, not just the diffed lines, so leaving
+them would fail CI for this commit's own one-line import swap in that
+file.
+
+Verified: `tsc` clean, `eslint` 0 errors on every changed file
+(`Select.tsx`'s one pre-existing `any` warning aside), `yarn test`
+5,492/5,492 (up from 5,491 - the one new `optionLabelProp` test),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
