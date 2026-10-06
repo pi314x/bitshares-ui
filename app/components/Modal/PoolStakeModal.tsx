@@ -97,7 +97,12 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import big from "bignumber.js";
 import counterpart from "counterpart";
-import {Form, Modal, Button, Row, Col, Tabs} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
+import {Tabs} from "../../design-system/Tabs";
 import ApplicationApi from "api/ApplicationApi";
 import AccountStore from "stores/AccountStore";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
@@ -566,7 +571,7 @@ function PoolStakeModalCore({
         }
     };
 
-    const {TabPane} = Tabs as any;
+    const {TabPane} = Tabs;
     const {
         assetAAmount,
         assetBAmount,
@@ -582,8 +587,6 @@ function PoolStakeModalCore({
     return (
         <Modal
             visible={isModalVisible}
-            id="pool_stake_modal"
-            overlay={true}
             onCancel={hideModal}
             footer={[
                 <Button

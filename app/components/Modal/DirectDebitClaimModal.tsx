@@ -60,14 +60,12 @@ import {isNaN} from "lodash-es";
 import LimitToWithdraw from "../Utility/LimitToWithdraw";
 import utils from "common/utils";
 import counterpart from "counterpart";
-import {
-    Modal,
-    Button,
-    Tooltip,
-    Icon,
-    Form,
-    Input
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 import ApplicationApi from "../../api/ApplicationApi";
 import FeeAssetSelector from "components/Utility/FeeAssetSelector";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
@@ -387,7 +385,6 @@ export default function DirectDebitClaimModal({
         <Modal
             title={counterpart.translate("showcases.direct_debit.claim_funds")}
             visible={isModalVisible}
-            overlay={true}
             onCancel={hideModal}
             footer={[
                 state.errorMessage && (
@@ -398,7 +395,7 @@ export default function DirectDebitClaimModal({
                 <Button
                     key={"send"}
                     disabled={isSubmitNotValid}
-                    onClick={!isSubmitNotValid ? onSubmit : null}
+                    onClick={!isSubmitNotValid ? onSubmit : undefined}
                 >
                     {counterpart.translate("showcases.direct_debit.claim")}
                 </Button>,

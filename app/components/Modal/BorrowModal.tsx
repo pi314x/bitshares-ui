@@ -179,7 +179,8 @@ import WalletApi from "api/WalletApi";
 import WalletDb from "stores/WalletDb";
 import counterpart from "counterpart";
 import {List} from "immutable";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 import asset_utils from "../../lib/common/asset_utils";
 import {BorrowModalView} from "./View/BorrowModalView";
 import debounceRender from "react-debounce-render";
@@ -870,7 +871,7 @@ function BorrowModalCore({
         );
     } else {
         footer.push(
-            <Button tabIndex={6} key="submit" type="primary" onClick={onSubmit}>
+            <Button tabIndex={6} key="submit" variant="accent" onClick={onSubmit}>
                 {counterpart.translate("borrow.adjust")}
             </Button>
         );

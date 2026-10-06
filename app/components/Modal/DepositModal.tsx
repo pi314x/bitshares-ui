@@ -95,7 +95,8 @@ import {availableGateways} from "common/gateways";
 import {getGatewayStatusByAsset} from "common/gatewayUtils";
 import CryptoLinkFormatterImpl from "../Utility/CryptoLinkFormatter";
 import counterpart from "counterpart";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 // `CryptoLinkFormatter.tsx` (an earlier, separately-ported file) types
 // its two string-returning branches in a way `tsc` won't accept as a
@@ -698,17 +699,14 @@ const DepositModal = React.forwardRef<DepositModalHandle, DepositModalProps>(
                           })
                         : counterpart.translate("modal.deposit.header_short")
                 }
-                id={props.modalId}
                 className={props.modalId}
                 onCancel={onClose}
-                overlay={true}
                 footer={[
                     <Button key="cancel" onClick={props.hideModal}>
                         {counterpart.translate("modal.close")}
                     </Button>
                 ]}
-                visible={props.visible}
-                noCloseBtn
+                visible={!!props.visible}
             >
                 <DepositModalContent
                     account={props.account}

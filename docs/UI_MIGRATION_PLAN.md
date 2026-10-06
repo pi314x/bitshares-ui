@@ -10150,6 +10150,99 @@ since migrated files keep their existing test coverage unchanged),
 `charting_library.esm` errors, and the new `Input.addonBefore` corner-
 rounding behavior visually verified in both themes via `build-preview`.
 
+**Third migration batch** (13 more `Modal/` files: `BorrowModal.tsx`,
+`DepositModal.tsx`, `ProposalModal.tsx`, `IssueModal.tsx`,
+`PoolExchangeModal.tsx`, `PoolStakeModal.tsx`,
+`DirectDebitClaimModal.tsx`, `DirectDebitModal.tsx`, `SendModal.tsx`,
+`CreatePoolModal.tsx`, `SetDefaultFeeAssetModal.tsx`, `SettleModal.tsx`,
+`WithdrawModalNew.tsx`). `ProposalModal.tsx`/`PoolExchangeModal.tsx`/
+`PoolStakeModal.tsx`/`DirectDebitClaimModal.tsx`/`DirectDebitModal.tsx`/
+`SendModal.tsx`/`CreatePoolModal.tsx`/`SettleModal.tsx`/
+`WithdrawModalNew.tsx` each submit an on-chain operation (proposal
+delete/update, liquidity-pool exchange/stake, direct-debit claim/plan,
+transfer, liquidity-pool create, forced settlement, gateway withdrawal)
+and are flagged security-sensitive in their own header comments, but
+per the same AGENTS.md reading as the second batch - operation
+submission isn't key handling, the signing happens later using the
+already-unlocked wallet - these were migrated rather than deferred.
+
+Two more real gaps surfaced here, both fixed in the component, not
+worked around at the call site:
+
+- Button's antd `type="ghost"` variant (`SendModal.tsx`'s Send/Propose
+  toggle, via a dynamic `type={propose ? "ghost" : "primary"}` ternary
+  the original static-string grep never caught, since it only matched
+  literal `type="primary"`/`type="secondary"` attributes, not a
+  dynamic expression). No new component API needed - mapped at the
+  call site to this migration's existing `variant` values:
+  `variant={propose ? "default" : "accent"}` / the inverse for the
+  paired button, i.e. whichever side of the toggle is *not* currently
+  selected gets the accent/filled look, the other gets the plain/
+  unselected look. This preserves the toggle's visual intent even
+  though "ghost" (antd's transparent/outlined style) isn't pixel-
+  replicated.
+- `Select`'s `onSearch` - real at several call sites (`WithdrawModalNew
+  .tsx`'s stored-address picker among them), firing with the raw typed
+  text on every keystroke in the `showSearch` filter input,
+  independent of `onChange`/`onSelect` (which only fire when an option
+  is actually *chosen*) - real call sites use it to mirror free-typed
+  text that isn't necessarily one of the listed options back into
+  their own state (e.g. a withdrawal address the user types instead of
+  picking a previously-used one). Missed by the original `Select`
+  build's grep. Added as a plain passthrough from the existing search
+  `<input>`'s own `onChange`, with a new Jest test
+  (`Select-test.tsx`'s "calls onSearch with the raw typed text on every
+  keystroke").
+
+Other fixes, all at the call site (no component change needed):
+
+- `onClick={condition ? handler : null}` → `: undefined`
+  (`DirectDebitClaimModal.tsx`/`DirectDebitModal.tsx`): native Button's
+  `onClick?: MouseEventHandler | undefined` doesn't accept `null` the
+  way antd's looser typing did.
+- `visible={props.visible}` where the wrapping component's own
+  `visible` prop is optional (`DepositModal.tsx`/`WithdrawModalNew.tsx`)
+  but Modal's own `visible: boolean` is required (unlike antd, which
+  defaults it to `false`) → coerced with `visible={!!props.visible}` at
+  the call site. Deliberately not given Modal itself an implicit
+  default, to keep its required-prop contract honest.
+- A native-input `maxLength="16"` (string) → `maxLength={16}` (number)
+  at 5 call sites in `CreatePoolModal.tsx`: antd's own `Input` accepted
+  either, but the native `InputHTMLAttributes.maxLength` the
+  design-system `Input` extends only accepts a number.
+- `value={state.poolName}` where that state field is typed
+  `string | null` (`CreatePoolModal.tsx`) → `value={state.poolName ??
+  ""}`, matching how a controlled native `<input>` (unlike antd's
+  looser typing) needs a defined value.
+- `onSelect={onAddressSelected}` (`WithdrawModalNew.tsx`) where the
+  handler only accepts a `string` but `Select`'s `onSelect` type is
+  `(value: string | number) => void` (real option values elsewhere in
+  the app are sometimes numbers) → wrapped in an inline arrow,
+  `onSelect={value => onAddressSelected(value as string)}`, since every
+  option in this particular dropdown is in fact a string address.
+
+**Newly deferred, with a reason:** antd's `DatePicker` - real at 6 call
+sites (`Modal/HtlcModal.tsx`, `PredictionMarkets/CreateMarketModal.tsx`,
+`Exchange/ScaledOrderTab.tsx`, `Exchange/BuySell.tsx`,
+`Account/CreditOffer/CreateModal.tsx`,
+`Account/CreditOffer/EditModal.tsx`) but never part of the original
+twenty-component build. Real usage includes `showTime`, `disabledDate`
+(custom validation functions), `showToday`, a `zh_CN`/default `locale`
+switch, `onOk`, and - in `HtlcModal.tsx` - an imperative ref reaching
+directly into antd's internal DOM structure
+(`el.picker.input.readOnly = false`). This is a substantially larger
+component than anything built so far (a full calendar + time-picker
+UI, not a wrapper around a handful of native form elements), so rather
+than rush a build mid-batch it's deferred as its own future
+component-build task, following the same grep-first process as the
+other twenty - and these 6 files are deferred along with it.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 new errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,491/5,491 (up from 5,490 - the one new `Select.onSearch` test),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

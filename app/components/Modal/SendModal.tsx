@@ -61,7 +61,11 @@ import AccountActions from "actions/AccountActions";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import {getWalletName} from "branding";
-import {Form, Modal, Button, Tooltip, Input} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Input} from "../../design-system/Input";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const EqualWidthContainer = ({children}: {children: any[]}) => (
@@ -159,7 +163,6 @@ interface SendModalProps {
 const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
     (props, ref) => {
         const {
-            id,
             to_name: propToName,
             from_name: propFromName,
             asset_id: propAssetId,
@@ -597,8 +600,6 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             >
                 <Modal
                     visible={state.isModalVisible}
-                    id={id}
-                    overlay={true}
                     onCancel={hideModal}
                     footer={[
                         <Button
@@ -626,13 +627,13 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                         <div className="content-block">
                             <EqualWidthContainer>
                                 <Button
-                                    type={propose ? "ghost" : "primary"}
+                                    variant={propose ? "default" : "accent"}
                                     onClick={onPropose}
                                 >
                                     <Translate content="transfer.send" />
                                 </Button>
                                 <Button
-                                    type={propose ? "primary" : "ghost"}
+                                    variant={propose ? "accent" : "default"}
                                     onClick={onPropose}
                                 >
                                     <Translate content="propose" />

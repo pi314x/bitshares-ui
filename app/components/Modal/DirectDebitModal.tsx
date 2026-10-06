@@ -123,7 +123,10 @@ import BalanceComponent from "../Utility/BalanceComponent";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import SettingsStore from "stores/SettingsStore";
-import {Modal, Button, Tooltip, Form} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Form} from "../../design-system/Form";
 import {DatePicker} from "antd";
 import ApplicationApi from "../../api/ApplicationApi";
 import moment from "moment";
@@ -571,13 +574,12 @@ function DirectDebitModal({
                       )
             }
             visible={isModalVisible}
-            overlay={true}
             onCancel={hideModal}
             footer={[
                 <Button
                     key={"send"}
                     disabled={isSubmitNotValid}
-                    onClick={!isSubmitNotValid ? onSubmit : null}
+                    onClick={!isSubmitNotValid ? onSubmit : undefined}
                 >
                     {operation && operation.type === "create"
                         ? counterpart.translate("showcases.direct_debit.create")

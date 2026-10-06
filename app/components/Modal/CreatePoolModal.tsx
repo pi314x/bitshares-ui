@@ -157,14 +157,12 @@ import * as React from "react";
 import {ChainValidation} from "bitsharesjs";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {
-    Form,
-    Modal,
-    Button,
-    Input,
-    Icon as AntIcon,
-    Alert
-} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Icon as AntIcon} from "../../design-system/Icon";
+import {Alert} from "../../design-system/Alert";
 import {debounce} from "lodash-es";
 
 import {
@@ -639,7 +637,7 @@ function CreatePoolModal({
     };
 
     const footer = [
-        <Button type="primary" key="submit" onClick={onCreatePool}>
+        <Button variant="accent" key="submit" onClick={onCreatePool}>
             {counterpart.translate("account.liquidity_pools.create_pool")}
         </Button>
     ];
@@ -664,14 +662,14 @@ function CreatePoolModal({
                             <Form.Item>
                                 <Input
                                     type="text"
-                                    value={state.poolName}
+                                    value={state.poolName ?? ""}
                                     onChange={(e: any) =>
                                         onPoolNameChange(false, e)
                                     }
                                     placeholder={counterpart.translate(
                                         "account.liquidity_pools.pool_name"
                                     )}
-                                    maxLength="16"
+                                    maxLength={16}
                                     addonAfter={<AntIcon type="search" />}
                                 />
                                 {state.showAlertInputPool ? (
@@ -715,7 +713,7 @@ function CreatePoolModal({
                                     placeholder={counterpart.translate(
                                         "account.liquidity_pools.asset_a"
                                     )}
-                                    maxLength="16"
+                                    maxLength={16}
                                     addonAfter={<AntIcon type="search" />}
                                 />
                                 {state.showAlertChangeAssetA ? (
@@ -769,7 +767,7 @@ function CreatePoolModal({
                                     placeholder={counterpart.translate(
                                         "account.liquidity_pools.asset_b"
                                     )}
-                                    maxLength="16"
+                                    maxLength={16}
                                     addonAfter={<AntIcon type="search" />}
                                 />
                                 {state.showAlertChangeAssetB ? (
@@ -825,7 +823,7 @@ function CreatePoolModal({
                             onChange={onSetTakerFee}
                             onBlur={onFormatTakerFee}
                             addonAfter="Taker Fee %"
-                            maxLength="16"
+                            maxLength={16}
                         />
                         {state.showAlertChangeTrankerFee ? (
                             <Alert
@@ -863,7 +861,7 @@ function CreatePoolModal({
                             onChange={onSetUnstackFee}
                             onBlur={onFormatUnstackFee}
                             addonAfter="Unstake Fee %"
-                            maxLength="16"
+                            maxLength={16}
                         />
                         {state.showAlertChangeUnstakeFee ? (
                             <Alert

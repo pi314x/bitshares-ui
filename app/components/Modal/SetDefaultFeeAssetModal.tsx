@@ -46,7 +46,11 @@ import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
 import {ChainStore} from "bitsharesjs";
 import {Link} from "react-router-dom";
-import {Table, Button, Radio, Modal, Checkbox} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
+import {Button} from "../../design-system/Button";
+import {Radio} from "../../design-system/Radio";
+import {Modal} from "../../design-system/Modal";
+import {Checkbox} from "../../design-system/Checkbox";
 import SettingsStore from "stores/SettingsStore";
 import AccountStore from "stores/AccountStore";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -227,7 +231,7 @@ function SetDefaultFeeAssetModal({
             </Button>
             <Button
                 key="submit"
-                type="primary"
+                variant="accent"
                 disabled={!state.selectedAssetId}
                 onClick={onSubmit}
             >
@@ -241,7 +245,6 @@ function SetDefaultFeeAssetModal({
     return (
         <Modal
             visible={show}
-            overlay={true}
             onCancel={close}
             title={counterpart.translate(
                 "explorer.asset.fee_pool.select_fee_asset"

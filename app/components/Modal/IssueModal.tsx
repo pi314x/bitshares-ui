@@ -31,7 +31,9 @@ import counterpart from "counterpart";
 import ApplicationApi from "api/ApplicationApi";
 import AccountSelector from "../Account/AccountSelector";
 import AmountSelector from "../Utility/AmountSelector";
-import {Notification, Modal, Button} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 interface IssueModalState {
     amount: any;
@@ -100,7 +102,7 @@ function IssueModal({
             )
             .catch((err: any) => {
                 console.log("issue error caught here:", err);
-                (Notification as any).error({
+                Notification.error({
                     message: counterpart.translate(
                         "notifications.asset_issue_failure"
                     ) //: ${this.state.wallet_public_name}
@@ -124,7 +126,7 @@ function IssueModal({
 
     const footer = [
         <Button
-            type="primary"
+            variant="accent"
             key="submit"
             onClick={onSubmit}
             disabled={!state.to_id || !state.amount}

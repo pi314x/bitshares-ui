@@ -73,7 +73,8 @@ import WalletApi from "api/WalletApi";
 import NestedApprovalState from "../Account/NestedApprovalState";
 import pu from "common/permission_utils";
 import {ChainStore} from "bitsharesjs";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 export const finalRequiredPerms = (
@@ -295,7 +296,7 @@ function ProposalModalCore({
     const footer = [
         <Button
             key="submit"
-            type="primary"
+            variant="accent"
             onClick={() => onProposalAction(proposal)}
         >
             {counterpart.translate(`proposal.${action}`)}

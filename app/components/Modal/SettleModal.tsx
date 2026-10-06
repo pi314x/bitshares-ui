@@ -53,7 +53,11 @@ import {ChainStore} from "bitsharesjs";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import withWorthLessSettlementFlag from "../Utility/withWorthLessSettlementFlag";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
-import {Alert, Form, Modal, Button, Tooltip} from "bitshares-ui-style-guide";
+import {Alert} from "../../design-system/Alert";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
 import utils from "common/utils";
 import AssetWrapper from "../Utility/AssetWrapper";
 
@@ -189,7 +193,6 @@ interface ModalContentCoreProps {
 
 function ModalContent({
     visible,
-    modalId,
     hideModal,
     asset,
     core,
@@ -363,7 +366,7 @@ function ModalContent({
         >
             <Button
                 key={"submit"}
-                type="primary"
+                variant="accent"
                 onClick={onSubmit}
                 disabled={isFundsToLow}
             >
@@ -480,10 +483,8 @@ function ModalContent({
                 asset: assetFullName
             })}
             visible={visible}
-            id={modalId}
             footer={!isPredictionMarket ? footer : null}
             onCancel={hideModal}
-            overlay={true}
         >
             {modalContent}
         </Modal>

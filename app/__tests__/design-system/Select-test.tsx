@@ -79,6 +79,18 @@ describe("design-system/Select", () => {
         expect(getByText("No match")).toBeTruthy();
     });
 
+    it("calls onSearch with the raw typed text on every keystroke", () => {
+        const onSearch = jest.fn();
+        const {getByText, getByDisplayValue} = render(
+            <Select placeholder="Pick" showSearch onSearch={onSearch}>
+                <Select.Option value="BTS">BTS</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        fireEvent.change(getByDisplayValue(""), {target: {value: "zzz"}});
+        expect(onSearch).toHaveBeenCalledWith("zzz");
+    });
+
     it("stays controlled when value is passed, ignoring its own selection state", () => {
         const {getByText} = render(
             <Select value="BTS" onChange={() => {}}>

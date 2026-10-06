@@ -79,6 +79,12 @@ export interface SelectProps {
     /** Default true, matching antd. */
     showArrow?: boolean;
     onDropdownVisibleChange?: (open: boolean) => void;
+    /** Fires with the raw typed text on every keystroke in the
+     * `showSearch` filter input (antd's own `onSearch`) - distinct from
+     * `onChange`/`onSelect`, which only fire when an option is actually
+     * chosen. Real call sites use it to mirror free-typed text (not
+     * limited to the listed options) back into their own state. */
+    onSearch?: (value: string) => void;
     children?: React.ReactNode;
 }
 
@@ -96,6 +102,7 @@ function SelectBase({
     notFoundContent,
     showArrow = true,
     onDropdownVisibleChange,
+    onSearch,
     children
 }: SelectProps) {
     const [open, setOpenState] = React.useState(false);
@@ -176,7 +183,10 @@ function SelectBase({
                             ref={searchRef}
                             className={styles.search}
                             value={query}
-                            onChange={e => setQuery(e.target.value)}
+                            onChange={e => {
+                                setQuery(e.target.value);
+                                if (onSearch) onSearch(e.target.value);
+                            }}
                         />
                     ) : null}
                     {visibleOptions.length === 0 ? (

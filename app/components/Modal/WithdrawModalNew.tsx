@@ -53,7 +53,10 @@ import AccountStore from "stores/AccountStore";
 import FormattedAsset from "../Utility/FormattedAsset";
 import BalanceComponent from "../Utility/BalanceComponent";
 import QRScanner from "../QRAddressScanner";
-import {Modal, Button, Select, Input} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
+import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
 import {
     gatewaySelector,
@@ -1089,11 +1092,9 @@ function WithdrawModalCore({
     return (
         <Modal
             title={counterpart.translate("modal.withdraw.header")}
-            visible={visible}
-            closeable={false}
+            visible={!!visible}
             wrapClassName={modalId}
             onCancel={hideModal}
-            id={modalId}
             footer={[
                 <Button
                     key={"submit"}
@@ -1308,7 +1309,9 @@ function WithdrawModalCore({
                                         style={{width: "100%"}}
                                         value={address}
                                         onSearch={onAddressChanged}
-                                        onSelect={onAddressSelected}
+                                        onSelect={value =>
+                                            onAddressSelected(value as string)
+                                        }
                                     >
                                         {address &&
                                         storedAddresses.indexOf(address) ==
