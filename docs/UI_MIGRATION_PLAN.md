@@ -9495,16 +9495,55 @@ only on Enter while `onKeyDown` still fires for every key,
 `Input.Group compact` with an addon, `addonAfter`, `Input.TextArea`) in
 both themes via `build-preview` (temporary demo, reverted after).
 
+**`design-system/Form.tsx` - fourth component (done).** Next by usage
+(35 files). Before writing any code, checked how many of those 35
+actually use antd v3's managed-form API (`Form.create()`/
+`getFieldDecorator`, which injects field state/validation wiring via a
+class decorator) versus using `Form`/`Form.Item` as a pure layout
+primitive (label + content + help text, with `value`/`onChange` wired
+directly by the caller, same as every other field in this app already
+does) - only 2 of 35 (`Transfer/InvoiceRequest.tsx`,
+`Exchange/ScaledOrderTab.tsx`) use the managed-form API. Built for the
+overwhelmingly common case (pure layout) only; a call site still on
+`Form.create()`/`getFieldDecorator` needs its own state management
+rewritten as part of migrating to this component, same as any other
+legacy pattern this project has been retiring elsewhere.
+
+Supports `layout="vertical"` (the default and by far the most common)
+and `layout="horizontal"` (1 real call site, paired with `labelCol`/
+`wrapperCol` - antd's 24-column grid spans, the only unit any real call
+site uses) via a `FormLayoutContext` so `Form.Item` doesn't need
+`layout` repeated on every item, matching how antd's own `Form`/
+`Form.Item` pair works. `validateStatus` (`success`/`warning`/`error`/
+`validating`, all 4 confirmed via real usage) colors the help text.
+Documented scope boundary, not a silent gap: antd's `Form.Item` also
+colors the *wrapped input's own border* via `cloneElement`-injected
+props reaching into arbitrary children - this component doesn't reach
+into `children`, so a call site needing that should derive its own
+`Input` `className`/`style` from the same `validateStatus` value
+instead (both already generically supported on `Input`).
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors;
+a new 4-test suite (`onSubmit` fires, label/children/help render
+together, `colon={false}` omits the colon, no label element renders at
+all when `label` is omitted) - 23/23 suites, 5,412/5,412 tests; `yarn
+build` shows only the 2 known pre-existing `charting_library.esm`
+errors; visually verified both layouts in both themes via
+`build-preview` - vertical with 3 `Form.Item`s (plain, `error`,
+`success`, confirming help-text coloring) and horizontal with
+`labelCol`/`wrapperCol` spans (confirming the label/input split ratio)
+- temporary demo, reverted after.
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Form` (35 call sites), `Select` (22) are the
-next-largest by usage), then begin migrating real call sites file by
-file once enough of the component surface exists to support a full
-screen - not a fixed order, reassessed as each component lands. Each
-future component should get the same treatment as `Modal`/`Tooltip`/
-`Input`: grep every real call site's actual prop usage before deciding
-the new API's scope (never build out the old library's full surface
-speculatively), reuse existing conventions (tokens, `useClickOutside`-
-style hooks) over inventing new ones, a dedicated test file, and a
+component types (`Select` (22 call sites) is next by usage), then begin
+migrating real call sites file by file once enough of the component
+surface exists to support a full screen - not a fixed order, reassessed
+as each component lands. Each future component should get the same
+treatment as `Modal`/`Tooltip`/`Input`/`Form`: grep every real call
+site's actual prop usage before deciding the new API's scope (never
+build out the old library's full surface speculatively), reuse existing
+conventions (tokens, `useClickOutside`-style hooks) over inventing new
+ones, a dedicated test file, and a
 `build-preview` visual
 check in both themes before being considered done.
 
