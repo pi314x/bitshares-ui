@@ -1,0 +1,124 @@
+.wrap {
+    position: relative;
+    width: 100%;
+}
+
+.scroller {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+.thSortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.thContent {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sortArrows {
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 0.6;
+    font-size: 9px;
+    color: var(--faint);
+}
+
+.sortArrowActive {
+    color: var(--accent);
+}
+
+.td {
+    padding: 10px 12px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.row:hover .td {
+    background: var(--raised);
+}
+
+.selectionCell {
+    width: 32px;
+    padding: 10px 8px;
+}
+
+.empty {
+    padding: 32px 12px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.footer {
+    padding: 10px 12px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-2);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 12px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.pageButton {
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.pageButton:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.pageIndicator {
+    color: var(--ink-2);
+}
+
+.pageSizeSelect {
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 3px 6px;
+}
+
+.loadingOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    opacity: 0.85;
+    color: var(--muted);
+    font-size: 13px;
+}

@@ -9648,18 +9648,77 @@ verified both severities stacking top-right in both themes via
 `build-preview` (temporary demo with two trigger buttons, reverted
 after).
 
+**`design-system/Table.tsx` - eighth component (done).** Next by usage
+(15 call sites by the original estimate; grepping every real `<Table ...>`
+JSX occurrence - not just the import count - found 23 files actually
+rendering one, this migration's largest component by real API surface so
+far). Nearly every real call site goes through the already-ported
+`Utility/PaginatedList.tsx`/`Utility/CollapsibleTable.tsx` wrappers
+rather than rendering `<Table>` directly, so both wrappers' own prop
+pass-through was grepped too, not just the direct call sites.
+
+Confirmed unused anywhere in the app and deliberately not built:
+`expandedRowRender`/expandable rows, `filters`/`onFilter` (column filter
+dropdowns), `scroll` (horizontal virtual/sticky scrolling), and
+`bordered`/`size`/`showHeader` display toggles. `column.fixed`
+("left"/"right") IS present in one real column set
+(`Blockchain/Asset.tsx`) but is accepted as a typed no-op: antd's
+sticky-fixed-column behavior only activates together with a
+`scroll={{x: ...}}` prop on `Table` itself, which no real call site ever
+sets, so `fixed` was already visually inert under antd too - nothing
+this port needs to reproduce.
+
+Two defaults were verified against antd's own source rather than assumed:
+reading rc-table's `TableCell.js` confirmed a column's cell value is the
+entire row record (not `undefined`) when `dataIndex` is omitted - several
+real columns rely on exactly this (an action column's `render: (item) =>
+...` expecting the full row) - and antd's actual default `rowKey` is
+`"key"` (i.e. `record.key`), not a row index; every real call site that
+combines `rowSelection` with an un-set `rowKey` prop relies on this,
+giving each row object an explicit `key` field rather than passing
+`rowKey` explicitly.
+
+Supports: `columns` (`title`/`dataIndex`/`render`/`sorter`/`align`/
+`width`/`defaultSortOrder`/a controlled `sortOrder` - the latter for the
+one real call site, `PredictionMarketDetailsTable.tsx` via
+`PaginatedList`, that recomputes it from external state every render),
+client-side pagination (`pageSize`/`defaultPageSize`/`total`/
+`hideOnSinglePage`/`showSizeChanger`/`pageSizeOptions`/`showTotal`, or
+`pagination={false}`), `rowSelection` (`type` checkbox/radio,
+`selectedRowKeys`/`onChange`), `rowClassName`, `locale.emptyText`,
+`footer`, `loading`, `onRow`, `onHeaderRow`, and an `onChange` fired with
+antd's own `(pagination, filters, sorter)` signature on every sort/page
+change - matching the one real call site reading it
+(`AccountPortfolioList.tsx`'s `toggleSortOrder`, wired through
+`PaginatedList`'s `onChange` pass-through).
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (8
+expected `any`-type warnings, the generic `T = any` row-record type
+threaded through sorter/render/selection callbacks); a new 7-test suite
+(renders header/rows, `locale.emptyText` on an empty `dataSource`, a
+sortable header cycles ascend/descend/none and calls `onChange` with the
+antd-shaped sorter info, client-side pagination slices `dataSource` and
+the prev/next buttons navigate, controlled `rowSelection` fires `onChange`
+with the selected keys and rows, `onRow`'s handlers attach to each
+rendered row) - 27/27 suites, 5,434/5,434 tests; `yarn build` shows only
+the 2 known pre-existing `charting_library.esm` errors; visually verified
+the header/sort-arrow/pagination/checkbox-selection chrome in both themes
+via `build-preview` (temporary demo with a sortable, paginated, selectable
+table, reverted after) - clicking the sortable header re-ordered rows and
+highlighted the active arrow exactly as the unit tests assert.
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Table` (15 call sites) is next by usage), then begin
-migrating real call sites file by file once enough of the component
-surface exists to support a full screen - not a fixed order, reassessed
-as each component lands. Each future component should get the same
-treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`: grep every real call site's actual prop usage before
-deciding the new API's scope (never build out the old library's full
-surface speculatively), reuse existing conventions (tokens,
-`useClickOutside`-style hooks) over inventing new ones, a dedicated test
-file, and a `build-preview` visual check in both themes before being
-considered done.
+component types (`Row`/`Col` (11 call sites each - antd's flexbox grid
+primitives) are next by usage), then begin migrating real call sites file
+by file once enough of the component surface exists to support a full
+screen - not a fixed order, reassessed as each component lands. Each
+future component should get the same treatment as `Modal`/`Tooltip`/
+`Input`/`Form`/`Select`/`Icon`/`Notification`/`Table`: grep every real
+call site's actual prop usage before deciding the new API's scope (never
+build out the old library's full surface speculatively), reuse existing
+conventions (tokens, `useClickOutside`-style hooks) over inventing new
+ones, a dedicated test file, and a `build-preview` visual check in both
+themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
