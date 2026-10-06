@@ -8386,18 +8386,34 @@ source above has zero outbound cross-store action dependencies.
     site. See the batch 7 write-up below for the
     `BrainkeyActions.setBrainkey`-broadcasts-to-all-instances nuance
     this required.
-  - `PrivateKeyStore` (unlocks `CachedPropertyStore` once done),
-    `AccountRefsStore` (depends on `PrivateKeyActions.addKey` - migrate
-    together with `PrivateKeyStore`, same connected-pair precedent as
-    Tier 1b), `WalletManagerStore` (depends on `PrivateKeyActions
-    .loadDbData` - same batch) - not yet started; this connected
-    cluster (`CachedPropertyStore`+`PrivateKeyStore`+`AccountRefsStore`
-    +`WalletManagerStore`) is the next batch.
+  - `CachedPropertyStore`, `PrivateKeyStore`, `AccountRefsStore`
+    (**done**, batch 8 - see below) - migrated as one connected cluster
+    (`PrivateKeyStore`→`CachedPropertyActions.set`,
+    `AccountRefsStore`↔`PrivateKeyActions.addKey`). The single most
+    security-sensitive batch so far: `PrivateKeyStore.keys` holds
+    `PrivateKeyTcomb` records with an AES-encrypted `encrypted_key`
+    blob, and `decodeMemo` performs real transfer-memo decryption.
+  - **Scope correction found while scoping this batch:**
+    `WalletManagerStore` turned out to be entangled with `AccountStore`
+    too (`WalletActions.setWallet`, its own action, is bound by BOTH
+    `WalletManagerStore` and `AccountStore` - a cross-binding this
+    entry's earlier version missed). `WalletManagerStore` (and its
+    `WalletActions.js`) is deferred until `AccountStore` is ready, same
+    "don't reach into a not-yet-scrutinized tier/store prematurely"
+    principle as the `SettingsStore`/`WalletUnlockStore` deferral.
+    `WalletManagerStore`'s existing (unmigrated) calls into
+    `CachedPropertyStore.reset()`/`PrivateKeyActions.loadDbData()`/
+    `AccountRefsStore.loadDbData()` are unaffected either way - it calls
+    their public methods directly, not via `bindListeners`, so it works
+    identically regardless of which backend those three now use
+    internally.
   - `WalletUnlockStore` - deferred until `SettingsStore`/`IntlStore`'s
     turn (see Tier 1c above - `WalletUnlockStore` also binds
     `SettingsActions.changeSetting`, making this actually a 3-way
     cluster: `IntlStore`↔`SettingsStore`↔`WalletUnlockStore`, plus
-    `AccountStore` as a 4th member once its other blockers clear).
+    `AccountStore`/`WalletManagerStore` as further members once their
+    other blockers clear - likely all 5 of these end up as one large
+    final non-`WalletDb.ts` batch).
   - `WalletDb.ts` itself, last and most carefully. Note from scoping
     this tier: `WalletDb.ts` is NOT currently subscribed to via
     `.listen()`/`.unlisten()` by any call site (grep-confirmed) - it's
@@ -8750,6 +8766,65 @@ call sites (`Login/WalletLogin.tsx`, `Login/DecryptBackup.tsx`,
 `Wallet/Brainkey.tsx`, `WalletDb.ts`) empty; 19/19 suites / 5,392 tests
 passing, including `backupCrypto-test.js`'s fixed-vector/round-trip
 characterization suite specifically re-checked green; `yarn build`
+shows only the 2 known pre-existing `charting_library.esm` errors.
+
+**Batch 8 (`CachedPropertyStore`, `PrivateKeyStore`, `AccountRefsStore`
+- one connected cluster):** the most security-sensitive batch so far.
+
+- `CachedPropertyStore`: a generic IndexedDB-backed key/value cache, no
+  key material. `onSet` keeps a `pendingProps` instance-field mirror,
+  matching the original's own synchronous-internal-then-async-dispatch
+  timing (`this.state.props = props` happened before the async
+  `iDB.setCachedProperty(...)` write resolved; only the listener
+  -visible `setState` waited on it) - without it, two rapid `onSet`
+  calls for the same name/value would both hit IndexedDB instead of
+  the second being short-circuited by the guard.
+- `PrivateKeyStore`: `keys` holds `PrivateKeyTcomb` records
+  (`{pubkey, label, encrypted_key, ...}`) - `encrypted_key` is an
+  AES-encrypted blob, not a plaintext private key; decrypting it
+  requires `WalletDb.decryptTcomb_PrivateKey` and the unlocked wallet
+  password. Same exposure via `getState()` the original Alt store
+  already had, not new. `decodeMemo` (real `Aes.decrypt_with_checksum`
+  transfer-memo decryption) ported byte-for-byte. `this
+  .pending_operation_count` kept as a plain instance field, separate
+  from the reactive `state.pending_operation_count` the slice holds -
+  replicating a genuine original quirk where `onLoadDbData`'s
+  `_getInitialState()` reset only touched the reactive mirror, not the
+  real counter `pendingOperation()`/`pendingOperationDone()` operate
+  on. One dead variable dropped (`decodeMemo`'s `lockedWallet` - assigned
+  in the locked-wallet catch branch but never read anywhere in the
+  original either; TypeScript's `no-unused-vars` just surfaces what
+  plain JS didn't enforce - no observable behavior change).
+- `AccountRefsStore`: public key strings and on-chain account id
+  lookups only, no key material. `no_account_refs`/
+  `chainstore_account_ids_by_key`/`chainstore_account_ids_by_account`
+  stay as plain instance fields, never entering Redux state - same as
+  the original's own class fields.
+- **Cross-binding** (`PrivateKeyActions.addKey`, bound by both
+  `PrivateKeyStore` and `AccountRefsStore` under real Alt): the migrated
+  `PrivateKeyActions.ts` calls both stores' handlers directly inside one
+  `new Promise(resolve => {...})`, same cross-notify pattern as the
+  `TransactionConfirmStore`/`BalanceClaimActiveStore` batch. `addKey`
+  still returns a real Promise resolving to `{result, id}` -
+  `WalletDb.ts`'s `saveKey()` (not migrated yet, still real Alt) awaits
+  this exact shape via `.then((ret) => ret.result)`, verified by
+  reading that call site directly, not just grepping for its existence.
+
+**Batch 8 verification:** `npx tsc --noEmit -p .` 0 errors (after fixing
+two real type errors - a missing explicit 3rd argument to
+`idb_helper.add(...)`, matching an existing arity-satisfaction precedent
+from batch 4's `allowedGateway(undefined)` fix, and an `any`-cast on
+`new Immutable.Map()`); `eslint` on all 9 new/edited files 0 errors
+(after fixing one real `no-unused-vars` error, the `lockedWallet` drop
+above); `git diff --stat`/`git status --short` on every known call site
+across the whole cluster (`WalletDb.ts`, `WalletManagerStore.js`,
+`WalletActions.js`, `AccountStore.js`, `Blockchain/MemoText.tsx`,
+`Blockchain/Transaction.tsx`, `PrivateKeyView.tsx`,
+`Forms/PubKeyInput.tsx`, `Account/AccountPermissionsList.tsx`,
+`Wallet/BalanceClaim{Active,ByAsset,Selector}.tsx`,
+`Wallet/ImportKeys.tsx`, `routerTransition.js`, `dl_cli_index.js`)
+empty; 19/19 suites / 5,392 tests passing, including
+`walletDbCrypto-test.js` specifically re-checked green; `yarn build`
 shows only the 2 known pre-existing `charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to

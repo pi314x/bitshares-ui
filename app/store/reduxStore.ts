@@ -36,6 +36,9 @@ import importKeysReducer from "./slices/importKeysSlice";
 import addressIndexReducer from "./slices/addressIndexSlice";
 import backupReducer from "./slices/backupSlice";
 import brainkeyReducer from "./slices/brainkeySlice";
+import cachedPropertyReducer from "./slices/cachedPropertySlice";
+import privateKeyReducer from "./slices/privateKeySlice";
+import accountRefsReducer from "./slices/accountRefsSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -50,7 +53,10 @@ const rootReducer = combineReducers({
     importKeys: importKeysReducer,
     addressIndex: addressIndexReducer,
     backup: backupReducer,
-    brainkey: brainkeyReducer
+    brainkey: brainkeyReducer,
+    cachedProperty: cachedPropertyReducer,
+    privateKey: privateKeyReducer,
+    accountRefs: accountRefsReducer
 });
 
 export const reduxStore = configureStore({
