@@ -59,7 +59,7 @@ import classNames from "classnames";
 import {FormattedDate} from "react-intl";
 import Inspector from "react-json-inspector";
 import utils from "common/utils";
-import {Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import FormattedPrice from "../Utility/FormattedPrice";
@@ -71,7 +71,7 @@ import ProposedOperation from "./ProposedOperation";
 import {ChainTypes} from "bitsharesjs";
 import ReactTooltip from "react-tooltip";
 import moment from "moment";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import JSONModal from "components/Modal/JSONModal";
 import asset_utils from "../../lib/common/asset_utils";
 

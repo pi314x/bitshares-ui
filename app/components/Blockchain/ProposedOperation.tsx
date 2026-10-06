@@ -70,7 +70,7 @@ import LinkToAssetById from "../Utility/LinkToAssetById";
 import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
 import opComponents from "./operations";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
-import {Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Icon as AntIcon} from "../../design-system/Icon";
 
 import "./operations.scss";
 

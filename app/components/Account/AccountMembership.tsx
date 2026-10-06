@@ -37,7 +37,7 @@ import accountUtils from "common/account_utils";
 import {Tabs, Tab} from "../Utility/Tabs";
 import {getWalletName} from "branding";
 import {getWalletURL} from "../../branding";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import AccountReferralsTable from "./AccountReferralsTable";
 import {settingsAPIs} from "../../api/apiConfig";
 
@@ -191,7 +191,7 @@ function AccountMembership({
                                                             />
                                                             <br />
                                                             <Button
-                                                                type="primary"
+                                                                variant="accent"
                                                                 onClick={upgradeAccount.bind(
                                                                     null,
                                                                     account.id,
@@ -205,7 +205,7 @@ function AccountMembership({
                                                             member_status ===
                                                                 "annual" ? null : (
                                                                 <Button
-                                                                    type="primary"
+                                                                    variant="accent"
                                                                     onClick={upgradeAccount.bind(
                                                                         null,
                                                                         account.id,

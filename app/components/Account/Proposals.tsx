@@ -41,7 +41,7 @@ import permission_utils from "common/permission_utils";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import AccountStore from "stores/AccountStore";
 import accountUtils from "common/account_utils";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import JSONModal from "components/Modal/JSONModal";
 
 const {operations} = (grapheneChainTypes as any);

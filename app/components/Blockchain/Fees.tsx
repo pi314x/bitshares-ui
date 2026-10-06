@@ -46,7 +46,7 @@ import HelpContent from "../Utility/HelpContent";
 import FormattedAsset from "../Utility/FormattedAsset";
 import {EquivalentValueComponent} from "../Utility/EquivalentValueComponent";
 import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
-import {Card} from "bitshares-ui-style-guide";
+import {Card} from "../../design-system/Card";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const {operations} = grapheneChainTypes as any;

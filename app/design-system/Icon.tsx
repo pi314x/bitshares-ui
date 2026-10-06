@@ -11,12 +11,22 @@ import styles from "./Icon.module.scss";
 // antd's built-in icon-font glyph set (`type="search"`,
 // `type="question-circle"`, etc. - generic UI icons, not BitShares'
 // own). Grepped every real `type=`/`theme=` value in the app rather
-// than reimplementing antd's hundreds-strong icon font: exactly 18
-// distinct glyphs are ever used, 2 of them (`question-circle`,
-// `info-circle`) with `theme="filled"` (both are plain outline
-// elsewhere, so only those two got a filled variant drawn - every
-// other glyph has outline only, since no real call site asks for a
-// filled version of it).
+// than reimplementing antd's hundreds-strong icon font: 22 distinct
+// glyphs are used in total, 3 of them (`question-circle`, `info-circle`,
+// `star`) with `theme="filled"` (all three are plain outline elsewhere,
+// so only those three got a filled variant drawn - every other glyph
+// has outline only, since no real call site asks for a filled version of
+// it).
+//
+// `star`/`user`/`plus-circle`/`file-search` were added in a second pass,
+// during the call-site migration phase rather than this component's
+// original build: the initial grep covered every `<Icon type=...>`
+// call site importing this component directly, but missed these four,
+// used via a local `Icon as AntIcon` import alias at their call sites
+// (`Account/AccountSelector.tsx`, `Account/CreditOffer/{Create,Edit}Modal.tsx`,
+// `Blockchain/{ProposedOperation,Transaction}.tsx`) - a second,
+// alias-inclusive grep (`type="[a-z-]*"` near the word "icon", not just
+// `<Icon`/`<AntIcon` literally) is what actually surfaced them.
 //
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
@@ -41,7 +51,11 @@ export type IconType =
     | "caret-up"
     | "caret-down"
     | "camera"
-    | "bar-chart";
+    | "bar-chart"
+    | "star"
+    | "user"
+    | "plus-circle"
+    | "file-search";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -116,7 +130,30 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
             <circle cx="12" cy="13" r="3.5" />
         </>
     ),
-    "bar-chart": <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+    "bar-chart": <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+    star: (
+        <path d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.6-4.1 6.1-.6z" />
+    ),
+    user: (
+        <>
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+        </>
+    ),
+    "plus-circle": (
+        <>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v8M8 12h8" />
+        </>
+    ),
+    "file-search": (
+        <>
+            <path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8l-4-5z" />
+            <path d="M14 3v5h4" />
+            <circle cx="10.5" cy="14.5" r="2.25" />
+            <path d="M12.4 16.4L14 18" />
+        </>
+    )
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {
@@ -136,6 +173,13 @@ const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {
             <path d="M12 11v6" stroke="var(--surface)" />
             <circle cx="12" cy="7.5" r="0.1" fill="var(--surface)" />
         </>
+    ),
+    star: (
+        <path
+            d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.6-4.1 6.1-.6z"
+            fill="currentColor"
+            stroke="none"
+        />
     )
 };
 

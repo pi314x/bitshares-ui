@@ -40,6 +40,20 @@ describe("design-system/Notification", () => {
         });
     });
 
+    it("shows a warning message", () => {
+        act(() => {
+            Notification.warning({message: "Heads up", duration: 0});
+        });
+        expect(document.body.textContent).toContain("Heads up");
+
+        const closeButton = document.body.querySelector(
+            "button[aria-label='Close']"
+        ) as HTMLButtonElement;
+        act(() => {
+            fireEvent.click(closeButton);
+        });
+    });
+
     it("auto-dismisses after the given duration", () => {
         jest.useFakeTimers();
         act(() => {

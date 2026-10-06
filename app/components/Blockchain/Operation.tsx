@@ -86,7 +86,7 @@ import LinkToAccountById from "../Utility/LinkToAccountById";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
 import SettingsStore from "stores/SettingsStore";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 

@@ -15,7 +15,7 @@ import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import VotingAccountsList from "../VotingAccountsList";
 import cnames from "classnames";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../../design-system/Button";
 import JoinWitnessesModal from "../../Modal/JoinWitnessesModal";
 import SearchInput from "../../Utility/SearchInput";
 

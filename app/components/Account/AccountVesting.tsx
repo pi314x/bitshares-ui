@@ -23,7 +23,7 @@ import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";
 import WalletActions from "actions/WalletActions";
 import {Apis} from "bitsharesjs-ws";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import PaginatedList from "components/Utility/PaginatedList";
 import SearchInput from "../Utility/SearchInput";
 import counterpart from "counterpart";
@@ -358,7 +358,7 @@ function AccountVesting({account}: AccountVestingProps) {
                 align: "center",
                 render: (item: any) => {
                     return item.canClaim ? (
-                        <Button onClick={() => onClaim(item)} type="secondary">
+                        <Button onClick={() => onClaim(item)}>
                             <Translate content="account.member.claim" />
                         </Button>
                     ) : null;

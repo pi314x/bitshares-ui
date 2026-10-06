@@ -13,12 +13,19 @@ import styles from "./Notification.module.scss";
 // far).
 //
 // Grepped every real call site's actual usage before designing this:
-// `Notification.success`/`.error` are the only two severities ever called
-// (no `.warning`/`.info`), every call site passes only `message` (no
-// `description`, `duration` override, `placement`, or `onClick` anywhere
-// in the app), and the one `Notification.config({...})` call
-// (`App.jsx`, setting a default `duration` and `top` offset so toasts
-// clear the topbar) is kept as the only other supported entry point.
+// `Notification.success`/`.error` are the two severities called directly
+// as `Notification.error(...)`; `.warning` (no `.info`) is also real but
+// was missed on the first pass here, since its two call sites
+// (`Exchange/Exchange.tsx`, `Account/AccountPermissions.tsx`) write
+// `(Notification as any).warning(...)` - the `as any` cast hid the call
+// from the original grep for `Notification\.(success|error|...)`, caught
+// only once the call-site migration phase tried to compile those two
+// files against this module's real (cast-free) exported methods. Every
+// call site passes only `message` (no `description`, `duration`
+// override, `placement`, or `onClick` anywhere in the app), and the one
+// `Notification.config({...})` call (`App.jsx`, setting a default
+// `duration` and `top` offset so toasts clear the topbar) is kept as the
+// only other supported entry point.
 //
 // Architecturally different from this design system's other components:
 // since real call sites invoke this as a plain function from outside
@@ -46,7 +53,7 @@ export interface NotificationConfigArgs {
     top?: number;
 }
 
-type NotificationKind = "success" | "error";
+type NotificationKind = "success" | "error" | "warning";
 
 interface NotificationEntry {
     id: number;
@@ -156,6 +163,9 @@ export const Notification = {
     },
     error(args: NotificationArgs): void {
         push("error", args);
+    },
+    warning(args: NotificationArgs): void {
+        push("warning", args);
     },
     config(args: NotificationConfigArgs): void {
         if (args.duration !== undefined) config.duration = args.duration;

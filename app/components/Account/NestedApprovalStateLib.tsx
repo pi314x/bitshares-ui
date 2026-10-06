@@ -7,7 +7,7 @@ import Icon from "../Icon/Icon";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {Tooltip as AntTooltip} from "bitshares-ui-style-guide";
+import {Tooltip as AntTooltip} from "../../design-system/Tooltip";
 
 interface TooltipProps {
     className?: string;

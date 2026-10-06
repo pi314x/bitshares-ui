@@ -16,7 +16,7 @@ import Translate from "react-translate-component";
 import JoinCommitteeModal from "../../Modal/JoinCommitteeModal";
 import VotingAccountsList from "../VotingAccountsList";
 import cnames from "classnames";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../../design-system/Button";
 import SearchInput from "../../Utility/SearchInput";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;

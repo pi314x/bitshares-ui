@@ -22,7 +22,7 @@ import ApplicationApi from "api/ApplicationApi";
 import AccountStore from "stores/AccountStore";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 interface CreateWorkerState {

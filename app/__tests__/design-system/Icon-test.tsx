@@ -46,4 +46,27 @@ describe("design-system/Icon", () => {
         expect(svg?.getAttribute("class")).toContain("custom");
         expect(svg?.getAttribute("data-testid")).toBe("close-icon");
     });
+
+    it("renders the four glyphs added during the call-site migration pass", () => {
+        (["star", "user", "plus-circle", "file-search"] as const).forEach(
+            type => {
+                const {container} = render(<Icon type={type} />);
+                expect(container.querySelector("svg")).toBeTruthy();
+            }
+        );
+    });
+
+    it("renders star's filled variant distinctly from its outline", () => {
+        const {container: outline} = render(<Icon type="star" />);
+        expect(
+            outline.querySelector("path")?.getAttribute("fill")
+        ).not.toBe("currentColor");
+
+        const {container: filled} = render(
+            <Icon type="star" theme="filled" />
+        );
+        expect(filled.querySelector("path")?.getAttribute("fill")).toBe(
+            "currentColor"
+        );
+    });
 });

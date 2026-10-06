@@ -36,6 +36,10 @@
     color: var(--down);
 }
 
+.warning .icon {
+    color: var(--warn);
+}
+
 .message {
     flex: 1;
     min-width: 0;
