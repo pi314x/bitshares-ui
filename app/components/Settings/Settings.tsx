@@ -41,7 +41,8 @@ import BackupSettings from "./BackupSettings";
 import AccessSettings from "./AccessSettings";
 import {set} from "lodash-es";
 import {getAllowedLogins, getFaucet} from "../../branding";
-import {Input, Form} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
 import "./Settings.scss";
 
 function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
@@ -366,7 +367,7 @@ export default function Settings(props: SettingsProps) {
                     onChange={
                         getFaucet().editable
                             ? (e: any) => onChangeSetting("faucet_address", e)
-                            : null
+                            : undefined
                     }
                 />
             );

@@ -17,7 +17,10 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
-import {Modal, Button, Form, Input} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 
 const ws = "ws://";
 const wss = "wss://";
@@ -103,7 +106,7 @@ export default function WebsocketAddModal({
 
     function renderAddModal() {
         let help = "";
-        let validateStatus = "";
+        let validateStatus: "" | "error" = "";
 
         if (existsError) {
             validateStatus = "error";
@@ -118,15 +121,12 @@ export default function WebsocketAddModal({
         return (
             <Modal
                 visible={isAddNodeModalVisible}
-                id="ws_modal_add"
                 title={counterpart.translate("settings.add_ws")}
-                overlay={true}
                 onCancel={onAddNodeClose}
-                overlayClose={false}
                 footer={[
                     <Button
                         key="confirm"
-                        type="primary"
+                        variant="accent"
                         disabled={!!addError || !!existsError}
                         onClick={onAddSubmit}
                     >
@@ -165,7 +165,7 @@ export default function WebsocketAddModal({
             <Button key="submit" onClick={onRemoveSubmit}>
                 {counterpart.translate("transfer.confirm")}
             </Button>,
-            <Button key="cancel" type="primary" onClick={onRemoveNodeClose}>
+            <Button key="cancel" variant="accent" onClick={onRemoveNodeClose}>
                 {counterpart.translate("modal.cancel")}
             </Button>
         ];

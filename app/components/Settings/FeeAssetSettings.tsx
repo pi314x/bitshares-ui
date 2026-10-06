@@ -30,7 +30,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import SettingsStore from "../../stores/SettingsStore";
 import {ChainStore} from "bitsharesjs";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import Translate from "react-translate-component";
 import AssetName from "../Utility/AssetName";
 import SetDefaultFeeAssetModal from "../Modal/SetDefaultFeeAssetModal";
@@ -68,7 +68,6 @@ export default function FeeAssetSettings() {
             <Button
                 style={{margin: "15px"}}
                 key="open_change_fee_asset"
-                type="secondary"
                 onClick={() => setShowModal(true)}
             >
                 {counterpart.translate("settings.change_default_fee_asset")}

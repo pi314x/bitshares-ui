@@ -10612,6 +10612,30 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `description`/`icon`), `yarn build` showing only the 2 known
 pre-existing `charting_library.esm` errors.
 
+**Twelfth migration batch** (`Settings/`, 6 of its 11 files -
+`BackupFavorites.tsx`/`BackupSettings.tsx`/`RestoreFavorites.tsx`/
+`RestoreSettings.tsx`/`WalletSettings.tsx` stay deferred with the
+wallet-sensitive batch, same as the second batch's reasoning):
+`AccessSettings.tsx` (`Switch`/`Button`), `ResetSettings.tsx`/
+`FeeAssetSettings.tsx` (`Button` only), `WebsocketAddModal.tsx`
+(`Modal`/`Button`/`Form`/`Input`, dropping the confirmed-dead
+`id`/`overlay`/`overlayClose` Modal props), `Settings.tsx` (`Input`/
+`Form`), and `SettingsEntry.tsx` (`Checkbox`/`Select`/`Input`/`Form`/
+`Button`). No new design-system gaps this batch.
+
+Call-site fixes, no component change needed: `Settings.tsx`'s
+`onChange={editable ? handler : null}` → `: undefined` (same native-
+Input-typing pattern as earlier batches); `WebsocketAddModal.tsx`'s
+`let validateStatus = ""` → explicitly typed `"" | "error"`, since an
+unannotated `let` initialized to `""` widens to plain `string`, which
+doesn't satisfy `Form.Item`'s `ValidateStatus` union.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,504/5,504 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

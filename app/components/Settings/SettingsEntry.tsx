@@ -37,7 +37,11 @@ import AssetName from "../Utility/AssetName";
 import Notify from "notifyjs";
 import FeeAssetSettings from "./FeeAssetSettings";
 
-import {Checkbox, Select, Input, Form, Button} from "bitshares-ui-style-guide";
+import {Checkbox} from "../../design-system/Checkbox";
+import {Select} from "../../design-system/Select";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
+import {Button} from "../../design-system/Button";
 import GatewaySelectorModal from "../Gateways/GatewaySelectorModal";
 
 const FormItem = Form.Item;

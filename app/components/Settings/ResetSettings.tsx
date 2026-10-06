@@ -6,7 +6,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import willTransitionTo from "../../routerTransition";
 
 export default function ResetSettings() {
@@ -50,7 +50,7 @@ export default function ResetSettings() {
             </header>
 
             <Button
-                type="primary"
+                variant="accent"
                 style={{height: 60, width: "100%", marginTop: "30px"}}
                 onClick={() => {
                     SettingsActions.clearSettings().then(() => {

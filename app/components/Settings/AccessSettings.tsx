@@ -50,7 +50,8 @@ import willTransitionTo, {routerTransitioner} from "../../routerTransition";
 import cnames from "classnames";
 import Icon from "../Icon/Icon";
 import LoadingButton from "../Utility/LoadingButton";
-import {Switch, Button} from "bitshares-ui-style-guide";
+import {Switch} from "../../design-system/Switch";
+import {Button} from "../../design-system/Button";
 import NodeSelector from "../Utility/NodeSelector";
 import counterpart from "counterpart";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -452,7 +453,7 @@ export default function AccessSettings({
                     <div
                         style={{paddingLeft: "1rem", paddingBottom: "1rem"}}
                     >
-                        <Button type="primary" onClick={showAddNodeModal}>
+                        <Button variant="accent" onClick={showAddNodeModal}>
                             <Translate
                                 id="add"
                                 component="span"
