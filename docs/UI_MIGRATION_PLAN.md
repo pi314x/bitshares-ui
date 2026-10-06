@@ -9435,14 +9435,52 @@ variants), then reverted the demo (`git checkout --` on
 not a permanent fixture - the lasting deliverable is `Modal.tsx`/
 `Modal.module.scss`/its test, not a demo call site.
 
+**`design-system/Tooltip.tsx` - second component (done).** Next by
+usage after `Modal` (50 call sites). Real call sites use exactly 3 props
+(`title`, `placement`, `mouseEnterDelay`) - confirmed by grepping every
+real `<Tooltip>` usage rather than building out antd v3's full API
+speculatively; `placement` only ever appears as `top`/`bottom`/`left`/
+`right`/`topLeft`/`topRight` (6 values, all supported), and
+`mouseEnterDelay` is always `0.5` everywhere it's passed at all (default
+kept at antd's own `0.1` to match the common case where it's omitted).
+
+Wraps `children` in its own `<span>` (hover/focus listeners attached to
+the wrapper, not cloned onto the child via `React.cloneElement`) -
+simpler and avoids ref-forwarding edge cases for arbitrary children (a
+`Button`, an icon, plain text), the same tradeoff `AccountSwitcher`'s
+trigger wrapper already made. Positioned with plain CSS (`position:
+absolute` relative to the wrapper), not a portal - this project has no
+viewport-aware positioning library (Floating UI/Popper) as a
+dependency, and adding one for a tooltip wasn't judged worth it; same
+documented limitation any plain-CSS tooltip has (can clip/mis-position
+near a scrolling or `overflow: hidden` ancestor), flagged in the
+component's header rather than solved speculatively. Shows on both
+`mouseEnter` (after the configurable delay, cancelled on `mouseLeave`
+before it fires) and `focus` (hides on `blur`) - keyboard-reachable,
+not just hover-only.
+
+**Verification:** same bar as `Modal` - `npx tsc --noEmit -p .` 0
+errors; `eslint` 0 errors; a new 4-test suite (no bubble before hover,
+bubble appears after the delay on mouse enter, a `mouseLeave` before the
+delay cancels the pending show, focus/blur shows/hides immediately for
+keyboard users - using `jest.useFakeTimers()` to control the delay
+deterministically) - 21/21 suites, 5,403/5,403 tests; `yarn build` shows
+only the 2 known pre-existing `charting_library.esm` errors; visually
+verified all 4 directional placements in both themes via the same
+`build-preview` + Playwright-hover + screenshot process as `Modal`
+(temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Tooltip` (50 call sites), `Input` (38), `Form` (35),
-`Select` (22) are the next-largest by usage), then begin migrating real
-call sites file by file once enough of the component surface exists to
-support a full screen - not a fixed order, reassessed as each component
-lands. Each future component should get the same treatment as `Modal`:
-reuse existing conventions (tokens, `useClickOutside`-style hooks) over
-inventing new ones, a dedicated test file, and a `build-preview` visual
+component types (`Input` (38 call sites), `Form` (35), `Select` (22) are
+the next-largest by usage), then begin migrating real call sites file by
+file once enough of the component surface exists to support a full
+screen - not a fixed order, reassessed as each component lands. Each
+future component should get the same treatment as `Modal`/`Tooltip`:
+grep every real call site's actual prop usage before deciding the new
+API's scope (never build out the old library's full surface
+speculatively), reuse existing conventions (tokens, `useClickOutside`-
+style hooks) over inventing new ones, a dedicated test file, and a
+`build-preview` visual
 check in both themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
