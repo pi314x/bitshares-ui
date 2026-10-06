@@ -9470,14 +9470,39 @@ verified all 4 directional placements in both themes via the same
 `build-preview` + Playwright-hover + screenshot process as `Modal`
 (temporary demo, reverted after).
 
+**`design-system/Input.tsx` - third component (done).** Next by usage
+(38 call sites). Real usage is almost entirely plain `<input>` props
+(covered by extending `React.InputHTMLAttributes`) plus 3 antd v3
+extras actually used anywhere in the app: `addonAfter` (an element
+inside the bordered box, after the input - e.g. a currency suffix),
+`suffix` (an element inside the input's own padding - 2 call sites),
+and `onPressEnter` (fires only on the Enter key, alongside, not instead
+of, a passed `onKeyDown`). Exports `Input.TextArea` (a native
+`<textarea>` wrapper, same `onPressEnter` convenience) and
+`Input.Group` (a flex wrapper; `compact` - the only mode any real call
+site uses - removes the gap and inner border-radii between adjacent
+children so a run of inputs/addons reads as one joined box) as the two
+real compound-component usages - grep-confirmed no `Input.Password`/
+`Input.Search` anywhere in the app, so neither was built.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors;
+a new 5-test suite (value/`onChange` forwarding, `onPressEnter` fires
+only on Enter while `onKeyDown` still fires for every key,
+`addonAfter`/`suffix` render, `Input.TextArea` renders a real
+`<textarea>`, `Input.Group` renders its children) - 22/22 suites,
+5,408/5,408 tests; `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors; visually verified (plain, disabled,
+`Input.Group compact` with an addon, `addonAfter`, `Input.TextArea`) in
+both themes via `build-preview` (temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Input` (38 call sites), `Form` (35), `Select` (22) are
-the next-largest by usage), then begin migrating real call sites file by
+component types (`Form` (35 call sites), `Select` (22) are the
+next-largest by usage), then begin migrating real call sites file by
 file once enough of the component surface exists to support a full
 screen - not a fixed order, reassessed as each component lands. Each
-future component should get the same treatment as `Modal`/`Tooltip`:
-grep every real call site's actual prop usage before deciding the new
-API's scope (never build out the old library's full surface
+future component should get the same treatment as `Modal`/`Tooltip`/
+`Input`: grep every real call site's actual prop usage before deciding
+the new API's scope (never build out the old library's full surface
 speculatively), reuse existing conventions (tokens, `useClickOutside`-
 style hooks) over inventing new ones, a dedicated test file, and a
 `build-preview` visual
