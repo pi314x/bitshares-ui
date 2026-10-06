@@ -402,11 +402,7 @@ module.exports = function(env) {
                 },
                 {
                     test: /\.js$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(root_dir, "node_modules/alt-container"),
-                        path.join(root_dir, "node_modules/alt-react")
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",

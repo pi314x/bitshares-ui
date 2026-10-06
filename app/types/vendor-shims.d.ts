@@ -25,7 +25,6 @@ declare module "common/base58";
 declare module "qrcode.react";
 declare module "react-copy-to-clipboard";
 declare module "react-clipboard.js";
-declare module "alt-react";
 declare module "react-transition-group";
 declare module "react-popover";
 declare module "js-sha256";

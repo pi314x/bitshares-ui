@@ -1,3 +1,18 @@
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): the real `alt`/`alt-react`
+// packages are being removed now that every Alt store has a Redux-
+// backed facade (`getState()`/`listen()`/`unlisten()`). This file used
+// to be wrapped with alt-react's `connect(AppInit, {listenTo, getProps})`
+// (subscribing to `[IntlStore, WalletManagerStore, SettingsStore]` and
+// injecting `locale`/`walletMode`/`theme`/`apiServer` as props) plus
+// `supplyFluxContext(alt)(AppInit)` (providing Alt's React context) -
+// grep-confirmed nothing downstream ever read `this.context.flux`/
+// `props.flux`, so `supplyFluxContext` was dropped outright. `connect`'s
+// subscribe/derive-props behavior is reproduced directly in this class
+// (componentDidMount/componentWillUnmount `listen`/`unlisten` the same
+// 3 stores, `forceUpdate` on change; `render()` computes the same 4
+// derived values inline instead of receiving them as injected props) -
+// `<AppInit />` is rendered with no explicit props (see `index.js`), so
+// there is no caller-prop-precedence case to preserve.
 import {hot} from "react-hot-loader";
 import React from "react";
 import {Provider} from "react-redux";
@@ -8,8 +23,6 @@ import WalletManagerStore from "stores/WalletManagerStore";
 import SettingsStore from "stores/SettingsStore";
 import IntlStore from "stores/IntlStore";
 import intlData from "./components/Utility/intlData";
-import alt from "alt-instance";
-import {connect, supplyFluxContext} from "alt-react";
 import {IntlProvider} from "react-intl";
 import willTransitionTo from "./routerTransition";
 import {BodyClassName} from "bitshares-ui-style-guide";
@@ -210,10 +223,18 @@ class AppInit extends React.Component {
                     windowsClass;
             }
         }
+
+        this._onStoreChange = () => this.forceUpdate();
+        IntlStore.listen(this._onStoreChange);
+        WalletManagerStore.listen(this._onStoreChange);
+        SettingsStore.listen(this._onStoreChange);
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        IntlStore.unlisten(this._onStoreChange);
+        WalletManagerStore.unlisten(this._onStoreChange);
+        SettingsStore.unlisten(this._onStoreChange);
     }
 
     _statusCallback(status) {
@@ -226,8 +247,7 @@ class AppInit extends React.Component {
         });
     }
 
-    _renderLoadingScreen() {
-        let server = this.props.apiServer;
+    _renderLoadingScreen(server) {
         if (!!!server) {
             server = "";
         }
@@ -259,8 +279,16 @@ class AppInit extends React.Component {
     }
 
     render() {
-        const {theme} = this.props;
         const {apiConnected, apiError, syncError} = this.state;
+        const locale = IntlStore.getState().currentLocale;
+        const walletMode =
+            !SettingsStore.getState().settings.get("passwordLogin") ||
+            !!WalletManagerStore.getState().current_wallet;
+        const theme = SettingsStore.getState().settings.get("themes");
+        const apiServer = SettingsStore.getState().settings.get(
+            "activeNode",
+            ""
+        );
 
         if (!apiConnected) {
             return (
@@ -272,7 +300,7 @@ class AppInit extends React.Component {
                         <div className="grid-frame vertical">
                             <BodyClassName className={theme}>
                                 {!apiError ? (
-                                    this._renderLoadingScreen()
+                                    this._renderLoadingScreen(apiServer)
                                 ) : syncError ? (
                                     <SyncError />
                                 ) : (
@@ -284,39 +312,22 @@ class AppInit extends React.Component {
                 </div>
             );
         }
-        return <RootIntl {...this.props} {...this.state} />;
+        return (
+            <RootIntl
+                {...this.props}
+                {...this.state}
+                locale={locale}
+                walletMode={walletMode}
+                theme={theme}
+                apiServer={apiServer}
+            />
+        );
     }
 }
 
-AppInit = connect(
-    AppInit,
-    {
-        listenTo() {
-            return [IntlStore, WalletManagerStore, SettingsStore];
-        },
-        getProps() {
-            return {
-                locale: IntlStore.getState().currentLocale,
-                walletMode:
-                    !SettingsStore.getState().settings.get("passwordLogin") ||
-                    !!WalletManagerStore.getState().current_wallet,
-                theme: SettingsStore.getState().settings.get("themes"),
-                apiServer: SettingsStore.getState().settings.get(
-                    "activeNode",
-                    ""
-                )
-            };
-        }
-    }
-);
-AppInit = supplyFluxContext(alt)(AppInit);
-
-// Phase 9 (docs/UI_MIGRATION_PLAN.md): makes the Redux store (currently
-// holding only migrated, non-security-sensitive slices - see
-// `./store/reduxStore.ts`'s header) available to any component using
-// `react-redux`'s `useSelector`/`useDispatch`, alongside the existing
-// Alt.js flux context `supplyFluxContext` provides above - both stacks
-// run simultaneously for the duration of the store-by-store migration.
+// Makes the Redux store available to any component using react-redux's
+// `useSelector`/`useDispatch` - see this file's own header above for why
+// the Alt.js flux context this used to run alongside is gone.
 function AppInitWithReduxProvider(props) {
     return (
         <Provider store={reduxStore}>

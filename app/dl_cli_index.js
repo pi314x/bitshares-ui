@@ -8,7 +8,7 @@ import {Apis, ChainConfig} from "bitsharesjs-ws";
 import BackupActions from "actions/BackupActions";
 import WalletActions from "actions/WalletActions";
 
-import alt from "alt-instance";
+import {reduxStore} from "./store/reduxStore";
 import iDB from "idb-instance";
 
 const utils = {
@@ -25,7 +25,7 @@ const utils = {
     ChainStore,
     ChainConfig,
 
-    alt,
+    reduxStore,
     iDB,
     Apis,
     db: () => Apis.instance().db_api(),

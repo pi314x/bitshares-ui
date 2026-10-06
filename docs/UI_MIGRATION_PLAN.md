@@ -9017,16 +9017,111 @@ are flagged again here for the human second-reviewer this phase's exit
 criteria call for.
 
 **Tier 2 (all 13 security-sensitive stores) is now fully migrated.**
-Remaining Phase 9 work: switch call sites from `useAltStore`/direct
-`.listen()` to `useSelector`/`useDispatch` file by file, then drop every
-facade and delete the `alt`/`alt-react`/`alt-instance.js` dependency
-entirely - plus the separate, independent cleanup efforts below
-(`bitshares-ui-style-guide`, `foundation-apps`, react-router v5→v6,
-Babel stage-0 preset, react-hot-loader, Node/Electron version bumps).
+
+**`alt`/`alt-react`/`alt-container` fully removed (done).** The plan
+going into this step assumed the ~126 files calling `useAltStore()`
+would all need switching to `useSelector`/`useDispatch` *before* the
+real Alt packages could be deleted. Checking that assumption first
+(reading `next/hooks/useAltStore.ts` and `node_modules/alt-react/src/
+{connect,ConnectBase}.js` side by side) found it was wrong: both
+`useAltStore()` and the real `alt-react` `connect(Component, {listenTo,
+getProps})` HOC only ever call `.getState()`/`.listen()`/`.unlisten()`
+on whatever store object `listenTo()` returns - duck-typed, no import of
+`alt-instance` or any real-Alt internals. Since every migrated facade
+already implements that exact interface, all ~126 `useAltStore()` call
+sites and every already-migrated `connect()`-replaced component kept
+working against the facades with zero dependency on the real npm
+packages, *before* this step started. So switching those call sites to
+`useSelector`/`useDispatch` turned out to be a separate, purely
+cosmetic/optional follow-up - not a precondition for deleting `alt`. What
+actually still imported the real packages (found by grepping every
+`.js`/`.jsx`/`.ts`/`.tsx` file for real `from "alt"`/`"alt-react"`/
+`"alt-instance"` imports, as opposed to the many historical-explanation
+comments that just mention those names):
+
+- 4 orphaned Alt actions files with no store ever bound to them
+  (`PoolActions.js`, `HtlcActions.js`, `SignedMessageAction.js`,
+  `LogsActions.js`) - converted to plain singleton classes
+  (`export default new X()`), same dead-dispatch precedent as every
+  prior actions-file batch (`create`/`redeem`/`extend`'s Alt thunks
+  dropped, `WalletDb.process_transaction`/`Signature.signBuffer` logic
+  preserved exactly - `SignedMessageAction.signMessage` is security-
+  sensitive per AGENTS.md, calls `WalletDb.getPrivateKey` for the real
+  memo private key, unchanged). `PoolActions.createPool` has zero real
+  callers (grep-confirmed, pre-existing dead code); `HtlcActions` is used
+  by `HtlcModal.tsx` for all 3 real HTLC operations.
+- `AppInit.jsx` itself - the actual app root, wrapped with alt-react's
+  `connect(AppInit, {listenTo: () => [IntlStore, WalletManagerStore,
+  SettingsStore], getProps})` plus `supplyFluxContext(alt)(AppInit)`.
+  Grep confirmed nothing downstream ever reads `this.context.flux`/
+  `props.flux` (`supplyFluxContext` dropped outright) and `<AppInit />`
+  is rendered with no props (`index.js`), so there was no caller-prop-
+  precedence case to preserve. `connect`'s subscribe/derive-props
+  behavior is now inlined directly in the class: `componentDidMount`/
+  `componentWillUnmount` `listen`/`unlisten` the same 3 stores and
+  `forceUpdate` on change; `render()` computes the same 4 derived values
+  (`locale`/`walletMode`/`theme`/`apiServer`) inline instead of receiving
+  them as injected props. Deliberately kept class-based, not converted to
+  a function component: `AppInit.componentDidCatch` is a real error
+  boundary, and React has no hook equivalent for that - converting to a
+  function component would have silently dropped global error catching.
+- The last 2 real `connect()`-HOC component usages (every other
+  component referencing "alt-react" in a comment had already been
+  migrated to `useAltStore()` in earlier phases/batches):
+  `Utility/BindToCurrentAccount.tsx` (a HOC *factory*, not a leaf -
+  `connect(Debounced, {listenTo: () => [AccountStore], getProps})`
+  replaced by a wrapper function component calling
+  `useAltStore(AccountStore)`) and `DepositWithdraw/
+  DepositWithdrawAssetSelector.js` (same pattern, `GatewayStore`).
+- `dl_cli_index.js` - a devtools/debug-console helper, confirmed via
+  repo-wide grep to be completely unreferenced from any entry point
+  (dead code, pre-existing) but still imported `alt-instance` to expose
+  the singleton on `window` for manual console poking; swapped for
+  exposing `reduxStore` instead.
+
+With all of the above converted, `app/alt-instance.js` (the thin wrapper
+`new Alt()` module) had zero remaining importers - deleted. Removed
+`alt`/`alt-container`/`alt-react` from `package.json`'s `dependencies`,
+the two `node_modules/alt-container`/`node_modules/alt-react`
+babel-loader include paths in `webpack.config.js` (those packages ship
+untranspiled source that needed that special-case), and the
+`declare module "alt-react"` shim from `types/vendor-shims.d.ts`. Ran
+`yarn install` to regenerate `yarn.lock` (71 lines removed, no other
+dependency changes) and confirmed `node_modules/alt*` no longer exists.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors repo-wide; `eslint` on
+all 10 touched files 0 errors (after dropping several *already pre-
+existing* unused imports/vars in `PoolActions.js`/`HtlcActions.js` -
+`Apis`, `ChainStore`, `FetchChainObjects`, `gatewayPrefixes`, `price`,
+`inProgress`, and `create_liquidity_pool`'s 6 unused params - confirmed
+via `git show` against the pre-edit files that these were dead before
+this batch too, just never surfaced by `yarn lint:changed` until these
+files were actually touched); `git diff --stat` empty on every real call
+site (`HtlcModal.tsx`, `AccountSignedMessages.tsx`, `SignedMessage.tsx`,
+`DepositModal.tsx`, `WithdrawModalNew.tsx`, all 10 `bindToCurrentAccount`
+call sites, `index.js`/`Main.js`); 19/19 suites / 5,392 tests passing;
+`yarn build` shows only the 2 known pre-existing `charting_library.esm`
+errors. Given this batch touches the literal app bootstrap
+(`AppInit.jsx`), ran the same live-browser Playwright sanity check as
+the last two batches: dev server compiled with only the 2 known errors,
+rendered the identical "NOT CONNECTED" node-picker baseline screen (that
+screen is itself rendered by the rewritten `_renderLoadingScreen()`/
+`render()` methods, so this directly exercises the rewrite), zero new
+console/page errors.
+
+Remaining Phase 9 work: switch the ~126 `useAltStore()` call sites to
+`useSelector`/`useDispatch` file by file (now a purely optional/cosmetic
+cleanup, not a blocker - tracked separately, no urgency), then delete
+the `next/hooks/useAltStore.ts` adapter and each store's facade file
+once nothing references it that way - plus the separate, independent
+cleanup efforts below (`bitshares-ui-style-guide`, `foundation-apps`,
+react-router v5→v6, Babel stage-0 preset, react-hot-loader, Node/Electron
+version bumps).
 
 - Exit criteria (unchanged from the original plan): zero references to
-  removed packages; bundle-size and Lighthouse/perf comparison
-  published against the pre-migration baseline.
+  removed packages (`alt`/`alt-container`/`alt-react` - **done**);
+  bundle-size and Lighthouse/perf comparison published against the
+  pre-migration baseline (not done).
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

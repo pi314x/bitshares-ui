@@ -19,11 +19,11 @@
 // defaultProps = {autosubscribe: true}`).
 import * as React from "react";
 import debounceRender from "react-debounce-render";
-import {connect} from "alt-react";
 import {ChainStore} from "bitsharesjs";
 import AccountStore from "../../stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {useAltStore} from "../../next/hooks/useAltStore";
 
 export const hasLoaded = function hasLoaded(currentAccount: any) {
     return !!currentAccount && !!currentAccount.get("id");
@@ -67,18 +67,17 @@ export const bindToCurrentAccount = function bindToCurrentAccount(
         leading: false
     });
 
-    return connect(Debounced, {
-        listenTo() {
-            return [AccountStore];
-        },
-        getProps() {
-            const currentAccount =
-                (AccountStore.getState() as any).currentAccount ||
-                (AccountStore.getState() as any).passwordAccount ||
-                "please-login";
-            return {
-                currentAccount: new Map([["name", currentAccount]])
-            };
-        }
-    });
+    return function BindToCurrentAccountConnected(props: any) {
+        const accountState = useAltStore<any>(AccountStore as any);
+        const currentAccount =
+            accountState.currentAccount ||
+            accountState.passwordAccount ||
+            "please-login";
+        return (
+            <Debounced
+                {...props}
+                currentAccount={new Map([["name", currentAccount]])}
+            />
+        );
+    };
 };

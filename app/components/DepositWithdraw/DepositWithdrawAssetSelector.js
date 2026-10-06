@@ -1,9 +1,9 @@
 import React from "react";
-import {connect} from "alt-react";
 import BindToChainState from "../Utility/BindToChainState";
 import GatewayStore from "stores/GatewayStore";
 import counterpart from "counterpart";
 import {Select} from "bitshares-ui-style-guide";
+import {useAltStore} from "../../next/hooks/useAltStore";
 
 class DepositWithdrawAssetSelector extends React.Component {
     constructor(props) {
@@ -153,13 +153,18 @@ class DepositWithdrawAssetSelector extends React.Component {
 }
 DepositWithdrawAssetSelector = BindToChainState(DepositWithdrawAssetSelector);
 
-export default connect(DepositWithdrawAssetSelector, {
-    listenTo() {
-        return [GatewayStore];
-    },
-    getProps() {
-        return {
-            backedCoins: GatewayStore.getState().backedCoins
-        };
-    }
-});
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): `connect(DepositWithdrawAssetSelector,
+// {listenTo: [GatewayStore], getProps})` alt-react HOC replaced by
+// `useAltStore(GatewayStore)`, same pattern used throughout this
+// migration.
+function DepositWithdrawAssetSelectorConnected(props) {
+    const gatewayState = useAltStore(GatewayStore);
+    return (
+        <DepositWithdrawAssetSelector
+            {...props}
+            backedCoins={gatewayState.backedCoins}
+        />
+    );
+}
+
+export default DepositWithdrawAssetSelectorConnected;
