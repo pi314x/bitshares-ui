@@ -1,7 +1,7 @@
 // TypeScript/functional-component port of the legacy ScanOrEnterText.jsx
 // (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
-import {Input} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
 import QRScanner from "../QRAddressScanner";
 
 interface ScanOrEnterTextProps {

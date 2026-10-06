@@ -40,6 +40,16 @@ import styles from "./Icon.module.scss";
 // `type={"line-chart"}` with no alias and no dynamic expression - this
 // one simply fell outside whatever file set the original grep covered.
 //
+// `download` was added in a fifth pass, alongside `Button`'s new
+// `icon` prop: real at `Transfer/PrintReceiptButton.tsx`'s print
+// button (antd's `<Button icon="download">`). Several other real call
+// sites pass other icon names to the same antd `Button.icon` prop
+// (`message`/`deployment-unit`/`plus-circle-o`/`minus-circle-o`,
+// across `Showcases/Barter.tsx`/`Modal/HtlcModal.tsx`/
+// `Transfer/InvoiceRequest.tsx`) - left unadded until each of those
+// files is itself migrated, rather than speculatively drawing glyphs
+// nothing yet needs.
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -70,7 +80,8 @@ export type IconType =
     | "file-search"
     | "lock"
     | "unlock"
-    | "line-chart";
+    | "line-chart"
+    | "download";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -181,7 +192,8 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
             <path d="M7 11V7a5 5 0 0 1 9.9-1" />
         </>
     ),
-    "line-chart": <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />
+    "line-chart": <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />,
+    download: <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {

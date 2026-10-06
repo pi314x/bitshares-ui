@@ -10510,6 +10510,48 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Tenth migration batch** (`Transfer/`, 4 of its 5 files):
+`Invoice.tsx` (`Card`/`Tabs`), `InvoicePay.tsx` (`Button`/`Row`/`Col`/
+`Icon`/`Tooltip`, both `type="primary"`/`type="secondary"` Button
+variants), `PrintReceiptButton.tsx` (`Tooltip`/`Button`), and
+`ScanOrEnterText.tsx` (`Input`).
+
+**Deferred, with a reason:** `InvoiceRequest.tsx` - unlike every other
+file migrated so far, this one still genuinely uses antd's *managed*-
+form API (`Form.create()`/`getFieldDecorator()`/`getFieldValue()`/
+`setFieldsValue()`/`validateFields()`), which the design-system
+`Form`'s own header comment already flags as explicitly out of scope
+(it was built for the "layout primitive, caller wires its own
+value`/`onChange`" pattern every other real call site uses, not this
+one - see `Form.tsx`'s header, which names this exact file and
+`Exchange/ScaledOrderTab.tsx` as the only two holdouts). Migrating it
+needs a real state-management rewrite (replacing the HOC-injected
+field bindings with explicit `useState` + manual wiring per field),
+not an import swap - deferred as its own task rather than attempted
+as a drive-by part of this batch.
+
+One more real gap, fixed in the component: antd's `Button icon="..."`
+prop (a leading glyph, not an element) - real at
+`PrintReceiptButton.tsx`'s print button and, found while grepping for
+it, 5 more call sites across 3 other files
+(`Showcases/Barter.tsx`/`Modal/HtlcModal.tsx`/
+`Transfer/InvoiceRequest.tsx` - the latter two already deferred for
+other reasons). Added `icon?: IconType` to the design-system `Button`,
+rendering the design-system `Icon` before `children`, plus the one
+new glyph (`download`) real usage in this batch's own file actually
+needs - the other icon names those other 3 files pass
+(`message`/`deployment-unit`/`plus-circle-o`/`minus-circle-o`) are
+deliberately not added yet, following this phase's established
+practice of drawing exactly the glyphs real, currently-reachable usage
+needs rather than speculatively completing antd's full icon set.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,501/5,501 (up from 5,498 - 3 new tests: `Icon`'s `download` glyph,
+`Button`'s `icon` prop rendering a leading glyph, and `Button`
+rendering no icon when the prop is omitted), `yarn build` showing only
+the 2 known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

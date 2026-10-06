@@ -26,6 +26,19 @@ describe("design-system/Button", () => {
         expect(onClick).not.toHaveBeenCalled();
     });
 
+    it("renders a leading icon before its children when icon is set", () => {
+        const {container, getByText} = render(
+            <Button icon="download">Download</Button>
+        );
+        expect(getByText("Download")).toBeTruthy();
+        expect(container.querySelector("svg")).toBeTruthy();
+    });
+
+    it("renders no icon when icon is omitted", () => {
+        const {container} = render(<Button>Plain</Button>);
+        expect(container.querySelector("svg")).toBeNull();
+    });
+
     it("applies the accent variant class alongside a custom className", () => {
         const {getByText} = render(
             <Button variant="accent" className="extra">

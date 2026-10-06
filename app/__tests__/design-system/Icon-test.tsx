@@ -70,6 +70,12 @@ describe("design-system/Icon", () => {
         expect(container.querySelector("path")).toBeTruthy();
     });
 
+    it("renders the download glyph added during the call-site migration pass", () => {
+        const {container} = render(<Icon type="download" />);
+        expect(container.querySelector("svg")).toBeTruthy();
+        expect(container.querySelector("path")).toBeTruthy();
+    });
+
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
         expect(

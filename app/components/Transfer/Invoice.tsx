@@ -12,7 +12,8 @@
 // Replicated with a `useState` lazy initializer (runs once, on the first
 // render only, exactly like a constructor).
 import * as React from "react";
-import {Card, Tabs} from "bitshares-ui-style-guide";
+import {Card} from "../../design-system/Card";
+import {Tabs} from "../../design-system/Tabs";
 import counterpart from "counterpart";
 import InvoiceRequest from "./InvoiceRequest";
 import InvoicePay from "./InvoicePay";

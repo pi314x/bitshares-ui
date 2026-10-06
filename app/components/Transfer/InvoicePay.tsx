@@ -40,7 +40,11 @@ import {decompress} from "lzma";
 import bs58 from "common/base58";
 import PrintReceiptButton from "./PrintReceiptButton";
 import Translate from "react-translate-component";
-import {Button, Row, Col, Icon, Tooltip} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
+import {Icon} from "../../design-system/Icon";
+import {Tooltip} from "../../design-system/Tooltip";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import {hasLoaded} from "../Utility/BindToCurrentAccount";
@@ -489,7 +493,6 @@ function InvoicePay({match, currentAccount, validateFormat}: InvoicePayProps) {
                             content="invoice.pay.barcode"
                         />
                         <Button
-                            type="secondary"
                             style={{
                                 width: "180px",
                                 marginBottom: "20px"
@@ -587,7 +590,7 @@ function InvoicePay({match, currentAccount, validateFormat}: InvoicePayProps) {
                 </div>
             ) : (
                 <Button
-                    type="primary"
+                    variant="accent"
                     style={{marginTop: "30px"}}
                     disabled={!pay_from_account}
                     onClick={onPayClick}

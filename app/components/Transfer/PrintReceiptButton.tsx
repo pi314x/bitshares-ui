@@ -2,7 +2,8 @@
 // PrintReceiptButton.jsx (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical,
 // no logic changes.
 import * as React from "react";
-import {Tooltip, Button} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Button} from "../../design-system/Button";
 import counterpart from "counterpart";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -184,7 +185,7 @@ const PrintReceiptButton = ({data, parsePrice}: PrintReceiptButtonProps) => {
             title={counterpart.translate(tip)}
         >
             <Button
-                type="primary"
+                variant="accent"
                 icon="download"
                 onClick={() => printReceipt({data, parsePrice})}
             >
