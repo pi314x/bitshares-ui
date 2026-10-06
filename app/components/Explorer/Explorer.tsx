@@ -10,7 +10,7 @@
 // just a constant table dressed up as one. Ported as a plain module-level
 // array. `history`/`location` came from react-router-dom's injected
 // route props (`<Route component={Explorer} />` in App.jsx); ported with
-// `useHistory`/`useLocation`, the same hooks Settings.tsx already uses
+// `useNavigate`/`useLocation`, the same hooks Settings.tsx already uses
 // for the equivalent purpose.
 //
 // Renamed the `AssetsContainer`/`AccountsContainer` local import aliases
@@ -18,7 +18,7 @@
 // file's own prior slices), and the "Container" name was a leftover from
 // when they still had a separate connect()-wrapping container file.
 import * as React from "react";
-import {useHistory, useLocation} from "react-router-dom";
+import {useNavigate, useLocation} from "react-router-dom";
 import Witnesses from "./Witnesses";
 import CommitteeMembers from "./CommitteeMembers";
 import FeesContainer from "../Blockchain/FeesContainer";
@@ -83,11 +83,11 @@ const tabs = [
 ];
 
 export default function Explorer() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
 
     function onChange(value: string) {
-        history.push(value);
+        navigate(value);
     }
 
     return (

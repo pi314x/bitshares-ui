@@ -36,10 +36,11 @@
 // guards on `if (this.props.account)` and simply omits the name/balances.
 //
 // `withRouter` (only used for `history.push` in `onCardClick`) is dropped
-// in favor of `useHistory()`, this migration's established replacement
-// (see `Dashboard/DashboardList.tsx`).
+// in favor of `useNavigate()` (Phase 9, react-router v6 migration -
+// `withRouter`/`useHistory` no longer exist in v6; `useNavigate()` is
+// this migration's replacement, same as `Dashboard/DashboardList.tsx`).
 import * as React from "react";
-import {withRouter} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {ChainStore} from "bitsharesjs";
 import BalanceComponent from "../Utility/BalanceComponent";
 import AccountImage from "../Account/AccountImage";
@@ -48,10 +49,10 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 interface AccountCardProps {
     account: any;
-    history: any;
 }
 
-function AccountCardCore({account, history}: AccountCardProps) {
+function AccountCardCore({account}: AccountCardProps) {
+    const navigate = useNavigate();
     let name: string | null = null;
     let balances: React.ReactNode = null;
     let isMyAccount = false;
@@ -79,7 +80,7 @@ function AccountCardCore({account, history}: AccountCardProps) {
 
     function onCardClick(e: React.MouseEvent) {
         e.preventDefault();
-        history.push(`/account/${name}`);
+        navigate(`/account/${name}`);
     }
 
     return (
@@ -113,13 +114,9 @@ function resolveAccountProp(prop: any, autosubscribe: boolean | undefined) {
 
 interface AccountCardContainerProps {
     account: any;
-    history?: any;
 }
 
-function AccountCardChainContainer({
-    account,
-    history
-}: AccountCardContainerProps) {
+function AccountCardChainContainer({account}: AccountCardContainerProps) {
     useChainStoreTick();
     const resolvedAccount = resolveAccountProp(account, undefined);
 
@@ -127,7 +124,7 @@ function AccountCardChainContainer({
         return <span />;
     }
 
-    return <AccountCardCore account={resolvedAccount} history={history} />;
+    return <AccountCardCore account={resolvedAccount} />;
 }
 
-export default withRouter(AccountCardChainContainer as any) as React.ComponentType<any>;
+export default AccountCardChainContainer;

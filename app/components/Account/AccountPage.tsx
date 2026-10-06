@@ -34,7 +34,14 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import accountUtils from "common/account_utils";
 import {List} from "immutable";
 import Page404 from "../Page404/Page404";
-import {Route, Switch, Redirect} from "react-router-dom";
+import {
+    Routes,
+    Route,
+    Navigate,
+    useNavigate,
+    useLocation,
+    useParams
+} from "react-router-dom";
 import LoadingIndicator from "../LoadingIndicator";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -60,8 +67,6 @@ interface AccountPageCoreProps {
     wallet_locked?: boolean;
     hiddenAssets?: any;
     viewSettings?: any;
-    history: any;
-    location: any;
 }
 
 function AccountPage({
@@ -72,10 +77,16 @@ function AccountPage({
     settings,
     wallet_locked,
     hiddenAssets,
-    viewSettings,
-    history,
-    location
+    viewSettings
 }: AccountPageCoreProps) {
+    // react-router v6 no longer injects `history`/`location` as props
+    // (see this file's header - the parent `<Route element={<AccountPage
+    // .../>}>` in App.jsx doesn't auto-inject routing props at all) - read
+    // directly via hooks instead. `passOnProps.history` was dead (grep-
+    // confirmed none of the 10 nested route components below ever read
+    // it), dropped rather than replaced with `navigate`.
+    const navigate = useNavigate();
+    const location = useLocation();
     const isMountRef = React.useRef(true);
     const prevAccountNameRef = React.useRef<string | undefined>(undefined);
 
@@ -111,7 +122,7 @@ function AccountPage({
         if (prevCurrentAccountRef.current !== currentAccount && currentAccount) {
             const currentPath = location.pathname.split("/");
             currentPath[2] = currentAccount;
-            history.push(currentPath.join("/"));
+            navigate(currentPath.join("/"));
         }
         prevCurrentAccountRef.current = currentAccount;
     }, [currentAccount]);
@@ -135,75 +146,75 @@ function AccountPage({
         balances: account.get("balances", List()).toList(),
         orders: account.get("orders", List()).toList(),
         viewSettings,
-        proxy: account.getIn(["options", "voting_account"]),
-        history
+        proxy: account.getIn(["options", "voting_account"])
     };
 
+    // Relative to the parent `/account/:account_name/*` match in
+    // App.jsx (react-router v6 nested `<Routes>` match relative to
+    // where the parent match left off, not against the full absolute
+    // URL like v5's `Switch`/`Route` did) - `Navigate` targets stay
+    // absolute (always unambiguous, matches the interpolated-string
+    // style the original `Redirect`s already used).
     return (
-        <Switch>
+        <Routes>
             <Route
-                path={`/account/${account_name}`}
-                exact
-                render={() => <AccountOverview {...passOnProps} />}
-            />
-            <Redirect
-                from={`/account/${account_name}/overview`}
-                to={`/account/${account_name}`}
+                index
+                element={<AccountOverview {...passOnProps} />}
             />
             <Route
-                path={`/account/${account_name}/assets`}
-                exact
-                render={() => <AccountAssets {...passOnProps} />}
+                path="overview"
+                element={<Navigate to={`/account/${account_name}`} replace />}
             />
             <Route
-                path={`/account/${account_name}/pools`}
-                exact
-                render={() => <AccountPools {...passOnProps} />}
+                path="assets"
+                element={<AccountAssets {...passOnProps} />}
             />
             <Route
-                path={`/account/${account_name}/create-asset`}
-                exact
-                render={() => <AccountAssetCreate {...(passOnProps as any)} />}
+                path="pools"
+                element={<AccountPools {...passOnProps} />}
             />
             <Route
-                path={`/account/${account_name}/update-asset/:asset`}
-                exact
-                render={() => <AccountAssetUpdate {...(passOnProps as any)} />}
+                path="create-asset"
+                element={<AccountAssetCreate {...(passOnProps as any)} />}
             />
             <Route
-                path={`/account/${account_name}/member-stats`}
-                exact
-                render={() => <AccountMembership {...passOnProps} />}
+                path="update-asset/:asset"
+                element={<AccountAssetUpdate {...(passOnProps as any)} />}
             />
             <Route
-                path={`/account/${account_name}/vesting`}
-                exact
-                render={() => <AccountVesting {...passOnProps} />}
+                path="member-stats"
+                element={<AccountMembership {...passOnProps} />}
             />
             <Route
-                path={`/account/${account_name}/permissions`}
-                exact
-                render={() => <AccountPermissions {...(passOnProps as any)} />}
+                path="vesting"
+                element={<AccountVesting {...passOnProps} />}
             />
             <Route
-                path={`/account/${account_name}/voting/:tab`}
-                render={() => <AccountVoting {...(passOnProps as any)} />}
-            />
-            <Redirect
-                from={`/account/${account_name}/voting`}
-                to={`/account/${account_name}/voting/witnesses`}
+                path="permissions"
+                element={<AccountPermissions {...(passOnProps as any)} />}
             />
             <Route
-                path={`/account/${account_name}/whitelist`}
-                exact
-                render={() => <AccountWhitelist {...passOnProps} />}
+                path="voting/:tab"
+                element={<AccountVoting {...(passOnProps as any)} />}
             />
             <Route
-                path={`/account/${account_name}/signedmessages`}
-                exact
-                render={() => <AccountSignedMessages {...passOnProps} />}
+                path="voting"
+                element={
+                    <Navigate
+                        to={`/account/${account_name}/voting/witnesses`}
+                        replace
+                    />
+                }
             />
-        </Switch>
+            <Route
+                path="whitelist"
+                element={<AccountWhitelist {...passOnProps} />}
+            />
+            <Route
+                path="signedmessages"
+                element={<AccountSignedMessages {...passOnProps} />}
+            />
+        </Routes>
     );
 }
 
@@ -232,12 +243,16 @@ function AccountPageChainContainer({
 }
 
 interface AccountPageStoreWrapperProps {
-    match: {params: {account_name: string}};
     [key: string]: any;
 }
 
 function AccountPageStoreWrapper(props: AccountPageStoreWrapperProps) {
-    const account_name = props.match.params.account_name;
+    // Safe to assert non-null: this component only ever renders via the
+    // `/account/:account_name/*` route in App.jsx, where `:account_name`
+    // is a required URL segment.
+    const {account_name} = useParams<{account_name: string}>() as {
+        account_name: string;
+    };
 
     const accountState = useAltStore<any>(AccountStore);
     const settingsState = useAltStore<any>(SettingsStore);

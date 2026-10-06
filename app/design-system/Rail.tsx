@@ -5,11 +5,6 @@ import styles from "./Rail.module.scss";
 // branding.js's getLogo()), not a placeholder letter.
 import logo from "assets/logo-ico-blue.png";
 
-// @types/react-router-dom v5's NavLink predates a `ReactElement`/JSX.Element
-// `key` type tightening in newer TypeScript, so using it directly as a JSX
-// component fails to typecheck (TS2786) even though it works fine at
-// runtime. Re-typing it here is the standard workaround for this specific,
-// known react-router-dom v5 + modern TS combination.
 const TypedNavLink = NavLink as React.ComponentType<NavLinkProps>;
 
 export interface RailNavItem {
@@ -50,9 +45,12 @@ export function Rail({groups, footer}: RailProps): JSX.Element {
                         <TypedNavLink
                             key={item.to}
                             to={item.to}
-                            exact={item.exact}
-                            className={styles.navItem}
-                            activeClassName={styles.navItemActive}
+                            end={item.exact}
+                            className={({isActive}: {isActive: boolean}) =>
+                                isActive
+                                    ? `${styles.navItem} ${styles.navItemActive}`
+                                    : styles.navItem
+                            }
                         >
                             {item.label}
                         </TypedNavLink>

@@ -17,7 +17,7 @@
 // is exactly why the original set that option.
 //
 // `withRouter` (only ever used for `location.pathname`/`history.push` in
-// `_onClick`) becomes `useHistory()`/`useLocation()`. The caller
+// `_onClick`) becomes `useNavigate()`/`useLocation()`. The caller
 // (`MyMarkets.jsx`) also passes explicit `location`/`history` props, but
 // those were always shadowed by `withRouter`'s own injected values
 // (spread after the wrapped props in react-router v5), so they were
@@ -33,7 +33,7 @@
 // part of the app, not one of this migration's previously-confirmed
 // always-true no-op SCU gates.
 import * as React from "react";
-import {useHistory, useLocation} from "react-router-dom";
+import {useNavigate, useLocation} from "react-router-dom";
 import FormattedAsset from "../Utility/FormattedAsset";
 import AccountName from "../Utility/AccountName";
 import utils from "common/utils";
@@ -78,7 +78,7 @@ function MarketRow({
     onCheckMarket,
     removeMarket
 }: MarketRowProps) {
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
     const statsIntervalRef = React.useRef<any>(null);
 
@@ -100,7 +100,7 @@ function MarketRow({
         const newPath = `/market/${marketID}`;
         if (newPath !== location.pathname) {
             (MarketsActions as any).switchMarket();
-            history.push(`/market/${marketID}`);
+            navigate(`/market/${marketID}`);
         }
     }
 

@@ -25,7 +25,7 @@
 // read there either - dropped from this call site once AccessSettings.tsx
 // stopped declaring them.
 import * as React from "react";
-import {useParams, useHistory} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import counterpart from "counterpart";
 import IntlActions from "actions/IntlActions";
 import Translate from "react-translate-component";
@@ -107,7 +107,7 @@ export interface SettingsProps {
 export default function Settings(props: SettingsProps) {
     const {deprecated = false, settings, viewSettings, defaults} = props;
     const {tab} = useParams<{tab?: string}>();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const passwordLogin = settings.get("passwordLogin");
 
@@ -319,7 +319,7 @@ export default function Settings(props: SettingsProps) {
     }
 
     function redirectToEntry(entry: string) {
-        history.push("/settings/" + entry);
+        navigate("/settings/" + entry);
     }
 
     let entries: React.ReactNode;

@@ -15,13 +15,12 @@
 // comparison is naturally false on the first render, matching the
 // original not firing this on mount either.
 import * as React from "react";
-import {Link, LinkProps} from "react-router-dom";
+import {Link, LinkProps, Routes, Route, useLocation} from "react-router-dom";
 import WalletActions from "actions/WalletActions";
 import BackupActions from "actions/BackupActions";
 import WalletManagerStore from "stores/WalletManagerStore";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {Switch, Route} from "react-router-dom";
 import {ExistingAccountOptions} from "./ExistingAccount";
 import ImportKeys from "./ImportKeys";
 import BalanceClaimActive from "./BalanceClaimActive";
@@ -68,11 +67,11 @@ function getTitle(pathname: string) {
     }
 }
 
-export default function WalletManager({
-    location
-}: {
-    location: {pathname: string};
-}) {
+export default function WalletManager() {
+    // react-router v6 no longer injects `location` as a prop (parent
+    // route in App.jsx is `<Route path="/wallet/*" element={<WalletManager
+    // />}>`, no auto-injected routing props) - read via the hook instead.
+    const location = useLocation();
     return (
         <div className="grid-block vertical">
             <div className="grid-container" style={{maxWidth: "40rem"}}>
@@ -84,63 +83,43 @@ export default function WalletManager({
                         />
                     </div>
                     <div className="content-block">
-                        <Switch>
+                        <Routes>
+                            <Route index element={<WalletOptions />} />
                             <Route
-                                exact
-                                path="/wallet"
-                                component={WalletOptions}
+                                path="change"
+                                element={<ChangeActiveWallet />}
                             />
                             <Route
-                                exact
-                                path="/wallet/change"
-                                component={ChangeActiveWallet}
+                                path="change-password"
+                                element={<WalletChangePassword />}
                             />
                             <Route
-                                exact
-                                path="/wallet/change-password"
-                                component={WalletChangePassword}
+                                path="import-keys"
+                                element={<ImportKeys />}
                             />
                             <Route
-                                exact
-                                path="/wallet/import-keys"
-                                component={ImportKeys}
+                                path="brainkey"
+                                element={<ExistingAccountOptions />}
+                            />
+                            <Route path="create" element={<WalletCreate />} />
+                            <Route path="delete" element={<WalletDelete />} />
+                            <Route
+                                path="backup/restore"
+                                element={<BackupRestore />}
                             />
                             <Route
-                                exact
-                                path="/wallet/brainkey"
-                                component={ExistingAccountOptions}
+                                path="backup/create"
+                                element={<BackupCreate />}
                             />
                             <Route
-                                exact
-                                path="/wallet/create"
-                                component={WalletCreate}
+                                path="backup/brainkey"
+                                element={<BackupBrainkey />}
                             />
                             <Route
-                                exact
-                                path="/wallet/delete"
-                                component={WalletDelete}
+                                path="balance-claims"
+                                element={<BalanceClaimActive />}
                             />
-                            <Route
-                                exact
-                                path="/wallet/backup/restore"
-                                component={BackupRestore}
-                            />
-                            <Route
-                                exact
-                                path="/wallet/backup/create"
-                                component={BackupCreate}
-                            />
-                            <Route
-                                exact
-                                path="/wallet/backup/brainkey"
-                                component={BackupBrainkey}
-                            />
-                            <Route
-                                exact
-                                path="/wallet/balance-claims"
-                                component={BalanceClaimActive}
-                            />
-                        </Switch>
+                        </Routes>
                     </div>
                 </div>
             </div>

@@ -38,7 +38,7 @@ import AssetName from "./AssetName";
 import Pulsate from "./Pulsate";
 import marketUtils from "common/market_utils";
 import {Asset, Price} from "common/MarketClasses";
-import {withRouter, Link} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import {Tooltip} from "bitshares-ui-style-guide";
 import MarketsActions from "actions/MarketsActions";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -63,7 +63,6 @@ interface FormattedPriceProps {
     noTip?: boolean;
     force_direction?: any;
     invert?: boolean;
-    history: any;
 }
 
 function FormattedPrice({
@@ -83,9 +82,12 @@ function FormattedPrice({
     noInvertTip,
     noTip,
     force_direction,
-    invert,
-    history
+    invert
 }: FormattedPriceProps) {
+    // react-router v6 no longer injects `history` as a prop (dropped
+    // `withRouter` at this file's export below) - `useNavigate()`
+    // replaces it.
+    const navigate = useNavigate();
     const [{marketName, first, second}, setMarketInfo] = React.useState(() =>
         marketUtils.getMarketName(base_asset, quote_asset)
     );
@@ -120,7 +122,7 @@ function FormattedPrice({
         e.preventDefault();
         const inverted = marketDirections.get(marketName);
         MarketsActions.switchMarket();
-        history.push(
+        navigate(
             `/market/${
                 !inverted ? first.get("symbol") : second.get("symbol")
             }_${!inverted ? second.get("symbol") : first.get("symbol")}`
@@ -273,13 +275,12 @@ function FormattedPrice({
     );
 }
 
-let WrappedFormattedPrice: React.ComponentType<any> = AssetWrapper(
+const WrappedFormattedPrice: React.ComponentType<any> = AssetWrapper(
     FormattedPrice,
     {
         propNames: ["base_asset", "quote_asset"]
     }
 );
-WrappedFormattedPrice = withRouter(WrappedFormattedPrice as any) as React.ComponentType<any>;
 
 interface FormattedPriceWrapperProps {
     [key: string]: any;

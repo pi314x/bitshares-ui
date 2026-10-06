@@ -16,17 +16,19 @@
 // single *global* variable, so when multiple `HelpContent` instances are
 // mounted at once (routine - this component is used pervasively), each
 // mount overwrites it, and only the most-recently-mounted instance's
-// `history` actually receives clicks on any rendered help-content link
+// navigation actually receives clicks on any rendered help-content link
 // anywhere on the page. Replicated with a mount-only `useEffect` (its
 // exact ordering relative to first paint doesn't matter here, since a
-// user can't click a link before the page has painted). A `historyRef`
-// keeps the assigned handler reading the *current* `history` prop, same
-// as the original's `this.props.history` always doing so via `this`.
+// user can't click a link before the page has painted). A `navigateRef`
+// keeps the assigned handler reading the *current* navigate function,
+// same as the original's `this.props.history` always doing so via
+// `this` (Phase 9, react-router v6 migration: `withRouter`'s injected
+// `history` prop no longer exists - `useNavigate()` replaces it).
 import * as React from "react";
 import {zipObject} from "lodash-es";
 import counterpart from "counterpart";
 import utils from "common/utils";
-import {withRouter} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 const req = (require as any).context("../../help", true, /\.md/);
 const HelpData: {[locale: string]: {[key: string]: any}} = {};
@@ -116,7 +118,6 @@ interface HelpContentProps {
     locale?: string;
     style?: React.CSSProperties;
     hide_issuer?: any;
-    history: any;
     [key: string]: any;
 }
 
@@ -127,8 +128,7 @@ function HelpContent(props: HelpContentProps) {
         alt_path,
         locale: localeProp,
         style,
-        hide_issuer = "false",
-        history
+        hide_issuer = "false"
     } = props;
     const locale = localeProp || counterpart.getLocale() || "en";
 
@@ -138,8 +138,9 @@ function HelpContent(props: HelpContentProps) {
         loadHelpData(locale);
     }
 
-    const historyRef = React.useRef(history);
-    historyRef.current = history;
+    const navigate = useNavigate();
+    const navigateRef = React.useRef(navigate);
+    navigateRef.current = navigate;
 
     React.useEffect(() => {
         (window as any)._onClickLink = (e: any) => {
@@ -151,7 +152,7 @@ function HelpContent(props: HelpContentProps) {
                 .filter((p: string) => p && p !== "#");
             if (clickedPath.length === 0) return false;
             const route = "/" + clickedPath.join("/");
-            historyRef.current.push(route);
+            navigateRef.current(route);
             return false;
         };
     }, []);
@@ -230,4 +231,4 @@ function HelpContent(props: HelpContentProps) {
     );
 }
 
-export default withRouter(HelpContent as any) as React.ComponentType<any>;
+export default HelpContent;

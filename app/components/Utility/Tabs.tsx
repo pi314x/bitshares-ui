@@ -40,7 +40,7 @@ import cnames from "classnames";
 import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";
 import counterpart from "counterpart";
-import {withRouter} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 interface TabProps {
@@ -130,7 +130,6 @@ interface TabsCoreProps {
     onChangeTab?: (value: any) => void;
     children?: React.ReactNode;
     viewSettings: any;
-    history: any;
 }
 
 function TabsCore({
@@ -144,9 +143,12 @@ function TabsCore({
     actionButtons,
     onChangeTab,
     children,
-    viewSettings,
-    history
+    viewSettings
 }: TabsCoreProps) {
+    // react-router v6 no longer injects `history` as a prop (dropped
+    // `withRouter` at this file's export below) - `useNavigate()`
+    // replaces it.
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = React.useState<any>(() =>
         setting ? viewSettings.get(setting, defaultActiveTab) : defaultActiveTab
     );
@@ -182,7 +184,7 @@ function TabsCore({
         // Persist current tab if desired
 
         if (isLinkTo !== "") {
-            history.push(isLinkTo);
+            navigate(isLinkTo);
         }
 
         if (setting) {
@@ -270,15 +272,11 @@ function TabsCore({
     );
 }
 
-interface TabsProps extends Omit<TabsCoreProps, "viewSettings" | "history"> {
-    history?: any;
-}
+type TabsProps = Omit<TabsCoreProps, "viewSettings">;
 
-function TabsContainer(props: TabsProps) {
+function Tabs(props: TabsProps) {
     const settingsState = useAltStore<any>(SettingsStore);
     return <TabsCore {...(props as any)} viewSettings={settingsState.viewSettings} />;
 }
-
-const Tabs = withRouter(TabsContainer as any) as React.ComponentType<any>;
 
 export {Tabs, Tab};

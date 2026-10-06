@@ -25,7 +25,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import classNames from "classnames";
-import {useHistory} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {ChainStore} from "bitsharesjs";
 import {Table, Icon, Popover} from "bitshares-ui-style-guide";
 import Translate from "react-translate-component";
@@ -85,7 +85,7 @@ function keyRender(item: any) {
 
 export default function Witnesses() {
     useChainStoreTick();
-    const history = useHistory();
+    const navigate = useNavigate();
     const settingsState = useAltStore<any>(SettingsStore);
     const viewSettings = settingsState.viewSettings;
 
@@ -101,7 +101,7 @@ export default function Witnesses() {
 
     function handleBlockIdClick(blockId: any) {
         return () => {
-            history.push(`/block/${blockId}`);
+            navigate(`/block/${blockId}`);
         };
     }
 

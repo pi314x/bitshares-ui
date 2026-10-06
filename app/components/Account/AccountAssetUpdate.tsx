@@ -1803,7 +1803,9 @@ function ConfirmModal({
 }
 
 export default function AssetUpdateWrapper(props: any) {
-    const {asset} = useParams<{asset: string}>();
+    // Safe to assert non-null: only reached via the
+    // `update-asset/:asset` route (AccountPage.tsx), a required segment.
+    const {asset} = useParams<{asset: string}>() as {asset: string};
     return (
         <AccountAssetUpdateContainer {...props} asset={asset.toUpperCase()} />
     );

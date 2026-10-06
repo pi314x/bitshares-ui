@@ -23,7 +23,7 @@
 // initializer) never runs against an unresolved chain object. The
 // `withRouter(FillMissingProps)` wrap is simplified to a plain
 // `FillMissingProps` function - `history`/`location` are read with
-// `useHistory()`/`useLocation()` directly inside `AccountVoting` instead,
+// `useNavigate()`/`useLocation()` directly inside `AccountVoting` instead,
 // which is exactly what `withRouter` supplied.
 //
 // The legacy class kept ~20 related fields (proxy id/input, witness/
@@ -131,7 +131,7 @@
 // investigating whether the string branch is ever actually reachable in
 // practice.
 import * as React from "react";
-import {useHistory, useLocation, Link, LinkProps} from "react-router-dom";
+import {useNavigate, useLocation, Link, LinkProps} from "react-router-dom";
 import Immutable from "immutable";
 import Translate from "react-translate-component";
 import accountUtils from "common/account_utils";
@@ -165,7 +165,6 @@ interface AccountVotingProps {
     proxy: any;
     settings: any;
     viewSettings: any;
-    history?: any;
 }
 
 function AccountVoting({
@@ -177,7 +176,7 @@ function AccountVoting({
     viewSettings
 }: AccountVotingProps) {
     useChainStoreTick();
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
     const forceUpdate = useForceUpdate();
 
@@ -840,7 +839,7 @@ function AccountVoting({
     const hideLegacy = getHideLegacyOptions();
 
     const onTabChange = (value: string) => {
-        history.push(value);
+        navigate(value);
     };
 
     const increase_voting_power = (

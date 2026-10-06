@@ -9228,25 +9228,127 @@ confirmed via a live-browser Playwright check that it still compiles
 and serves correctly with the same 2 known errors and zero new
 console/page errors.
 
+**react-router v5→v6 (done).** Unlike the three dependency removals
+above, this one couldn't be staged incrementally - v5 and v6 cannot
+coexist in the same route tree (`Switch`/`withRouter`/`useHistory` don't
+exist in v6 at all), so every file touching routing had to become
+consistent in one sitting before the app would compile or run again.
+Sized up first via `grep` (68 files importing `react-router-dom`
+directly), then expanded once `npx tsc --noEmit -p .` after the package
+bump surfaced more: react-router v5's `<Route component={X}>` used to
+auto-inject `history`/`location`/`match` as props into `X` *without* `X`
+itself importing `react-router-dom` - v6's `<Route element={<X/>}>`
+injects nothing, so every such consumer (`BlockContainer.tsx`,
+`ExchangeContainer.tsx`, `QuickTradeRouter.tsx`, `Login.tsx`,
+`CreateAccount.tsx`, `CreateAccountPassword.tsx`, and others) needed
+fixing too, found by grepping for `props.match`/`props.history`/
+`props.location` repo-wide rather than trusting the import list alone.
+The real diff, once everything was converted, landed at 24 source files
+(smaller than either initial estimate) - most of the original 68 needed
+zero changes, since `<Link>` and `useParams`/`useLocation` are
+API-compatible between v5 and v6.
+
+Worked outward from the root: `App.jsx`'s `<Switch>`/35 `<Route>`
+entries/one `<Redirect>` became `<Routes>`/`<Route element={...}>`/
+`<Navigate>`; `withRouter(App)` became a small `AppWithLocation` wrapper
+calling `useLocation()` (the class's `componentDidUpdate` already
+compared `this.props.location !== prevProps.location`, so threading the
+hook's value through as a prop needed no further changes there) -
+`history.listen(this._rebuildTooltips)` (no `history` object exists in
+v6 to call `.listen()` on) was replaced by calling `_rebuildTooltips()`
+from that same `componentDidUpdate` branch, matching what the dropped
+subscription actually fired on (every subsequent route change, never
+the initial mount, which already calls it directly elsewhere).
+
+The harder discovery: v6 requires *relative*, not absolute, paths in
+nested `<Routes>` (a route matches against whatever its parent route's
+wildcard (`/*`) left unconsumed, not the full URL) - v5's `Switch`
+always matched the whole absolute URL regardless of nesting depth. Five
+components turned out to have their own internal `Switch`/`Route`
+nested under a nonexact v5 parent route and needed both the parent
+route's path changed to end in `/*` *and* every child path rewritten
+relative: `AccountPage.tsx` (11 nested routes + 2 `Redirect`s →
+`Navigate`s, `/account/:account_name` parent → `/account/:account_name/*`),
+`WalletManager.tsx` (11 nested routes, `/wallet` → `/wallet/*`),
+`ExistingAccount.tsx` (5 nested routes, `/existing-account` →
+`/existing-account/*`), `LoginSelector.tsx` (2 conditionally-rendered
+nested routes, newly wrapped in their own `<Routes>` - bare `<Route>`
+elements outside `<Routes>` throw in v6, which v5 allowed - `/create-account`
+→ `/create-account/*`). Verified every real in-app URL still resolves
+to the intended route/component (including every nested case) using
+`react-router`'s own `matchRoutes()` utility directly against route
+configs mirroring each file's JSX tree - a fast, precise, rendering-free
+way to test the exact thing most likely to have a subtle bug, before
+trusting it to a live browser check.
+
+One behavior that genuinely could not be preserved, not just "wasn't":
+`ExistingAccount.tsx`'s `ExistingAccountOptions` had 4 `<Link>`s using
+*relative* `to` values (no leading slash) - mathematically confirmed
+(by reading v5's own `resolve-pathname` resolution algorithm) that
+every one of them already resolved to a broken path under v5 (e.g.
+`to="existing-account/import-backup"` from
+`/existing-account/import-backup` resolved to
+`/existing-account/existing-account/import-backup`, matching no route).
+v6 resolves relative links against the *route tree*, not the raw
+pathname string, so there is no way to reproduce that specific v5
+miscalculation in v6 even deliberately - fixed to each link's obvious
+intent (absolute paths) instead of porting a bug that literally cannot
+be ported, documented inline rather than silently "improved".
+
+`design-system/Rail.tsx`'s `NavLink`: `exact` → `end` (same semantics,
+renamed), `activeClassName` (removed in v6) → `className` as a function
+of `{isActive}`.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors repo-wide (catches
+every `.tsx`/`.ts` file, though not the handful of `.jsx`/`.js` routing
+files like `App.jsx` itself - those were checked by hand against the
+same v5→v6 mapping and confirmed via the runtime checks below); `eslint`
+on all 24 touched files 0 errors (after fixing two real issues
+`tsc`/`eslint` surfaced along the way: `App.jsx` had imported
+`useLocation`/`useNavigate` but never actually written the wrapper that
+calls them - caught by `no-unused-vars`, not a hypothetical, an actual
+missed step in this same batch; and `Tabs.tsx`'s `interface TabsProps
+extends Omit<...> {}` triggered `no-empty-interface`, converted to a
+type alias); a blanket `sed` pass converting `useHistory`→`useNavigate`
+and `history.push(`→`navigate(` across the 8 purely-mechanical files
+corrupted prose in a few header comments that happened to contain that
+same text describing the *original* pre-port code - caught by
+re-reading every comment the `sed` touched afterward (via `git diff`)
+and fixing the ones describing old behavior back to accurately describe
+it, not the substitution; `git status --short` showed exactly 24 edited
+source files plus `package.json`/`yarn.lock` - confirming the other
+~44 files that only ever used `<Link>`/`useParams`/`useLocation`
+genuinely needed no changes; 19/19 suites / 5,392 tests passing;
+`yarn build` shows only the 2 known pre-existing `charting_library.esm`
+errors; a live dev-server + Playwright check navigating 9 different
+in-app URLs showed zero new console/page errors beyond the 2 known
+ones. This sandbox's lack of a live node connection means `AppInit.jsx`
+never gets past its "connecting" gate, so the actual `<Routes>` tree
+never mounts in a real browser here - the `matchRoutes()` check above is
+the strongest verification available in this environment; flagged for
+the human second-reviewer to click through the real routes (especially
+the 4 newly-nested ones) in a connected environment.
+
 Remaining Phase 9 work: switch the ~126 `useAltStore()` call sites to
 `useSelector`/`useDispatch` file by file (now a purely optional/cosmetic
 cleanup, not a blocker - tracked separately, no urgency), then delete
 the `next/hooks/useAltStore.ts` adapter and each store's facade file
 once nothing references it that way - plus the separate, independent
 cleanup efforts below (`bitshares-ui-style-guide` (194 files, by far the
-largest remaining item), react-router v5→v6, Node/Electron version
-bumps). The Babel stage-0 preset item from the original cleanup list
-turned out to already be gone - `.babelrc` only has
-`@babel/preset-env`/`@babel/preset-react`/`@babel/preset-typescript`,
-and no `stage-0`/`-1`/`-2`/`-3` package is even installed - resolved
-with no action needed, found while scoping an earlier batch.
+largest remaining item) and Node/Electron version bumps). The Babel
+stage-0 preset item from the original cleanup list turned out to already
+be gone - `.babelrc` only has `@babel/preset-env`/`@babel/preset-react`/
+`@babel/preset-typescript`, and no `stage-0`/`-1`/`-2`/`-3` package is
+even installed - resolved with no action needed, found while scoping an
+earlier batch.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages (`alt`/`alt-container`/`alt-react` - **done**;
   `foundation-apps`/`react-foundation-apps` - **done**;
-  `react-hot-loader`/`@hot-loader/react-dom` - **done**); bundle-size and
-  Lighthouse/perf comparison published against the pre-migration
-  baseline (not done).
+  `react-hot-loader`/`@hot-loader/react-dom` - **done**;
+  `react-router-dom` v5/`@types/react-router-dom` - **done**, v6 now in
+  use); bundle-size and Lighthouse/perf comparison published against the
+  pre-migration baseline (not done).
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

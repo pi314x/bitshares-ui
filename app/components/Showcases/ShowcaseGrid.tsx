@@ -48,13 +48,14 @@
 //
 // `thiz.props.history.push(...)` (the class's `let thiz = this;` closure
 // workaround, used inside several tile `target` callbacks defined as
-// plain functions rather than arrow functions) becomes `useHistory()`
+// plain functions rather than arrow functions) becomes `useNavigate()`
 // (`react-router-dom`), this migration's established replacement for
 // `withRouter`/`this.props.history` (see e.g. `Dashboard/AccountCard
 // .tsx`'s header comment) - `ShowcaseGrid` is rendered directly as a
-// route (`app/App.jsx`'s `component={ShowcaseGrid}`), so `history` was
-// always implicitly injected by react-router, exactly as `useHistory()`
-// provides it here.
+// route (`app/App.jsx`'s `element={<ShowcaseGrid />}`), so `history` was
+// originally always implicitly injected by react-router under v5; v6
+// dropped that injection entirely (Phase 9, react-router v6 migration),
+// so `useNavigate()` is read directly here instead.
 //
 // TS-forced adjustment: the outer `<div style={{align: "center"}}>` uses
 // `align`, not a real CSS property (browsers silently ignore it - no
@@ -63,7 +64,7 @@
 // TypeScript's `CSSProperties` typing rejects it outright, cast with `as
 // React.CSSProperties` to preserve the original's inert markup exactly.
 import * as React from "react";
-import {useHistory} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import Showcase from "./Showcase";
 import {ChainStore} from "bitsharesjs";
 import AccountStore from "../../stores/AccountStore";
@@ -76,7 +77,7 @@ interface ShowcaseGridCoreProps {
 
 function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
     const [resolvedAccount, setResolvedAccount] = React.useState<any>(null);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     React.useEffect(() => {
         setResolvedAccount((ChainStore as any).getAccount(currentAccount));
@@ -103,7 +104,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
             title: "showcases.voting.title",
             target: () => {
                 if (hasAccount) {
-                    history.push(
+                    navigate(
                         "/account/" + resolvedAccount.get("name") + "/voting"
                     );
                 }
@@ -117,7 +118,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.barter.title",
             target: () => {
-                history.push("/barter");
+                navigate("/barter");
             },
             description: "showcases.barter.description",
             icon: "barter",
@@ -129,7 +130,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
             title: "showcases.borrow.title",
             target: () => {
                 if (hasAccount) {
-                    history.push("/borrow");
+                    navigate("/borrow");
                 }
             },
             description: "showcases.borrow.description",
@@ -141,7 +142,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.direct_debit.title",
             target: () => {
-                history.push("/direct-debit");
+                navigate("/direct-debit");
             },
             description: "showcases.direct_debit.description",
             icon: "direct_debit",
@@ -152,7 +153,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.htlc.title",
             target: () => {
-                history.push("/htlc");
+                navigate("/htlc");
             },
             description: "showcases.htlc.description",
             icon: "htlc",
@@ -163,7 +164,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.prediction_market.title",
             target: () => {
-                history.push("/prediction");
+                navigate("/prediction");
             },
             description: "showcases.prediction_market.description",
             icon: "prediction",
@@ -174,7 +175,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.merchant_protocol.title",
             target: () => {
-                history.push("/invoice/request");
+                navigate("/invoice/request");
             },
             description: "showcases.merchant_protocol.description",
             icon: "merchant",
@@ -193,7 +194,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
         {
             title: "showcases.instant_trade.title",
             target: () => {
-                history.push("/instant-trade");
+                navigate("/instant-trade");
             },
             description: "showcases.instant_trade.description",
             icon: "instant-trade",

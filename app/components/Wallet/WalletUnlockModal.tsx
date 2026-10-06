@@ -100,19 +100,21 @@ import {
     KeyFileLabel
 } from "./WalletUnlockModalLib";
 import {backupName} from "common/backupUtils";
-import {withRouter} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import Translate from "react-translate-component";
 import Icon from "../Icon/Icon";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 function WalletUnlockModal({
-    modalId = "unlock_wallet_modal2",
-    history
+    modalId = "unlock_wallet_modal2"
 }: {
     modalId?: string;
-    history: any;
 }) {
+    // react-router v6 no longer injects `history` as a prop (dropped
+    // `withRouter` at this file's export below) - `useNavigate()`
+    // replaces it.
+    const navigate = useNavigate();
     const walletUnlockState = useAltStore<any>(WalletUnlockStore as any);
     const accountState = useAltStore<any>(AccountStore as any);
     const walletManagerState = useAltStore<any>(WalletManagerStore as any);
@@ -296,7 +298,7 @@ function WalletUnlockModal({
 
     const closeRedirect = (path: string) => {
         (WalletUnlockActions as any).cancel();
-        history.push(path);
+        navigate(path);
     };
 
     const handleCreateWallet = () => closeRedirect("/create-account/wallet");
@@ -704,8 +706,6 @@ function WalletUnlockModal({
     );
 }
 
-const WalletUnlockModalWithRouter: any = withRouter(WalletUnlockModal as any);
-
 export default function WalletUnlockModalContainer(props: any) {
-    return <WalletUnlockModalWithRouter {...props} />;
+    return <WalletUnlockModal {...props} />;
 }

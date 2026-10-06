@@ -73,7 +73,7 @@ import AccountStore from "stores/AccountStore";
 import AccountNameInput from "./../Forms/AccountNameInputStyleGuide";
 import PasswordInput from "./../Forms/PasswordInput";
 import WalletDb from "stores/WalletDb";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import AccountSelect from "../Forms/AccountSelect";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import TransactionConfirmStore from "stores/TransactionConfirmStore";
@@ -102,11 +102,11 @@ interface CreateAccountState {
     step: number;
 }
 
-interface CreateAccountCoreProps {
-    history: any;
-}
-
-function CreateAccount({history}: CreateAccountCoreProps) {
+function CreateAccount() {
+    // react-router v6 no longer injects `history` as a prop (see this
+    // file's header comment, written for the v5-era assumption that a
+    // route `component` always gets it) - `useNavigate()` replaces it.
+    const navigate = useNavigate();
     const [state, setState] = React.useState<CreateAccountState>({
         validAccountName: false,
         accountName: "",
@@ -185,7 +185,7 @@ function CreateAccount({history}: CreateAccountCoreProps) {
                 [stateRef.current.accountName]: true
             }).then(() => {
                 console.log("onFinishConfirm");
-                history.push("/wallet/backup/create?newAccount=true");
+                navigate("/wallet/backup/create?newAccount=true");
             });
         }
     };
@@ -667,14 +667,9 @@ function CreateAccount({history}: CreateAccountCoreProps) {
     );
 }
 
-interface CreateAccountContainerProps {
-    history: any;
-    [key: string]: any;
-}
-
-function CreateAccountContainer({history}: CreateAccountContainerProps) {
+function CreateAccountContainer() {
     useAltStore(AccountStore);
-    return <CreateAccount history={history} />;
+    return <CreateAccount />;
 }
 
 export default CreateAccountContainer;

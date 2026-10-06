@@ -41,7 +41,7 @@ import AccountActions from "actions/AccountActions";
 import AccountStore from "stores/AccountStore";
 import AccountNameInput from "./../Forms/AccountNameInput";
 import WalletDb from "stores/WalletDb";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import AccountSelect from "../Forms/AccountSelect";
 import TransactionConfirmStore from "stores/TransactionConfirmStore";
 import LoadingIndicator from "../LoadingIndicator";
@@ -75,11 +75,10 @@ interface CreateAccountPasswordState {
     understand_3: boolean;
 }
 
-interface CreateAccountPasswordCoreProps {
-    history: any;
-}
-
-function CreateAccountPassword({history}: CreateAccountPasswordCoreProps) {
+function CreateAccountPassword() {
+    // react-router v6 no longer injects `history` as a prop - see
+    // `CreateAccount.tsx`'s identical comment for why.
+    const navigate = useNavigate();
     const [state, setState] = React.useState<CreateAccountPasswordState>(
         () => ({
             validAccountName: false,
@@ -164,7 +163,7 @@ function CreateAccountPassword({history}: CreateAccountPasswordCoreProps) {
             FetchChain("getAccount", stateRef.current.accountName, undefined, {
                 [stateRef.current.accountName]: true
             }).then(() => {
-                history.push("/wallet/backup/create?newAccount=true");
+                navigate("/wallet/backup/create?newAccount=true");
             });
         }
     };
@@ -563,7 +562,7 @@ function CreateAccountPassword({history}: CreateAccountPasswordCoreProps) {
                 <div
                     style={{width: "100%"}}
                     onClick={() => {
-                        history.push("/");
+                        navigate("/");
                     }}
                     className="button"
                 >
@@ -704,16 +703,9 @@ function CreateAccountPassword({history}: CreateAccountPasswordCoreProps) {
     );
 }
 
-interface CreateAccountPasswordContainerProps {
-    history: any;
-    [key: string]: any;
-}
-
-function CreateAccountPasswordContainer({
-    history
-}: CreateAccountPasswordContainerProps) {
+function CreateAccountPasswordContainer() {
     useAltStore(AccountStore);
-    return <CreateAccountPassword history={history} />;
+    return <CreateAccountPassword />;
 }
 
 export default CreateAccountPasswordContainer;

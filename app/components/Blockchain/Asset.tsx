@@ -2480,6 +2480,8 @@ function AssetContainer({assetSymbol}: {assetSymbol: string}) {
 }
 
 export default function AssetSymbolSplitter() {
-    const {symbol} = useParams<{symbol: string}>();
+    // Safe to assert non-null: only reached via the `/asset/:symbol`
+    // route (App.jsx), a required segment.
+    const {symbol} = useParams<{symbol: string}>() as {symbol: string};
     return <AssetContainer assetSymbol={symbol.toUpperCase()} />;
 }

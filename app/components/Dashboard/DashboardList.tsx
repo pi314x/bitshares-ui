@@ -16,7 +16,7 @@ import * as React from "react";
 import {List} from "immutable";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {useHistory} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";
 import SettingsStore from "stores/SettingsStore";
@@ -68,7 +68,7 @@ export default function DashboardList(props: DashboardListProps) {
     } = props;
 
     useChainStoreTick();
-    const history = useHistory();
+    const navigate = useNavigate();
     const settingsState = useAltStore<any>(SettingsStore);
     // Legacy DashboardList only used WalletUnlockStore's `locked` to force
     // a re-render on lock/unlock (never read it in JSX) - this hook call
@@ -99,12 +99,12 @@ export default function DashboardList(props: DashboardListProps) {
     }
 
     function goAccount(name: string, tab: number) {
-        history.push(`/account/${name}`);
+        navigate(`/account/${name}`);
         SettingsActions.changeViewSetting({overviewTab: tab});
     }
 
     function createAccount() {
-        history.push("/create-account/wallet");
+        navigate("/create-account/wallet");
     }
 
     function onFilter(e: React.ChangeEvent<HTMLInputElement>) {

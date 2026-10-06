@@ -2,7 +2,7 @@ import React from "react";
 import {ChainStore} from "bitsharesjs";
 import AccountStore from "stores/AccountStore";
 import NotificationStore from "stores/NotificationStore";
-import {withRouter} from "react-router-dom";
+import {useLocation} from "react-router-dom";
 import SyncError from "./components/SyncError";
 import LoadingIndicator from "./components/LoadingIndicator";
 import BrowserNotifications from "./components/BrowserNotifications/BrowserNotificationsContainer";
@@ -21,7 +21,7 @@ import {DEFAULT_NOTIFICATION_DURATION} from "services/Notification";
 import Loadable from "react-loadable";
 import NewsHeadline from "components/Layout/NewsHeadline";
 
-import {Route, Switch, Redirect} from "react-router-dom";
+import {Routes, Route, Navigate} from "react-router-dom";
 
 // Nested route components
 import Page404 from "./components/Page404/Page404";
@@ -368,8 +368,6 @@ class App extends React.Component {
             this.showBrowserSupportModal();
         }
 
-        this.props.history.listen(this._rebuildTooltips);
-
         this._rebuildTooltips();
 
         isIncognito(
@@ -415,6 +413,16 @@ class App extends React.Component {
     componentDidUpdate(prevProps) {
         if (this.props.location !== prevProps.location) {
             this.onRouteChanged();
+            // Phase 9 (docs/UI_MIGRATION_PLAN.md): react-router v6 removed
+            // the `history` object `withRouter` used to inject (and with
+            // it, `history.listen(...)`), so `_rebuildTooltips` - called
+            // once directly in `componentDidMount` for the initial route,
+            // exactly as before - is now called again here on every
+            // subsequent route change, matching what the dropped
+            // `history.listen(this._rebuildTooltips)` subscription used
+            // to do (it never fired on the initial mount either, only on
+            // later navigations).
+            this._rebuildTooltips();
         }
     }
 
@@ -511,156 +519,147 @@ class App extends React.Component {
                     <NewsHeadline />
                     <AppShell
                         content={
-                            <Switch>
+                            <Routes>
                                 <Route
                                     path="/"
-                                    exact
-                                    component={DashboardPage}
+                                    element={<DashboardPage />}
                                 />
                                 <Route
-                                    path="/account/:account_name"
-                                    component={AccountPage}
+                                    path="/account/:account_name/*"
+                                    element={<AccountPage />}
                                 />
                                 <Route
                                     path="/accounts"
-                                    component={DashboardAccountsOnly}
+                                    element={<DashboardAccountsOnly />}
                                 />
                                 <Route
                                     path="/market/:marketID"
-                                    component={Exchange}
+                                    element={<Exchange />}
                                 />
                                 <Route
                                     path="/credit-offer"
-                                    component={CreditOfferPage}
+                                    element={<CreditOfferPage />}
                                 />
                                 <Route
                                     path="/settings/:tab"
-                                    component={Settings}
+                                    element={<Settings />}
                                 />
-                                <Route path="/settings" component={Settings} />
+                                <Route path="/settings" element={<Settings />} />
                                 <Route
                                     path="/invoice/:data"
-                                    component={Invoice}
+                                    element={<Invoice />}
                                 />
                                 <Route
                                     path="/deposit-withdraw"
-                                    exact
-                                    component={AccountDepositWithdraw}
+                                    element={<AccountDepositWithdraw />}
                                 />
                                 <Route
-                                    path="/create-account"
-                                    component={LoginSelector}
+                                    path="/create-account/*"
+                                    element={<LoginSelector />}
                                 />
-                                <Route path="/login" component={Login} />
+                                <Route path="/login" element={<Login />} />
                                 <Route
                                     path="/registration"
-                                    exact
-                                    component={RegistrationSelector}
+                                    element={<RegistrationSelector />}
                                 />
                                 <Route
                                     path="/registration/local"
-                                    exact
-                                    component={WalletRegistration}
+                                    element={<WalletRegistration />}
                                 />
                                 <Route
                                     path="/registration/cloud"
-                                    exact
-                                    component={AccountRegistration}
+                                    element={<AccountRegistration />}
                                 />
-                                <Route path="/news" exact component={News} />
-                                <Redirect
-                                    path={"/voting"}
-                                    to={{
-                                        pathname: `/account/${accountName}/voting`
-                                    }}
+                                <Route path="/news" element={<News />} />
+                                <Route
+                                    path="/voting"
+                                    element={
+                                        <Navigate
+                                            to={`/account/${accountName}/voting`}
+                                            replace
+                                        />
+                                    }
                                 />
                                 {/* Explorer routes */}
                                 <Route
                                     path="/explorer/:tab"
-                                    component={Explorer}
+                                    element={<Explorer />}
                                 />
-                                <Route path="/explorer" component={Explorer} />
+                                <Route path="/explorer" element={<Explorer />} />
                                 <Route
                                     path="/asset/:symbol"
-                                    component={Asset}
+                                    element={<Asset />}
                                 />
                                 <Route
-                                    exact
                                     path="/block/:height"
-                                    component={Block}
+                                    element={<Block />}
                                 />
                                 <Route
-                                    exact
                                     path="/block/:height/:txIndex"
-                                    component={Block}
+                                    element={<Block />}
                                 />
-                                <Route path="/borrow" component={Borrow} />
+                                <Route path="/borrow" element={<Borrow />} />
 
-                                <Route path="/barter" component={Barter} />
+                                <Route path="/barter" element={<Barter />} />
                                 <Route
                                     path="/direct-debit"
-                                    component={DirectDebit}
+                                    element={<DirectDebit />}
                                 />
 
                                 <Route
                                     path="/spotlight"
-                                    component={ShowcaseGrid}
+                                    element={<ShowcaseGrid />}
                                 />
 
                                 {/* Wallet backup/restore routes */}
                                 <Route
-                                    path="/wallet"
-                                    component={WalletManager}
+                                    path="/wallet/*"
+                                    element={<WalletManager />}
                                 />
                                 <Route
                                     path="/create-wallet-brainkey"
-                                    component={CreateWalletFromBrainkey}
+                                    element={<CreateWalletFromBrainkey />}
                                 />
                                 <Route
-                                    path="/existing-account"
-                                    component={ExistingAccount}
+                                    path="/existing-account/*"
+                                    element={<ExistingAccount />}
                                 />
 
                                 <Route
                                     path="/create-worker"
-                                    component={CreateWorker}
+                                    element={<CreateWorker />}
                                 />
 
                                 {/* Help routes */}
-                                <Route exact path="/help" component={Help} />
+                                <Route path="/help" element={<Help />} />
                                 <Route
-                                    exact
                                     path="/help/:path1"
-                                    component={Help}
+                                    element={<Help />}
                                 />
                                 <Route
-                                    exact
                                     path="/help/:path1/:path2"
-                                    component={Help}
+                                    element={<Help />}
                                 />
                                 <Route
-                                    exact
                                     path="/help/:path1/:path2/:path3"
-                                    component={Help}
+                                    element={<Help />}
                                 />
-                                <Route path="/htlc" component={Htlc} />
+                                <Route path="/htlc" element={<Htlc />} />
                                 <Route
                                     path="/prediction"
-                                    component={PredictionMarketsPage}
+                                    element={<PredictionMarketsPage />}
                                 />
                                 <Route
-                                    exact
                                     path="/instant-trade"
-                                    component={QuickTrade}
+                                    element={<QuickTrade />}
                                 />
                                 <Route
-                                    exact
                                     path="/instant-trade/:marketID"
-                                    component={QuickTrade}
+                                    element={<QuickTrade />}
                                 />
-                                <Route path="/pools" component={PoolmartPage} />
-                                <Route path="*" component={Page404} />
-                            </Switch>
+                                <Route path="/pools" element={<PoolmartPage />} />
+                                <Route path="*" element={<Page404 />} />
+                            </Routes>
                         }
                     />
                     <ReactTooltip
@@ -719,4 +718,15 @@ class App extends React.Component {
     }
 }
 
-export default withRouter(App);
+// react-router v6 no longer injects `location` as a prop (`withRouter`
+// is gone entirely) - this wrapper reads it via the hook and forwards
+// it as a prop, since `App`'s `componentDidUpdate` compares
+// `this.props.location !== prevProps.location` and `onRouteChanged`
+// reads `this.props.location.pathname` - both need the real-pathname
+// semantics `useLocation()` provides, not just a reactive dependency.
+function AppWithLocation(props) {
+    const location = useLocation();
+    return <App {...props} location={location} />;
+}
+
+export default AppWithLocation;

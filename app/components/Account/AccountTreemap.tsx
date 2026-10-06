@@ -33,7 +33,7 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import MarketUtils from "common/market_utils";
 import MarketsStore from "stores/MarketsStore";
 import SettingsStore from "stores/SettingsStore";
-import {Link, withRouter} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 Treemap(ReactHighcharts.Highcharts);
@@ -59,16 +59,17 @@ interface AccountTreemapCoreProps {
     core_asset: any;
     marketStats?: any;
     preferredAsset: any;
-    history?: any;
 }
 
 function AccountTreemap({
     balanceObjects,
     core_asset,
     marketStats,
-    preferredAsset,
-    history
+    preferredAsset
 }: AccountTreemapCoreProps) {
+    // react-router v6 no longer injects `history` as a prop (dropped
+    // `withRouter` at this file's export - see the bottom of this file).
+    const navigate = useNavigate();
     let accountBalances: any = null;
 
     if (balanceObjects && balanceObjects.length > 0) {
@@ -191,7 +192,7 @@ function AccountTreemap({
                     events: {
                         click: function(this: any) {
                             const link = `/asset/${this.symbol}`;
-                            history.push(link);
+                            navigate(link);
                         }
                     }
                 }
@@ -333,4 +334,4 @@ function AccountTreemapWrapper(props: AccountTreemapWrapperProps) {
     );
 }
 
-export default withRouter(AccountTreemapWrapper as any) as React.ComponentType<any>;
+export default AccountTreemapWrapper;

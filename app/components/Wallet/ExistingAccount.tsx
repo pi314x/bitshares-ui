@@ -9,7 +9,7 @@ import {Link, LinkProps} from "react-router-dom";
 import WalletManagerStore from "stores/WalletManagerStore";
 import BalanceClaimActive from "./BalanceClaimActive";
 import Translate from "react-translate-component";
-import {Switch, Route} from "react-router-dom";
+import {Routes, Route} from "react-router-dom";
 import Brainkey from "./Brainkey";
 import ImportKeys from "./ImportKeys";
 import {BackupRestore} from "./Backup";
@@ -46,33 +46,22 @@ export default function ExistingAccount({children}: {children?: any}) {
                         )}
                     </div>
                     <div className="content-block">
-                        <Switch>
+                        <Routes>
+                            <Route index element={<BackupRestore />} />
                             <Route
-                                exact
-                                path="/existing-account"
-                                component={BackupRestore}
+                                path="import-backup"
+                                element={<ExistingAccountOptions />}
                             />
                             <Route
-                                exact
-                                path="/existing-account/import-backup"
-                                component={ExistingAccountOptions}
+                                path="import-keys"
+                                element={<ImportKeys />}
                             />
+                            <Route path="brainkey" element={<Brainkey />} />
                             <Route
-                                exact
-                                path="/existing-account/import-keys"
-                                component={ImportKeys}
+                                path="balance-claim"
+                                element={<BalanceClaimActive />}
                             />
-                            <Route
-                                exact
-                                path="/existing-account/brainkey"
-                                component={Brainkey}
-                            />
-                            <Route
-                                exact
-                                path="/existing-account/balance-claim"
-                                component={BalanceClaimActive}
-                            />
-                        </Switch>
+                        </Routes>
                         {children}
                     </div>
                 </div>
@@ -86,9 +75,23 @@ export function ExistingAccountOptions() {
     const has_wallet = wallet.wallet_names.count() != 0;
     return (
         <span>
+            {/* These 4 links were all relative (no leading slash) under
+                the original v5 code - mathematically confirmed (via
+                v5's own `resolve-pathname` algorithm, which drops the
+                current URL's last segment and concatenates) that every
+                one of them resolved to a path matching no actual route
+                (e.g. "existing-account/import-backup" from
+                "/existing-account/import-backup" resolved to
+                "/existing-account/existing-account/import-backup") -
+                already-broken links, pre-existing. react-router v6
+                resolves relative links differently (against the route
+                tree, not the raw pathname), so there is no way to
+                "faithfully" carry the same broken v5 resolution forward
+                - fixed to each link's clear intent (absolute paths)
+                instead of porting a bug that can't actually be ported. */}
             {!has_wallet ? (
                 <div>
-                    <TypedLink to="existing-account/import-backup">
+                    <TypedLink to="/existing-account/import-backup">
                         <Translate
                             content="wallet.import_backup"
                             wallet_name={getWalletName()}
@@ -96,12 +99,12 @@ export function ExistingAccountOptions() {
                     </TypedLink>
                     <br />
                     <br />
-                    <TypedLink to="existing-account/import-keys">
+                    <TypedLink to="/existing-account/import-keys">
                         <Translate content="wallet.import_bts1" />
                     </TypedLink>
                     <br />
                     <br />
-                    <TypedLink to="existing-account/import-keys">
+                    <TypedLink to="/existing-account/import-keys">
                         <Translate content="wallet.create_wallet" />
                     </TypedLink>
                     <br />
@@ -113,7 +116,7 @@ export function ExistingAccountOptions() {
 
             {has_wallet ? (
                 <span>
-                    <TypedLink to="dashboard">
+                    <TypedLink to="/">
                         <div className="button outline">
                             <Translate
                                 component="span"
@@ -121,7 +124,7 @@ export function ExistingAccountOptions() {
                             />
                         </div>
                     </TypedLink>
-                    <TypedLink to="wallet">
+                    <TypedLink to="/wallet">
                         <div className="button outline">
                             <Translate content="settings.wallets" />
                         </div>

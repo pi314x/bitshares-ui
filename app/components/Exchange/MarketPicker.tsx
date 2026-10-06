@@ -30,7 +30,7 @@
 // `MarketListItem`'s `this.props.history.push(linkTo)` - originally fed
 // an explicit `history` prop threaded all the way down from
 // `Exchange.jsx` (itself getting it from the route, not from its own
-// `withRouter`) - is replaced with `useHistory()` read directly in
+// `withRouter`) - is replaced with `useNavigate()` read directly in
 // `MarketListItem`, the same always-current router context object,
 // without the prop-drilling.
 //
@@ -66,7 +66,7 @@ import {ChainValidation} from "bitsharesjs";
 import counterpart from "counterpart";
 import {debounce} from "lodash-es";
 import Translate from "react-translate-component";
-import {Link, LinkProps, useHistory} from "react-router-dom";
+import {Link, LinkProps, useNavigate} from "react-router-dom";
 import AssetActions from "actions/AssetActions";
 import AssetStore from "stores/AssetStore";
 import {Form, Input, Modal, Icon as AntIcon} from "bitshares-ui-style-guide";
@@ -97,7 +97,7 @@ function MarketListItem({
     marketPickerAsset,
     tabIndex
 }: MarketListItemProps) {
-    const history = useHistory();
+    const navigate = useNavigate();
     const marketSymbol = market[1]["quote"];
     const linkTo =
         quoteSymbol == marketPickerAsset
@@ -106,7 +106,7 @@ function MarketListItem({
 
     function onKeyPress(e: any) {
         if (e.key == "Enter") {
-            history.push(linkTo);
+            navigate(linkTo);
         }
     }
 

@@ -52,7 +52,7 @@ import SettingsStore from "stores/SettingsStore";
 import IntlActions from "actions/IntlActions";
 import CreateAccount from "./Account/CreateAccount";
 import CreateAccountPassword from "./Account/CreateAccountPassword";
-import {Route} from "react-router-dom";
+import {Routes, Route} from "react-router-dom";
 import {getWalletName, getLogo, getAllowedLogins} from "branding";
 import {Select, Row, Col, Icon} from "bitshares-ui-style-guide";
 import {useAltStore} from "../next/hooks/useAltStore";
@@ -240,20 +240,20 @@ export default function LoginSelector() {
                             </h5>
                         </div>
                     )}
-                    {(getAllowedLogins as any)().includes("wallet") && (
-                        <RouteAny
-                            path="/create-account/wallet"
-                            exact
-                            component={CreateAccount}
-                        />
-                    )}
-                    {(getAllowedLogins as any)().includes("password") && (
-                        <RouteAny
-                            path="/create-account/password"
-                            exact
-                            component={CreateAccountPassword}
-                        />
-                    )}
+                    <Routes>
+                        {(getAllowedLogins as any)().includes("wallet") && (
+                            <RouteAny
+                                path="wallet"
+                                element={<CreateAccount />}
+                            />
+                        )}
+                        {(getAllowedLogins as any)().includes("password") && (
+                            <RouteAny
+                                path="password"
+                                element={<CreateAccountPassword />}
+                            />
+                        )}
+                    </Routes>
                 </div>
             </div>
         </div>
