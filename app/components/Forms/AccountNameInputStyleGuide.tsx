@@ -35,7 +35,8 @@ import AccountStore from "stores/AccountStore";
 import {ChainValidation} from "bitsharesjs";
 import counterpart from "counterpart";
 import ReactTooltip from "react-tooltip";
-import {Form, Input} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 interface AccountNameInputState {

@@ -2,7 +2,7 @@
 // docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
 import TranslateWithLinks from "../../Utility/TranslateWithLinks";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../../design-system/Tooltip";
 import counterpart from "counterpart";
 
 interface HtlcRedeemProps {

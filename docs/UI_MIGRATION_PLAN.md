@@ -10365,6 +10365,67 @@ behavior, `Select.Option`'s `className`, and `dropdownClassName`),
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Sixth migration batch**: `Forms/AccountNameInputStyleGuide.tsx`
+(`Form`/`Input`), `Blockchain/OperationAnt.js`/
+`Blockchain/operations/HtlcCreate.tsx`/`HtlcRedeem.tsx` (`Tooltip`
+only), `Blockchain/AssetResolvePrediction.tsx` (`Radio`/`Tooltip`/
+`Button`/`Form` - non-security-sensitive per its own header comment,
+same operation-submission reasoning as earlier batches), and
+`Blockchain/Asset.tsx` (`Tooltip`/`Icon`/`Table`/`Tabs`/`Alert` - a
+**partial** migration, see below).
+
+**Deferred, with a reason:** `Forms/PasswordInputStyleGuide.tsx` -
+unlike the rest of this batch, its own header comment flags it as
+"security-sensitive per AGENTS.md: handles the raw password value the
+user types" (it's the password-entry/confirm UI for wallet creation,
+`Registration/WalletRegistrationForm.tsx`'s real caller) - held back
+with the wallet-sensitive batch rather than migrated now, consistent
+with `Modal/QrcodeModal.tsx` from the second batch: AGENTS.md's
+security-sensitivity rule is about what a file actually touches
+(unlike `AssetResolvePrediction.tsx` above, which only *submits* an
+operation, this one handles the password itself), not which directory
+it lives in.
+
+`Blockchain/Asset.tsx` is also a **partial** migration, not a full
+one: its `bitshares-ui-style-guide` import pulled in 6 symbols, 5 of
+which (`Tooltip`/`Icon`/`Table`/`Tabs`/`Alert`) have design-system
+replacements, but the 6th - `Collapse`/`Collapse.Panel` (antd's
+accordion) - doesn't. `Collapse` was never part of the original
+twenty-component build and is real at 4 call sites found this way
+(`Asset.tsx`, `Gateways/GatewaySelectorModal.tsx`, `Exchange/
+Exchange.tsx`, `QuickTrade/QuickTrade.tsx`), each just a plain
+expand/collapse section (no `accordion` mode, no dynamic `activeKey`
+driving more than one panel) - a real, if moderate, new component to
+build, so the import was split rather than blocked on it: the 5
+available symbols now come from `design-system`, `Collapse` stays on
+`bitshares-ui-style-guide` with a comment explaining why, and
+`Asset.tsx` (along with the other 3 files) is still counted as a
+pending `bitshares-ui-style-guide` consumer until `Collapse` itself
+gets built as its own future task - alongside `DatePicker` and
+`CollapsibleTable`'s SCSS rework, now three deferred component-level
+items tracked here rather than three separate rushed attempts.
+
+Call-site-only fixes in `Asset.tsx` (no component change needed): two
+`const columns = [...]` column-definition arrays had their `fixed:
+"left"/"right"` values widened from the literal type `Table` expects
+to plain `string` by TypeScript's normal object-literal inference
+(since neither array carries an explicit `TableColumn<any>[]`
+annotation) - cast with `columns={columns as any}` at the two `<Table>`
+call sites affected, rather than annotating the literals themselves,
+to keep the diff minimal in a 2,400-line file already written in this
+codebase's prevailing `any`-heavy style. A third `<Table
+rowClassName="margin-row">` passed a plain string, real antd/this
+app's own convention (a single static class for every row) but a
+shape only this `rowClassName` prop type (a `(record, index) =>
+string` function, nothing else) doesn't accept - rewritten as
+`rowClassName={() => "margin-row"}`, identical at runtime.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,496/5,496 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

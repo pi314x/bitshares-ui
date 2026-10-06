@@ -34,7 +34,10 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import AssetActions from "actions/AssetActions";
 import counterpart from "counterpart";
-import {Radio, Tooltip, Button, Form} from "bitshares-ui-style-guide";
+import {Radio} from "../../design-system/Radio";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import {ChainStore} from "bitsharesjs";
 import {Asset, Price} from "../../lib/common/MarketClasses";
@@ -203,7 +206,7 @@ function AssetResolvePredictionCore({
                 />
                 <div style={{paddingTop: "1rem"}} className="button-group">
                     <Button
-                        type="primary"
+                        variant="accent"
                         disabled={
                             state.globalSettlementPrice == null
                                 ? true

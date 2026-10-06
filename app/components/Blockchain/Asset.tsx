@@ -82,14 +82,16 @@ import AssetOwnerUpdate from "./AssetOwnerUpdate";
 import AssetPublishFeed from "./AssetPublishFeed";
 import AssetResolvePrediction from "./AssetResolvePrediction";
 import BidCollateralOperation from "./BidCollateralOperation";
-import {
-    Tooltip,
-    Icon,
-    Table,
-    Tabs,
-    Collapse,
-    Alert
-} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
+import {Table} from "../../design-system/Table";
+import {Tabs} from "../../design-system/Tabs";
+import {Alert} from "../../design-system/Alert";
+// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
+// §7.1) - a real, moderately-sized accordion component used at several
+// call sites, deferred as its own future component-build task rather
+// than migrated here alongside the rest of this file's imports.
+import {Collapse} from "bitshares-ui-style-guide";
 import GatewayStore from "../../stores/GatewayStore";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -1900,7 +1902,7 @@ function Asset({
             <Table
                 style={{width: "100%"}}
                 rowKey="feedPublisher"
-                columns={columns}
+                columns={columns as any}
                 dataSource={dataSource}
                 pagination={false}
                 locale={{
@@ -2133,7 +2135,7 @@ function Asset({
                 rowKey="borrower"
                 columns={columns}
                 dataSource={dataSource}
-                rowClassName="margin-row"
+                rowClassName={() => "margin-row"}
                 pagination={{
                     pageSize: Number(25)
                 }}
@@ -2279,7 +2281,7 @@ function Asset({
             <Table
                 style={{width: "100%"}}
                 rowKey="feedCollBid"
-                columns={columns}
+                columns={columns as any}
                 dataSource={dataSource}
                 pagination={{
                     pageSize: Number(25)
