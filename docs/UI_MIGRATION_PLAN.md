@@ -9569,18 +9569,58 @@ the 2 known pre-existing `charting_library.esm` errors; visually
 verified closed/open/selected/search-focused/disabled-option states in
 both themes via `build-preview` (temporary demo, reverted after).
 
+**`design-system/Icon.tsx` - sixth component (done).** Next by usage (28
+call sites, combining the plain and `as AntIcon`-aliased import counts).
+Not to be confused with this app's existing, separate
+`components/Icon/Icon.tsx` - a custom SVG sprite loader for BitShares'
+own icon set (~50 importers), already dependency-free and nothing to
+replace there. This component only replaces `bitshares-ui-style-guide`'s
+`Icon`, a thin wrapper around antd's built-in icon-font glyph set
+(`type="search"`, `type="question-circle"`, etc. - generic UI chrome
+icons, not BitShares' own branded glyphs).
+
+Grepped every real `type=`/`theme=` value used across the app rather
+than reimplementing antd's hundreds-strong icon font: exactly 18 distinct
+glyphs are ever requested (`question-circle`, `search`, `info-circle`,
+`warning`, `close`, `setting`, `plus`, `loading`, `link`, `key`,
+`global`, `eye`, `exclamation-circle`, `delete`, `caret-up`,
+`caret-down`, `camera`, `bar-chart`), and `theme="filled"` is only ever
+paired with two of them (`question-circle`, `info-circle`) - every other
+glyph is outline-only in real usage, so only those two got a drawn
+filled variant; requesting `theme="filled"` on any other glyph falls
+back to its outline path rather than rendering nothing.
+
+Each glyph is a hand-authored inline SVG path (24x24 viewBox, 1.5px
+stroke, `currentColor`), not a vendored icon-font/icon-library
+dependency - consistent with this design system's established pattern of
+solving a small, enumerable visual need with plain CSS/SVG instead of a
+new package (`Modal`'s portal, `Tooltip`'s CSS-based positioning). The
+`loading` glyph is a partial-ring path with a `.spin` CSS class
+(`@keyframes spin`, 1s linear infinite rotation) applied automatically
+whenever `type="loading"` - no separate `spin` prop, since every real
+call site's loading icon is always spinning.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors; a
+new 4-test suite (default outline render, filled variant renders only
+for the two glyphs that have one and falls back to outline otherwise,
+`.spin` class applies only to `type="loading"`, `className`/other SVG
+attributes pass through) - 25/25 suites, 5,422/5,422 tests; `yarn build`
+shows only the 2 known pre-existing `charting_library.esm` errors;
+visually verified all 18 glyphs plus both filled variants in both themes
+via `build-preview` (temporary demo, reverted after) - glyphs render
+crisply at the chrome's icon size and invert correctly with
+`currentColor`/`var(--surface)` under the light theme's palette.
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Icon` (28 call sites, combining the plain and
-`as AntIcon`-aliased import counts) is next by usage), then begin
-migrating real call sites file by file once enough of the component
-surface exists to support a full screen - not a fixed order, reassessed
-as each component lands. Each future component should get the same
-treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`: grep every real
-call site's actual prop usage before deciding the new API's scope
-(never build out the old library's full surface speculatively), reuse
-existing conventions (tokens, `useClickOutside`-style hooks) over
-inventing new ones, a dedicated test file, and a
-`build-preview` visual
+component types (`Notification` (19 call sites) is next by usage), then
+begin migrating real call sites file by file once enough of the
+component surface exists to support a full screen - not a fixed order,
+reassessed as each component lands. Each future component should get the
+same treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`: grep
+every real call site's actual prop usage before deciding the new API's
+scope (never build out the old library's full surface speculatively),
+reuse existing conventions (tokens, `useClickOutside`-style hooks) over
+inventing new ones, a dedicated test file, and a `build-preview` visual
 check in both themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
