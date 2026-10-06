@@ -9350,6 +9350,101 @@ earlier batch.
   use); bundle-size and Lighthouse/perf comparison published against the
   pre-migration baseline (not done).
 
+### `bitshares-ui-style-guide` replacement - started
+
+Unlike every item in §7 above, this is not a dependency that can be
+quietly swapped out from under existing call sites - `bitshares-ui-
+style-guide` is a themed wrapper around `antd@^3.26.20` (confirmed via
+its own `package.json`) providing ~20 component types (`Button`,
+`Tooltip`, `Input`, `Modal`, `Form`, `Select`, `Icon`, `Notification`,
+`Table`, `Row`/`Col`, `Radio`, `Switch`, `Card`, `Popover`, `Checkbox`,
+`Alert`, `Tabs`, `Steps`, `Progress`) across 194 files and 400+ call
+sites - by far the largest remaining item in this entire migration,
+comparable in size to everything else in Phase 9 combined. Replacing it
+is a new phase of work, not a Phase 9 cleanup batch, and needed a real
+architecture decision before any code: vendor the package as-is, upgrade
+to a modern `antd` major version, adopt a different third-party library,
+or build project-owned replacements.
+
+Investigated before deciding (not guessed): `app/design-system` (built
+in Phase 1 for the app shell - `Button`, `Rail`, `Topbar`,
+`AccountSwitcher`, `NodePicker`, `WalletLockButton`, `LocaleSwitcher`,
+`ThemeProvider`) turns out to already be a from-scratch, dependency-free
+component library - CSS Modules + hand-authored design tokens
+(`tokens.ts`/`theme.scss`), zero `antd`/`bitshares-ui-style-guide`
+imports anywhere in it, confirmed by grep. `bitshares-ui-style-guide`'s
+1.6MB bundled `style.css` is pulled in exactly once, globally
+(`assets/stylesheets/vendors/_all.scss`), and nothing in
+`app/design-system` depends on any `.ant-*` class from it. This is the
+established precedent, not an accident: the new shell was deliberately
+built without adopting antd in the first place. Decision: extend
+`app/design-system` with the missing component types and migrate call
+sites to them file by file, the same strangler-fig pattern every other
+phase of this migration has used - not vendor the old package, not
+adopt a different third-party library.
+
+**`design-system/Modal.tsx` - first component (done).** Chosen as the
+starting point: self-contained (no cross-component dependencies the way
+`Form`/`Table` would have), high real usage (36 files), and
+architecturally foundational (many other future components - `Form`,
+confirmation dialogs - will render inside one). Not yet wired into any
+real screen - call sites still use `bitshares-ui-style-guide`'s `Modal`
+until migrated one file at a time, matching how every other strangler-
+fig phase in this plan started (new component/screen built and verified
+in isolation before any legacy call site is touched).
+
+Design, reusing established conventions rather than inventing new ones:
+portal to `document.body` via `ReactDOM.createPortal` (this design
+system's first use of one - avoids z-index/overflow/stacking-context
+issues from whatever legacy container happens to wrap a future call
+site); `next/hooks/useClickOutside` (already built for
+`AccountSwitcher`'s dropdown) reused directly for backdrop-click-to-
+close and Escape-to-close, by attaching its ref to the dialog box
+itself rather than the backdrop - anything outside the dialog,
+including the backdrop, counts as "outside"; CSS Modules reading the
+same `--ink`/`--surface`/`--line`/`--accent`/etc. tokens every other
+design-system component uses, verified in both themes (see below).
+`React.useId()` (what a from-scratch React 18 component would reach
+for, for the title/`aria-labelledby` pairing) doesn't exist in this
+project's React 16.14 - a module-level counter captured once via
+`useRef`'s lazy initializer stands in for it. Body-scroll lock while
+open, and focus returns to whatever triggered the modal on close.
+Deliberately minimal next to antd v3's `Modal`: no open/close
+transition (no animation primitives exist in this design system yet)
+and no full focus-trap cycling (Tab doesn't wrap within the dialog) -
+both flagged in the component's own header comment for a follow-up once
+a real migrated screen's needs make the gap concrete rather than
+speculative, rather than building speculative features now.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on both new
+files 0 errors; a new `__tests__/design-system/Modal-test.tsx` (7 tests:
+renders nothing when closed, renders title/children/footer when open,
+close button calls `onClose`, Escape calls `onClose`, backdrop click
+calls `onClose` but a click inside the dialog does not, `closable=false`
+hides the close button, no close button renders without an `onClose` at
+all) - all passing, bringing the suite to 20/20 / 5,399 tests (up from
+19/19 / 5,392); `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors. Visually verified in both themes using
+the existing `yarn build-preview` harness (`next/preview-entry.tsx`,
+already used for Phase 1 shell sign-off per §6.5) - temporarily added a
+`<Modal open title="Confirm transfer" footer={...}>` demo, built,
+screenshotted via Playwright in dark and light themes (confirmed correct
+token usage, backdrop, centering, header/body/footer layout, button
+variants), then reverted the demo (`git checkout --` on
+`preview-entry.tsx`) since it was for this one-time verification only,
+not a permanent fixture - the lasting deliverable is `Modal.tsx`/
+`Modal.module.scss`/its test, not a demo call site.
+
+Remaining work on this phase: build the next highest-leverage missing
+component types (`Tooltip` (50 call sites), `Input` (38), `Form` (35),
+`Select` (22) are the next-largest by usage), then begin migrating real
+call sites file by file once enough of the component surface exists to
+support a full screen - not a fixed order, reassessed as each component
+lands. Each future component should get the same treatment as `Modal`:
+reuse existing conventions (tokens, `useClickOutside`-style hooks) over
+inventing new ones, a dedicated test file, and a `build-preview` visual
+check in both themes before being considered done.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
