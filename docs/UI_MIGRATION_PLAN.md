@@ -9874,18 +9874,50 @@ hover and click triggers, with and without a title, in both themes via
 `build-preview` (temporary demo, reverted after) - this pass is what
 caught the title/content stacking bug above.
 
+**`design-system/Checkbox.tsx` - fifteenth component (done).** Next by
+usage (5 call sites). Grepped every real call site before designing
+this: `checked` + `onChange` (every real `onChange` handler reads
+`e.target.checked`, never `e.target.value`) or, at two call sites, a
+plain `onClick` that takes no arguments and toggles its own externally-
+held state directly. Also real: `disabled`, `id`, `tabIndex`,
+`className`, `style`, and an optional label (`children` - two real call
+sites render a bare checkbox with none). No `Checkbox.Group`/
+`indeterminate` anywhere.
+
+Unlike `Radio`, no custom event synthesis was needed: a checkbox's
+`checked` is the one piece of state real call sites read, and the native
+`<input type="checkbox">`'s own `onChange` event already carries
+`target.checked` correctly - there's no antd-vs-native type mismatch the
+way `Radio`'s non-string `value` had, so this one wraps the native
+input's real event straight through rather than constructing a
+`{target: {...}}` stand-in.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (0
+warnings); a new 5-test suite (reflects the `checked` prop, `onChange`
+fires with the native event's `target.checked` - captured synchronously
+inside the handler itself, since React 16's pooled `SyntheticEvent` is
+nullified by the time a test reads it back from a mock's recorded args
+afterward, a gotcha worth documenting for any later test in this family
+that touches a native form event - a plain `onClick` fires with no
+`onChange` wired up, renders with no label `<span>` when `children` is
+omitted, passes through `disabled`/`id`/`className`) - 34/34 suites,
+5,463/5,463 tests; `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors; visually verified checked/unchecked and
+disabled states in both themes via `build-preview` (temporary demo,
+reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Checkbox` (5 call sites) is next by usage), then begin
+component types (`Alert` (5 call sites) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
 treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`/`Popover`:
-grep every real call site's actual prop usage before deciding the new
-API's scope (never build out the old library's full surface
-speculatively), reuse existing conventions (tokens, `useClickOutside`-
-style hooks) over inventing new ones, a dedicated test file, and a
-`build-preview` visual check in both
+`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`/`Popover`/
+`Checkbox`: grep every real call site's actual prop usage before
+deciding the new API's scope (never build out the old library's full
+surface speculatively), reuse existing conventions (tokens,
+`useClickOutside`-style hooks) over inventing new ones, a dedicated test
+file, and a `build-preview` visual check in both
 themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
