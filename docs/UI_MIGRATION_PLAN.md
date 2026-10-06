@@ -10040,6 +10040,65 @@ the `bitshares-ui-style-guide` npm dependency entirely (mirroring how
 `alt`/`foundation-apps`/`react-hot-loader` were removed earlier in this
 migration).
 
+### 7.1 Call-site migration (in progress)
+
+Migrating real `bitshares-ui-style-guide` call sites file by file to the
+twenty design-system components above. User direction: start with
+non-wallet files to establish the pattern, defer anything wallet-
+sensitive (unlock, key import/export, backup) per AGENTS.md until last,
+with extra care. Each file's migration swaps its
+`bitshares-ui-style-guide` import for the matching `design-system`
+import and adjusts any prop names/values that don't match 1:1 - verified
+with `tsc`/`eslint`/`yarn test`/`yarn build` every batch, the same bar as
+component-building, except without a `build-preview` visual check per
+file (most real screens render through the full app shell, which
+`AppInit.jsx` gates behind a live blockchain connection this sandbox
+doesn't have - verification here leans on type-checking and the existing
+test suite instead).
+
+**Real gaps this phase has already caught** (each a case where the
+original component build's grep missed real usage, because the call
+site used a cast or an import alias the grep pattern didn't account
+for) - fixed in the design-system component itself, not papered over at
+the call site:
+
+- `Notification.warning` - real at two call sites, both written as
+  `(Notification as any).warning(...)`; the cast hid them from the
+  original `Notification\.(success|error|...)` grep. Added as a third
+  severity.
+- `Icon`'s `star` (with a filled variant)/`user`/`plus-circle`/
+  `file-search` glyphs - real at several call sites via a local
+  `Icon as AntIcon` import alias, which the original glyph-scoping grep
+  (keyed on the literal `<Icon`/`<AntIcon` JSX) didn't search for.
+- `Modal`'s prop names - the original build used `open`/`onClose`
+  without grepping real usage first (predating this migration's
+  grep-before-building discipline). A full audit of every real
+  `<Modal ...>` opening tag (parsing balanced braces, not a naive
+  substring grep, since `footer={[<Button key=... onClick=... />]}`
+  arrays otherwise over-count nested props) found the real surface to be
+  `visible`/`onCancel`/`title`/`footer`/`closable`/`wrapClassName`/
+  `className`/`width`/`destroyOnClose` - confirmed against antd's own
+  source (`bitshares-ui-style-guide`'s `Modal` is a bare re-export of
+  antd's) that several other frequently-passed props (`overlay`, 35
+  call sites; `id`, 28; `noCloseBtn`, `overlayClose`, `closeable`,
+  `modalHeader`, `noHeaderContainer`) were always inert dead code, never
+  part of antd's real `ModalProps` and never read by `rc-dialog`'s
+  implementation either - dropped at each call site as confirmed-dead
+  rather than migrated.
+
+**Deferred, not yet migrated, with a reason:**
+
+- `Account/AccountReferralsTable.tsx` - its `pagination.onChange(page,
+  pageSize)` drives a real Elasticsearch refetch per page (server-side
+  pagination), which `Table`'s current client-side-only pagination
+  slicing doesn't support. Needs a dedicated `Table` extension, not a
+  call-site-only fix.
+- Every `Wallet/*` file, `stores/WalletDb.ts`, `PrivateKeyView.tsx`,
+  `Login/*`, and the wallet-creation/backup flows under `Registration/`
+  and `Settings/` - held back deliberately per AGENTS.md's
+  security-sensitivity guidance, migrated last and with extra care once
+  the pattern is well-established on lower-risk files.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
