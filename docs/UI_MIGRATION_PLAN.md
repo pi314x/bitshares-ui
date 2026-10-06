@@ -9745,18 +9745,59 @@ content-sized no-`span` case in both themes via `build-preview`
 (temporary demo, reverted after) - a 12/12 split, a 6/offset-2/8 row, and
 an unsized `Col` all measured out exactly as their arithmetic predicts.
 
+**`design-system/Radio.tsx` - eleventh component (done).** Next by usage
+(8 call sites). Grepped every real call site before designing this:
+every real `onChange` handler reads `e.target.value` (and, for the one
+standalone `<Radio>` used outside a `Radio.Group` -
+`Modal/SetDefaultFeeAssetModal.tsx`, inside a `Table` column `render` -
+also `e.target.checked`); no `Radio.Button`/`buttonStyle` usage anywhere.
+
+`e.target.value` mattered more than it looked: real `value`s are often
+numbers (`value={1}`, `value={0}`) or other non-string constants, and a
+handler like `onPriceChanged(e.target.value)` expects that exact original
+value back, not a stringified DOM attribute - which a naive native
+`<input type="radio">` can't give, since the DOM always coerces `value`
+to a string. Checked against antd's own source rather than assumed:
+antd's `Radio` wraps `rc-checkbox`, whose `Checkbox.js` constructs its
+change event as `{target: {...props, checked: e.target.checked}}` - i.e.
+`target.value` is the original, unstringified `value` prop. This port
+does the same: each `Radio`'s native input's real `onChange` is
+intercepted and call sites actually receive a plain
+`{target: {value, checked}}` object carrying the original `value`, not
+a real native-input-shaped event.
+
+`Radio.Group` passes `value`/`onChange`/`disabled`/a shared `name` down
+to its `Radio` children via context (the same shape `Select`'s dropdown
+established for its own compound-component pattern), and supports both
+controlled (`value`) and uncontrolled (`defaultValue`) usage. A `Radio`
+rendered outside any `Group` falls back to its own `checked`/`onChange`
+props directly, for the one real standalone call site.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (5
+expected `any`-type warnings, from the deliberately loose `value: any`
+typing real call sites' numeric/string/constant values all need); a new
+5-test suite (`Radio.Group` checks the option matching its `value`,
+`onChange` fires with the original non-stringified value, an
+uncontrolled `Group` switches its own checked option, a standalone
+`Radio` outside any `Group` works via direct `checked`/`onChange`, a
+`Group`'s `disabled` cascades to its `Radio`s but a `Radio`'s own
+`disabled` wins) - 30/30 suites, 5,447/5,447 tests; `yarn build` shows
+only the 2 known pre-existing `charting_library.esm` errors; visually
+verified selection and the disabled-group state in both themes via
+`build-preview` (temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Radio` (8 call sites) is next by usage), then begin
+component types (`Switch` (7 call sites) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
 treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`/`Table`/`Row`/`Col`: grep every real call site's actual
-prop usage before deciding the new API's scope (never build out the old
-library's full surface speculatively), reuse existing conventions
-(tokens, `useClickOutside`-style hooks) over inventing new ones, a
-dedicated test file, and a `build-preview` visual check in both themes
-before being considered done.
+`Notification`/`Table`/`Row`/`Col`/`Radio`: grep every real call site's
+actual prop usage before deciding the new API's scope (never build out
+the old library's full surface speculatively), reuse existing
+conventions (tokens, `useClickOutside`-style hooks) over inventing new
+ones, a dedicated test file, and a `build-preview` visual check in both
+themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
