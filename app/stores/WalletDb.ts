@@ -1,33 +1,51 @@
-// TypeScript port of the legacy WalletDb.js (Phase 5,
-// docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes - every method
-// body below is a line-for-line translation of the original, with `as
-// any` casts added only where TS needs them (untyped bitsharesjs/idb-*
-// helpers) and no behavior altered. Same `extends (BaseStore as any)`
-// treatment as the other Alt.js stores already ported in this migration
-// (BrainkeyStore.ts, BackupStore.ts, ImportKeysStore.ts).
+// Redux-backed replacement for the Alt.js WalletDb store
+// (docs/UI_MIGRATION_PLAN.md, Phase 9 batch 10 - the last Tier 2 store).
+// See `../store/slices/walletDbSlice.ts`'s header for why this file is
+// NOT like every other migrated store: `wallet`/`saving_keys` stay on a
+// real, directly mutable `state` object on the instance (exactly as the
+// original Alt store kept them) instead of moving into Redux state,
+// because `app/__tests__/wallets/walletDbCrypto-test.js` - the
+// characterization-test safety net this file's TS port was built
+// against (see that port's own prior header, preserved below) - sets
+// `WalletDb.state.wallet = {...}` as a plain property write and expects
+// every method to see it immediately. Redux is used only for the
+// `listen()`/`unlisten()` change-notification plumbing that
+// `next/hooks/useAltStore.ts` (e.g. `WalletUnlockModal.tsx`) needs - a
+// version counter is bumped by `setState()`, mirroring the original's
+// own `this.state.wallet = wallet; this.setState({wallet})`
+// double-write (direct mutation for same-tick reads elsewhere in this
+// file, `setState` purely to notify listeners).
+//
+// No `bindListeners`/actions file binds to this store (confirmed via
+// grep - WalletDb has no corresponding WalletDbActions), so unlike the
+// batch-9 cluster there is no cross-store migration-ordering constraint
+// here. Every one of this file's ~26 previously `_export`ed methods is
+// just a normal public method now - every real call site already
+// invokes them as `WalletDb.methodName(...)` through the default-
+// exported singleton (grep-confirmed, no detached method references),
+// so no extra auto-binding is needed.
 //
 // Security-sensitive per AGENTS.md, more than any other file in this
 // migration: this is wallet unlock, private-key decryption, and
-// transaction-signing. Per the Phase 5 methodology note ("wrap it behind
-// a typed interface and add characterization tests first, then refactor
-// internals with the safety net in place"), the in-memory crypto paths
-// (validatePassword, changePassword, getBrainKey(Private),
-// generateKeyFromPassword, getPrivateKey/decryptTcomb_PrivateKey) were
-// characterized against the pre-port .js implementation in
-// app/__tests__/wallets/walletDbCrypto-test.js before this port, and pass
-// unchanged against this port. The IndexedDB/Web-Worker-dependent methods
-// (onCreateWallet, saveKey, importKeysWorker, loadDbData, _updateWallet)
-// were not characterization-tested (mocking a full IndexedDB + Worker
-// round trip was judged not worth the added test fragility for a
-// mechanical port) - those got an extra-careful line-by-line diff review
-// against the original instead, and are flagged here for the human
-// second-reviewer this phase's exit criteria call for. The raw `WalletDb`
-// class is now a named export (in addition to the default-exported
-// singleton, unchanged) purely so those characterization tests can
-// construct/inspect it directly - not a behavior change.
-import alt from "alt-instance";
-import BaseStore from "stores/BaseStore";
-
+// transaction-signing. Every method body below is unchanged from the
+// prior TS port (see the removed Alt/BaseStore scaffolding in the diff
+// for exactly what was dropped) - no logic altered, no behavior
+// "improved". The in-memory crypto paths (validatePassword,
+// changePassword, getBrainKey(Private), generateKeyFromPassword,
+// getPrivateKey/decryptTcomb_PrivateKey) remain characterization-tested
+// against app/__tests__/wallets/walletDbCrypto-test.js, which continues
+// to pass unmodified against this facade. The IndexedDB/Web-Worker-
+// dependent methods (onCreateWallet, saveKey, importKeysWorker,
+// loadDbData, _updateWallet) remain not characterization-tested (same
+// reasoning as before - mocking a full IndexedDB + Worker round trip
+// was judged not worth the added test fragility) and got an extra-
+// careful line-by-line diff review against the pre-migration version
+// instead - flagged here again for the human second-reviewer this
+// phase's exit criteria call for. The raw `WalletDb` class remains a
+// named export (in addition to the default-exported singleton) purely
+// so the characterization tests can re-require a fresh module instance
+// per test (module-private `aes_private`/`_passwordKey` reset via
+// `jest.resetModules()`) - not a behavior change.
 import iDB from "idb-instance";
 import idb_helper from "idb-helper";
 import {cloneDeep} from "lodash-es";
@@ -45,6 +63,11 @@ import AddressIndex from "stores/AddressIndex";
 import SettingsActions from "actions/SettingsActions";
 import {Notification} from "bitshares-ui-style-guide";
 import counterpart from "counterpart";
+import {reduxStore} from "../store/reduxStore";
+import {
+    bumpWalletDbVersion,
+    selectWalletDbVersion
+} from "../store/slices/walletDbSlice";
 
 let aes_private: any = null;
 let _passwordKey: any = null;
@@ -62,53 +85,51 @@ if (__ELECTRON__) {
 }
 
 /** Represents a single wallet and related indexedDb database operations. */
-export class WalletDb extends (BaseStore as any) {
+export class WalletDb {
     state: any;
     confirm_transactions: boolean;
     generateNextKey_pubcache: any[];
     chainstore_account_ids_by_key: any;
     brainkey_look_ahead: number | undefined;
     generatingKey: boolean;
+    private unsubscribers = new Map<() => void, () => void>();
 
     constructor() {
-        super();
         this.state = {wallet: null, saving_keys: false};
         // Confirm only works when there is a UI (this is for mocha unit tests)
         this.confirm_transactions = true;
         (ChainStore as any).subscribe(this.checkNextGeneratedKey.bind(this));
         this.generateNextKey_pubcache = [];
-        // WalletDb use to be a plan old javascript class (not an Alt store) so
-        // for now many methods need to be exported...
-        this._export(
-            "checkNextGeneratedKey",
-            "getWallet",
-            "onLock",
-            "isLocked",
-            "decryptTcomb_PrivateKey",
-            "getPrivateKey",
-            "process_transaction",
-            "transaction_update",
-            "transaction_update_keys",
-            "getBrainKey",
-            "getBrainKeyPrivate",
-            "onCreateWallet",
-            "validatePassword",
-            "changePassword",
-            "generateNextKey",
-            "incrementBrainKeySequence",
-            "saveKeys",
-            "saveKey",
-            "setWalletModified",
-            "setBackupDate",
-            "setBrainkeyBackupDate",
-            "_updateWallet",
-            "loadDbData",
-            "importKeysWorker",
-            "resetBrainKeySequence",
-            "decrementBrainKeySequence",
-            "generateKeyFromPassword"
-        );
         this.generatingKey = false;
+    }
+
+    getState() {
+        return this.state;
+    }
+
+    setState(patch: any) {
+        Object.assign(this.state, patch);
+        reduxStore.dispatch(bumpWalletDbVersion());
+    }
+
+    listen(callback: () => void) {
+        let previous = selectWalletDbVersion(reduxStore.getState());
+        const unsubscribe = reduxStore.subscribe(() => {
+            const next = selectWalletDbVersion(reduxStore.getState());
+            if (next !== previous) {
+                previous = next;
+                callback();
+            }
+        });
+        this.unsubscribers.set(callback, unsubscribe);
+    }
+
+    unlisten(callback: () => void) {
+        const unsubscribe = this.unsubscribers.get(callback);
+        if (unsubscribe) {
+            unsubscribe();
+            this.unsubscribers.delete(callback);
+        }
     }
 
     /** Discover derived keys that are not in this wallet */
@@ -935,8 +956,8 @@ export class WalletDb extends (BaseStore as any) {
     }
 }
 
-const WalletDbWrapped: any = (alt as any).createStore(WalletDb, "WalletDb");
-export default WalletDbWrapped;
+const WalletDbSingleton = new WalletDb();
+export default WalletDbSingleton;
 
 function reject(error: string): never {
     console.error("----- WalletDb reject error -----", error);

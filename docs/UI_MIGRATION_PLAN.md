@@ -8415,18 +8415,24 @@ source above has zero outbound cross-store action dependencies.
     `WalletManagerStore` as one atomic 5-store cluster - see the Tier
     1c/1d entry above for why). The real wallet-lock-state store -
     `locked` gates the whole app's wallet access.
-  - `WalletDb.ts` itself, last and most carefully. Note from scoping
-    this tier: `WalletDb.ts` is NOT currently subscribed to via
-    `.listen()`/`.unlisten()` by any call site (grep-confirmed) - it's
-    used purely as a namespace of directly-callable methods
-    (`process_transaction`, `validatePassword`, etc.), which should
-    simplify its migration (no reactive state-shape to design, "just"
-    preserve every method's exact behavior) but does not reduce how
-    carefully each method needs to be ported.
-- Once every store above is migrated (facade-backed, call sites still
-  untouched): switch call sites from `useAltStore`/direct
-  `.listen()` to `useSelector`/`useDispatch` file by file; then drop
-  the facades and delete `alt`/`alt-react`/`alt-instance.js`.
+  - `WalletDb.ts` itself (**done**, batch 10 - see below), last and
+    most carefully. **Correction to an earlier scoping note in this
+    entry:** this tier's initial scoping claimed `WalletDb.ts` was not
+    subscribed to via `.listen()`/`.unlisten()` by any call site - that
+    was wrong, caught while reading every real call site before porting:
+    `Wallet/WalletUnlockModal.tsx` does
+    `useAltStore<any>(WalletDb as any)` specifically so `dbWallet`
+    refreshes reactively when `onCreateWallet`/`_updateWallet`/
+    `loadDbData` write a new wallet object - so the facade does need a
+    real `listen()`/`unlisten()` implementation, not just directly-
+    callable methods. See the batch 10 write-up for how that was
+    reconciled with the characterization test's direct
+    `WalletDb.state.wallet = {...}` mutation requirement.
+- **Tier 2 is now 100% migrated (13 of 13 stores).** Once every store
+  above is migrated (facade-backed, call sites still untouched): switch
+  call sites from `useAltStore`/direct `.listen()` to
+  `useSelector`/`useDispatch` file by file; then drop the facades and
+  delete `alt`/`alt-react`/`alt-instance.js`.
 - `bitshares-ui-style-guide` (194 files), `foundation-apps` (8 files),
   react-router v5→v6, Babel stage-0 preset, and react-hot-loader
   removal are separate, independent cleanup efforts (no ordering
@@ -8932,6 +8938,91 @@ same node-connection screen as the pre-migration baseline (confirming
 `AppInit.jsx`'s `IntlStore`/`SettingsStore`/`AccountStore`/
 `WalletManagerStore` dependencies all initialize without throwing), and
 produced zero new console/page errors.
+
+**Batch 10 (`WalletDb.ts`, the last Tier 2 store):** no `bindListeners`
+cluster this time - `WalletDb` has no corresponding actions file and no
+store binds to it, so no cross-store ordering constraint, unlike every
+batch since 2. The design question this batch turned on: the
+characterization-test safety net
+(`app/__tests__/wallets/walletDbCrypto-test.js`) sets
+`WalletDb.state.wallet = {...}` as a direct, plain property write (not
+through any method) and expects every other method to observe it
+immediately - and the original Alt store's own methods already followed
+exactly that pattern internally (`this.state.wallet = wallet;
+this.setState({wallet})`, a redundant direct-mutation-plus-notify pair,
+confirmed by grep across all 15 read/write sites in the file). So unlike
+every other migrated store, `wallet`/`saving_keys` do **not** move into
+Redux state as the canonical values - `state` stays a real, directly
+mutable object on the facade instance, exactly as it was under Alt, and
+is the only source of truth `getWallet()`/`isLocked()`/
+`process_transaction()`/etc. read from. `store/slices/walletDbSlice.ts`
+holds only a `version` counter; `setState(patch)` does
+`Object.assign(this.state, patch)` then dispatches a version bump;
+`listen(callback)` subscribes to that version via the reselect-free
+`previous !== next` pattern established by `IntlStore.ts`. This was
+necessary, not just convenient: `Wallet/WalletUnlockModal.tsx` really
+does call `useAltStore(WalletDb)` to get `dbWallet` to refresh reactively
+(see the Tier 2 list correction above) - a facade with no working
+`listen()` would have silently broken that screen.
+
+Every one of the ~26 previously `_export`ed methods ported with zero
+logic changes - the full method bodies are unchanged from the prior
+mechanical TS port, only the Alt/`BaseStore`/`alt.createStore` scaffolding
+around them was replaced with a plain class + singleton export (no more
+`_export()` call: every method is simply public now, and every real call
+site already invokes them as `WalletDb.methodName(...)` through the
+default-exported singleton - grep-confirmed zero detached method
+references anywhere in the app). The standalone module-scope `reject()`
+helper `_updateWallet` calls when `wallet` is missing (not a Promise
+executor's `reject` - an unusual bare throw-helper) is preserved exactly
+as before.
+
+**Batch 10 verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+all 3 new/edited files (`stores/WalletDb.ts`,
+`store/slices/walletDbSlice.ts`, `store/reduxStore.ts`) 0 errors (only
+expected `any`-warnings, 99 of them given the file's size); `git status
+--short` showed only those 3 files - every real call site (62 for
+`process_transaction`, 34 for `getWallet`, 23 for `isLocked`, 18 for
+`validatePassword`, plus every other `_export`ed method across
+`app/actions/*`, `app/api/*`, `app/components/**`, `app/lib/common/*`)
+untouched; 19/19 suites / 5,392 tests passing, including
+`walletDbCrypto-test.js`'s full characterization suite (unlock/lock
+round-trip, wrong-password, `changePassword` re-wrapping the master key,
+brainkey derivation, `getPrivateKey`/`decryptTcomb_PrivateKey` round-
+trips) green with zero changes to that test file; `yarn build` shows
+only the 2 known pre-existing `charting_library.esm` errors. Given this
+file's AGENTS.md-flagged sensitivity, additionally ran the same live-
+browser sanity check as batch 9: `yarn start --host 0.0.0.0`, loaded in a
+real headless browser via Playwright, confirmed the same "NOT CONNECTED"
+node-picker baseline screen and zero new console/page errors beyond the
+2 known pre-existing ones.
+
+A pre-existing, out-of-scope issue noticed while grepping call sites,
+*not* introduced by this migration and left as-is: `app/test
+/wallet_action_test.js` (Mocha, not part of `yarn test`/CI per AGENTS.md -
+"5 known pre-existing failures... not yet wired into CI") calls
+`WalletDb.importKeys(...)`, a method that does not exist on this store
+(the real method is `importKeysWorker`) - confirmed broken before this
+migration too (absent from the pre-port `_export()` list), so not a
+regression to fix here.
+
+As flagged in this file's own header comment (carried over from the
+prior TS port): the IndexedDB/Web-Worker-dependent methods
+(`onCreateWallet`, `saveKey`, `importKeysWorker`, `loadDbData`,
+`_updateWallet`) remain uncovered by the characterization-test suite
+(mocking a full IndexedDB + Worker round trip was judged not worth the
+added test fragility) - these got an extra-careful line-by-line diff
+review against the pre-migration version instead of test coverage, and
+are flagged again here for the human second-reviewer this phase's exit
+criteria call for.
+
+**Tier 2 (all 13 security-sensitive stores) is now fully migrated.**
+Remaining Phase 9 work: switch call sites from `useAltStore`/direct
+`.listen()` to `useSelector`/`useDispatch` file by file, then drop every
+facade and delete the `alt`/`alt-react`/`alt-instance.js` dependency
+entirely - plus the separate, independent cleanup efforts below
+(`bitshares-ui-style-guide`, `foundation-apps`, react-router v5→v6,
+Babel stage-0 preset, react-hot-loader, Node/Electron version bumps).
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison
