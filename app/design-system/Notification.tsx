@@ -20,12 +20,19 @@ import styles from "./Notification.module.scss";
 // `(Notification as any).warning(...)` - the `as any` cast hid the call
 // from the original grep for `Notification\.(success|error|...)`, caught
 // only once the call-site migration phase tried to compile those two
-// files against this module's real (cast-free) exported methods. Every
-// call site passes only `message` (no `description`, `duration`
-// override, `placement`, or `onClick` anywhere in the app), and the one
+// files against this module's real (cast-free) exported methods. `.info`
+// was missed the same way, for the same reason, caught later still:
+// `PriceAlertNotifications.tsx`'s two call sites also write
+// `(Notification as any).info(...)` - and, caught at the same time,
+// genuinely pass `description` (a rich `<Translate>` block naming the
+// asset pair and expected/actual price, not just a string) and `icon`
+// (a colored up/down caret overriding the default severity icon) -
+// real content, not cosmetic, so both are supported rather than
+// silently dropped. No other real call site uses either. No call site
+// anywhere passes `placement` or `onClick`, and the one
 // `Notification.config({...})` call (`App.jsx`, setting a default
-// `duration` and `top` offset so toasts clear the topbar) is kept as the
-// only other supported entry point.
+// `duration` and `top` offset so toasts clear the topbar) is kept as
+// the only other supported entry point.
 //
 // Architecturally different from this design system's other components:
 // since real call sites invoke this as a plain function from outside
@@ -46,6 +53,16 @@ export interface NotificationArgs {
      * to whatever `Notification.config({duration})` last set (4.5s
      * un-configured, matching antd's own default). */
     duration?: number;
+    /** Extra content shown below `message`, in a smaller/muted style -
+     * real at `PriceAlertNotifications.tsx`'s two `.info(...)` calls,
+     * each a rich `<Translate>` block naming the asset pair and
+     * expected/actual price, not just a plain string. */
+    description?: React.ReactNode;
+    /** Overrides this entry's default severity icon with a caller-
+     * supplied element - real at the same two call sites (a colored
+     * up/down caret matching whether the alert fired for a price
+     * crossing above or below the threshold). */
+    icon?: React.ReactNode;
 }
 
 export interface NotificationConfigArgs {
@@ -53,12 +70,14 @@ export interface NotificationConfigArgs {
     top?: number;
 }
 
-type NotificationKind = "success" | "error" | "warning";
+type NotificationKind = "success" | "error" | "warning" | "info";
 
 interface NotificationEntry {
     id: number;
     kind: NotificationKind;
     message: React.ReactNode;
+    description?: React.ReactNode;
+    icon?: React.ReactNode;
 }
 
 const config: Required<NotificationConfigArgs> = {
@@ -90,7 +109,16 @@ function push(kind: NotificationKind, args: NotificationArgs) {
     ensureContainer();
     const id = nextId++;
     const duration = args.duration ?? config.duration;
-    entries = [...entries, {id, kind, message: args.message}];
+    entries = [
+        ...entries,
+        {
+            id,
+            kind,
+            message: args.message,
+            description: args.description,
+            icon: args.icon
+        }
+    ];
     render();
     if (duration > 0) {
         setTimeout(() => dismiss(id), duration * 1000);
@@ -136,13 +164,24 @@ function NotificationStack({
                     role="alert"
                 >
                     <span className={styles.icon}>
-                        {entry.kind === "success" ? (
+                        {entry.icon ? (
+                            entry.icon
+                        ) : entry.kind === "success" ? (
                             <SuccessIcon />
+                        ) : entry.kind === "info" ? (
+                            <Icon type="info-circle" />
                         ) : (
                             <Icon type="exclamation-circle" />
                         )}
                     </span>
-                    <div className={styles.message}>{entry.message}</div>
+                    <div className={styles.messageGroup}>
+                        <div className={styles.message}>{entry.message}</div>
+                        {entry.description ? (
+                            <div className={styles.description}>
+                                {entry.description}
+                            </div>
+                        ) : null}
+                    </div>
                     <button
                         type="button"
                         className={styles.close}
@@ -166,6 +205,9 @@ export const Notification = {
     },
     warning(args: NotificationArgs): void {
         push("warning", args);
+    },
+    info(args: NotificationArgs): void {
+        push("info", args);
     },
     config(args: NotificationConfigArgs): void {
         if (args.duration !== undefined) config.duration = args.duration;

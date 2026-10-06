@@ -15,7 +15,9 @@
 import * as React from "react";
 import QrReader from "react-qr-reader";
 import counterpart from "counterpart";
-import {Modal, Button, Icon} from "bitshares-ui-style-guide";
+import {Modal} from "../design-system/Modal";
+import {Button} from "../design-system/Button";
+import {Icon} from "../design-system/Icon";
 
 interface QRScannerState {
     address?: any;
@@ -29,8 +31,6 @@ interface QRScannerProps {
     submitBtnText: React.ReactNode;
     dataFoundText: React.ReactNode;
 }
-
-const modalId = "qr_scanner_modal";
 
 function isBitcoinAddress(data: string) {
     return /bitcoin:([a-zA-Z0-9]+)/.test(data);
@@ -104,9 +104,6 @@ export default function QRScanner({
             <Modal
                 visible={visible}
                 className="qr-address-scanner-modal"
-                modalHeader="global.scan_qr_code"
-                id={modalId}
-                overlay={true}
                 closable={false}
                 footer={
                     !state.address ? (
@@ -123,7 +120,7 @@ export default function QRScanner({
                                 </Button>,
                                 <Button
                                     key="qr-submit-button"
-                                    type="primary"
+                                    variant="accent"
                                     onClick={submit}
                                 >
                                     {submitBtnText}

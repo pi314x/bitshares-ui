@@ -47,7 +47,10 @@ import Translate from "react-translate-component";
 import WebsocketAddModal from "./Settings/WebsocketAddModal";
 import SettingsActions from "actions/SettingsActions";
 import {Apis} from "bitsharesjs-ws";
-import {Form, Select, Button, Input} from "bitshares-ui-style-guide";
+import {Form} from "../design-system/Form";
+import {Select} from "../design-system/Select";
+import {Button} from "../design-system/Button";
+import {Input} from "../design-system/Input";
 import counterpart from "counterpart";
 import {useAltStore} from "../next/hooks/useAltStore";
 
@@ -190,7 +193,7 @@ export default function InitError() {
                             )}
                         </Form.Item>
 
-                        <Button type={"primary"} onClick={onReloadClick}>
+                        <Button variant="accent" onClick={onReloadClick}>
                             {counterpart.translate(`app_init.retry`)}
                         </Button>
                         <Button

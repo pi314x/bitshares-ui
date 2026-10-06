@@ -122,6 +122,29 @@ describe("design-system/Table", () => {
         expect(onChange).toHaveBeenCalledWith(["a"], [rows[0]]);
     });
 
+    it("disables a row's own selection checkbox per getCheckboxProps", () => {
+        const onChange = jest.fn();
+        const {getAllByRole} = render(
+            <Table
+                columns={columns}
+                dataSource={rows}
+                pagination={false}
+                rowSelection={{
+                    selectedRowKeys: [],
+                    onChange,
+                    getCheckboxProps: record => ({
+                        disabled: record.key === "b"
+                    })
+                }}
+            />
+        );
+        const checkboxes = getAllByRole("checkbox") as HTMLInputElement[];
+        // First checkbox is "select all"; the rest are per-row (a, b, c).
+        expect(checkboxes[1].disabled).toBe(false);
+        expect(checkboxes[2].disabled).toBe(true);
+        expect(checkboxes[3].disabled).toBe(false);
+    });
+
     it("calls onRow's handlers for each rendered row", () => {
         const onRowClick = jest.fn();
         const {getByText} = render(

@@ -40,11 +40,26 @@
     color: var(--warn);
 }
 
-.message {
+.info .icon {
+    color: var(--accent);
+}
+
+.messageGroup {
     flex: 1;
     min-width: 0;
+}
+
+.message {
     color: var(--ink);
     font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.description {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
     line-height: 1.5;
     word-break: break-word;
 }

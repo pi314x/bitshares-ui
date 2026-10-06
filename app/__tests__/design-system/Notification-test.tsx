@@ -1,3 +1,4 @@
+import * as React from "react";
 import {act, fireEvent} from "@testing-library/react";
 import {Notification} from "../../design-system/Notification";
 
@@ -45,6 +46,45 @@ describe("design-system/Notification", () => {
             Notification.warning({message: "Heads up", duration: 0});
         });
         expect(document.body.textContent).toContain("Heads up");
+
+        const closeButton = document.body.querySelector(
+            "button[aria-label='Close']"
+        ) as HTMLButtonElement;
+        act(() => {
+            fireEvent.click(closeButton);
+        });
+    });
+
+    it("shows an info message", () => {
+        act(() => {
+            Notification.info({message: "FYI", duration: 0});
+        });
+        expect(document.body.textContent).toContain("FYI");
+
+        const closeButton = document.body.querySelector(
+            "button[aria-label='Close']"
+        ) as HTMLButtonElement;
+        act(() => {
+            fireEvent.click(closeButton);
+        });
+    });
+
+    it("shows description content below the message, and a custom icon in place of the default one", () => {
+        act(() => {
+            Notification.info({
+                message: "Price alert",
+                description: "BTS/USD crossed 0.05",
+                icon: <svg data-testid="custom-icon" />,
+                duration: 0
+            });
+        });
+        expect(document.body.textContent).toContain("Price alert");
+        expect(document.body.textContent).toContain(
+            "BTS/USD crossed 0.05"
+        );
+        expect(
+            document.body.querySelector("[data-testid='custom-icon']")
+        ).toBeTruthy();
 
         const closeButton = document.body.querySelector(
             "button[aria-label='Close']"

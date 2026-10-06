@@ -10552,6 +10552,66 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 rendering no icon when the prop is omitted), `yarn build` showing only
 the 2 known pre-existing `charting_library.esm` errors.
 
+**Eleventh migration batch**: `Gateways/GatewaySelectorModal.tsx`
+(`Table`/`Button`/`Modal`/`Tooltip`/`Icon` - another partial migration
+like `Blockchain/Asset.tsx`, `Collapse` stays deferred, split into two
+import statements the same way), `InitError.tsx` (`Form`/`Select`/
+`Button`/`Input`), `Layout/NewsHeadline.tsx` (`Alert`/`Icon`),
+`PriceAlertNotifications.tsx` (`Notification`/`Icon`), and
+`QRAddressScanner.tsx` (`Modal`/`Button`/`Icon`).
+
+Two more real gaps, both fixed in the component:
+
+- `Table`'s `rowSelection.getCheckboxProps` - real at
+  `GatewaySelectorModal.tsx`'s service-provider table, disabling the
+  selection checkbox for rows whose on-chain config says that service
+  isn't enabled. Added `getCheckboxProps?: (record: T) => {disabled?:
+  boolean}` to `TableRowSelection` (only `disabled` is read - antd's
+  real return shape is wider, but nothing else is real anywhere),
+  wired into the per-row checkbox's own `disabled` attribute, with a
+  new test. (That same call site's `columns`/`rowSelection` literals
+  needed `as any` casts for the same `align`-widening-to-`string`
+  TypeScript inference issue `Asset.tsx` hit in the sixth batch, and
+  a pre-existing `getEnabledRowKeys()` quirk - documented in this
+  file's own header as returning an array that can contain `undefined`
+  entries - needed the same treatment to keep that quirk intact rather
+  than "fixing" it as a side effect of the type error.)
+- `Notification`'s `.info` severity, `description`, and `icon` -
+  `.info` missed the same way `.warning` was in the second batch
+  (hidden behind `(Notification as any).info(...)` at
+  `PriceAlertNotifications.tsx`'s two call sites). Unlike `.warning`,
+  though, those two calls also genuinely pass `description` (a rich
+  `<Translate>` block naming the asset pair and expected/actual price)
+  and `icon` (a colored up/down caret overriding the default severity
+  icon) - real, substantial content a plain severity-icon-plus-string
+  toast can't carry, so both are now threaded all the way through
+  (`NotificationArgs` → the stored entry → the rendered stack), not
+  dropped. New tests for `.info` and for `description`/`icon` both
+  rendering.
+
+Other fixes, all at the call site: `QRAddressScanner.tsx`'s Modal
+dropped `modalHeader` (confirmed dead the same way `overlay`/`id`/
+`noCloseBtn`/etc. were in the Modal rebuild) alongside the usual
+`overlay`/`id` - meaning this modal has never actually shown a header
+title in production, a pre-existing quirk preserved rather than
+"fixed" into a real `title` prop; its now-provably-dead
+`modalId` constant (only ever read by the dropped `id` prop) was
+removed rather than left as an unused-but-harmless leftover, since the
+design-system `Modal`'s stricter prop type would make passing it a
+type error, not a silently-ignored one. `InitError.tsx` had a second,
+easy-to-miss `type={"primary"}` Button variant (a dynamic-looking
+expression holding a plain string literal) that a first pass of this
+file missed - caught by the full-project `tsc` check this phase always
+runs before considering a batch done, exactly the safety net that
+check exists for.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,504/5,504 (up from 5,501 - 3 new tests: `Table`'s
+`getCheckboxProps`, `Notification.info`, and `Notification`'s
+`description`/`icon`), `yarn build` showing only the 2 known
+pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

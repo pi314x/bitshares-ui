@@ -100,14 +100,14 @@ import * as React from "react";
 
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {
-    Table,
-    Button,
-    Modal,
-    Collapse,
-    Tooltip,
-    Icon
-} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
+import {Button} from "../../design-system/Button";
+import {Modal} from "../../design-system/Modal";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
+// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
+// §7.1), same deferral as `Blockchain/Asset.tsx`.
+import {Collapse} from "bitshares-ui-style-guide";
 import SettingsStore from "stores/SettingsStore";
 import {availableGateways, availableBridges} from "common/gateways";
 import {getFaucet, allowedGateway} from "../../branding";
@@ -395,13 +395,13 @@ export default function GatewaySelectorModal(
                     />
                 </Button>
             </Tooltip>
-            <Button key="none" onClick={onNone} type="primary">
+            <Button key="none" onClick={onNone} variant="accent">
                 <Translate
                     component="span"
                     content="external_service_provider.selector.use_none"
                 />
             </Button>
-            <Button key="submit" type="primary" onClick={onSubmit}>
+            <Button key="submit" variant="accent" onClick={onSubmit}>
                 <Translate
                     component="span"
                     content="external_service_provider.selector.use_selected"
@@ -416,7 +416,7 @@ export default function GatewaySelectorModal(
                     content="external_service_provider.selector.not_now"
                 />
             </Button>
-            <Button key="submit" type="primary" onClick={next}>
+            <Button key="submit" variant="accent" onClick={next}>
                 <Translate
                     component="span"
                     content="external_service_provider.selector.choose_services"
@@ -458,7 +458,6 @@ export default function GatewaySelectorModal(
     return (
         <Modal
             visible={props.visible}
-            overlay={true}
             title={
                 <Translate content="external_service_provider.selector.title" />
             }
@@ -499,14 +498,14 @@ export default function GatewaySelectorModal(
                     </div>
                     <Table
                         style={{marginTop: "1rem"}}
-                        columns={getRowHeaders()}
+                        columns={getRowHeaders() as any}
                         pagination={{
                             hideOnSinglePage: true,
                             pageSize: 20
                         }}
                         dataSource={getRows()}
                         footer={null}
-                        rowSelection={rowSelection}
+                        rowSelection={rowSelection as any}
                     />
                 </React.Fragment>
             )}

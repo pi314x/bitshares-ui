@@ -90,7 +90,8 @@
 //   JSX element). Kept verbatim; `content` is typed `any` to allow both
 //   shapes without fighting the type checker.
 import * as React from "react";
-import {Alert, Icon} from "bitshares-ui-style-guide";
+import {Alert} from "../../design-system/Alert";
+import {Icon} from "../../design-system/Icon";
 import {Carousel} from "antd";
 import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";

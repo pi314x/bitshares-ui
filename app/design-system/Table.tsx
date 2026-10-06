@@ -70,6 +70,12 @@ export interface TableRowSelection<T = any> {
         selectedRowKeys: Array<string | number>,
         selectedRows: T[]
     ) => void;
+    /** Per-row props for that row's own selection checkbox - only
+     * `disabled` is read (antd's real return shape is wider, but no
+     * real call site uses anything else). Real at one call site
+     * (`Gateways/GatewaySelectorModal.tsx`, disabling selection for
+     * rows whose on-chain config says the service isn't enabled). */
+    getCheckboxProps?: (record: T) => {disabled?: boolean};
 }
 
 export interface TableSorterInfo {
@@ -452,6 +458,11 @@ export function Table<T = any>({
                                                     checked={selectedKeys.includes(
                                                         key
                                                     )}
+                                                    disabled={
+                                                        rowSelection.getCheckboxProps?.(
+                                                            record
+                                                        ).disabled
+                                                    }
                                                     onChange={() =>
                                                         toggleRow(key)
                                                     }
