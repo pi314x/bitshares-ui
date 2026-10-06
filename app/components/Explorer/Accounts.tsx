@@ -27,7 +27,8 @@ import Icon from "../Icon/Icon";
 import BalanceComponent from "../Utility/BalanceComponent";
 import AccountStore from "stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
-import {Table, Select} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
+import {Select} from "../../design-system/Select";
 import SearchInput from "../Utility/SearchInput";
 import {ChainStore} from "bitsharesjs";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -230,15 +231,23 @@ export default function Accounts() {
                             <Select
                                 style={{width: "150px", marginLeft: "24px"}}
                                 value={rowsOnPage}
-                                onChange={setRowsOnPage}
+                                onChange={value =>
+                                    setRowsOnPage(value as string)
+                                }
                             >
-                                <Select.Option key={"10"}>10 rows</Select.Option>
-                                <Select.Option key={"25"}>25 rows</Select.Option>
-                                <Select.Option key={"50"}>50 rows</Select.Option>
-                                <Select.Option key={"100"}>
+                                <Select.Option key={"10"} value={"10"}>
+                                    10 rows
+                                </Select.Option>
+                                <Select.Option key={"25"} value={"25"}>
+                                    25 rows
+                                </Select.Option>
+                                <Select.Option key={"50"} value={"50"}>
+                                    50 rows
+                                </Select.Option>
+                                <Select.Option key={"100"} value={"100"}>
                                     100 rows
                                 </Select.Option>
-                                <Select.Option key={"200"}>
+                                <Select.Option key={"200"} value={"200"}>
                                     200 rows
                                 </Select.Option>
                             </Select>
@@ -261,7 +270,6 @@ export default function Accounts() {
                             columns={columns}
                             dataSource={dataSource}
                             pagination={{
-                                position: "bottom" as any,
                                 pageSize: Number(rowsOnPage)
                             }}
                         />

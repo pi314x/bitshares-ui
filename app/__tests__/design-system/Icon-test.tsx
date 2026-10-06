@@ -64,6 +64,12 @@ describe("design-system/Icon", () => {
         });
     });
 
+    it("renders the line-chart glyph added during the call-site migration pass", () => {
+        const {container} = render(<Icon type="line-chart" />);
+        expect(container.querySelector("svg")).toBeTruthy();
+        expect(container.querySelector("path")).toBeTruthy();
+    });
+
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
         expect(

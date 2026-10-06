@@ -35,6 +35,11 @@ import styles from "./Icon.module.scss";
 // file imports `Icon` directly (no alias) but the glyph name is
 // computed, not a literal string.
 //
+// `line-chart` was added in a fourth pass: real at exactly one call
+// site (`Explorer/Assets.tsx`'s link to the exchange), a plain literal
+// `type={"line-chart"}` with no alias and no dynamic expression - this
+// one simply fell outside whatever file set the original grep covered.
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -64,7 +69,8 @@ export type IconType =
     | "plus-circle"
     | "file-search"
     | "lock"
-    | "unlock";
+    | "unlock"
+    | "line-chart";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -174,7 +180,8 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0 1 9.9-1" />
         </>
-    )
+    ),
+    "line-chart": <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {

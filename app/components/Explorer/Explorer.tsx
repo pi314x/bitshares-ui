@@ -28,7 +28,7 @@ import Accounts from "./Accounts";
 import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
 import MarketsContainer from "../Exchange/MarketsContainer";
-import {Tabs} from "bitshares-ui-style-guide";
+import {Tabs} from "../../design-system/Tabs";
 import "./Explorer.scss";
 
 const tabs = [

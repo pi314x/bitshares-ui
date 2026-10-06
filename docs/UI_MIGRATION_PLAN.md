@@ -10446,6 +10446,48 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Eighth migration batch** (`Explorer/`): `Explorer.tsx` (`Tabs`),
+`CommitteeMembers.tsx` (`Table`), `Accounts.tsx`/`Assets.tsx`/
+`LiquidityPools.tsx` (`Table`/`Select`, `Assets.tsx` also `Radio`/
+`Icon`), `Witnesses.tsx` (`Table`/`Icon`/`Popover`).
+
+One more real `Icon` glyph gap, fixed in the component: `line-chart`,
+real at exactly one call site (`Assets.tsx`'s link to the exchange) -
+unlike the four found in the second batch and the two found in the
+fifth, this one wasn't hidden behind an import alias or a dynamic
+expression; it's a plain literal `type={"line-chart"}` that simply
+fell outside whatever file set the original grep covered. Added with
+a new test, same as every other glyph gap this phase has found.
+
+Recurring fixes, all at the call site: the `Select.Option` implicit-
+key-as-value gap (antd's fallback when no explicit `value` is given)
+turned up again at 3 more call sites across `Accounts.tsx`/
+`Assets.tsx`/`LiquidityPools.tsx`'s identical "rows per page" dropdown
+- fixed the same way as the first two batches, adding an explicit
+`value` matching each `key`. Each of those dropdowns' `onChange`
+handler is a plain `(value: string) => void` (`Accounts.tsx`/
+`Assets.tsx` pass the page-size `useState` setter directly;
+`LiquidityPools.tsx` a handler that `parseInt`s it), which doesn't
+satisfy `Select`'s `(value: string | number) => void` signature now
+that real option values elsewhere in the app are sometimes numbers -
+wrapped in an inline arrow with an `as string` cast at all 3, same
+precedent as `WithdrawModalNew.tsx`'s `onSelect` fix in the third
+batch. `Accounts.tsx`/`Assets.tsx` also each dropped a `Table
+pagination={{position: "bottom", ...}}` - `position` was never part
+of the design-system `Table`'s pagination config, but "bottom" was
+already antd's own default (and the only value either pagination ever
+rendered at), so this is a confirmed no-op drop, not a behavior
+change. (`Assets.tsx` separately has a real `<List pagination={{
+position: "bottom", ...}}>` from antd's own `List` component, imported
+directly from `"antd"` rather than `bitshares-ui-style-guide` -
+correctly left untouched, out of scope for this migration entirely.)
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,498/5,498 (up from 5,497 - the one new `line-chart` glyph test),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

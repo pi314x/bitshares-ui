@@ -36,7 +36,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
-import {Table} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
 import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";
 import FormattedAsset from "../Utility/FormattedAsset";

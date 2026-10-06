@@ -48,7 +48,10 @@ import AssetName from "../Utility/AssetName";
 import {ChainStore} from "bitsharesjs";
 import ls from "common/localStorage";
 import {Apis} from "bitsharesjs-ws";
-import {Radio, Table, Select, Icon} from "bitshares-ui-style-guide";
+import {Radio} from "../../design-system/Radio";
+import {Table} from "../../design-system/Table";
+import {Select} from "../../design-system/Select";
+import {Icon} from "../../design-system/Icon";
 import {List} from "antd";
 import SearchInput from "../Utility/SearchInput";
 import AssetStore from "stores/AssetStore";
@@ -313,15 +316,23 @@ export default function Assets() {
                             <Select
                                 style={{width: "150px", marginLeft: "24px"}}
                                 value={rowsOnPage}
-                                onChange={setRowsOnPage}
+                                onChange={value =>
+                                    setRowsOnPage(value as string)
+                                }
                             >
-                                <Select.Option key={"10"}>10 rows</Select.Option>
-                                <Select.Option key={"25"}>25 rows</Select.Option>
-                                <Select.Option key={"50"}>50 rows</Select.Option>
-                                <Select.Option key={"100"}>
+                                <Select.Option key={"10"} value={"10"}>
+                                    10 rows
+                                </Select.Option>
+                                <Select.Option key={"25"} value={"25"}>
+                                    25 rows
+                                </Select.Option>
+                                <Select.Option key={"50"} value={"50"}>
+                                    50 rows
+                                </Select.Option>
+                                <Select.Option key={"100"} value={"100"}>
                                     100 rows
                                 </Select.Option>
-                                <Select.Option key={"200"}>
+                                <Select.Option key={"200"} value={"200"}>
                                     200 rows
                                 </Select.Option>
                             </Select>
