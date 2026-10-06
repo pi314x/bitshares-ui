@@ -13,7 +13,7 @@
 import * as React from "react";
 import {FormattedRelative} from "react-intl";
 import {ChainStore} from "bitsharesjs";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface TimeAgoProps {
     time: any;

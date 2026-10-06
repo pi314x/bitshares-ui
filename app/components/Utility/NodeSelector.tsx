@@ -16,7 +16,8 @@ import {settingsAPIs, nodeRegions} from "api/apiConfig";
 import SettingsStore from "../../stores/SettingsStore";
 import SettingsActions from "../../actions/SettingsActions";
 import counterpart from "counterpart";
-import {Icon, Tooltip} from "bitshares-ui-style-guide";
+import {Icon} from "../../design-system/Icon";
+import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const {SHOW_PARENT} = TreeSelect;

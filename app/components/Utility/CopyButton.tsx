@@ -5,7 +5,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import ClipboardButton from "react-clipboard.js";
 import Icon from "../Icon/Icon";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip, TooltipPlacement} from "../../design-system/Tooltip";
 
 interface CopyButtonProps {
     className?: string;
@@ -37,7 +37,7 @@ const CopyButton = ({
     );
     return (
         <Tooltip
-            placement={dataPlace as any}
+            placement={dataPlace as TooltipPlacement}
             title={counterpart.translate(tip)}
         >
             {useDiv ? <div>{button}</div> : <span>{button}</span>}

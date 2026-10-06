@@ -12,7 +12,8 @@
 // ref) would be the "obvious" hooks-idiomatic fix but would silently
 // change behavior, so it's not done here.
 import * as React from "react";
-import {Input, Icon} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Icon} from "../../design-system/Icon";
 import counterpart from "counterpart";
 
 const searchInput = React.createRef<any>();

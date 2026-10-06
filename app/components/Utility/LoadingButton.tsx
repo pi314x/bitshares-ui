@@ -15,7 +15,7 @@
 import * as React from "react";
 import LoadingIndicator from "../LoadingIndicator";
 import counterpart from "counterpart";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 
 interface LoadingButtonProps {
     id?: string;

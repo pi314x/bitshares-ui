@@ -3,7 +3,7 @@
 // docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
 import Translate from "react-translate-component";
-import {Select} from "bitshares-ui-style-guide";
+import {Select} from "../../design-system/Select";
 import counterpart from "counterpart";
 import {Map} from "immutable";
 
@@ -46,7 +46,6 @@ function ChainSelectView({
             }
             value={value}
             {...remProps}
-            optionFilterProp="children"
             filterOption={(input: string, option: any) =>
                 option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
@@ -55,7 +54,10 @@ function ChainSelectView({
         >
             {chains.filter(Map.isMap).map(chain => {
                 return (
-                    <Select.Option key={chain} value={chain}>
+                    <Select.Option
+                        key={chain as any}
+                        value={chain as any}
+                    >
                         {chain}
                     </Select.Option>
                 );
