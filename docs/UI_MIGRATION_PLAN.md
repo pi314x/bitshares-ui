@@ -8367,7 +8367,25 @@ source above has zero outbound cross-store action dependencies.
     `PrivateKeyStore` depend on it directly.
   - `ImportKeysStore` (**done**, batch 6) - a single boolean
     import-in-progress flag, no key material at all. Same reasoning.
-  - `BackupStore`, `BrainkeyStore` - not yet started.
+  - `BackupStore` (**done**, batch 7 - see below) - holds a decrypted
+    wallet backup object in memory. The actual AES encrypt/decrypt
+    crypto (`createWalletBackup`/`decryptWalletBackup` in
+    `BackupActions.ts`) was never part of the Alt actions class or
+    wired through Alt's dispatcher at all - untouched, same module,
+    same exports, same characterization test coverage
+    (`backupCrypto-test.js`, re-run green).
+  - `BrainkeyStore` (**done**, batch 7) - the most sensitive store
+    migrated so far: `derived_keys` holds real private key objects
+    (derived from the raw brainkey phrase). Kept as a plain instance
+    field on each per-name facade object, never entering Redux state,
+    matching the original exactly. The original was a *factory*
+    (`BrainkeyStoreFactory.getInstance(name)`/`closeInstance(name)`,
+    multiple named Alt store instances) - preserved as a factory here
+    too (dictionary-keyed slice state), not narrowed to a singleton,
+    even though only one name (`"wmc"`) is ever used by any real call
+    site. See the batch 7 write-up below for the
+    `BrainkeyActions.setBrainkey`-broadcasts-to-all-instances nuance
+    this required.
   - `PrivateKeyStore` (unlocks `CachedPropertyStore` once done),
     `AccountRefsStore` (depends on `PrivateKeyActions.addKey` - migrate
     together with `PrivateKeyStore`, same connected-pair precedent as
@@ -8688,6 +8706,51 @@ call sites (`Wallet/ImportKeys.tsx`, `PrivateKeyStore.js`,
 `Account/AccountPermissionsList.tsx`) empty; 19/19 suites / 5,392 tests
 passing; `yarn build` shows only the 2 known pre-existing
 `charting_library.esm` errors.
+
+**Batch 7 (`BackupStore`+`BackupActions`, `BrainkeyStore`+
+`BrainkeyActions`):** two independent Tier 2 stores, done together as
+one commit since both are small.
+
+- `BackupStore`: the Alt actions class's 3 methods
+  (`incommingWebFile`/`incommingBuffer`/`reset` - the only 3
+  `BackupStore` ever bound a listener to) became a Redux-dispatching
+  facade in `BackupActions.ts`, inlining the orchestration
+  `BackupStore.js`'s `onIncommingFile`/`onIncommingBuffer` handlers
+  used to do (sha1/size/public-key computation) directly into the
+  actions facade, same "orchestration moves to the actions facade"
+  precedent as batch 2/3. The 5 plain exported crypto functions in the
+  same file (`backup`/`restore`/`createWalletObject`/
+  `createWalletBackup`/`decryptWalletBackup`) were never Alt-actions
+  -class methods or wired through Alt's dispatcher at all - completely
+  untouched (not even re-exported differently).
+- `BrainkeyStore`: migrated the factory pattern itself rather than
+  narrowing it to a singleton (see the Tier 2 list entry above for
+  why). `BrainkeyActions.setBrainkey(brnkey)` (called with no name
+  argument by its one real caller) now calls a new
+  `BrainkeyStoreFactory.notifySetBrainkey(brnkey)`, which broadcasts to
+  every currently-registered instance - replicating the original's
+  real behavior under Alt, where every per-name instance's constructor
+  bound the *same* shared `BrainkeyActions.setBrainkey`, so a real
+  dispatch always notified every registered instance, not just one.
+  Preserved verbatim, not fixed: `inSync()`'s `forEach` callback
+  `return false` is silently discarded by `Array.prototype.forEach`
+  (can't short-circuit the loop), so the method always returns `true`
+  regardless of its `isPendingFromChain` checks - a genuine pre-existing
+  bug, confirmed dead in practice (no real call site invokes `inSync()`
+  at all).
+
+**Batch 7 verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+all 8 new/edited files 0 errors (only expected `any`-warnings, after
+fixing one real `prefer-const` error in `BackupActions.ts`'s
+`incommingBuffer` destructuring); `git status --short` on all known
+call sites (`Login/WalletLogin.tsx`, `Login/DecryptBackup.tsx`,
+`Wallet/Backup.tsx`, `Wallet/WalletUnlockModal.tsx`,
+`Wallet/WalletManager.tsx`, `__tests__/wallets/backupCrypto-test.js`,
+`test/wallet_action_test.js`, `dl_cli_index.js`,
+`Wallet/Brainkey.tsx`, `WalletDb.ts`) empty; 19/19 suites / 5,392 tests
+passing, including `backupCrypto-test.js`'s fixed-vector/round-trip
+characterization suite specifically re-checked green; `yarn build`
+shows only the 2 known pre-existing `charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison

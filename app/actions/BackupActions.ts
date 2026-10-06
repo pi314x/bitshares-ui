@@ -7,41 +7,75 @@
 // in app/__tests__/wallets/backupCrypto-test.js (fixed vectors +
 // round-trip) before this port, per the Phase 5 methodology note in the
 // migration plan; re-run unchanged (and green) against this port.
-import alt from "alt-instance";
+//
+// Phase 9 update (docs/UI_MIGRATION_PLAN.md, batch 7): the Alt-actions
+// class below (`incommingWebFile`/`incommingBuffer`/`reset`, the only 3
+// methods `BackupStore` ever bound a listener to) is replaced by a
+// Redux-dispatching facade, same pattern as every other migrated
+// store/actions pair - see `../store/reduxStore.ts`'s header. The 5
+// plain exported crypto functions below this class
+// (`backup`/`restore`/`createWalletObject`/`createWalletBackup`/
+// `decryptWalletBackup`) were NEVER part of the Alt actions class or
+// wired through Alt's dispatcher at all - completely untouched here,
+// same module, same exports, same implementation, same characterization
+// test coverage.
 import iDB from "idb-instance";
 import {compress, decompress} from "lzma";
-import {PrivateKey, PublicKey, Aes, key} from "bitsharesjs";
+import {PrivateKey, PublicKey, Aes, key, hash} from "bitsharesjs";
 import WalletActions from "actions/WalletActions";
+import {reduxStore} from "../store/reduxStore";
+import {
+    resetBackup,
+    setIncomingFile,
+    setIncomingBuffer
+} from "../store/slices/backupSlice";
 
-class BackupActions {
+function getBackupPublicKey(contents: any) {
+    try {
+        return (PublicKey as any).fromBuffer(contents.slice(0, 33));
+    } catch (e) {
+        console.error(e, (e as any).stack);
+    }
+}
+
+class BackupActionsFacade {
     incommingWebFile(file: any) {
-        return (dispatch: any) => {
-            const reader = new FileReader();
-            reader.onload = evt => {
-                const contents = new Buffer(
-                    (evt.target as any).result,
-                    "binary"
-                );
-                const name = file.name;
+        const reader = new FileReader();
+        reader.onload = evt => {
+            const contents = new Buffer((evt.target as any).result, "binary");
+            const name = file.name;
+            const last_modified = new Date(file.lastModified).toString();
 
-                const last_modified = new Date(file.lastModified).toString();
-
-                dispatch({name, contents, last_modified});
-            };
-            reader.readAsBinaryString(file);
+            const sha1 = (hash as any).sha1(contents).toString("hex");
+            const size = contents.length;
+            const public_key = getBackupPublicKey(contents);
+            reduxStore.dispatch(
+                setIncomingFile({name, contents, sha1, size, last_modified, public_key})
+            );
         };
+        reader.readAsBinaryString(file);
     }
 
     incommingBuffer(params: any) {
+        const {name, contents} = params;
+        let {public_key} = params;
+        reduxStore.dispatch(resetBackup());
+        const sha1 = (hash as any).sha1(contents).toString("hex");
+        const size = contents.length;
+        if (!public_key) public_key = getBackupPublicKey(contents);
+        reduxStore.dispatch(
+            setIncomingBuffer({name, contents, sha1, size, public_key})
+        );
         return params;
     }
 
     reset() {
+        reduxStore.dispatch(resetBackup());
         return true;
     }
 }
 
-const BackupActionsWrapped: any = (alt as any).createActions(BackupActions);
+const BackupActionsWrapped = new BackupActionsFacade();
 export default BackupActionsWrapped;
 
 export function backup(backup_pubkey: string): Promise<Buffer> {

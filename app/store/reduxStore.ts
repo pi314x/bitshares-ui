@@ -34,6 +34,8 @@ import gatewayReducer from "./slices/gatewaySlice";
 import marketsReducer from "./slices/marketsSlice";
 import importKeysReducer from "./slices/importKeysSlice";
 import addressIndexReducer from "./slices/addressIndexSlice";
+import backupReducer from "./slices/backupSlice";
+import brainkeyReducer from "./slices/brainkeySlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -46,7 +48,9 @@ const rootReducer = combineReducers({
     gateway: gatewayReducer,
     markets: marketsReducer,
     importKeys: importKeysReducer,
-    addressIndex: addressIndexReducer
+    addressIndex: addressIndexReducer,
+    backup: backupReducer,
+    brainkey: brainkeyReducer
 });
 
 export const reduxStore = configureStore({
