@@ -9816,17 +9816,35 @@ checked/unchecked and labeled/unlabeled states in both themes via
 `build-preview` (temporary demo, reverted after) - this pass is what
 caught the text/handle overlap bug above.
 
+**`design-system/Card.tsx` - thirteenth component (done).** Next by
+usage (7 call sites). Grepped every real call site before designing
+this: a plain bordered box - `className`/`style`/`children` and one real
+`onKeyDown` (`Showcases/Borrow.tsx`). No `title`/`extra`/`actions`/
+`cover`/`bordered`/`hoverable`/`loading` anywhere - every real call site
+just wants a styled container, not antd's fuller card-with-header-and-
+footer layout, so this is the simplest component in the family so far: a
+`React.forwardRef` wrapping a single styled `<div>`.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (0
+warnings); a new 3-test suite (renders children, passes through
+`className`/`style`/event handlers, forwards a `ref`) - 32/32 suites,
+5,454/5,454 tests; `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors; visually verified the default and a
+`style`-overridden border radius in both themes via `build-preview`
+(temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Card` (7 call sites) is next by usage), then begin
+component types (`Popover` (6 call sites) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
 treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`: grep every real call
-site's actual prop usage before deciding the new API's scope (never
-build out the old library's full surface speculatively), reuse existing
-conventions (tokens, `useClickOutside`-style hooks) over inventing new
-ones, a dedicated test file, and a `build-preview` visual check in both
+`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`: grep every
+real call site's actual prop usage before deciding the new API's scope
+(never build out the old library's full surface speculatively), reuse
+existing conventions (tokens, `useClickOutside`-style hooks) over
+inventing new ones, a dedicated test file, and a `build-preview` visual
+check in both
 themes before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
