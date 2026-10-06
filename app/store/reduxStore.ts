@@ -33,6 +33,7 @@ import creditOfferReducer from "./slices/creditOfferSlice";
 import blockchainReducer from "./slices/blockchainSlice";
 import assetReducer from "./slices/assetSlice";
 import gatewayReducer from "./slices/gatewaySlice";
+import marketsReducer from "./slices/marketsSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -42,7 +43,8 @@ const rootReducer = combineReducers({
     creditOffer: creditOfferReducer,
     blockchain: blockchainReducer,
     asset: assetReducer,
-    gateway: gatewayReducer
+    gateway: gatewayReducer,
+    markets: marketsReducer
 });
 
 export const reduxStore = configureStore({

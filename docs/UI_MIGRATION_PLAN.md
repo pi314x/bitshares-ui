@@ -8353,8 +8353,8 @@ source above has zero outbound cross-store action dependencies.
   `cancelLimitOrder`/etc.) - not itself wallet-unlock/key-handling code,
   same category already handled safely in the `AssetActions`/
   `CreditOfferActions` batches (preserve the transaction-building calls
-  byte-for-byte, never touch `WalletDb.ts`). Its own dedicated batch,
-  in progress.
+  byte-for-byte, never touch `WalletDb.ts`). **Done**, batch 5 - see
+  below.
 - **Tier 2 - security-sensitive (AGENTS.md), extra scrutiny before
   each - fixed test vectors / byte-for-byte comparison against current
   behavior, no store-shape "improvements" bundled in:** `AddressIndex`
@@ -8541,6 +8541,92 @@ diff --stat` on all 37 known call sites across both stores/actions pairs
 `GatewayActions`, `lib/common/gatewayUtils.js`) empty; 19/19 suites /
 5,392 tests passing (same count as batch 1); `yarn build` shows only the
 2 known pre-existing `charting_library.esm` errors.
+
+**Batch 5 (`MarketsStore`/`MarketsActions`):** the largest single store
+migrated so far (1,563 + 872 lines), but it fits the same facade pattern
+as every batch before it - `MarketsStore` never called
+`this.setState(...)` either (same as batch 4's three stores), so
+`app/store/slices/marketsSlice.ts`'s state shape is its constructor's
+instance fields verbatim. Of its 14 `bindListeners` entries, all 14 are
+pure-enough state transitions to live as `createSlice` reducer cases
+(every helper method the original called from inside an `onXxx` handler
+- `_orderBook`/`_depthChart`/`_combineOrders`/`_groupedOrderBook`/
+`constructCalls`/`_priceChart`/`_getFeed`/`_marketHasCalls`/
+`updateSettleOrders`/`_calcMarketStats`/`_invertMarketStats`/the inlined
+`onClearMarket` - itself dead/unbound, only ever called internally from
+`onSubscribeMarket` - is reproduced as a module-level function taking
+the Immer draft `state` explicitly in place of `this`; all of this code
+already reassigns Immutable.js collections and plain objects rather than
+mutating in place, so the `this.` -> `state.` swap is literal). Three of
+those 14, though, call something a pure reducer can't: `onSubscribeMarket`
+(a pub-sub `_notifySubscriber(...)` call, an `unsubscribe("subscribeBars")`
+call, and a caller-supplied `result.resolve()`), `onUnSubscribeMarket`
+(`payload.resolve()`), and `onGetMarketStats`/`onSubscribeMarket`'s
+ticker branch (the debounced `_saveMarketStats()` localStorage
+write) - per the batch 2 (`BalanceClaimActiveStore`) precedent, that
+orchestration stays out of the slice and lives instead on
+`app/stores/MarketsStore.ts`'s facade as plain
+`onSubscribeMarket`/`onUnSubscribeMarket`/`onGetMarketStats` methods,
+which dispatch the slice's pure reducer case and then run the side
+effects afterwards in the same relative order the original method body
+did; `app/actions/MarketsActions.ts` calls those facade methods directly
+for exactly those three actions (same cross-call shape as batch 2's
+`TransactionConfirmActions` -> `balanceClaimActiveStore`), and dispatches
+every other bound action straight into the slice. `subscribers`
+(the `subscribe`/`unsubscribe`/`clearSubs` pub-sub map used by
+`Exchange/tradingViewClasses.js`'s TradingView datafeed glue) and
+`saveStatsTimeout` (the debounce timer handle) stay as plain fields on
+the `MarketsStore.ts` facade singleton, never touching Redux state - same
+precedent as batch 2's `BalanceClaimActiveStore` non-reactive fields.
+
+`onGetCollateralPositions` (sets `this.borrowMarketState`) was dropped
+entirely - grepping `MarketsStore.js`'s own `bindListeners` call showed
+it was never bound to any action (unlike every other `onXxx` method on
+the class) and no call site anywhere reads `.borrowMarketState` either,
+genuinely dead code (same category as the already-dropped dead
+`dispatch(true)`/`dispatch(false)` calls in batch 4's `AssetActions`
+port). `getMarketStatsInterval`'s error-callback path
+(`clearMarketStatsInInterval(base, quote)`, passing asset objects where
+`clearMarketStatsInInterval(key)` actually keys on a `marketName`
+string) is a second, real pre-existing bug - preserved verbatim rather
+than fixed, with a comment at the call site; the cleanup function
+`getMarketStatsInterval` itself returns (`.bind(undefined, marketName)`)
+is unaffected and correct. `createLimitOrder`/`createLimitOrder2`/
+`createPredictionShort`/`cancelLimitOrder`/`cancelLimitOrders`'s
+`WalletDb.process_transaction(...)` calls (per AGENTS.md,
+transaction-building/order-placement code, not itself wallet-unlock/
+key-handling) are preserved byte-for-byte, including `createLimitOrder`
+(singular)'s now-dropped `dispatch(true)`/`dispatch({error})` calls,
+already dead under Alt since no store ever bound a listener to it (only
+`createLimitOrder2` has real call sites) - same AssetActions/batch 4
+precedent. Two TypeScript-only quirks surfaced porting `common/
+MarketClasses.js`'s `Price`/`FeedPrice` into object-literal construction
+calls: both classes destructure some constructor params without default
+values mixed with others that do have defaults, and TS's JS inference
+(`checkJs: false`) only picks up the defaulted ones as known properties,
+so (same fix already applied in `components/Exchange/Exchange.tsx` for
+the same two classes) both are imported `as ...Untyped` and re-exported
+locally typed `any`.
+
+**Batch 5 verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+all 4 new/edited files (`marketsSlice.ts`, `MarketsStore.ts`,
+`MarketsActions.ts`, `reduxStore.ts`) 0 errors (only expected
+`any`-warnings); `git diff --stat` on all 29 known call sites
+(`App.jsx`, `components/PriceAlertNotifications.tsx`, `components/
+Utility/{MarketChangeComponent,MarketPrice,EquivalentValueComponent,
+TotalBalanceValue,EquivalentPrice,MarketStatsCheck,MarketLink,
+FormattedPrice}.tsx`, `components/Modal/WithdrawModalNew.tsx`,
+`components/PredictionMarkets/{PMAssetsContainer,PredictionMarkets,
+PredictionMarketsOverviewTable,AddOpinionModal}.tsx`, `components/
+Dashboard/{Markets,DashboardAccountsOnly,MarketsTable}.tsx`,
+`components/Exchange/{tradingViewClasses.js,MyMarkets,
+ExchangeContainer,ScaledOrderTab,Exchange,MarketRow,ExchangeHeader,
+MyOpenOrders}.tsx`, `components/Account/{AccountTreemap,
+AccountPortfolioList,AccountOrders}.tsx`, `components/QuickTrade/
+QuickTrade.tsx`, `next/hooks/useMarketStatsSubscription.ts`) empty;
+19/19 suites / 5,392 tests passing (same count as batch 1); `yarn build`
+(real `node_modules` copy, not the symlink used for tsc/lint/test) shows
+only the 2 known pre-existing `charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison
