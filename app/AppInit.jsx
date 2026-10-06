@@ -13,7 +13,16 @@
 // derived values inline instead of receiving them as injected props) -
 // `<AppInit />` is rendered with no explicit props (see `index.js`), so
 // there is no caller-prop-precedence case to preserve.
-import {hot} from "react-hot-loader";
+//
+// Also drops `react-hot-loader`'s `hot(module)(...)` wrapper (Phase 9
+// dependency cleanup) - that package patches React's reconciler purely
+// to preserve component state across dev-mode hot reloads; it's a no-op
+// in production (`hot()` only activates when `process.env.NODE_ENV !==
+// "production"`) and was never load-bearing for correctness. Removing
+// it means a dev-mode edit now triggers webpack's plain
+// `HotModuleReplacementPlugin` module-replacement + full remount
+// instead of a state-preserving swap - an accepted dev-experience
+// tradeoff, not a behavior change for any shipped build.
 import React from "react";
 import {Provider} from "react-redux";
 import {reduxStore} from "./store/reduxStore";
@@ -336,4 +345,4 @@ function AppInitWithReduxProvider(props) {
     );
 }
 
-export default hot(module)(AppInitWithReduxProvider);
+export default AppInitWithReduxProvider;

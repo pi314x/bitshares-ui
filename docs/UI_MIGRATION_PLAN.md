@@ -9192,22 +9192,59 @@ node means the app never gets past the node-picker screen - flagged
 for the human second-reviewer to manually confirm a notification toast
 fades in/out and a `ZfApi`-driven modal opens/closes correctly.)
 
+**`react-hot-loader`/`@hot-loader/react-dom` removed (done).** This
+package patches React's reconciler purely to preserve component state
+across dev-mode hot reloads - it was already a no-op in production
+(`hot(module)(...)` only activates when `NODE_ENV !== "production"`),
+so this batch is pure dev-tooling cleanup with zero production
+behavior change. Touched 4 places: `AppInit.jsx` (dropped the
+`import {hot} from "react-hot-loader"` + `hot(module)(...)` wrapper
+around the exported component), `.babelrc` (dropped
+`"react-hot-loader/babel"` from the top-level `plugins` array, keeping
+`"lodash"`), and `webpack.config.js` (dropped the dev-only
+`"react-dom": "@hot-loader/react-dom"` resolve alias, the dev-only
+`"react-hot-loader/patch"` entry-point prepend - simplifying
+`entry.app` back to a single path in every environment - and the same
+`plugins: ["react-hot-loader/babel"]` babel-loader option in all 3
+`.js`/`.jsx`/`.tsx?` rules that `alt-react`/`alt-container`'s special-
+case include paths used to sit next to). Webpack's own, unrelated
+`HotModuleReplacementPlugin` and `devServer.hot` are untouched - basic
+module-replacement/reload in `yarn start` still works, it just no
+longer preserves component state across an edit (full remount
+instead) - an accepted dev-experience tradeoff. Removed
+`react-hot-loader`/`@hot-loader/react-dom` from `package.json`'s
+`devDependencies` and ran `yarn install` to regenerate `yarn.lock`
+(49 lines removed) - confirmed both packages gone from `node_modules`.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+`AppInit.jsx` 0 errors; `git status --short` showed only the 4 expected
+config/source files touched (no component files needed changes, since
+nothing outside `AppInit.jsx` ever imported `react-hot-loader`
+directly); 19/19 suites / 5,392 tests passing; `yarn build` shows only
+the 2 known pre-existing `charting_library.esm` errors. Given this
+batch specifically affects the dev server, ran `yarn start --host
+0.0.0.0` (the environment this change most directly touches) and
+confirmed via a live-browser Playwright check that it still compiles
+and serves correctly with the same 2 known errors and zero new
+console/page errors.
+
 Remaining Phase 9 work: switch the ~126 `useAltStore()` call sites to
 `useSelector`/`useDispatch` file by file (now a purely optional/cosmetic
 cleanup, not a blocker - tracked separately, no urgency), then delete
 the `next/hooks/useAltStore.ts` adapter and each store's facade file
 once nothing references it that way - plus the separate, independent
-cleanup efforts below (`bitshares-ui-style-guide`, react-router v5→v6,
-react-hot-loader, Node/Electron version bumps). The Babel stage-0
-preset item from the original cleanup list turned out to already be
-gone - `.babelrc` only has `@babel/preset-env`/`@babel/preset-react`/
-`@babel/preset-typescript`, and no `stage-0`/`-1`/`-2`/`-3` package is
-even installed - resolved with no action needed, found while scoping
-this batch.
+cleanup efforts below (`bitshares-ui-style-guide` (194 files, by far the
+largest remaining item), react-router v5→v6, Node/Electron version
+bumps). The Babel stage-0 preset item from the original cleanup list
+turned out to already be gone - `.babelrc` only has
+`@babel/preset-env`/`@babel/preset-react`/`@babel/preset-typescript`,
+and no `stage-0`/`-1`/`-2`/`-3` package is even installed - resolved
+with no action needed, found while scoping an earlier batch.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages (`alt`/`alt-container`/`alt-react` - **done**;
-  `foundation-apps`/`react-foundation-apps` - **done**); bundle-size and
+  `foundation-apps`/`react-foundation-apps` - **done**;
+  `react-hot-loader`/`@hot-loader/react-dom` - **done**); bundle-size and
   Lighthouse/perf comparison published against the pre-migration
   baseline (not done).
 

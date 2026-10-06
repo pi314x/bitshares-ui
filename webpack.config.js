@@ -279,11 +279,6 @@ module.exports = function(env) {
         // uses. See app/lib/i18n/counterpartShim.js's header.
         counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
     };
-    if (!env.prod) {
-        alias = Object.assign({}, alias, {
-            "react-dom": "@hot-loader/react-dom"
-        });
-    }
     var https = false;
     if (env.https) {
         https = {
@@ -294,12 +289,7 @@ module.exports = function(env) {
     var config = {
         mode: env.noUgly ? "none" : env.prod ? "production" : "development",
         entry: {
-            app: env.prod
-                ? path.resolve(root_dir, "app/Main.js")
-                : [
-                      "react-hot-loader/patch",
-                      path.resolve(root_dir, "app/Main.js")
-                  ]
+            app: path.resolve(root_dir, "app/Main.js")
         },
         output: {
             publicPath: env.prod ? "" : "/",
@@ -368,8 +358,7 @@ module.exports = function(env) {
                                         {targets: {node: "current"}}
                                     ]
                                 ],
-                                cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"]
+                                cacheDirectory: env.prod ? false : true
                             }
                         }
                     ]
@@ -388,8 +377,7 @@ module.exports = function(env) {
                                         {targets: {node: "current"}}
                                     ]
                                 ],
-                                cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"]
+                                cacheDirectory: env.prod ? false : true
                             }
                         }
                     ]
@@ -403,7 +391,6 @@ module.exports = function(env) {
                             options: {
                                 compact: false,
                                 cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"],
                                 presets: [
                                     [
                                         "@babel/preset-react",
