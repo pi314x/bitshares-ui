@@ -55,7 +55,7 @@ import * as React from "react";
 import {Fragment} from "react";
 import Translate from "react-translate-component";
 import JSONModal from "components/Modal/JSONModal";
-import {Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import {
     ChainTypes as grapheneChainTypes,
     ChainStore
@@ -66,7 +66,11 @@ import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
 const {operations} = (grapheneChainTypes as any);
 import LoadingIndicator from "../LoadingIndicator";
-import {Tooltip, Modal, Button, Select, Input} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
+import {Input} from "../../design-system/Input";
 const ops = Object.keys(operations);
 import {Link} from "react-router-dom";
 import FormattedAsset from "../Utility/FormattedAsset";
@@ -440,10 +444,10 @@ function RecentTransactionsCore({
 
     const footer = (
         <div>
-            <Button onClick={() => generateCSV(FULL)} type="primary">
+            <Button onClick={() => generateCSV(FULL)} variant="accent">
                 <Translate content="account.export_modal.full_report" />
             </Button>
-            <Button onClick={() => generateCSV(COINBASE)} type="primary">
+            <Button onClick={() => generateCSV(COINBASE)} variant="accent">
                 <Translate content="account.export_modal.coinbase_report" />
             </Button>
         </div>
@@ -455,11 +459,8 @@ function RecentTransactionsCore({
                 wrapClassName="modal--transaction-confirm"
                 title={<Translate content="account.export_modal.title" />}
                 visible={state.showModal}
-                id="transaction_confirm_modal"
                 footer={footer}
-                overlay={true}
                 onCancel={hideExportModal}
-                noCloseBtn={true}
             >
                 <p>
                     <Translate content="account.export_modal.description" />
@@ -482,7 +483,10 @@ function RecentTransactionsCore({
                         {esWrapperList.concat([
                             {url: useCustom}
                         ]).map((wrapper: any) => (
-                            <Select.Option key={wrapper.url}>
+                            <Select.Option
+                                key={wrapper.url}
+                                value={wrapper.url}
+                            >
                                 {wrapper.url}
                             </Select.Option>
                         ))}
