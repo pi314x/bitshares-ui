@@ -39,6 +39,11 @@ import brainkeyReducer from "./slices/brainkeySlice";
 import cachedPropertyReducer from "./slices/cachedPropertySlice";
 import privateKeyReducer from "./slices/privateKeySlice";
 import accountRefsReducer from "./slices/accountRefsSlice";
+import intlReducer from "./slices/intlSlice";
+import settingsReducer from "./slices/settingsSlice";
+import walletUnlockReducer from "./slices/walletUnlockSlice";
+import accountReducer from "./slices/accountSlice";
+import walletManagerReducer from "./slices/walletManagerSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -56,7 +61,12 @@ const rootReducer = combineReducers({
     brainkey: brainkeyReducer,
     cachedProperty: cachedPropertyReducer,
     privateKey: privateKeyReducer,
-    accountRefs: accountRefsReducer
+    accountRefs: accountRefsReducer,
+    intl: intlReducer,
+    settings: settingsReducer,
+    walletUnlock: walletUnlockReducer,
+    account: accountReducer,
+    walletManager: walletManagerReducer
 });
 
 export const reduxStore = configureStore({

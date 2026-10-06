@@ -8323,28 +8323,31 @@ source above has zero outbound cross-store action dependencies.
   latter binds to `TransactionConfirmActions.wasBroadcast`; see the
   "Batch 2" verification note below for the explicit cross-notify
   pattern used).
-- **Tier 1c - circular pair, PLUS a Tier-2 entanglement found when
-  scoping this batch (correction to this entry's earlier version):**
-  `IntlStore` + `SettingsStore` - NOT yet started, and NOT actually a
-  clean two-store circular pair as first documented. The circularity
-  (`SettingsStore`→`IntlActions.switchLocale`, `IntlStore`→
-  `SettingsActions.clearSettings`) is real and self-contained. But
-  `SettingsActions.changeSetting` specifically - a third, different
-  method on the same actions file, likely the single most-called
-  action in the app - is *also* bound by `WalletUnlockStore` (Tier 2,
-  `onChangeSetting: SettingsActions.changeSetting`) and `AccountStore`
-  (Tier 1d, same method). Migrating `SettingsStore`/`SettingsActions`
-  now would mean reaching into `WalletUnlockStore`'s wiring before its
-  own dedicated, extra-scrutiny Tier 2 turn - deferred. When this pair
-  is eventually tackled, do it together with (or immediately after)
-  `WalletUnlockStore`, using the same explicit-facade-call pattern
-  Tier 1b established for its cross-binding, applied carefully to the
-  `onChangeSetting` touchpoint specifically.
-- **Tier 1d - blocked on a Tier 2 counterpart, do NOT migrate until
-  that counterpart is ready:** `CachedPropertyStore` (depended on by
-  `PrivateKeyStore`, Tier 2), `AccountRefsStore`,
-  `AccountStore`, `WalletManagerStore` (all depend on `PrivateKeyActions`
-  and/or `WalletActions`, Tier 2).
+- **Tier 1c (`IntlStore`+`SettingsStore`) and the rest of Tier 1d
+  (`AccountStore`+`WalletManagerStore`) - done, batch 9, together with
+  `WalletUnlockStore` (Tier 2) in one atomic 5-store commit.** Scoping
+  this batch found the entanglement was bigger than any earlier staged
+  plan allowed for: `SettingsActions.changeSetting` is bound by THREE
+  stores (`SettingsStore`, `WalletUnlockStore`, `AccountStore`),
+  `SettingsActions.clearSettings` by two (`SettingsStore`, `IntlStore`),
+  `IntlActions.switchLocale` by two (`IntlStore`, `SettingsStore`), and
+  `WalletActions.setWallet` by two (`WalletManagerStore`,
+  `AccountStore`). Alt's `bindListeners` requires the action reference
+  to stay a real Alt action for as long as ANY store still binds to it
+  directly, so there was no safe way to split this into smaller
+  batches - `IntlStore`, `SettingsStore`, `WalletUnlockStore`,
+  `AccountStore`, and `WalletManagerStore` (plus their 4 actions files
+  - `IntlActions`, `SettingsActions`, `WalletUnlockActions`,
+  `AccountActions` share no cross-bindings with anything outside this
+  cluster, `WalletActions` is `WalletManagerStore`'s own) had to migrate
+  together. Put to the user explicitly before starting (same pattern as
+  the gateway-removal fork); decision: do the full 5-store batch now.
+  See the batch 9 write-up below for the full detail - state-shape
+  translation (both `IntlStore` and `SettingsStore` never called
+  `setState`/had explicit `this.state` at all, relying on Alt's default
+  "`getState()` returns the instance's own properties" behavior),
+  cross-notification wiring, and the preserved quirks found along the
+  way.
 - **`MarketsStore`/`MarketsActions`** (1,563 + 872 lines): no
   cross-store binding found (its own `bindListeners` only references
   its own `MarketsActions`) - genuinely standalone despite its size.
@@ -8407,13 +8410,11 @@ source above has zero outbound cross-store action dependencies.
     their public methods directly, not via `bindListeners`, so it works
     identically regardless of which backend those three now use
     internally.
-  - `WalletUnlockStore` - deferred until `SettingsStore`/`IntlStore`'s
-    turn (see Tier 1c above - `WalletUnlockStore` also binds
-    `SettingsActions.changeSetting`, making this actually a 3-way
-    cluster: `IntlStore`↔`SettingsStore`↔`WalletUnlockStore`, plus
-    `AccountStore`/`WalletManagerStore` as further members once their
-    other blockers clear - likely all 5 of these end up as one large
-    final non-`WalletDb.ts` batch).
+  - `WalletUnlockStore` (**done**, batch 9 - see below, migrated
+    together with `IntlStore`/`SettingsStore`/`AccountStore`/
+    `WalletManagerStore` as one atomic 5-store cluster - see the Tier
+    1c/1d entry above for why). The real wallet-lock-state store -
+    `locked` gates the whole app's wallet access.
   - `WalletDb.ts` itself, last and most carefully. Note from scoping
     this tier: `WalletDb.ts` is NOT currently subscribed to via
     `.listen()`/`.unlisten()` by any call site (grep-confirmed) - it's
@@ -8826,6 +8827,111 @@ across the whole cluster (`WalletDb.ts`, `WalletManagerStore.js`,
 empty; 19/19 suites / 5,392 tests passing, including
 `walletDbCrypto-test.js` specifically re-checked green; `yarn build`
 shows only the 2 known pre-existing `charting_library.esm` errors.
+
+**Batch 9 (`IntlStore`+`SettingsStore`+`WalletUnlockStore`+`AccountStore`
++`WalletManagerStore` - one atomic 5-store cluster, ~2,000+ lines, 5
+stores + 5 actions files):** the largest and most entangled batch of
+the whole migration. Put to the user explicitly before starting (the
+cluster was bigger than any staged plan could split safely); user
+decision: do the full batch now.
+
+- **`IntlStore`/`SettingsStore` state-shape translation:** both never
+  called `this.setState(...)`/had an explicit `this.state` - they
+  mutated plain instance fields directly, relying on Alt's *default*
+  `getState()` (a snapshot of the instance's own enumerable properties
+  when no explicit `this.state` exists) and its
+  auto-emit-after-bound-handler-completion behavior. `IntlStore`'s
+  slice holds only `currentLocale`/`locales` (the only 2 fields any
+  real call site reads via `getState()`, grep-confirmed);
+  `localesObject` stays a plain instance field. `SettingsStore`'s slice
+  holds EVERY field the original constructor/`init()` ever set as an
+  instance property (23 fields) rather than only the ones a grep of
+  current call sites found read - this store is too central (60+ call
+  sites) to risk a silently-missed read site, so it matches Alt's
+  "`getState()` returns everything" behavior exactly. A generic
+  `patchState` reducer (shallow-merge, matching Alt's own "mutate this
+  one field, leave the rest alone" pattern) is used by most handlers; a
+  few (`addWS`/`removeWS`/`hideWS`/`showWS`) mutate `defaults.apiServer`
+  in place via Immer directly, since `defaults` is a plain mutable
+  object in the original too (not Immutable.js).
+- **Cross-notifications**, all wired explicitly via direct calls
+  between facades (same pattern as every prior cross-bound batch):
+  - `IntlActions.switchLocale` → calls both `IntlStore.onSwitchLocale`
+    and `SettingsStore.onSwitchLocale`.
+  - `SettingsActions.clearSettings` → calls both
+    `SettingsStore.onClearSettings` and `IntlStore.onClearSettings`.
+  - `SettingsActions.changeSetting` → calls `SettingsStore
+    .onChangeSetting`, `WalletUnlockStore.onChangeSetting`, AND
+    `AccountStore.onChangeSetting` (all three).
+  - `WalletActions.setWallet` → calls both `WalletManagerStore
+    .onSetWallet` and `AccountStore.onSetWallet` with the same full
+    payload (matching the original: both received the same dispatched
+    object, `AccountStore.onSetWallet` just only ever read
+    `wallet_name` off it).
+- **`AccountStore`'s `addAccountRefs()` dual-mutation nuance:** the
+  original's `_linkAccount` directly mutated `this.state.myActiveAccounts`
+  (add if not hidden) *separately* from the outer loop's
+  `withMutations`-built draft (which captures its base `myActiveAccounts`
+  once, at the start - the direct reassignment inside `_linkAccount`
+  during the loop never fed back into that already-captured draft
+  either, in the original). The only observable effect of the direct
+  mutation is a `.size === 1` check deciding whether to auto-select a
+  just-linked account as current; the actual *dispatched* final state
+  comes from the separate `withMutations` result. Replicated with two
+  explicitly separate threaded local variables (`runningActiveAccounts`
+  for the size check, `myActiveAccounts` for the real dispatch) rather
+  than collapsing them into one, which would have changed the
+  auto-select timing.
+- **`.defer()` support added** for `AccountActions.setCurrentAccount`
+  (real call sites: `Account/AccountPage.tsx` ×2,
+  `next/NextShellContainer.tsx`) and `WalletUnlockActions.checkLock`
+  (real call sites: `Account/CreateAccountPassword.tsx`,
+  `Registration/AccountRegistrationConfirm.tsx` - both cast `as any`,
+  so `tsc` didn't catch these, only reading the real call sites did),
+  using the typed `Deferrable<T>` pattern established in the
+  `MarketsStore`/`AssetActions` batch.
+- Preserved verbatim, not fixed: `SettingsStore.onHideNewsHeadline`'s
+  `if (payload && this.hiddenNewsHeadline.indexOf(payload))` - `.indexOf`
+  is truthy whenever the item is NOT in the list (-1) or found at any
+  index other than 0 - the opposite of the apparent "only add if not
+  already present" intent, a genuine pre-existing bug. `WalletUnlockActions
+  .unlock()`/`.lock()`'s `.then(was_unlocked => {...})` dead chain
+  (`was_unlocked` is always `undefined` - the real "notify after unlock"
+  path is `Wallet/WalletUnlockModal.tsx` calling `.change()` directly,
+  a separate code path, grep-confirmed). `WalletActions.importBalance`'s
+  unused `db`/`address_publickey_map` locals dropped (dead in the
+  original too, same precedent as batch 8's `lockedWallet` drop).
+- Security-sensitive per AGENTS.md throughout: `WalletUnlockStore` is
+  the real wallet-lock-state store (`locked` gates all wallet access);
+  `AccountStore.isMyAccount`/`getMyAuthorityForAccount` compute
+  authority thresholds via `PrivateKeyStore.hasKey(...)`;
+  `WalletActions.createAccountWithPassword`/`createAccount` generate
+  real private keys (`WalletDb.generateKeyFromPassword`/
+  `generateNextKey`) and build/broadcast real transactions
+  (`WalletDb.process_transaction`/`saveKeys`) - `WalletDb.ts` itself
+  untouched throughout.
+
+**Batch 9 verification:** `npx tsc --noEmit -p .` 0 errors (after fixing
+real errors: `.defer()` typing for 2 methods via the `Deferrable<T>`
+pattern, and an `any`-cast for a `string | null`/`string | undefined`
+mismatch in `Showcases/Barter.tsx` surfaced by `AccountStore`'s new
+`currentAccount` typing); `eslint` on all 16 new/edited files 0 errors
+(after fixing 3 `require()`-not-an-import-statement errors with
+`eslint-disable-next-line` comments matching `WalletDb.ts`'s own
+precedent, and one real `no-unused-vars` error, `WalletActions
+.importBalance`'s unused `reject` param); `git status --short` showed
+only `Showcases/Barter.tsx` and `store/reduxStore.ts` modified beyond
+the new/deleted files - every other known call site across the entire
+cluster (60+ for `SettingsStore` alone) empty; 19/19 suites / 5,392
+tests passing, including `walletDbCrypto-test.js` re-checked green;
+`yarn build` shows only the 2 known pre-existing `charting_library.esm`
+errors. Additionally, given this batch's size and centrality: started
+the dev server (`yarn start --host 0.0.0.0`) and loaded the app in a
+real browser - it compiled with only the 2 known errors, rendered the
+same node-connection screen as the pre-migration baseline (confirming
+`AppInit.jsx`'s `IntlStore`/`SettingsStore`/`AccountStore`/
+`WalletManagerStore` dependencies all initialize without throwing), and
+produced zero new console/page errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison

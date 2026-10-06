@@ -376,7 +376,8 @@ export default function Barter(props: BarterProps) {
     // equivalent to reading `this.state` at that point in the original.
     React.useEffect(() => {
         const currentAccount = AccountStore.getState().currentAccount;
-        if (!state.from_name) mergeState({from_name: currentAccount});
+        if (!state.from_name)
+            mergeState({from_name: currentAccount as any});
     }, []);
 
     function fromChanged(from_name: any) {
