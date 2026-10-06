@@ -1,0 +1,95 @@
+import * as React from "react";
+import {render, fireEvent} from "@testing-library/react";
+import {Select} from "../../design-system/Select";
+
+describe("design-system/Select", () => {
+    it("shows the placeholder closed, and opens the option list on click", () => {
+        const {getByText, queryByRole} = render(
+            <Select placeholder="Pick an asset">
+                <Select.Option value="BTS">BTS</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+            </Select>
+        );
+        expect(getByText("Pick an asset")).toBeTruthy();
+        expect(queryByRole("listbox")).toBeNull();
+
+        fireEvent.click(getByText("Pick an asset"));
+        expect(queryByRole("listbox")).toBeTruthy();
+        expect(getByText("USD")).toBeTruthy();
+    });
+
+    it("calls onChange and onSelect with the chosen value, and closes", () => {
+        const onChange = jest.fn();
+        const onSelect = jest.fn();
+        const {getByText, queryByRole} = render(
+            <Select
+                placeholder="Pick an asset"
+                onChange={onChange}
+                onSelect={onSelect}
+            >
+                <Select.Option value="BTS">BTS</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick an asset"));
+        fireEvent.click(getByText("USD"));
+        expect(onChange).toHaveBeenCalledWith("USD");
+        expect(onSelect).toHaveBeenCalledWith("USD");
+        expect(queryByRole("listbox")).toBeNull();
+        expect(getByText("USD")).toBeTruthy();
+    });
+
+    it("does not select a disabled option", () => {
+        const onChange = jest.fn();
+        const {getByText} = render(
+            <Select placeholder="Pick" onChange={onChange}>
+                <Select.Option value="a" disabled>
+                    A (disabled)
+                </Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        fireEvent.click(getByText("A (disabled)"));
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("filters options by typed text when showSearch is set", () => {
+        const {getByText, getByDisplayValue, queryByText} = render(
+            <Select placeholder="Pick" showSearch>
+                <Select.Option value="BTS">BTS</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        fireEvent.change(getByDisplayValue(""), {target: {value: "us"}});
+        expect(getByText("USD")).toBeTruthy();
+        expect(queryByText("BTS")).toBeNull();
+    });
+
+    it("shows notFoundContent when no option matches the search", () => {
+        const {getByText, getByDisplayValue} = render(
+            <Select placeholder="Pick" showSearch notFoundContent="No match">
+                <Select.Option value="BTS">BTS</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        fireEvent.change(getByDisplayValue(""), {
+            target: {value: "zzz"}
+        });
+        expect(getByText("No match")).toBeTruthy();
+    });
+
+    it("stays controlled when value is passed, ignoring its own selection state", () => {
+        const {getByText} = render(
+            <Select value="BTS" onChange={() => {}}>
+                <Select.Option value="BTS">BTS</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("BTS"));
+        fireEvent.click(getByText("USD"));
+        // Controlled: the displayed value only changes if a new `value`
+        // prop is passed in, not from the click itself.
+        expect(getByText("BTS")).toBeTruthy();
+    });
+});

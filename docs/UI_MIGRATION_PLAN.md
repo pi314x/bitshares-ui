@@ -9534,16 +9534,52 @@ errors; visually verified both layouts in both themes via
 `labelCol`/`wrapperCol` spans (confirming the label/input split ratio)
 - temporary demo, reverted after.
 
+**`design-system/Select.tsx` - fifth component (done).** Next by usage
+(22 call sites). Confirmed via grep before writing any code:
+single-select only anywhere in the app (no `mode="multiple"`/
+`allowClear`), no `Select.OptGroup` usage, 7 real `showSearch` call
+sites (3 of those also pass a custom `filterOption`). Modeled closely
+on `AccountSwitcher.tsx`'s existing dropdown (trigger button +
+`useClickOutside` + an absolutely positioned list) rather than
+inventing a new interaction pattern - the two components now share the
+same open/close/outside-click/Escape shape.
+
+`Select.Option` is a real component (not just a type marker) typed via
+`React.FC<SelectOptionProps>` so JSX usage still type-checks against
+its real props, but its implementation always returns `null` - `Select`
+walks its own `children` looking for `Select.Option` elements and reads
+their props directly (`collectOptions`), then renders the dropdown list
+itself; `Select.Option` is never actually mounted. When `showSearch` is
+set, filtering defaults to a case-insensitive substring match against
+each option's own rendered text (`optionText`, recursively flattening
+`children` to a string) - matching antd's own default - unless a
+`filterOption` predicate is passed. Supports both controlled (`value`)
+and uncontrolled (`defaultValue`) usage, matching how every other
+design-system form input (`Input`) already works.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors
+(1 expected `any` warning, the untyped-React-children-traversal in
+`optionText`); a new 6-test suite (opens/closes on trigger click and
+shows its options, `onChange`/`onSelect` both fire with the chosen
+value and the dropdown closes, a `disabled` option can't be chosen,
+`showSearch` filters the visible options by typed text, `notFoundContent`
+shows when nothing matches, a controlled `value` ignores its own click
+selection) - 24/24 suites, 5,418/5,418 tests; `yarn build` shows only
+the 2 known pre-existing `charting_library.esm` errors; visually
+verified closed/open/selected/search-focused/disabled-option states in
+both themes via `build-preview` (temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Select` (22 call sites) is next by usage), then begin
+component types (`Icon` (28 call sites, combining the plain and
+`as AntIcon`-aliased import counts) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
-treatment as `Modal`/`Tooltip`/`Input`/`Form`: grep every real call
-site's actual prop usage before deciding the new API's scope (never
-build out the old library's full surface speculatively), reuse existing
-conventions (tokens, `useClickOutside`-style hooks) over inventing new
-ones, a dedicated test file, and a
+treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`: grep every real
+call site's actual prop usage before deciding the new API's scope
+(never build out the old library's full surface speculatively), reuse
+existing conventions (tokens, `useClickOutside`-style hooks) over
+inventing new ones, a dedicated test file, and a
 `build-preview` visual
 check in both themes before being considered done.
 
