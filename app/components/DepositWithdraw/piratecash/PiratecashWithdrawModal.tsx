@@ -69,7 +69,8 @@ import {ChainStore} from "bitsharesjs";
 import {checkFeeStatusAsync, checkBalance} from "common/trxHelper";
 import {Price, Asset} from "common/MarketClasses";
 import {debounce} from "lodash-es";
-import {Button, Modal} from "bitshares-ui-style-guide";
+import {Button} from "../../../design-system/Button";
+import {Modal} from "../../../design-system/Modal";
 import {useAltStore} from "../../../next/hooks/useAltStore";
 import {useChainStoreTick} from "../../../next/hooks/useChainStoreTick";
 
@@ -677,7 +678,7 @@ function PiratecashWithdrawModal(props: PiratecashWithdrawModalProps) {
                     footer={[
                         <Button
                             key="submit"
-                            type="primary"
+                            variant="accent"
                             onClick={onSubmitConfirmation}
                         >
                             {counterpart.translate("modal.confirmation.accept")}
@@ -898,7 +899,7 @@ function PiratecashWithdrawModal(props: PiratecashWithdrawModalProps) {
                 {/* Withdraw/Cancel buttons */}
                 <div>
                     <Button
-                        type="primary"
+                        variant="accent"
                         disabled={
                             state.error ||
                             state.balanceError ||

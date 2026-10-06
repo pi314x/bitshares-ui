@@ -2,7 +2,7 @@ import React from "react";
 import BindToChainState from "../Utility/BindToChainState";
 import GatewayStore from "stores/GatewayStore";
 import counterpart from "counterpart";
-import {Select} from "bitshares-ui-style-guide";
+import {Select} from "../../design-system/Select";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 class DepositWithdrawAssetSelector extends React.Component {

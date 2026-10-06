@@ -10673,6 +10673,28 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `Button`'s `size` prop), `yarn build` showing only the 2 known
 pre-existing `charting_library.esm` errors.
 
+**Fourteenth migration batch** (`DepositWithdraw/`, all 5 files):
+`DepositWithdrawAssetSelector.js` (`Select` - already compiles clean
+against the `onSearch`/`optionLabelProp` support added in earlier
+batches, with zero new fixes needed), `piratecash/
+PiratecashGatewayDepositRequest.tsx`/`xbtsx/XbtsxGatewayDepositRequest
+.tsx` (`Modal`, dropping the confirmed-dead `id`/`overlay` props), and
+`piratecash/PiratecashWithdrawModal.tsx`/`xbtsx/XbtsxWithdrawModal
+.tsx` (`Button`/`Modal`, `type="primary"` → `variant="accent"`) - the
+latter two flagged security-sensitive in their own headers purely for
+calling `AccountActions.transfer(...)`, migrated per this migration's
+established operation-submission reading of AGENTS.md. The xbtsx and
+piratecash file pairs are near-identical (the codebase already had
+them as structural duplicates before this migration, per
+`PiratecashWithdrawModal.tsx`'s own header), so the same two fixes
+applied to both. No new design-system gaps this batch.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,506/5,506 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

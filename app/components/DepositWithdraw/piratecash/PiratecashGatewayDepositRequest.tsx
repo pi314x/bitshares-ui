@@ -64,7 +64,7 @@ import DisableCopyText from "../DisableCopyText";
 import counterpart from "counterpart";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
-import {Modal} from "bitshares-ui-style-guide";
+import {Modal} from "../../../design-system/Modal";
 import {useChainStoreTick} from "../../../next/hooks/useChainStoreTick";
 
 interface PiratecashGatewayDepositRequestProps {
@@ -526,8 +526,6 @@ function PiratecashGatewayDepositRequest(
                     })}
                     footer={null}
                     visible={isModalVisible}
-                    id={withdraw_modal_id}
-                    overlay={true}
                 >
                     <PiratecashWithdrawModal
                         hideModal={hideModal}
