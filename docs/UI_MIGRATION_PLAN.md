@@ -9978,17 +9978,67 @@ errors; visually verified the default pane, a click-driven pane switch,
 and the active-tab underline in both themes via `build-preview`
 (temporary demo, reverted after).
 
-This closes out every component type with more than one real call site.
-Three very small items remain, each a single real call site or a trivial
-wrapper: `Steps` (1 call site), `Progress` (1 call site), and
-`BodyClassName` (2 call sites, a one-line `componentDidMount`/`willUnmount`
-`document.body.classList` effect rather than a visible component at
-all). Each still gets the same grep-before-building treatment as every
-component above, just a shorter write-up given the smaller real surface.
-After those three, every `bitshares-ui-style-guide` component type with
-any real usage will have a design-system replacement, and the remaining
-work on this phase becomes migrating the 194 real call sites to them
-file by file, not a fixed order, reassessed as each file lands.
+This closed out every component type with more than one real call site.
+Three very small items remained, each a single real call site or a
+trivial wrapper, built together in one pass given their size:
+
+**`design-system/BodyClassName.tsx` - eighteenth component (done).** Not
+a visible UI piece at all - a side-effecting wrapper that adds its
+`className` to `document.body` for as long as it's mounted (both real
+call sites, `App.jsx`/`AppInit.jsx`, use it to put the current theme name
+on `<body>`) and otherwise renders `children` unchanged. A `useEffect`
+keyed on `className` adds the class(es) on mount/change and removes them
+on cleanup/unmount, so a theme change while already mounted swaps the
+body class correctly rather than just accumulating old ones.
+
+**`design-system/Progress.tsx` - nineteenth component (done).** One real
+call site (`Forms/PasswordInputStyleGuide.tsx`, a password-strength
+meter): `percent` and `showInfo={false}`. No `type="circle"`, `status`,
+`strokeColor`, or `format` anywhere - a plain linear bar, `percent`
+clamped to 0-100.
+
+**`design-system/Steps.tsx` - twentieth component (done).** One real
+call site (`Showcases/Borrow.tsx`): `progressDot` + `current` on `Steps`,
+`title` on each `Steps.Step`. No per-step `status`/`icon`/`description`
+overrides anywhere. `Steps.Step` follows `Select.Option`/`Tabs.TabPane`'s
+compound-component pattern (never rendered, `Steps` reads `key`/`title`
+off each child directly). `progressDot` genuinely toggles between a dot
+and a numbered circle per step, rather than being accepted-but-ignored,
+since real usage always sets it and the two renderings are cheap to both
+support.
+
+**Verification (all three):** `npx tsc --noEmit -p .` 0 errors; `eslint`
+0 errors (0 warnings) across all three files; three new test suites (3
+tests for `BodyClassName` - adds/removes the body class across mount and
+unmount, swaps it on a `className` change, renders children unchanged; 4
+for `Progress` - sizes the fill bar to `percent`, shows/hides the rounded
+percentage via `showInfo`, clamps out-of-range `percent`; 4 for `Steps` -
+renders a title per step, marks finished/current/waiting status
+correctly, renders a dot or numbered circle depending on `progressDot`,
+supports destructuring `Step` off `Steps`) - 39/39 suites, 5,485/5,485
+tests; `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors; visually verified a two-bar `Progress`
+demo (with and without the percentage label) and a three-step
+`progressDot` stepper (one finished, one current, one waiting, with
+correctly-colored connecting lines) together in both themes via
+`build-preview` (one combined temporary demo, including a live
+`document.body` class check for `BodyClassName`, reverted after).
+
+**This closes out every `bitshares-ui-style-guide` component type with
+any real usage anywhere in the app** - twenty components total (`Modal`,
+`Tooltip`, `Input`, `Form`, `Select`, `Icon`, `Notification`, `Table`,
+`Row`, `Col`, `Radio`, `Switch`, `Card`, `Popover`, `Checkbox`, `Alert`,
+`Tabs`, `BodyClassName`, `Progress`, `Steps`), each scoped from grepped
+real usage rather than antd's full surface, each with its own test file
+and both-themes `build-preview` verification, none yet wired into a real
+screen. The remaining work on this phase is migrating the roughly 194
+real `bitshares-ui-style-guide` call sites across ~130 files to these
+components file by file - not a fixed order, reassessed as each file
+lands, following the same strangler-fig pattern every other phase of
+this migration has used - and, once every call site is migrated, removing
+the `bitshares-ui-style-guide` npm dependency entirely (mirroring how
+`alt`/`foundation-apps`/`react-hot-loader` were removed earlier in this
+migration).
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
