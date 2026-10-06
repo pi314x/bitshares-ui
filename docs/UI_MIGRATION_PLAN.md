@@ -8357,13 +8357,37 @@ source above has zero outbound cross-store action dependencies.
   below.
 - **Tier 2 - security-sensitive (AGENTS.md), extra scrutiny before
   each - fixed test vectors / byte-for-byte comparison against current
-  behavior, no store-shape "improvements" bundled in:** `AddressIndex`
-  (derives deposit addresses from keys), `BackupStore`,
-  `ImportKeysStore`, `BrainkeyStore`, `PrivateKeyStore` (unlocks
-  `CachedPropertyStore` once done), `WalletUnlockStore`,
-  `WalletManagerStore`, and last/most carefully, `WalletDb.ts` itself
-  (unlocks `AccountStore`/`AccountRefsStore` once `PrivateKeyStore`/
-  `WalletActions` are done).
+  behavior, no store-shape "improvements" bundled in. Done directly by
+  the orchestrating session itself (not delegated to agents) for this
+  tier, per explicit user instruction.**
+  - `AddressIndex` (**done**, batch 6 - see below) - despite the name,
+    holds no private key material: maps a derived legacy address string
+    to the PUBLIC key it came from (`key.addresses(pubkey)`, a one-way
+    operation). Migrated with Tier 2 care anyway since `WalletDb.ts`/
+    `PrivateKeyStore` depend on it directly.
+  - `ImportKeysStore` (**done**, batch 6) - a single boolean
+    import-in-progress flag, no key material at all. Same reasoning.
+  - `BackupStore`, `BrainkeyStore` - not yet started.
+  - `PrivateKeyStore` (unlocks `CachedPropertyStore` once done),
+    `AccountRefsStore` (depends on `PrivateKeyActions.addKey` - migrate
+    together with `PrivateKeyStore`, same connected-pair precedent as
+    Tier 1b), `WalletManagerStore` (depends on `PrivateKeyActions
+    .loadDbData` - same batch) - not yet started; this connected
+    cluster (`CachedPropertyStore`+`PrivateKeyStore`+`AccountRefsStore`
+    +`WalletManagerStore`) is the next batch.
+  - `WalletUnlockStore` - deferred until `SettingsStore`/`IntlStore`'s
+    turn (see Tier 1c above - `WalletUnlockStore` also binds
+    `SettingsActions.changeSetting`, making this actually a 3-way
+    cluster: `IntlStore`↔`SettingsStore`↔`WalletUnlockStore`, plus
+    `AccountStore` as a 4th member once its other blockers clear).
+  - `WalletDb.ts` itself, last and most carefully. Note from scoping
+    this tier: `WalletDb.ts` is NOT currently subscribed to via
+    `.listen()`/`.unlisten()` by any call site (grep-confirmed) - it's
+    used purely as a namespace of directly-callable methods
+    (`process_transaction`, `validatePassword`, etc.), which should
+    simplify its migration (no reactive state-shape to design, "just"
+    preserve every method's exact behavior) but does not reduce how
+    carefully each method needs to be ported.
 - Once every store above is migrated (facade-backed, call sites still
   untouched): switch call sites from `useAltStore`/direct
   `.listen()` to `useSelector`/`useDispatch` file by file; then drop
@@ -8627,6 +8651,43 @@ QuickTrade.tsx`, `next/hooks/useMarketStatsSubscription.ts`) empty;
 19/19 suites / 5,392 tests passing (same count as batch 1); `yarn build`
 (real `node_modules` copy, not the symlink used for tsc/lint/test) shows
 only the 2 known pre-existing `charting_library.esm` errors.
+
+**Entering Tier 2 (batch 6 on, done directly by the orchestrating
+session, not delegated):** per explicit user instruction. First 2
+stores migrated, both confirmed to hold no actual private key
+material despite being Tier 2 by association (direct dependencies of
+`WalletDb.ts`/`PrivateKeyStore`):
+
+- `ImportKeysStore` - a single boolean flag (`{importing: false}`),
+  called both reactively (`Wallet/ImportKeys.tsx`'s
+  `useAltStore(ImportKeysStore)`) and imperatively
+  (`ImportKeysStore.importing(true/false)`, the original's
+  `_export("importing")` - not Alt-dispatched via a separate actions
+  file). Facade preserves both call shapes.
+- `AddressIndex` - maps derived legacy address strings to the PUBLIC
+  key each came from (`key.addresses(pubkey)`); grep-confirmed every
+  real call site (`PrivateKeyStore.js`, `AccountStore.js`,
+  `WalletDb.ts`, `Account/AccountPermissionsList.tsx`) only calls
+  `.getState()` once imperatively, never `.listen()` - the facade's
+  `listen()`/`unlisten()` are included for interface completeness
+  anyway, matching every other migrated store. `pubkeys` (plain `Set`,
+  dedup bookkeeping) and `loadAddyMapPromise`/`saveAddyMapTimeout` stay
+  as plain instance fields on the facade singleton, never entering
+  Redux state - same as the original's own class fields (neither was
+  ever part of `this.state`). The Web Worker bulk-import path
+  (`addAll`, `AddressIndexWorker`, the `__ELECTRON__`-gated
+  `worker-loader!` require) is preserved exactly, same pattern already
+  established in `WalletDb.ts`'s own `AesWorker` require.
+
+**Batch 6 verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` on
+all 5 new/edited files (`importKeysSlice.ts`, `addressIndexSlice.ts`,
+`ImportKeysStore.ts`, `AddressIndex.ts`, `reduxStore.ts`) 0 errors
+(only expected `any`-warnings); `git status --short` on all 6 known
+call sites (`Wallet/ImportKeys.tsx`, `PrivateKeyStore.js`,
+`AccountStore.js`, `BalanceClaimActiveStore.ts`, `WalletDb.ts`,
+`Account/AccountPermissionsList.tsx`) empty; 19/19 suites / 5,392 tests
+passing; `yarn build` shows only the 2 known pre-existing
+`charting_library.esm` errors.
 
 - Exit criteria (unchanged from the original plan): zero references to
   removed packages; bundle-size and Lighthouse/perf comparison

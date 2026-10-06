@@ -1,29 +1,52 @@
-// TypeScript port of the legacy ImportKeysStore.js (Phase 5,
-// docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes - a single
-// boolean flag, no key material.
-import alt from "alt-instance";
-import BaseStore from "stores/BaseStore";
+// Redux-backed replacement for the Alt.js ImportKeysStore
+// (docs/UI_MIGRATION_PLAN.md, Phase 9 - see `../store/reduxStore.ts`'s
+// header for the overall migration approach). Tier 2 (AGENTS.md): no key
+// material here (a single boolean import-in-progress flag, same as the
+// original's own header comment said), but migrated with the same care
+// as every Tier 2 store since it's a direct dependency of
+// `WalletDb.ts`/`BackupStore.ts`.
+//
+// Preserves the exact interface every call site relies on -
+// `getState().importing`, `listen(callback)`, `unlisten(callback)`,
+// AND the directly-callable `importing(value)` method (the original's
+// `_export("importing")` - not Alt-dispatched via a separate Actions
+// file, called straight on the store singleton) - so
+// `Wallet/ImportKeys.tsx`'s `useAltStore(ImportKeysStore)` and its
+// `ImportKeysStore.importing(true/false)` calls keep working completely
+// unchanged.
+import {reduxStore} from "../store/reduxStore";
+import {setImporting, selectImportKeysState} from "../store/slices/importKeysSlice";
 
-class ImportKeysStore extends (BaseStore as any) {
-    state: any;
+class ImportKeysStoreFacade {
+    private unsubscribers = new Map<() => void, () => void>();
 
-    constructor() {
-        super();
-        this.state = this._getInitialState();
-        this._export("importing");
+    getState() {
+        return selectImportKeysState(reduxStore.getState());
     }
 
-    _getInitialState() {
-        return {importing: false};
+    listen(callback: () => void) {
+        let previous = selectImportKeysState(reduxStore.getState());
+        const unsubscribe = reduxStore.subscribe(() => {
+            const next = selectImportKeysState(reduxStore.getState());
+            if (next !== previous) {
+                previous = next;
+                callback();
+            }
+        });
+        this.unsubscribers.set(callback, unsubscribe);
+    }
+
+    unlisten(callback: () => void) {
+        const unsubscribe = this.unsubscribers.get(callback);
+        if (unsubscribe) {
+            unsubscribe();
+            this.unsubscribers.delete(callback);
+        }
     }
 
     importing(importing: boolean) {
-        this.setState({importing});
+        reduxStore.dispatch(setImporting(importing));
     }
 }
 
-export const ImportKeysStoreWrapped: any = (alt as any).createStore(
-    ImportKeysStore,
-    "ImportKeysStore"
-);
-export default ImportKeysStoreWrapped;
+export default new ImportKeysStoreFacade();

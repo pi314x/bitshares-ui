@@ -17,13 +17,11 @@
 // migrated this way, even before every call site has been switched to
 // `useSelector`/`useDispatch`.
 //
-// Security note (AGENTS.md): this file only wires up the store
-// infrastructure. `WalletDb.ts`/`PrivateKeyStore.js`/`BrainkeyStore.ts`/
-// `WalletUnlockStore.js`/`WalletManagerStore.js` are NOT migrated by this
-// commit - they need extra scrutiny (fixed test vectors, byte-for-byte
-// comparison) before their turn, per the migration plan's own Phase 5
-// precedent. This store currently only holds non-security-sensitive
-// slices.
+// Security note (AGENTS.md): Tier 2 stores (wallet unlock, private key,
+// brainkey, backup, wallet manager, and WalletDb.ts itself) are migrated
+// one at a time with extra scrutiny (byte-for-byte comparison against
+// the original, no behavior/shape "improvements" bundled in) - see each
+// slice's own header for its specific verification notes.
 import {configureStore, combineReducers} from "@reduxjs/toolkit";
 import notificationReducer from "./slices/notificationSlice";
 import transactionConfirmReducer from "./slices/transactionConfirmSlice";
@@ -34,6 +32,8 @@ import blockchainReducer from "./slices/blockchainSlice";
 import assetReducer from "./slices/assetSlice";
 import gatewayReducer from "./slices/gatewaySlice";
 import marketsReducer from "./slices/marketsSlice";
+import importKeysReducer from "./slices/importKeysSlice";
+import addressIndexReducer from "./slices/addressIndexSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -44,7 +44,9 @@ const rootReducer = combineReducers({
     blockchain: blockchainReducer,
     asset: assetReducer,
     gateway: gatewayReducer,
-    markets: marketsReducer
+    markets: marketsReducer,
+    importKeys: importKeysReducer,
+    addressIndex: addressIndexReducer
 });
 
 export const reduxStore = configureStore({
