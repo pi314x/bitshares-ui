@@ -1,0 +1,54 @@
+.switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 40px;
+    height: 20px;
+    padding: 0 4px;
+    border-radius: 10px;
+    border: none;
+    background: var(--line);
+    color: var(--ink-2);
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.switch.checked {
+    background: var(--accent);
+    color: var(--on-accent);
+    justify-content: flex-start;
+}
+
+.switch:not(.checked) {
+    justify-content: flex-end;
+}
+
+.handle {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface);
+    transition: left 0.15s ease;
+}
+
+.switch.checked .handle {
+    left: calc(100% - 18px);
+}
+
+.text {
+    /* Unchecked: text sits right-aligned next to the handle, which is on
+       the left - left-padded to clear it, small inset on the right. */
+    padding: 0 4px 0 16px;
+    white-space: nowrap;
+}
+
+.switch.checked .text {
+    /* Checked: text sits left-aligned next to the handle, now on the
+       right - right-padded to clear it, small inset on the left. */
+    padding: 0 16px 0 4px;
+}
