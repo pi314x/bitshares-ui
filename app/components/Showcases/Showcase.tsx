@@ -31,7 +31,7 @@
 import * as React from "react";
 import Icon from "../Icon/Icon";
 import Translate from "react-translate-component";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface ShowcaseProps {
     target: () => void;

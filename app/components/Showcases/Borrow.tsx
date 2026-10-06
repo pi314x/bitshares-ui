@@ -64,7 +64,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {Button, Card, Steps, Tooltip} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Card} from "../../design-system/Card";
+import {Steps} from "../../design-system/Steps";
+import {Tooltip} from "../../design-system/Tooltip";
 import debounceRender from "react-debounce-render";
 import {ChainStore} from "bitsharesjs";
 import WalletUnlockActions from "actions/WalletUnlockActions";
@@ -291,7 +294,7 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                             placement="bottom"
                         >
                             <Button
-                                type="primary"
+                                variant="accent"
                                 style={{
                                     width: "12rem"
                                 }}
@@ -437,9 +440,9 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                             }
                         >
                             <Button
-                                type="primary"
+                                variant="accent"
                                 onClick={() => next()}
-                                tabIndex="0"
+                                tabIndex={0}
                                 ref={nextRef}
                                 onKeyDown={onKeyDown}
                             >

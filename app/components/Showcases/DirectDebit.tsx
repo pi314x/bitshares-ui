@@ -102,7 +102,13 @@
 //   already-established `any`-typed `Table` column/record handling.
 import * as React from "react";
 import {Apis} from "bitsharesjs-ws";
-import {Input, Card, Col, Row, Button, Icon, Table} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Card} from "../../design-system/Card";
+import {Col} from "../../design-system/Col";
+import {Row} from "../../design-system/Row";
+import {Button} from "../../design-system/Button";
+import {Icon} from "../../design-system/Icon";
+import {Table} from "../../design-system/Table";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";
@@ -506,7 +512,7 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
 
                         <Table
                             columns={columns}
-                            dataSource={dataSource}
+                            dataSource={dataSource || []}
                             pagination={false}
                             className="direct-debit-table"
                         />

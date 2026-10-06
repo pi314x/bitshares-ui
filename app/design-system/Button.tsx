@@ -3,6 +3,7 @@ import styles from "./Button.module.scss";
 import {Icon, IconType} from "./Icon";
 
 export type ButtonVariant = "default" | "accent";
+export type ButtonSize = "default" | "small";
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,11 +14,23 @@ export interface ButtonProps
      * real usage actually needs as each call site gets migrated, not
      * speculatively for all of antd's icon set. */
     icon?: IconType;
+    /** Real at exactly one file so far (`Showcases/Barter.tsx`'s
+     * icon-only memo-field toggles) - antd's own `size="small"`,
+     * reducing padding/font-size. Only `"small"` is real anywhere;
+     * antd's `"large"` is never used. */
+    size?: ButtonSize;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    function Button({variant = "default", className, icon, children, ...rest}, ref) {
-        const classes = [styles.btn, variant === "accent" ? styles.accent : ""]
+    function Button(
+        {variant = "default", size = "default", className, icon, children, ...rest},
+        ref
+    ) {
+        const classes = [
+            styles.btn,
+            variant === "accent" ? styles.accent : "",
+            size === "small" ? styles.small : ""
+        ]
             .filter(Boolean)
             .concat(className ? [className] : [])
             .join(" ");

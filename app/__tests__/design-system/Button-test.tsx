@@ -39,6 +39,16 @@ describe("design-system/Button", () => {
         expect(container.querySelector("svg")).toBeNull();
     });
 
+    it("applies a different class when size is small than the default", () => {
+        const {getByText: getDefault} = render(<Button>Default</Button>);
+        const {getByText: getSmall} = render(
+            <Button size="small">Small</Button>
+        );
+        expect(getSmall("Small").className).not.toBe(
+            getDefault("Default").className
+        );
+    });
+
     it("applies the accent variant class alongside a custom className", () => {
         const {getByText} = render(
             <Button variant="accent" className="extra">

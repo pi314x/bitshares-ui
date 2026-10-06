@@ -10636,6 +10636,43 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Thirteenth migration batch** (`Showcases/`, all 5 files):
+`Showcase.tsx` (`Tooltip`), `Borrow.tsx` (`Button`/`Card`/`Steps`/
+`Tooltip`), `DirectDebit.tsx` (`Input`/`Card`/`Col`/`Row`/`Button`/
+`Icon`/`Table`), `Barter.tsx` (`Input`/`Card`/`Col`/`Row`/`Button`/
+`Switch`/`Tooltip`/`Icon`/`Popover`/`Alert`), and `Htlc.tsx` (`Input`/
+`Card`/`Col`/`Row`/`Button`/`Icon`/`Table`/`Tooltip`). These are demo/
+showcase pages, not reused elsewhere, but still real, working UI - no
+different a migration bar than any other file.
+
+Two more real gaps, both fixed in the component: `Button`'s `size`
+prop (`size="small"`, real at 3 call sites in `Barter.tsx` - an icon-
+only memo-field toggle button, reducing padding/font-size the way
+antd's own `size` prop does; only `"small"` is real anywhere, antd's
+`"large"` never is) and `Icon`'s `message` glyph (the icon those same
+3 buttons pass via `icon="message"`). `deployment-unit`/
+`plus-circle-o`/`minus-circle-o` (the other `Button.icon` names found
+missing back in the tenth batch, at `Modal/HtlcModal.tsx`/
+`Transfer/InvoiceRequest.tsx`) are still deliberately left unadded,
+per that batch's established practice.
+
+Call-site-only fixes, no component change needed: `Borrow.tsx`'s
+`tabIndex="0"` (string) → `tabIndex={0}` (number) on a `<Button ref=
+{nextRef}>` - a second real instance of the `maxLength`-as-string
+pattern from the sixth batch, this time on `tabIndex`, where native
+HTML attributes are strict about numeric types in a way antd's own
+props weren't; `DirectDebit.tsx`'s `dataSource={dataSource}` where
+that local variable is typed `any[] | null` (`null` until the real
+list has loaded) → `dataSource={dataSource || []}`, since `Table`'s
+`dataSource` prop requires an array (antd tolerated `null` the same
+way it tolerated most things loosely).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,506/5,506 (up from 5,504 - 2 new tests: `Icon`'s `message` glyph and
+`Button`'s `size` prop), `yarn build` showing only the 2 known
+pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

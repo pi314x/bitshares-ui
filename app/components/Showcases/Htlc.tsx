@@ -74,16 +74,14 @@
 //   password/private key/brainkey - kept, per AGENTS.md's rule that only
 //   logging of actual secret material must be dropped, not all logging.
 import * as React from "react";
-import {
-    Input,
-    Card,
-    Col,
-    Row,
-    Button,
-    Icon,
-    Table,
-    Tooltip
-} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Card} from "../../design-system/Card";
+import {Col} from "../../design-system/Col";
+import {Row} from "../../design-system/Row";
+import {Button} from "../../design-system/Button";
+import {Icon} from "../../design-system/Icon";
+import {Table} from "../../design-system/Table";
+import {Tooltip} from "../../design-system/Tooltip";
 import counterpart from "counterpart";
 import {ChainStore, FetchChainObjects} from "bitsharesjs";
 import utils from "common/utils";

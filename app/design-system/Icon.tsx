@@ -50,6 +50,13 @@ import styles from "./Icon.module.scss";
 // files is itself migrated, rather than speculatively drawing glyphs
 // nothing yet needs.
 //
+// `message` was added in a sixth pass, alongside `Button`'s new
+// `size="small"` - both real at the same `Showcases/Barter.tsx` call
+// sites (3 icon-only memo-field toggle buttons). `deployment-unit`/
+// `plus-circle-o`/`minus-circle-o` (`Modal/HtlcModal.tsx`/
+// `Transfer/InvoiceRequest.tsx`) are still left unadded, for the same
+// reason as above.
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -81,7 +88,8 @@ export type IconType =
     | "lock"
     | "unlock"
     | "line-chart"
-    | "download";
+    | "download"
+    | "message";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -193,7 +201,10 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
         </>
     ),
     "line-chart": <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />,
-    download: <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
+    download: <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />,
+    message: (
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    )
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {

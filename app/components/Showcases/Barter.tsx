@@ -214,18 +214,16 @@
 // constructs a `Price`.
 import * as React from "react";
 import Translate from "react-translate-component";
-import {
-    Input,
-    Card,
-    Col,
-    Row,
-    Button,
-    Switch,
-    Tooltip,
-    Icon,
-    Popover,
-    Alert
-} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Card} from "../../design-system/Card";
+import {Col} from "../../design-system/Col";
+import {Row} from "../../design-system/Row";
+import {Button} from "../../design-system/Button";
+import {Switch} from "../../design-system/Switch";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
+import {Popover} from "../../design-system/Popover";
+import {Alert} from "../../design-system/Alert";
 import AccountSelector from "../Account/AccountSelector";
 import FeeAssetSelector from "components/Utility/FeeAssetSelector";
 import counterpart from "counterpart";
