@@ -9942,19 +9942,53 @@ pre-existing `charting_library.esm` errors; visually verified all four
 types (with icons) plus the banner variant in both themes via
 `build-preview` (temporary demo, reverted after).
 
-Remaining work on this phase: build the next highest-leverage missing
-component types (`Tabs` (4 call sites) is next by usage), then begin
-migrating real call sites file by file once enough of the component
-surface exists to support a full screen - not a fixed order, reassessed
-as each component lands. Each future component should get the same
-treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
-`Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`/`Popover`/
-`Checkbox`/`Alert`: grep every real call site's actual prop usage before
-deciding the new API's scope (never build out the old library's full
-surface speculatively), reuse existing conventions (tokens,
-`useClickOutside`-style hooks) over inventing new ones, a dedicated test
-file, and a `build-preview` visual check in both
-themes before being considered done.
+**`design-system/Tabs.tsx` - seventeenth component (done).** Next by
+usage (4 call sites). Not to be confused with this app's existing,
+separate `components/Utility/Tabs.tsx` (a custom foundation-style tab
+bar, ~7 importers, already dependency-free, nothing to replace there) -
+this only replaces `bitshares-ui-style-guide`'s antd-v3 `Tabs`.
+
+All 4 real call sites are routing-driven: each tab's `key`/`activeKey`
+is a route pathname, so the tab bar doubles as in-page navigation.
+Grepped before designing: `activeKey` (controlled, the common case) or
+`defaultActiveKey` (uncontrolled, one real call site), `onChange(key)`,
+`className`, `style`. Every real call site passes `animated={false}` -
+accepted for API compatibility but a no-op, since this design system has
+no animation primitives yet (the same gap already flagged in
+`Modal.tsx`). No `type="card"`, `tabPosition`, `tabBarExtraContent`, or
+`size` anywhere.
+
+`Tabs.TabPane` follows `Select.Option`'s established compound-component
+pattern: typed via `React.FC<TabPaneProps>` so JSX usage still
+type-checks against its real props, but never actually rendered - `Tabs`
+reads each `TabPane` child's `key`/`tab`/`children` directly and renders
+the tab bar and the active pane's content itself. One real call site
+destructures `const {TabPane} = Tabs` rather than writing `Tabs.TabPane`
+directly (`Modal/PoolStakeModal.tsx`) - supported identically, since
+it's the same property either way.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (0
+warnings); a new 5-test suite (shows the first pane's content by default
+uncontrolled, switches panes on click and calls `onChange` with the key,
+respects `defaultActiveKey`, stays controlled when `activeKey` is passed
+- ignoring its own click until the prop changes, supports destructuring
+`TabPane` off `Tabs` directly) - 36/36 suites, 5,474/5,474 tests; `yarn
+build` shows only the 2 known pre-existing `charting_library.esm`
+errors; visually verified the default pane, a click-driven pane switch,
+and the active-tab underline in both themes via `build-preview`
+(temporary demo, reverted after).
+
+This closes out every component type with more than one real call site.
+Three very small items remain, each a single real call site or a trivial
+wrapper: `Steps` (1 call site), `Progress` (1 call site), and
+`BodyClassName` (2 call sites, a one-line `componentDidMount`/`willUnmount`
+`document.body.classList` effect rather than a visible component at
+all). Each still gets the same grep-before-building treatment as every
+component above, just a shorter write-up given the smaller real surface.
+After those three, every `bitshares-ui-style-guide` component type with
+any real usage will have a design-system replacement, and the remaining
+work on this phase becomes migrating the 194 real call sites to them
+file by file, not a fixed order, reassessed as each file lands.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
