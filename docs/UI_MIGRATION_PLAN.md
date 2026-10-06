@@ -9611,17 +9611,55 @@ via `build-preview` (temporary demo, reverted after) - glyphs render
 crisply at the chrome's icon size and invert correctly with
 `currentColor`/`var(--surface)` under the light theme's palette.
 
+**`design-system/Notification.tsx` - seventh component (done).** Next by
+usage (19 call sites). Architecturally different from every component
+before it: real call sites invoke `Notification.success({...})`/
+`Notification.error({...})` as plain functions from store code and submit
+handlers, never as JSX, so there's no `<Notification>` element for a
+caller to render - `bitshares-ui-style-guide`'s `Notification` is antd
+v3's imperative toast API, not a component in the usual sense.
+
+Grepped every real call site before designing anything: `.success`/
+`.error` are the only two severities ever called (no `.warning`/`.info`
+anywhere in the app), every call site passes only `message` (no
+`description`, per-call `duration` override, `placement`, or `onClick`),
+and the single `Notification.config({...})` call (`App.jsx`, setting a
+default `duration` and a `top` offset so toasts clear the topbar) is kept
+as the only other supported entry point.
+
+Implementation: the module owns one lazily-created container appended to
+`document.body` on first use, and re-renders it directly (`ReactDOM.render`
+with the current entries passed as props) on every push/dismiss, rather
+than a subscribed-to pub/sub store. An `useEffect`-based subscription was
+tried first and had a real timing bug: the container's own mount effect
+(registering its listener) doesn't flush until the end of the current
+`act()`/task, so a notification pushed in the same synchronous call that
+creates the container fired its "notify" before anything had subscribed
+to hear it, and silently never appeared. Passing entries as props on a
+direct re-render sidesteps the whole subscription lifecycle.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors; a
+new 5-test suite (success/error message render and dismiss on close
+click, auto-dismiss after a given `duration` under fake timers, multiple
+notifications stack at once, `Notification.config`'s `duration` becomes
+the new default) - 26/26 suites, 5,427/5,427 tests; `yarn build` shows
+only the 2 known pre-existing `charting_library.esm` errors; visually
+verified both severities stacking top-right in both themes via
+`build-preview` (temporary demo with two trigger buttons, reverted
+after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Notification` (19 call sites) is next by usage), then
-begin migrating real call sites file by file once enough of the
-component surface exists to support a full screen - not a fixed order,
-reassessed as each component lands. Each future component should get the
-same treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`: grep
-every real call site's actual prop usage before deciding the new API's
-scope (never build out the old library's full surface speculatively),
-reuse existing conventions (tokens, `useClickOutside`-style hooks) over
-inventing new ones, a dedicated test file, and a `build-preview` visual
-check in both themes before being considered done.
+component types (`Table` (15 call sites) is next by usage), then begin
+migrating real call sites file by file once enough of the component
+surface exists to support a full screen - not a fixed order, reassessed
+as each component lands. Each future component should get the same
+treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
+`Notification`: grep every real call site's actual prop usage before
+deciding the new API's scope (never build out the old library's full
+surface speculatively), reuse existing conventions (tokens,
+`useClickOutside`-style hooks) over inventing new ones, a dedicated test
+file, and a `build-preview` visual check in both themes before being
+considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
