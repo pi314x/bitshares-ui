@@ -19,7 +19,8 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import {Link} from "react-router-dom";
-import {Row, Col} from "bitshares-ui-style-guide";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
 import {ChainStore} from "bitsharesjs";
 import AssetName from "./AssetName";
 

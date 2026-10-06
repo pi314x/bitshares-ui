@@ -21,9 +21,21 @@
 // (i.e. before the user has typed anything) and passes it through
 // unchanged afterward - functionally a one-time initializer, replicated
 // with a `useState` lazy initializer.
+//
+// Dropped at this call site (design-system `Form.Item`'s own header
+// comment already documents this as a deliberate scope boundary):
+// antd's `hasFeedback`, which shows a small check/cross/spinner icon
+// next to the input derived from `validateStatus` - the design-system
+// `Form.Item` only colors its own help text, not arbitrary children, so
+// there's no icon slot to wire this into. Purely cosmetic (the
+// validateStatus-driven help text coloring itself is unaffected); real
+// at only one other call site in the whole app (`AccountSelectorAnt
+// .tsx`, not yet migrated).
 import * as React from "react";
 import counterpart from "counterpart";
-import {Form, Input, Button} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import Translate from "react-translate-component";
@@ -65,7 +77,6 @@ const AssetInputView = ({
             style={style}
             className={"asset-input" + (hasAction ? " with-action" : "")}
             validateStatus={validateStatus as any}
-            hasFeedback
             help={help}
         >
             <Input
@@ -77,7 +88,7 @@ const AssetInputView = ({
         </Form.Item>
         {hasAction && (
             <Form.Item>
-                <Button type="primary" disabled={disableActionButton} onClick={onAction}>
+                <Button variant="accent" disabled={disableActionButton} onClick={onAction}>
                     <Translate content={actionLabel} />
                 </Button>
             </Form.Item>

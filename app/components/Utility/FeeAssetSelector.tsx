@@ -55,7 +55,11 @@ import utils from "common/utils";
 import Immutable from "immutable";
 import counterpart from "counterpart";
 import AssetWrapper from "./AssetWrapper";
-import {Form, Input, Button, Tooltip, Icon} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
 import AssetSelect from "./AssetSelect";
 import {FetchChain} from "bitsharesjs";
 import SetDefaultFeeAssetModal from "../Modal/SetDefaultFeeAssetModal";
@@ -334,7 +338,6 @@ function FeeAssetSelector({
             mouseEnterDelay={0.5}
         >
             <Button
-                type="secondary"
                 style={{right: "-12px"}}
                 onClick={openSetDefaultAssetModal}
                 disabled={!canChangeFeeParams}

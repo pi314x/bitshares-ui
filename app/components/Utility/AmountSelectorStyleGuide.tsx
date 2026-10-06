@@ -33,7 +33,9 @@ import * as React from "react";
 import Immutable from "immutable";
 import counterpart from "counterpart";
 import AssetWrapper from "./AssetWrapper";
-import {Form, Input, Icon} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Icon} from "../../design-system/Icon";
 import AssetSelect from "./AssetSelect";
 
 interface AmountSelectorProps {

@@ -53,6 +53,51 @@ describe("design-system/Select", () => {
         expect(onChange).not.toHaveBeenCalled();
     });
 
+    it("still fires a click on interactive content nested inside a disabled option", () => {
+        const onChange = jest.fn();
+        const onCheckboxClick = jest.fn();
+        const {getByText, getByLabelText} = render(
+            <Select placeholder="Pick" onChange={onChange}>
+                <Select.Option value="a" disabled>
+                    <label>
+                        <input
+                            type="checkbox"
+                            aria-label="toggle a"
+                            onClick={onCheckboxClick}
+                        />
+                        A
+                    </label>
+                </Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        fireEvent.click(getByLabelText("toggle a"));
+        expect(onCheckboxClick).toHaveBeenCalled();
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("applies an Option's own className to its rendered row", () => {
+        const {getByText} = render(
+            <Select placeholder="Pick">
+                <Select.Option value="a" className="my-option">
+                    A
+                </Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        expect(getByText("A").className).toContain("my-option");
+    });
+
+    it("applies dropdownClassName to the open dropdown panel", () => {
+        const {getByText, getByRole} = render(
+            <Select placeholder="Pick" dropdownClassName="my-dropdown">
+                <Select.Option value="a">A</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByText("Pick"));
+        expect(getByRole("listbox").className).toContain("my-dropdown");
+    });
+
     it("filters options by typed text when showSearch is set", () => {
         const {getByText, getByDisplayValue, queryByText} = render(
             <Select placeholder="Pick" showSearch>

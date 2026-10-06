@@ -39,7 +39,7 @@ import Pulsate from "./Pulsate";
 import marketUtils from "common/market_utils";
 import {Asset, Price} from "common/MarketClasses";
 import {useNavigate, Link} from "react-router-dom";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import MarketsActions from "actions/MarketsActions";
 import {useAltStore} from "../../next/hooks/useAltStore";
 

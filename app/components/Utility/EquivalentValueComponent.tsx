@@ -45,7 +45,7 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import MarketStatsCheck from "./MarketStatsCheck";
 import MarketUtils from "common/market_utils";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";

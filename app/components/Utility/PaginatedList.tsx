@@ -4,12 +4,15 @@
 // Preserved verbatim (not "fixed"): the constructor's `pageSize` state is
 // computed once from the initial `pageSize` prop and never updated on
 // later prop changes - replicated with a `useState` lazy initializer.
-// Also preserved: the stray `uns` prop passed to `<Table>` with no value
-// (`uns={true}` shorthand) - an inert, harmless leftover the underlying
-// `Table` component silently ignores.
+// Dropped as confirmed dead, now that `Table` has moved to the
+// design-system port (docs/UI_MIGRATION_PLAN.md §7.1): the stray `uns`
+// prop passed to `<Table>` with no value (`uns={true}` shorthand) - an
+// inert leftover antd's own `Table` silently ignored too, but the
+// design-system `Table`'s stricter prop type doesn't have an index
+// signature to tolerate an unrecognized prop the way antd's did.
 import * as React from "react";
 import counterpart from "counterpart";
-import {Table} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
 import "./paginated-list.scss";
 
 interface PaginatedListProps {
@@ -77,7 +80,6 @@ export default function PaginatedList({
             <Table
                 loading={loading}
                 dataSource={rows}
-                uns
                 columns={Array.isArray(header) ? header : []}
                 footer={() => (extraRow ? extraRow : <span>&nbsp;</span>)}
                 onChange={toggleSortOrder}

@@ -24,7 +24,8 @@
 // elsewhere in the app could rely on the exact shape).
 import * as React from "react";
 import Translate from "react-translate-component";
-import {Form, Select} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Select} from "../../design-system/Select";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
@@ -72,7 +73,6 @@ const AssetSelectView = ({
             }
             value={value}
             {...props}
-            optionFilterProp="children"
             filterOption={(input: string, option: any) =>
                 option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }

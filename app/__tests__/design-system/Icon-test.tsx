@@ -56,6 +56,14 @@ describe("design-system/Icon", () => {
         );
     });
 
+    it("renders the lock/unlock glyphs added during the call-site migration pass", () => {
+        (["lock", "unlock"] as const).forEach(type => {
+            const {container} = render(<Icon type={type} />);
+            expect(container.querySelector("svg")).toBeTruthy();
+            expect(container.querySelector("rect")).toBeTruthy();
+        });
+    });
+
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
         expect(

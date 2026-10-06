@@ -29,11 +29,12 @@ import utils from "common/utils";
 import asset_utils from "common/asset_utils";
 import AssetWrapper from "./AssetWrapper";
 import counterpart from "counterpart";
-import {Popover} from "bitshares-ui-style-guide";
+import {Popover} from "../../design-system/Popover";
 import {ChainStore, FetchChainObjects} from "bitsharesjs";
 import GatewayStore from "../../stores/GatewayStore";
 import {getAssetAndGateway} from "../../lib/common/gatewayUtils";
-import {Icon, Tooltip} from "bitshares-ui-style-guide";
+import {Icon} from "../../design-system/Icon";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface AssetNameCoreProps {
     replace?: boolean;

@@ -22,7 +22,7 @@ import {List} from "immutable";
 import {ChainStore} from "bitsharesjs";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import FormattedAsset from "./FormattedAsset";
 import SettingsStore from "stores/SettingsStore";
 import MarketsStore from "stores/MarketsStore";

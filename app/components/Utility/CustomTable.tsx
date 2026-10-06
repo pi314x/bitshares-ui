@@ -8,7 +8,9 @@
 // replicated with `props.viewSettings || settingsState.viewSettings`.
 import * as React from "react";
 import counterpart from "counterpart";
-import {Checkbox, Icon, Select} from "bitshares-ui-style-guide";
+import {Checkbox} from "../../design-system/Checkbox";
+import {Icon} from "../../design-system/Icon";
+import {Select} from "../../design-system/Select";
 import SettingsActions from "actions/SettingsActions";
 import PaginatedList from "./PaginatedList";
 import "./paginated-list.scss";

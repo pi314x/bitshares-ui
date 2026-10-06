@@ -2,7 +2,9 @@
 // (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
 import Translate from "react-translate-component";
-import {Row, Col, Tooltip} from "bitshares-ui-style-guide";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
+import {Tooltip} from "../../design-system/Tooltip";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import ChainSelect from "./ChainSelect";
 

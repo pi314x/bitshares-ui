@@ -12,6 +12,11 @@ import {useClickOutside} from "../next/hooks/useClickOutside";
 export interface SelectOptionProps {
     value: string | number;
     disabled?: boolean;
+    /** Applied to this option's rendered row in the open dropdown -
+     * real at one call site (`Utility/CustomTable.tsx`'s column-
+     * visibility checkboxes), which uses it purely for its own padding
+     * hook, not anything antd-DOM-structure-dependent. */
+    className?: string;
     children?: React.ReactNode;
 }
 
@@ -39,6 +44,7 @@ export interface SelectOptionData {
     key: string;
     value: string | number;
     disabled?: boolean;
+    className?: string;
     label: React.ReactNode;
     text: string;
 }
@@ -53,6 +59,7 @@ function collectOptions(children: React.ReactNode): SelectOptionData[] {
             key: String(child.key ?? props.value),
             value: props.value,
             disabled: props.disabled,
+            className: props.className,
             label: props.children,
             text: optionText(props.children)
         });
@@ -92,6 +99,11 @@ export interface SelectProps {
      * `children` (e.g. a right-aligned balance) out of the collapsed
      * trigger display. */
     optionLabelProp?: "value";
+    /** Applied to the open dropdown panel itself (antd's own
+     * `dropdownClassName`), not the closed trigger - real call sites
+     * use it to scope dropdown-only CSS (e.g. a wider panel) without
+     * also restyling the trigger via `className`. */
+    dropdownClassName?: string;
     children?: React.ReactNode;
 }
 
@@ -111,6 +123,7 @@ function SelectBase({
     onDropdownVisibleChange,
     onSearch,
     optionLabelProp,
+    dropdownClassName,
     children
 }: SelectProps) {
     const [open, setOpenState] = React.useState(false);
@@ -189,7 +202,12 @@ function SelectBase({
                 ) : null}
             </button>
             {open ? (
-                <div className={styles.dropdown} role="listbox">
+                <div
+                    className={[styles.dropdown, dropdownClassName]
+                        .filter(Boolean)
+                        .join(" ")}
+                    role="listbox"
+                >
                     {showSearch ? (
                         <input
                             ref={searchRef}
@@ -218,7 +236,8 @@ function SelectBase({
                                         : "",
                                     option.disabled
                                         ? styles.optionDisabled
-                                        : ""
+                                        : "",
+                                    option.className
                                 ]
                                     .filter(Boolean)
                                     .join(" ")}

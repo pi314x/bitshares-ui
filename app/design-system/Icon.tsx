@@ -28,6 +28,13 @@ import styles from "./Icon.module.scss";
 // alias-inclusive grep (`type="[a-z-]*"` near the word "icon", not just
 // `<Icon`/`<AntIcon` literally) is what actually surfaced them.
 //
+// `lock`/`unlock` were added in a third pass, for the same reason: real
+// at exactly one call site (`Utility/AmountSelectorStyleGuide.tsx`'s
+// amount-field lock toggle, via a dynamic `type={!lockStatus ? "unlock"
+// : "lock"}` ternary), missed by both earlier grep passes since this
+// file imports `Icon` directly (no alias) but the glyph name is
+// computed, not a literal string.
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -55,7 +62,9 @@ export type IconType =
     | "star"
     | "user"
     | "plus-circle"
-    | "file-search";
+    | "file-search"
+    | "lock"
+    | "unlock";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -152,6 +161,18 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
             <path d="M14 3v5h4" />
             <circle cx="10.5" cy="14.5" r="2.25" />
             <path d="M12.4 16.4L14 18" />
+        </>
+    ),
+    lock: (
+        <>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </>
+    ),
+    unlock: (
+        <>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 9.9-1" />
         </>
     )
 };

@@ -10282,6 +10282,89 @@ Verified: `tsc` clean, `eslint` 0 errors on every changed file
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Fifth migration batch** (`Utility/`, the shared building blocks most
+higher-level screens render through): `EquivalentValueComponent.tsx`/
+`FormattedPrice.tsx`/`TotalBalanceValue.tsx` (`Tooltip` only),
+`AmountSelector2.tsx`/`AmountSelector3.tsx` (`Row`/`Col`/`Tooltip`),
+`LiquidityPoolsList.tsx` (`Row`/`Col`), `FormattedAsset.tsx`
+(`Popover`), `AssetName.tsx` (`Popover`/`Icon`/`Tooltip`),
+`AssetSelect.tsx` (`Form`/`Select`), `PaginatedList.tsx`/
+`CustomTable.tsx` (`Table` via `PaginatedList`, plus `Checkbox`/`Icon`/
+`Select` directly in `CustomTable.tsx`), `AssetInput.tsx`/
+`FeeAssetSelector.tsx`/`AmountSelectorStyleGuide.tsx` (`Form`/`Input`/
+`Button`/`Tooltip`/`Icon`).
+
+**Deferred, with a reason:** `CollapsibleTable.tsx` - not a prop-rename
+problem but a real behavioral one. Its entire collapse/expand
+animation (`assets/stylesheets/components/_collapsible_table.scss`)
+targets antd's own internal classnames directly
+(`.ant-table-thead`/`.ant-table-tbody`/`.ant-table-footer`/
+`.ant-table-pagination`), which the design-system `Table` - a from-
+scratch implementation using scoped CSS Modules, not antd's DOM
+structure - never emits. Swapping the import would silently turn the
+whole animation (and the "fade out and collapse the footer" effect) to
+dead CSS rather than erroring, so this needs either a dedicated SCSS
+rewrite targeting `Table`'s actual class names or a new prop on
+`Table` exposing stable hook classnames - deferred as its own task
+rather than shipped half-working. (`PaginatedList.tsx`'s own
+`paginated-list.scss` has a milder version of the same pattern -
+`.ant-table-body`/`.ant-table td` rules for overflow/white-space - but
+`Table.module.scss` already replicates that exact behavior itself, so
+nothing is lost there; migrated normally.)
+
+Three more real gaps surfaced here, all fixed in the component:
+
+- `Icon`: `lock`/`unlock` glyphs, real at one call site
+  (`AmountSelectorStyleGuide.tsx`'s amount-field lock toggle, via a
+  dynamic `type={!lockStatus ? "unlock" : "lock"}` ternary that missed
+  both of the earlier grep passes - this file imports `Icon` directly,
+  no alias, but the glyph name itself is computed, not a literal
+  string).
+- `Select.Option`: `className`, real at one call site
+  (`CustomTable.tsx`'s column-visibility dropdown, a padding hook with
+  no antd-DOM dependency - the other half of the same CSS rule,
+  targeting antd's own `.ant-checkbox-wrapper`, was already dead the
+  moment `Checkbox` got its own design-system port). Threaded through
+  `SelectOptionData` and applied to the rendered option row.
+- `Select`: `dropdownClassName`, antd's class hook for the open
+  dropdown panel specifically (as opposed to `className`, which this
+  component already applies to the closed trigger) - real at the same
+  `CustomTable.tsx` call site.
+
+One more real, if narrower, finding: `CustomTable.tsx` nests a
+genuinely interactive `Checkbox` inside a `disabled` `Select.Option`
+*on purpose* (so the row itself can't be "selected" as the dropdown's
+value while its own checkbox still toggles column visibility) - but
+`Select.module.scss`'s `.optionDisabled` rule set `pointer-events:
+none`, which would have silently swallowed every click on that nested
+checkbox. `choose()` (`Select.tsx`) already refuses to select a
+disabled option regardless of where the click originated, so the
+`pointer-events: none` was redundant for that purpose and actively
+wrong for this real call site - removed, replaced with an
+`.optionDisabled:hover` rule to keep the "no hover highlight" visual
+cue the removed CSS also happened to provide.
+
+Other fixes at the call site: `Button`'s `type="secondary"` (not a
+real antd type, confirmed inert even under real antd) dropped at 2
+more call sites (`FeeAssetSelector.tsx`/`AssetInput.tsx`'s `type=
+"primary"` → `variant="accent"`); `AssetSelect.tsx`'s unsupported
+`optionFilterProp="children"` dropped (inert once a `filterOption`
+function is also passed, same as `ChainSelect.tsx` from the first
+batch); `PaginatedList.tsx`'s stray valueless `uns` prop dropped (antd
+tolerated an unrecognized prop silently, the design-system `Table`'s
+stricter type doesn't); `AssetInput.tsx`'s `hasFeedback` dropped per
+`Form.Item`'s own documented scope boundary (it only colors its own
+help text, not arbitrary children - no icon slot to wire a validation
+icon into; real at only one other, not-yet-migrated call site).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 new errors
+on every changed file (pre-existing `any`-warnings only), `yarn test`
+5,496/5,496 (up from 5,492 - 4 new tests: `Icon`'s lock/unlock glyphs,
+`Select`'s nested-interactive-content-inside-a-disabled-option
+behavior, `Select.Option`'s `className`, and `dropdownClassName`),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

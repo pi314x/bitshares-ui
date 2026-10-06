@@ -14,7 +14,7 @@ import * as React from "react";
 import {FormattedNumber} from "react-intl";
 import utils from "common/utils";
 import assetUtils from "common/asset_utils";
-import {Popover} from "bitshares-ui-style-guide";
+import {Popover} from "../../design-system/Popover";
 import HelpContent from "./HelpContent";
 import AssetName from "./AssetName";
 import Pulsate from "./Pulsate";
