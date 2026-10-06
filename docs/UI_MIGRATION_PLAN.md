@@ -10426,6 +10426,26 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Seventh migration batch**: `Dashboard/MarketsTable.tsx` (`Input`/
+`Tooltip`/`Icon`, the last via an `Icon as AntIcon` alias) and
+`Dashboard/SimpleDepositWithdraw.tsx` (`Modal`/`Tooltip`, dropping the
+same confirmed-dead `overlay`/`id` Modal props as every earlier batch).
+
+One more real `Tooltip` gap, fixed in the component: `style`/`onClick`
+passed directly on `<Tooltip>` itself rather than on its `children` -
+real at `MarketsTable.tsx`'s show/hide-market toggle, which puts both
+a margin reset and the click handler on the `Tooltip` wrapping a bare
+`Icon`. antd forwards unrecognized props onto its own trigger wrapper
+the same way, so this is genuine behavior, not a call-site mistake;
+added both to the design-system `Tooltip`'s own wrapping `<span>`
+(previously neither was threaded through at all), with a new test.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,497/5,497 (up from 5,496 - the one new `Tooltip` style/onClick test),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

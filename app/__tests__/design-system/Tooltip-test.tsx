@@ -51,6 +51,23 @@ describe("design-system/Tooltip", () => {
         expect(queryByRole("tooltip")).toBeNull();
     });
 
+    it("applies style and onClick to its own wrapper, not the children", () => {
+        const onClick = jest.fn();
+        const {getByText} = render(
+            <Tooltip
+                title="Helpful text"
+                style={{marginRight: 0}}
+                onClick={onClick}
+            >
+                <span>Trigger</span>
+            </Tooltip>
+        );
+        const wrapper = getByText("Trigger").parentElement as HTMLElement;
+        expect(wrapper.style.marginRight).toBe("0px");
+        fireEvent.click(wrapper);
+        expect(onClick).toHaveBeenCalled();
+    });
+
     it("shows on focus and hides on blur, for keyboard users", () => {
         const {getByText, queryByRole} = render(
             <Tooltip title="Helpful text" mouseEnterDelay={0}>

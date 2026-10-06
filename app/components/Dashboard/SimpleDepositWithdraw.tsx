@@ -228,7 +228,8 @@ import {checkBalance} from "common/trxHelper";
 import SettingsStore from "stores/SettingsStore";
 import {openledgerAPIs} from "api/apiConfig";
 import {getWalletName} from "branding";
-import {Modal, Tooltip} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import FeeAssetSelector from "components/Utility/FeeAssetSelector";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -1031,8 +1032,6 @@ export default function SimpleDepositWithdrawModal(props: any) {
             visible={props.visible}
             onCancel={props.hideModal}
             className="test"
-            overlay={true}
-            id={props.modalId}
         >
             {props.visible ? (
                 <DepositWithdrawContentContainer

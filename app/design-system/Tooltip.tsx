@@ -17,6 +17,14 @@ export interface TooltipProps {
      * `0.5` was the one value ever passed). */
     mouseEnterDelay?: number;
     className?: string;
+    /** Applied to this component's own wrapping `<span>`, not its
+     * `children` - antd forwards unrecognized props the same way, onto
+     * its own trigger wrapper; real at one call site
+     * (`Dashboard/MarketsTable.tsx`'s show/hide-market toggle, which
+     * puts the click target and a margin reset on the `Tooltip` itself
+     * rather than its `Icon` child). */
+    style?: React.CSSProperties;
+    onClick?: (event: React.MouseEvent<HTMLSpanElement>) => void;
     children: React.ReactNode;
 }
 
@@ -44,6 +52,8 @@ export function Tooltip({
     placement = "top",
     mouseEnterDelay = 0.1,
     className,
+    style,
+    onClick,
     children
 }: TooltipProps): JSX.Element {
     const [visible, setVisible] = React.useState(false);
@@ -72,6 +82,8 @@ export function Tooltip({
     return (
         <span
             className={wrapClasses}
+            style={style}
+            onClick={onClick}
             onMouseEnter={show}
             onMouseLeave={hide}
             onFocus={show}

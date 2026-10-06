@@ -108,11 +108,12 @@ import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";
 import utils from "common/utils";
 import PaginatedList from "../Utility/PaginatedList";
-import {Input, Tooltip} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
+import {Tooltip} from "../../design-system/Tooltip";
 import Icon from "../Icon/Icon";
 import AssetName from "../Utility/AssetName";
 import {Link} from "react-router-dom";
-import {Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 // `@types/react-router-dom`'s `Link` return type isn't assignable to
