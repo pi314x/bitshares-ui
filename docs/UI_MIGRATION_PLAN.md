@@ -10797,6 +10797,56 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Seventeenth migration batch**: `Blockchain/TransactionConfirm.tsx`
+(`Modal`/`Button`/`Icon`/`Alert`/`Switch` - the app's single global
+transaction-confirmation dialog, flagged security-sensitive in its own
+header for touching `WalletDb.process_transaction`/transaction
+serialization, but migrated per this migration's established reading:
+it builds and submits an already-constructed transaction, never reads
+or logs a key/password/brainkey, exactly like `SendModal.tsx`/
+`WithdrawModalNew.tsx` from earlier batches), `LoginSelector.tsx`
+(`Select`/`Row`/`Col`/`Icon` - explicitly flagged "not itself security-
+sensitive" in its own header, since it only dispatches `WalletUnlock
+Actions.unlock()` rather than handling any password itself),
+`Poolmart/LiquidityPools.tsx` (`Table`/`Select`, the same "rows per
+page" `Select.Option` pattern as the eighth batch's `Explorer/
+LiquidityPools.tsx` - acknowledged as a near-duplicate in this file's
+own header), `QuickTrade/QuickTrade.tsx` (`Card`/`Row`/`Col`/`Table`/
+`Button`/`Switch`/`Tooltip`/`Notification` - another partial migration
+like `Asset.tsx`/`GatewaySelectorModal.tsx`, `Collapse` stays
+deferred), and `QuickTrade/SellReceive.tsx` (`Row`/`Col`).
+
+**Deferred, with a reason:** `Login/AccountLogin.tsx` and
+`Login/DecryptBackup.tsx` - unlike `LoginSelector.tsx` above, both are
+explicitly flagged security-sensitive in their own headers for
+handling the raw wallet-unlock/backup-decryption password directly
+(`WalletDb.validatePassword(password, ...)`,
+`PrivateKey.fromSeed(backupPassword)`) - held back with the wallet-
+sensitive batch, same reasoning as every other deferral in that
+category.
+
+One real finding in `LoginSelector.tsx`, resolved without any
+component change: its language-picker `<Select.Option>`s set a custom
+`language` prop (carrying the translated language name) purely so a
+custom `filterOption` could read `option.props.language` - but that's
+the exact same string each option's `children` already renders, so
+it's functionally identical to the design-system `Select`'s own
+default filter (a case-insensitive substring match against the
+option's rendered text). Dropped the custom `filterOption`/`language`
+prop pair entirely and relied on the default instead, rather than
+rebuilding a redundant custom filter against a callback shape (`option
+.props`, the raw element) the design-system `Select` doesn't expose in
+the first place (it passes a plain `{key, value, disabled, label,
+text}` object, not the JSX element) - also fixed the same implicit-
+key-as-value gap this phase keeps finding, since these options never
+set an explicit `value` either.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,508/5,508 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

@@ -54,7 +54,10 @@ import CreateAccount from "./Account/CreateAccount";
 import CreateAccountPassword from "./Account/CreateAccountPassword";
 import {Routes, Route} from "react-router-dom";
 import {getWalletName, getLogo, getAllowedLogins} from "branding";
-import {Select, Row, Col, Icon} from "bitshares-ui-style-guide";
+import {Select} from "../design-system/Select";
+import {Row} from "../design-system/Row";
+import {Col} from "../design-system/Col";
+import {Icon} from "../design-system/Icon";
 import {useAltStore} from "../next/hooks/useAltStore";
 
 const LinkAny = Link as any;
@@ -99,26 +102,25 @@ export default function LoginSelector() {
         setState(prev => ({...prev, currentLocale: locale}));
     };
 
-    const languagesFilter = (input: any, option: any) => {
-        return (
-            option.props.language.toLowerCase().indexOf(input.toLowerCase()) >=
-            0
-        );
-    };
+    // Dropped: the original's custom `filterOption` read `option.props
+    // .language` (a custom prop set on each `<Select.Option>` purely to
+    // carry the translated language name for this filter to read) -
+    // but that's the exact same string each option's `children` already
+    // renders, so it's functionally identical to the design-system
+    // `Select`'s own default filter (a case-insensitive substring match
+    // against the option's rendered text). Relying on that default
+    // instead, rather than reimplementing a custom `filterOption` with
+    // no real behavior difference.
 
     const flagDropdown = (
         <Select
             showSearch
-            filterOption={languagesFilter}
             value={state.currentLocale}
             onChange={handleLanguageSelect}
             style={{width: "123px", marginBottom: "16px"}}
         >
             {state.locales.map((locale: any) => (
-                <Select.Option
-                    key={locale}
-                    language={counterpart.translate("languages." + locale)}
-                >
+                <Select.Option key={locale} value={locale}>
                     {counterpart.translate("languages." + locale)}
                 </Select.Option>
             ))}

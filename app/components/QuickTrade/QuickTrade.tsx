@@ -167,16 +167,16 @@ import * as React from "react";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
 import AssetStore from "../../stores/AssetStore";
 import MarketsStore from "../../stores/MarketsStore";
-import {
-    Card,
-    Collapse,
-    Row,
-    Col,
-    Table,
-    Button,
-    Switch,
-    Tooltip
-} from "bitshares-ui-style-guide";
+import {Card} from "../../design-system/Card";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
+import {Table} from "../../design-system/Table";
+import {Button} from "../../design-system/Button";
+import {Switch} from "../../design-system/Switch";
+import {Tooltip} from "../../design-system/Tooltip";
+// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
+// §7.1), same deferral as `Blockchain/Asset.tsx`/`Gateways/GatewaySelectorModal.tsx`.
+import {Collapse} from "bitshares-ui-style-guide";
 import SellReceive from "components/QuickTrade/SellReceive";
 import MarketsActions from "actions/MarketsActions";
 import {
@@ -193,7 +193,7 @@ import {lookupAssets} from "../Exchange/MarketPickerHelpers";
 import counterpart from "counterpart";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import {Asset, LimitOrderCreate as LimitOrderCreateUntyped} from "common/MarketClasses";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
 import FormattedPrice from "../Utility/FormattedPrice";
 import AssetName from "../Utility/AssetName";
 import Translate from "react-translate-component";
@@ -1493,7 +1493,7 @@ function QuickTradeCore(props: QuickTradeProps) {
                 >
                     <Button
                         key="sell"
-                        type="primary"
+                        variant="accent"
                         disabled={!showDetails() || !sub || !hasBalance()}
                         onClick={handleSell}
                     >

@@ -44,7 +44,8 @@
 import * as React from "react";
 import AmountSelector3 from "../Utility/AmountSelector3";
 import Icon from "../Icon/Icon";
-import {Row, Col} from "bitshares-ui-style-guide";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
 
 export interface SellReceiveProps {
     sellAssetInput?: string;

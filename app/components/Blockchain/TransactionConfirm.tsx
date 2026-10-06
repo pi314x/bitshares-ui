@@ -104,13 +104,11 @@ import AccountSelect from "components/Forms/AccountSelect";
 import {ChainStore} from "bitsharesjs";
 import Operation from "components/Blockchain/Operation";
 import notify from "actions/NotificationActions";
-import {
-    Modal,
-    Button,
-    Icon as AIcon,
-    Alert,
-    Switch
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Icon as AIcon} from "../../design-system/Icon";
+import {Alert} from "../../design-system/Alert";
+import {Switch} from "../../design-system/Switch";
 import QRCode from "qrcode.react";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -382,7 +380,7 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                 />
                 <Icon name="qr-scan" size={"1_5x" as any} />
             </div>,
-            <Button key={"confirm"} type="primary" onClick={onConfirmClick}>
+            <Button key={"confirm"} variant="accent" onClick={onConfirmClick}>
                 {props.propose
                     ? counterpart.translate("propose")
                     : counterpart.translate("transfer.confirm")}
@@ -398,12 +396,8 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                 wrapClassName="modal--transaction-confirm"
                 title={header}
                 visible={!props.closed}
-                id="transaction_confirm_modal"
                 footer={footer}
-                overlay={true}
                 onCancel={onCloseClick}
-                overlayClose={!broadcasting}
-                noCloseBtn={true}
             >
                 <div className="grid-block vertical no-padding no-margin">
                     {props.error ? (

@@ -108,7 +108,8 @@
 // respectively, matching the established pattern in
 // `Explorer/LiquidityPools.tsx`.
 import * as React from "react";
-import {Table, Select} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
+import {Select} from "../../design-system/Select";
 import {Link, LinkProps} from "react-router-dom";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
@@ -457,12 +458,20 @@ function LiquidityPools({
                         marginTop: "4px"
                     }}
                     value={limit}
-                    onChange={handleRowsChange}
+                    onChange={value => handleRowsChange(value as string)}
                 >
-                    <Select.Option key={"10"}>10 rows</Select.Option>
-                    <Select.Option key={"25"}>25 rows</Select.Option>
-                    <Select.Option key={"50"}>50 rows</Select.Option>
-                    <Select.Option key={"100"}>100 rows</Select.Option>
+                    <Select.Option key={"10"} value={"10"}>
+                        10 rows
+                    </Select.Option>
+                    <Select.Option key={"25"} value={"25"}>
+                        25 rows
+                    </Select.Option>
+                    <Select.Option key={"50"} value={"50"}>
+                        50 rows
+                    </Select.Option>
+                    <Select.Option key={"100"} value={"100"}>
+                        100 rows
+                    </Select.Option>
                 </Select>
             </div>
             <div className="grid-content no-padding">
