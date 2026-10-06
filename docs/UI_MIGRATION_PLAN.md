@@ -9707,18 +9707,56 @@ via `build-preview` (temporary demo with a sortable, paginated, selectable
 table, reverted after) - clicking the sortable header re-ordered rows and
 highlighted the active arrow exactly as the unit tests assert.
 
+**`design-system/Row.tsx` + `design-system/Col.tsx` - ninth and tenth
+components (done).** Next by usage (11 call sites each - antd v3's
+24-column flexbox grid primitives). Grepped every real `<Row ...>`/
+`<Col ...>` call site before designing anything: no `type="flex"`/
+`justify`/`align` anywhere (every real `Row` is already a flex container
+by default, so nothing needed those toggles), no responsive `xs`/`sm`/
+`md`/`lg`/`xl` `Col` breakpoints, no `pull`/`push`, and exactly one real
+`gutter` usage (`gutter={16}`, `Modal/View/BorrowModalView.tsx`). `Row`
+forwards its `ref` to the rendered `<div>` - one real call site
+(`Exchange/OrderBook.tsx`) measures it directly for scroll-centering
+math.
+
+Unlike every other component in this family, neither file has a CSS
+Module: the entire grid (gutter spacing, column widths/offsets) is
+computed inline from `gutter`/`span`/`offset` via plain arithmetic
+(`span / 24 * 100%`), matching antd v3's own largely inline-style-driven
+grid implementation - there's nothing fixed to put in a stylesheet.
+`gutter` splits in half between a negative margin on `Row` and matching
+left/right padding cloned onto each child (antd v3's own technique),
+and `Col` sizes to its content via the browser's default flex-item
+behavior when `span` is omitted, rather than defaulting to some
+arbitrary fixed width - several real call sites rely on exactly that
+(a `Row` just grouping a couple of elements with no grid math involved).
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (2
+expected `any`-type warnings, from `Row`'s untyped `React.cloneElement`
+gutter pass-through); two new test suites, 4 tests each (`Row`: renders
+as a flex container, splits `gutter` into matching negative margin/child
+padding, forwards `ref`, passes through `className`/event handlers;
+`Col`: sizes as a fraction of 24 when `span` is given, sizes to content
+when omitted, applies `offset` as a margin fraction, forwards `ref` and
+passes through `className`/`style`) - 29/29 suites, 5,442/5,442 tests;
+`yarn build` shows only the 2 known pre-existing `charting_library.esm`
+errors; visually verified gutter spacing, `span`/`offset` math, and the
+content-sized no-`span` case in both themes via `build-preview`
+(temporary demo, reverted after) - a 12/12 split, a 6/offset-2/8 row, and
+an unsized `Col` all measured out exactly as their arithmetic predicts.
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Row`/`Col` (11 call sites each - antd's flexbox grid
-primitives) are next by usage), then begin migrating real call sites file
-by file once enough of the component surface exists to support a full
-screen - not a fixed order, reassessed as each component lands. Each
-future component should get the same treatment as `Modal`/`Tooltip`/
-`Input`/`Form`/`Select`/`Icon`/`Notification`/`Table`: grep every real
-call site's actual prop usage before deciding the new API's scope (never
-build out the old library's full surface speculatively), reuse existing
-conventions (tokens, `useClickOutside`-style hooks) over inventing new
-ones, a dedicated test file, and a `build-preview` visual check in both
-themes before being considered done.
+component types (`Radio` (8 call sites) is next by usage), then begin
+migrating real call sites file by file once enough of the component
+surface exists to support a full screen - not a fixed order, reassessed
+as each component lands. Each future component should get the same
+treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
+`Notification`/`Table`/`Row`/`Col`: grep every real call site's actual
+prop usage before deciding the new API's scope (never build out the old
+library's full surface speculatively), reuse existing conventions
+(tokens, `useClickOutside`-style hooks) over inventing new ones, a
+dedicated test file, and a `build-preview` visual check in both themes
+before being considered done.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
