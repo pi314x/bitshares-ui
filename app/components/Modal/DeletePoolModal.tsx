@@ -36,7 +36,10 @@
 import * as React from "react";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
-import {Modal, Button, Row, Col} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
 
 interface DeletePoolModalProps {
     isModalVisible: boolean;
@@ -66,8 +69,6 @@ export default function DeletePoolModal({
     return (
         <Modal
             visible={isModalVisible}
-            id="pool_delete_modal"
-            overlay={true}
             onCancel={hideModal}
             footer={[
                 <Button key={"send"} onClick={onSubmit}>

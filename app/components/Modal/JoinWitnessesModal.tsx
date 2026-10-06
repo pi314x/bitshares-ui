@@ -34,7 +34,10 @@ import Translate from "react-translate-component";
 import AccountSelector from "../Account/AccountSelector";
 import AccountActions from "actions/AccountActions";
 import counterpart from "counterpart";
-import {Modal, Button, Input, Form} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
 import Icon from "../Icon/Icon";
 import {PublicKey} from "bitsharesjs";
 import utils from "common/utils";
@@ -154,7 +157,7 @@ export default function JoinWitnessesModal({
             onCancel={hideModal}
             visible={visible}
             footer={[
-                <Button key="submit" type="primary" onClick={onAddWitness}>
+                <Button key="submit" variant="accent" onClick={onAddWitness}>
                     {counterpart.translate("modal.witness.confirm")}
                 </Button>,
                 <Button

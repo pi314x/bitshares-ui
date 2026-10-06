@@ -10,14 +10,16 @@ import styles from "./Input.module.scss";
 // etc. - all already covered by extending
 // `React.InputHTMLAttributes`), `addonAfter` (an element rendered
 // inline after the input, inside the same bordered box - e.g. a search
-// icon), `suffix` (an element inside the input's own padding, before
-// its border - rarer, 2 real call sites), `onPressEnter` (antd's
-// convenience for "Enter key only"), and `Input.Group`/`Input.TextArea`
-// as the two real compound-component usages (no `Input.Password`/
-// `Input.Search` anywhere in the app). Not yet wired into any real
-// screen.
+// icon), `addonBefore` (its mirror, before the input - added during the
+// call-site migration phase once 3 real call sites turned up using it,
+// missed by this component's original grep), `suffix` (an element
+// inside the input's own padding, before its border - rarer, 2 real
+// call sites), `onPressEnter` (antd's convenience for "Enter key only"),
+// and `Input.Group`/`Input.TextArea` as the two real compound-component
+// usages (no `Input.Password`/`Input.Search` anywhere in the app).
 export interface InputProps
     extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "prefix"> {
+    addonBefore?: React.ReactNode;
     addonAfter?: React.ReactNode;
     suffix?: React.ReactNode;
     onPressEnter?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -34,13 +36,26 @@ function handlePressEnter(
 
 const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
     function Input(
-        {addonAfter, suffix, onPressEnter, onKeyDown, className, ...rest},
+        {
+            addonBefore,
+            addonAfter,
+            suffix,
+            onPressEnter,
+            onKeyDown,
+            className,
+            ...rest
+        },
         ref
     ) {
         const input = (
             <input
                 ref={ref}
-                className={[styles.input, className]
+                className={[
+                    styles.input,
+                    addonBefore ? styles.hasAddonBefore : "",
+                    addonAfter ? styles.hasAddonAfter : "",
+                    className
+                ]
                     .filter(Boolean)
                     .join(" ")}
                 onKeyDown={event =>
@@ -50,10 +65,13 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
             />
         );
 
-        if (!addonAfter && !suffix) return input;
+        if (!addonBefore && !addonAfter && !suffix) return input;
 
         return (
             <span className={styles.wrap}>
+                {addonBefore ? (
+                    <span className={styles.addonBefore}>{addonBefore}</span>
+                ) : null}
                 {suffix ? (
                     <span className={styles.withSuffix}>
                         {input}

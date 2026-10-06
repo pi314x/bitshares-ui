@@ -33,7 +33,10 @@ import AssetActions from "actions/AssetActions";
 import {ChainStore} from "bitsharesjs";
 import {Asset} from "common/MarketClasses";
 import AssetWrapper from "../Utility/AssetWrapper";
-import {Modal, Button, Form, Alert} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Alert} from "../../design-system/Alert";
 
 interface ReserveAssetModalState {
     amount: any;
@@ -109,7 +112,7 @@ function ReserveAssetModal({
             onCancel={hideModal}
             title={counterpart.translate("modal.reserve.title")}
             footer={[
-                <Button type="primary" key="submit" onClick={onSubmit}>
+                <Button variant="accent" key="submit" onClick={onSubmit}>
                     {counterpart.translate("modal.reserve.submit")}
                 </Button>,
                 <Button onClick={hideModal} key="cancel">

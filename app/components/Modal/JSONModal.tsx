@@ -5,7 +5,8 @@
 // logic changes.
 import * as React from "react";
 import counterpart from "counterpart";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 import Inspector from "react-json-inspector";
 
 interface JSONModalProps {
@@ -25,7 +26,6 @@ export default function JSONModal({
         <Modal
             title={title || counterpart.translate("explorer.block.op")}
             onCancel={hideModal}
-            overlay
             footer={[
                 <Button key="cancel" onClick={hideModal}>
                     {counterpart.translate("modal.close")}

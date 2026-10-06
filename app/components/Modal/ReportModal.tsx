@@ -46,7 +46,9 @@ import LoadingIndicator from "../LoadingIndicator";
 import LogsActions from "actions/LogsActions";
 import CopyButton from "../Utility/CopyButton";
 import html2canvas from "html2canvas";
-import {Modal, Button, Tooltip} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
 import counterpart from "counterpart";
 
 interface ReportModalState {

@@ -10093,11 +10093,62 @@ the call site:
   pagination), which `Table`'s current client-side-only pagination
   slicing doesn't support. Needs a dedicated `Table` extension, not a
   call-site-only fix.
+- `Modal/QrcodeModal.tsx` - its own header comment already flags it as
+  security-sensitive per AGENTS.md (it renders a raw or
+  password-encrypted private key as a QR code), so it's held back with
+  the wallet-sensitive batch below even though it lives under `Modal/`
+  rather than `Wallet/` - the security-sensitivity rule is about what a
+  file touches, not which directory it's in.
 - Every `Wallet/*` file, `stores/WalletDb.ts`, `PrivateKeyView.tsx`,
   `Login/*`, and the wallet-creation/backup flows under `Registration/`
   and `Settings/` - held back deliberately per AGENTS.md's
   security-sensitivity guidance, migrated last and with extra care once
   the pattern is well-established on lower-risk files.
+
+**Second migration batch** (10 more `Modal/` files: `JSONModal.tsx`,
+`ChoiceModal.js`, `BrowserSupportModal.tsx`, `ReportModal.tsx`,
+`JoinCommitteeModal.tsx`, `JoinWitnessesModal.tsx`, `DeletePoolModal.tsx`,
+`ReserveAssetModal.tsx`, `CreateLockModal.tsx`, plus `RecentTransactions.tsx`
+from the first batch) - `JoinWitnessesModal.tsx`/`ReserveAssetModal.tsx`/
+`CreateLockModal.tsx` each submit an on-chain operation (witness
+creation, asset reserve/burn, ticket lock) and are flagged
+security-sensitive in their own header comments, but per AGENTS.md
+that's about wallet unlock, key import/export, backup, and transaction
+signing/serialization specifically - building an operation object and
+handing it to the broadcast queue isn't itself key handling (the actual
+signing happens later in the pipeline, using the already-unlocked
+wallet), so these were migrated alongside the rest rather than deferred,
+consistent with `AccountMembership.tsx`/`CreateWorker.tsx` from the
+first batch.
+
+One more real gap surfaced here, fixed in the component rather than
+worked around: `Input`'s `addonBefore` (3 real call sites,
+`Utility/AmountSelectorStyleGuide.tsx`/`Modal/View/BorrowModalView.tsx`/
+`Modal/JoinWitnessesModal.tsx`) - the mirror of `addonAfter`, which the
+original `Input` build did grep for, but `addonBefore` wasn't in that
+grep's pattern. Added alongside `addonAfter`, including the corner-
+rounding CSS for every combination (before only, after only, both, or
+neither).
+
+A second `Select.Option` missing an explicit `value` turned up in
+`CreateLockModal.tsx` (same shape as `RecentTransactions.tsx`'s from the
+first batch - `key` set, `value` relied on antd's key-as-value fallback)
+- fixed the same way, making the implicit value explicit rather than
+changing `Select.Option`'s required-`value` API.
+
+Every real `Modal` call site migrated so far has also had its dead
+`id`/`overlay`/`noCloseBtn` props dropped per the Modal rebuild's prop
+audit, and every real `type="primary"` Button prop rewritten to
+`variant="accent"`.
+
+Verified per-batch: `tsc` clean, `eslint` 0 errors, `yarn test` passing
+(5,490/5,490 after this batch, up from 5,463 before the call-site
+migration phase started - the growth is new design-system component
+test coverage for the real gaps this phase found, not call-site tests,
+since migrated files keep their existing test coverage unchanged),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors, and the new `Input.addonBefore` corner-
+rounding behavior visually verified in both themes via `build-preview`.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

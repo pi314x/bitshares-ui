@@ -41,6 +41,14 @@ describe("design-system/Input", () => {
         expect(getByText("★")).toBeTruthy();
     });
 
+    it("renders addonBefore alongside the input", () => {
+        const {getByText, getByRole} = render(
+            <Input addonBefore={<span>key:</span>} />
+        );
+        expect(getByText("key:")).toBeTruthy();
+        expect(getByRole("textbox").className).toContain("hasAddonBefore");
+    });
+
     it("Input.TextArea renders a native textarea", () => {
         const onChange = jest.fn();
         const {getByDisplayValue} = render(

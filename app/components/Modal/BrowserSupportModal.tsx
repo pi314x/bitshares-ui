@@ -5,7 +5,8 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import {getWalletName} from "branding";
 import counterpart from "counterpart";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 interface BrowserSupportModalProps {
     visible: boolean;
@@ -38,7 +39,7 @@ export default function BrowserSupportModal({
             onCancel={hideModal}
             title={counterpart.translate("app_init.browser")}
             footer={[
-                <Button key={"submit"} type="primary" onClick={hideModal}>
+                <Button key={"submit"} variant="accent" onClick={hideModal}>
                     {counterpart.translate("app_init.understand")}
                 </Button>
             ]}

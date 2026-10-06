@@ -26,14 +26,12 @@ import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import {ChainStore, ChainTypes} from "bitsharesjs";
 import {Asset} from "common/MarketClasses";
 import AssetWrapper from "../Utility/AssetWrapper";
-import {
-    Modal,
-    Button,
-    Form,
-    Alert,
-    Tooltip,
-    Select
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Alert} from "../../design-system/Alert";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Select} from "../../design-system/Select";
 import ApplicationApi from "../../api/ApplicationApi";
 
 interface CreateLockModalState {
@@ -138,7 +136,7 @@ function CreateLockModal({
             title={counterpart.translate("modal.create_lock.title")}
             footer={[
                 <Button
-                    type="primary"
+                    variant="accent"
                     key="submit"
                     onClick={onSubmit}
                     disabled={!canSubmit()}
@@ -215,6 +213,10 @@ function CreateLockModal({
                                     0 ? (
                                         <Select.Option
                                             key={
+                                                (ChainTypes as any)
+                                                    .ticket_type[key]
+                                            }
+                                            value={
                                                 (ChainTypes as any)
                                                     .ticket_type[key]
                                             }

@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import counterpart from "counterpart";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 class ChoiceModal extends React.Component {
     static propTypes = {
@@ -27,7 +28,7 @@ class ChoiceModal extends React.Component {
         this.props.choices.map((child, key) => {
             footer.push(
                 <Button
-                    type="primary"
+                    variant="accent"
                     key={key}
                     onClick={this.confirmClicked.bind(this, child.callback)}
                 >
@@ -49,8 +50,6 @@ class ChoiceModal extends React.Component {
                 visible={this.props.visible}
                 onCancel={this.props.hideModal}
                 footer={footer}
-                id={this.props.modalId}
-                overlay={true}
             >
                 <div className="grid-block vertical">
                     {this.props.content}

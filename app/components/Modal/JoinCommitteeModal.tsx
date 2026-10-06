@@ -29,7 +29,10 @@ import Translate from "react-translate-component";
 import AccountSelector from "../Account/AccountSelector";
 import AccountActions from "actions/AccountActions";
 import counterpart from "counterpart";
-import {Modal, Button, Input, Form} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
 import utils from "common/utils";
 
 interface JoinCommitteeModalState {
@@ -92,7 +95,7 @@ export default function JoinCommitteeModal({
             visible={visible}
             onCancel={hideModal}
             footer={[
-                <Button key="submit" type="primary" onClick={onAddComittee}>
+                <Button key="submit" variant="accent" onClick={onAddComittee}>
                     {counterpart.translate("modal.committee.confirm")}
                 </Button>,
                 <Button
