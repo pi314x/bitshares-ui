@@ -8323,23 +8323,38 @@ source above has zero outbound cross-store action dependencies.
   latter binds to `TransactionConfirmActions.wasBroadcast`; see the
   "Batch 2" verification note below for the explicit cross-notify
   pattern used).
-- **Tier 1c - circular pair, migrate together in one batch (bigger:
-  `SettingsStore` is 828 lines, widely used including by
-  `AppInit.jsx` itself):** `IntlStore` + `SettingsStore` - NOT yet
-  started. Each slice will need an `extraReducers`/`builder.addCase`
-  listening to the other's action, replacing the implicit
-  Alt `bindListeners` cross-binding - cleaner in Redux than the
-  explicit-dispatch workaround Tier 1b needed, since both sides are
-  migrated in the same batch and can import each other's slice
-  actions directly.
+- **Tier 1c - circular pair, PLUS a Tier-2 entanglement found when
+  scoping this batch (correction to this entry's earlier version):**
+  `IntlStore` + `SettingsStore` - NOT yet started, and NOT actually a
+  clean two-store circular pair as first documented. The circularity
+  (`SettingsStore`→`IntlActions.switchLocale`, `IntlStore`→
+  `SettingsActions.clearSettings`) is real and self-contained. But
+  `SettingsActions.changeSetting` specifically - a third, different
+  method on the same actions file, likely the single most-called
+  action in the app - is *also* bound by `WalletUnlockStore` (Tier 2,
+  `onChangeSetting: SettingsActions.changeSetting`) and `AccountStore`
+  (Tier 1d, same method). Migrating `SettingsStore`/`SettingsActions`
+  now would mean reaching into `WalletUnlockStore`'s wiring before its
+  own dedicated, extra-scrutiny Tier 2 turn - deferred. When this pair
+  is eventually tackled, do it together with (or immediately after)
+  `WalletUnlockStore`, using the same explicit-facade-call pattern
+  Tier 1b established for its cross-binding, applied carefully to the
+  `onChangeSetting` touchpoint specifically.
 - **Tier 1d - blocked on a Tier 2 counterpart, do NOT migrate until
   that counterpart is ready:** `CachedPropertyStore` (depended on by
   `PrivateKeyStore`, Tier 2), `AccountRefsStore`,
   `AccountStore`, `WalletManagerStore` (all depend on `PrivateKeyActions`
-  and/or `WalletActions`, Tier 2). `MarketsStore` (1,563 lines) has no
-  cross-store binding found but is large/heavily used - treat as its
-  own dedicated batch once Tier 1a/b/c land, not bundled with anything
-  else.
+  and/or `WalletActions`, Tier 2).
+- **`MarketsStore`/`MarketsActions`** (1,563 + 872 lines): no
+  cross-store binding found (its own `bindListeners` only references
+  its own `MarketsActions`) - genuinely standalone despite its size.
+  `MarketsActions.js` does call `WalletDb.process_transaction(...)`
+  directly for several order-placement methods (`createLimitOrder2`/
+  `cancelLimitOrder`/etc.) - not itself wallet-unlock/key-handling code,
+  same category already handled safely in the `AssetActions`/
+  `CreditOfferActions` batches (preserve the transaction-building calls
+  byte-for-byte, never touch `WalletDb.ts`). Its own dedicated batch,
+  in progress.
 - **Tier 2 - security-sensitive (AGENTS.md), extra scrutiny before
   each - fixed test vectors / byte-for-byte comparison against current
   behavior, no store-shape "improvements" bundled in:** `AddressIndex`
