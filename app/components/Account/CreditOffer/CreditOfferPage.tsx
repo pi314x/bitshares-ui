@@ -88,15 +88,13 @@
 // `FeeAssetSelector.tsx`, `CreditDebtList.tsx`).
 import * as React from "react";
 import counterpart from "counterpart";
-import {
-    Tooltip,
-    Modal,
-    Button,
-    Table,
-    Form,
-    Icon as AntIcon,
-    Alert
-} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Modal} from "../../../design-system/Modal";
+import {Button} from "../../../design-system/Button";
+import {Table} from "../../../design-system/Table";
+import {Form} from "../../../design-system/Form";
+import {Icon as AntIcon} from "../../../design-system/Icon";
+import {Alert} from "../../../design-system/Alert";
 import assetUtils from "common/asset_utils";
 import SearchInput from "../../Utility/SearchInput";
 import LinkToAssetById from "../../Utility/LinkToAssetById";
@@ -278,15 +276,18 @@ function CreditOfferPage() {
         const loc = locale === "zh" ? "zh_CN" : locale;
         return [
             {
+                key: "id",
                 title: "ID",
                 dataIndex: "id"
             },
             {
+                key: "asset_type",
                 title: counterpart.translate("credit_offer.asset"),
                 dataIndex: "asset_type",
                 render: (text: any) => <LinkToAssetById asset={text} />
             },
             {
+                key: "owner_account",
                 title: counterpart.translate("credit_offer.account"),
                 dataIndex: "owner_account",
                 render: (accountId: any) => (
@@ -294,6 +295,7 @@ function CreditOfferPage() {
                 )
             },
             {
+                key: "total_balance",
                 title: counterpart.translate("credit_offer.total_amount"),
                 dataIndex: "total_balance",
                 align: "right",
@@ -314,6 +316,7 @@ function CreditOfferPage() {
                 )
             },
             {
+                key: "current_balance",
                 title: counterpart.translate("credit_offer.available_amount"),
                 align: "right",
                 dataIndex: "current_balance",
@@ -334,6 +337,7 @@ function CreditOfferPage() {
                 )
             },
             {
+                key: "min_deal_amount",
                 title: counterpart.translate("credit_offer.min_borrow"),
                 align: "right",
                 dataIndex: "min_deal_amount",
@@ -354,6 +358,7 @@ function CreditOfferPage() {
                 )
             },
             {
+                key: "fee_rate",
                 title: counterpart.translate("credit_offer.fee_rate"),
                 align: "right",
                 dataIndex: "fee_rate",
@@ -367,6 +372,7 @@ function CreditOfferPage() {
                     )}%`
             },
             {
+                key: "max_duration_seconds",
                 title: counterpart.translate("credit_offer.repay_period"),
                 dataIndex: "max_duration_seconds",
                 align: "right",
@@ -377,6 +383,7 @@ function CreditOfferPage() {
                 }
             },
             {
+                key: "auto_disable_time",
                 title: counterpart.translate("credit_offer.validity_period"),
                 dataIndex: "auto_disable_time",
                 render: (text: any) =>
@@ -386,6 +393,7 @@ function CreditOfferPage() {
                         .format("YYYY-MM-DD HH:mm:ss")
             },
             {
+                key: "acceptable_collateral",
                 title: counterpart.translate("credit_offer.mortgage_assets"),
                 dataIndex: "acceptable_collateral",
                 render: (item: any) => {
@@ -693,8 +701,6 @@ function CreditOfferPage() {
                 wrapClassName="modal--transaction-confirm"
                 title={counterpart.translate("credit_offer.borrow")}
                 visible={state.showModal}
-                id="modal-repay"
-                overlay={true}
                 onCancel={hideAcceptModal}
                 footer={[
                     // Preserved verbatim: `info.owner_account ===
@@ -889,7 +895,7 @@ function CreditOfferPage() {
                     <div className="grid-wrapper">
                         <Table
                             rowKey="id"
-                            columns={getColumns()}
+                            columns={getColumns() as any}
                             dataSource={allListSorted}
                             pagination={{
                                 hideOnSinglePage: true,

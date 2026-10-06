@@ -82,6 +82,20 @@ describe("design-system/Icon", () => {
         expect(container.querySelector("path")).toBeTruthy();
     });
 
+    it("renders the dollar glyph added during the call-site migration pass", () => {
+        const {container} = render(<Icon type="dollar" />);
+        expect(container.querySelector("svg")).toBeTruthy();
+        expect(container.querySelector("path")).toBeTruthy();
+    });
+
+    it("renders the edit/poweroff/reload glyphs added during the call-site migration pass", () => {
+        (["edit", "poweroff", "reload"] as const).forEach(type => {
+            const {container} = render(<Icon type={type} />);
+            expect(container.querySelector("svg")).toBeTruthy();
+            expect(container.querySelector("path")).toBeTruthy();
+        });
+    });
+
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
         expect(

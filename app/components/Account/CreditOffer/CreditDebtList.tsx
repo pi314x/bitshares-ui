@@ -79,14 +79,12 @@ import counterpart from "counterpart";
 import utils from "common/utils";
 import AccountStore from "../../../stores/AccountStore";
 import CreditOfferStore from "../../../stores/CreditOfferStore";
-import {
-    Tooltip,
-    Modal,
-    Button,
-    Form,
-    Table,
-    Icon as AntIcon
-} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Modal} from "../../../design-system/Modal";
+import {Button} from "../../../design-system/Button";
+import {Form} from "../../../design-system/Form";
+import {Table} from "../../../design-system/Table";
+import {Icon as AntIcon} from "../../../design-system/Icon";
 import CreditOfferActions, {
     FEE_RATE_DENOM
 } from "../../../actions/CreditOfferActions";
@@ -488,8 +486,6 @@ function CreditDebtList(props: CreditDebtListProps) {
                 wrapClassName="modal--transaction-confirm"
                 title={counterpart.translate("credit_offer.repay")}
                 visible={state.showModal}
-                id="modal-repay"
-                overlay={true}
                 onCancel={hideRepayModal}
                 footer={[
                     <Button

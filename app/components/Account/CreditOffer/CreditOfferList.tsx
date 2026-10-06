@@ -53,12 +53,10 @@ import * as React from "react";
 import counterpart from "counterpart";
 import utils from "../../../lib/common/utils";
 import AccountStore from "stores/AccountStore";
-import {
-    Tooltip,
-    Button,
-    Table,
-    Icon as AntIcon
-} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Button} from "../../../design-system/Button";
+import {Table} from "../../../design-system/Table";
+import {Icon as AntIcon} from "../../../design-system/Icon";
 import Translate from "react-translate-component";
 import CreateModal, {CreateModalHandle} from "./CreateModal";
 import EditModal, {EditModalHandle} from "./EditModal";

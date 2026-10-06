@@ -57,6 +57,17 @@ import styles from "./Icon.module.scss";
 // `Transfer/InvoiceRequest.tsx`) are still left unadded, for the same
 // reason as above.
 //
+// `dollar` was added in a seventh pass: real at the "repay this debt"
+// row-action icon in `Account/CreditOffer/CreditDebtList.tsx`/
+// `CreditOfferPage.tsx` (both via an `Icon as AntIcon` import alias).
+//
+// `edit`/`poweroff`/`reload` were added in an eighth pass, for
+// `CreditOfferList.tsx`'s row-action icons (edit/enable-disable/
+// delete a credit offer) - `edit` is also real at
+// `Account/AccountSelector.tsx` (not yet migrated), `poweroff`/
+// `reload` only here, the latter via a dynamic `type={row.enabled ?
+// "poweroff" : "reload"}` ternary.
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -89,7 +100,11 @@ export type IconType =
     | "unlock"
     | "line-chart"
     | "download"
-    | "message";
+    | "message"
+    | "dollar"
+    | "edit"
+    | "poweroff"
+    | "reload";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -204,6 +219,24 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
     download: <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />,
     message: (
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    ),
+    dollar: (
+        <>
+            <path d="M12 2v20" />
+            <path d="M17 6.5c0-1.5-2-2.5-5-2.5s-5 1.3-5 3 2 2.5 5 3 5 1.3 5 3-2 3-5 3-5-1-5-2.5" />
+        </>
+    ),
+    edit: (
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
+    ),
+    poweroff: (
+        <>
+            <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+            <path d="M12 2v10" />
+        </>
+    ),
+    reload: (
+        <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
     )
 };
 

@@ -36,7 +36,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import AccountStore from "../../../stores/AccountStore";
 import CreditOfferStore from "../../../stores/CreditOfferStore";
-import {Table} from "bitshares-ui-style-guide";
+import {Table} from "../../../design-system/Table";
 import CreditOfferActions, {
     FEE_RATE_DENOM
 } from "../../../actions/CreditOfferActions";
@@ -64,10 +64,12 @@ function CreditRightsListCore({
     const _getColumns = () => {
         return [
             {
+                key: "id",
                 title: "ID",
                 dataIndex: "id"
             },
             {
+                key: "borrower",
                 title: counterpart.translate(
                     "credit_offer.credit_debt_account"
                 ),
@@ -77,6 +79,7 @@ function CreditRightsListCore({
                 )
             },
             {
+                key: "debt_asset",
                 title: counterpart.translate("credit_offer.debt"),
                 dataIndex: "debt_asset",
                 align: "right",
@@ -89,6 +92,7 @@ function CreditRightsListCore({
                 )
             },
             {
+                key: "fee_rate",
                 title: counterpart.translate("credit_offer.fee_rate"),
                 align: "right",
                 render: (_: any, row: any) => (
@@ -103,6 +107,7 @@ function CreditRightsListCore({
                 )
             },
             {
+                key: "mortgage_assets",
                 title: counterpart.translate("credit_offer.mortgage_assets"),
                 align: "right",
                 render: (_: any, row: any) => (
@@ -114,6 +119,7 @@ function CreditRightsListCore({
                 )
             },
             {
+                key: "latest_repay_time",
                 title: counterpart.translate("credit_offer.repay_period"),
                 dataIndex: "latest_repay_time",
                 render: (time: any) =>
@@ -131,8 +137,8 @@ function CreditRightsListCore({
                 <div className="grid-wrapper">
                     <Table
                         rowKey="id"
-                        columns={_getColumns()}
-                        dataSource={dealsByOfferOwner}
+                        columns={_getColumns() as any}
+                        dataSource={dealsByOfferOwner || []}
                         pagination={{
                             hideOnSinglePage: true,
                             pageSize: 10

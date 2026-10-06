@@ -10695,6 +10695,52 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Fifteenth migration batch** (`Account/CreditOffer/`, 4 of its 6
+files - `CreateModal.tsx`/`EditModal.tsx` stay deferred, both need
+`DatePicker`): `CreditDebtList.tsx` (`Tooltip`/`Modal`/`Button`/
+`Form`/`Table`/`Icon`), `CreditOfferList.tsx` (`Tooltip`/`Button`/
+`Table`/`Icon`), `CreditOfferPage.tsx` (`Tooltip`/`Modal`/`Button`/
+`Table`/`Form`/`Icon`/`Alert`), and `CreditRightsList.tsx` (`Table`
+only) - the first three flagged security-sensitive in their own
+headers purely for dispatching a `CreditOfferActions.*` call (repay/
+accept/disable/delete), each individually grepped and confirmed to
+never touch `WalletDb`/wallet-unlock/key-import/password material,
+migrated per this migration's established operation-submission
+reading of AGENTS.md.
+
+Four more real `Icon` glyphs, all fixed in the component: `dollar`
+(the "repay"/"borrow" row-action icon, real at 2 call sites in this
+exact batch) and `edit`/`poweroff`/`reload` (`CreditOfferList.tsx`'s
+edit/enable-disable/delete row actions - `edit` also real at
+`Account/AccountSelector.tsx`, not yet migrated; `reload` found via a
+dynamic `type={row.enabled ? "poweroff" : "reload"}` ternary). New
+tests for all four.
+
+A new, if narrow, `Table` finding, fixed at the call site rather than
+in the component: `CreditOfferPage.tsx`'s and `CreditRightsList.tsx`'s
+column definitions never set an explicit `key` at all (antd falls back
+to `dataIndex`, or the column's array index, when one is omitted) -
+`TableColumn.key` is required here, so every column across both files
+got an explicit `key` matching its `dataIndex` (or a short descriptive
+name for the handful with no `dataIndex`, e.g. `fee_rate`). This is
+purely a column-*identity* key (used for React's reconciliation and
+`sortState.columnKey` tracking on sortable columns), not the table's
+`rowKey`, so it has no visible effect - still real, since 5 of the
+fixed columns in `CreditOfferPage.tsx` are genuinely sortable and
+needed a stable key for sort-state tracking to work at all. Both
+files' `columns={...}` call sites also needed the same `align`-
+widened-to-`string` `as any` cast the sixth and eleventh batches hit
+elsewhere, since neither function has an explicit `TableColumn<any>[]`
+return type. `CreditRightsList.tsx`'s `dataSource={dealsByOfferOwner}`
+(an optional prop, possibly `undefined`) got the same `|| []` coercion
+the thirteenth batch used for the same reason.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,508/5,508 (up from 5,506 - 2 new tests: `Icon`'s `dollar` glyph and
+`edit`/`poweroff`/`reload` glyphs), `yarn build` showing only the 2
+known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
