@@ -50,7 +50,9 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import LinkToAccountById from "../Utility/LinkToAccountById";
-import {Button, Icon, Tooltip} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Icon} from "../../design-system/Icon";
+import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import PaginatedList from "components/Utility/PaginatedList";
 import FormattedAsset from "../Utility/FormattedAsset";

@@ -10488,6 +10488,28 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Ninth migration batch** (`PredictionMarkets/`, 5 of its 6 files -
+`CreateMarketModal.tsx` stays deferred, it needs `DatePicker`):
+`AddOpinionModal.tsx`/`ResolveModal.tsx` (`Modal`/`Input`/`Form`/
+`Button`/`Radio`, `AddOpinionModal.tsx` also `Notification` - both
+flagged security-sensitive in their own header comments purely for
+submitting an order/handing resolve parameters to a callback, not for
+touching key material, so migrated per this migration's established
+reading of AGENTS.md, same as the second and third batches),
+`PredictionMarketDetailsTable.tsx` (`Button`/`Icon`/`Tooltip`),
+`PredictionMarketsOverviewTable.tsx` (`Button`), and
+`PredictionMarkets.tsx` (`Switch`/`Button`/`Radio`/`Icon`/`Tooltip`).
+Both Modal files also drop the by-now-familiar dead `overlay={true}`
+and the usual `type="primary"` → `variant="accent"` Button rewrite. No
+new design-system gaps found this batch - every prop used here had
+already surfaced, and been fixed, in an earlier one.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors on
+every changed file (pre-existing `any`-warnings only), `yarn test`
+5,498/5,498 (unchanged - no new design-system behavior this batch),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

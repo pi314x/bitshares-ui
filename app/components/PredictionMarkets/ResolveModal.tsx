@@ -48,7 +48,11 @@
 // with the same `= null` default value in the destructure, for identical
 // runtime behavior.
 import * as React from "react";
-import {Modal, Input, Form, Button, Radio} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
+import {Button} from "../../design-system/Button";
+import {Radio} from "../../design-system/Radio";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 
@@ -92,7 +96,7 @@ export default function ResolveModal({
 
     const footer = [
         <Button
-            type="primary"
+            variant="accent"
             key="submit"
             onClick={() => onResolveMarket(resolveParameters)}
             disabled={inProgress}
@@ -109,7 +113,6 @@ export default function ResolveModal({
             title={<Translate content="prediction.resolve_modal.title" />}
             visible={visible}
             onCancel={onClose}
-            overlay={true}
             closable={!inProgress}
             footer={footer}
         >

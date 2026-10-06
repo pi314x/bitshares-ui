@@ -112,13 +112,17 @@
 // imports from `bitsharesjs` - none of the three identifiers is
 // referenced anywhere else in the original file.
 import * as React from "react";
-import {Modal, Input, Form, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
+import {Button} from "../../design-system/Button";
 import Translate from "react-translate-component";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import counterpart from "counterpart";
 import {Asset, Price, LimitOrderCreate} from "common/MarketClasses";
 import MarketsActions from "actions/MarketsActions";
-import {Notification, Radio} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
+import {Radio} from "../../design-system/Radio";
 import ExchangeInput from "components/Exchange/ExchangeInput";
 import utils from "common/utils";
 
@@ -453,7 +457,7 @@ function AddOpinionModal({
 
     const footer = [
         <Button
-            type="primary"
+            variant="accent"
             key="submit"
             onClick={onSubmit}
             disabled={state.inProgress}
@@ -470,7 +474,6 @@ function AddOpinionModal({
             title={<Translate content="prediction.add_opinion_modal.title" />}
             visible={visible}
             onCancel={onClose}
-            overlay={true}
             closable={!state.inProgress}
             footer={footer}
         >

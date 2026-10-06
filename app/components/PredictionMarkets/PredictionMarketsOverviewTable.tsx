@@ -74,7 +74,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import LinkToAccountById from "../Utility/LinkToAccountById";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import {ChainStore} from "bitsharesjs";
 import PaginatedList from "components/Utility/PaginatedList";
 import MarketsActions from "../../actions/MarketsActions";
