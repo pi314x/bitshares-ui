@@ -9906,14 +9906,50 @@ omitted, passes through `disabled`/`id`/`className`) - 34/34 suites,
 disabled states in both themes via `build-preview` (temporary demo,
 reverted after).
 
+**`design-system/Alert.tsx` - sixteenth component (done).** Next by
+usage (5 call sites). Grepped every real call site before designing
+this: `message` (near-always; one real call site passes `message=""`
+and leans on `description` instead - a real pattern, not a misuse, so
+`message` stays optional), an optional `description`, `type` of
+`"success"`/`"error"`/`"warning"`/`"info"` (antd's full set, all four
+genuinely used), `showIcon`, `style`, and one real `banner` usage
+(`Layout/NewsHeadline.tsx`, full-width with no border radius/side
+borders). No `closable`/`onClose`/custom `icon` override anywhere -
+`NewsHeadline.tsx` renders its own separate close `×` icon next to the
+`Alert` rather than using antd's built-in closable behavior, so that
+stayed out of this component too.
+
+Reuses this design system's own `Icon` component for the `info`/
+`warning`/`error` glyphs (`info-circle`/`exclamation-circle`, already in
+`Icon`'s real-usage-scoped set - `warning` and `error` share the same
+glyph, differentiated by color) rather than drawing new ones; `success`
+draws its own small inline check-circle SVG, the same pattern
+`Notification.tsx` already established for a glyph `Icon` doesn't carry
+(no real `<Icon type="check-circle">` call site exists anywhere, so it
+was never added there either). `--warn`/`--accent` have no dedicated
+"wash" background tokens the way `--up`/`--down` do (see `tokens.ts`),
+so `warning`/`info` signal their type through the border/icon color on
+the neutral `--raised` background rather than inventing an un-reviewed
+wash color.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors; `eslint` 0 errors (0
+warnings); a new 6-test suite (renders a message with no description,
+renders both when both are given, renders with only a description when
+`message` is empty, shows a type-matching icon only when `showIcon` is
+set, applies each of the four type classes, applies the `banner` class)
+- 35/35 suites, 5,469/5,469 tests; `yarn build` shows only the 2 known
+pre-existing `charting_library.esm` errors; visually verified all four
+types (with icons) plus the banner variant in both themes via
+`build-preview` (temporary demo, reverted after).
+
 Remaining work on this phase: build the next highest-leverage missing
-component types (`Alert` (5 call sites) is next by usage), then begin
+component types (`Tabs` (4 call sites) is next by usage), then begin
 migrating real call sites file by file once enough of the component
 surface exists to support a full screen - not a fixed order, reassessed
 as each component lands. Each future component should get the same
 treatment as `Modal`/`Tooltip`/`Input`/`Form`/`Select`/`Icon`/
 `Notification`/`Table`/`Row`/`Col`/`Radio`/`Switch`/`Card`/`Popover`/
-`Checkbox`: grep every real call site's actual prop usage before
+`Checkbox`/`Alert`: grep every real call site's actual prop usage before
 deciding the new API's scope (never build out the old library's full
 surface speculatively), reuse existing conventions (tokens,
 `useClickOutside`-style hooks) over inventing new ones, a dedicated test

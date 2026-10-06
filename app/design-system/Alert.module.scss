@@ -1,0 +1,76 @@
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--raised);
+}
+
+.banner {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+}
+
+.icon {
+    flex-shrink: 0;
+    display: flex;
+    margin-top: 2px;
+}
+
+.body {
+    flex: 1;
+    min-width: 0;
+}
+
+.message {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.description {
+    margin-top: 2px;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+
+.success {
+    background: var(--up-wash);
+    border-color: var(--up);
+}
+
+.success .icon {
+    color: var(--up);
+}
+
+.error {
+    background: var(--down-wash);
+    border-color: var(--down);
+}
+
+.error .icon {
+    color: var(--down);
+}
+
+// `--warn`/`--accent` have no dedicated "wash" background tokens
+// (unlike `--up`/`--down`, see `tokens.ts`) - these two types keep the
+// neutral `--raised` background from `.alert` and signal their type
+// through the border/icon color only, rather than inventing an
+// un-reviewed wash color.
+.warning {
+    border-color: var(--warn);
+}
+
+.warning .icon {
+    color: var(--warn);
+}
+
+.info {
+    border-color: var(--accent);
+}
+
+.info .icon {
+    color: var(--accent);
+}
