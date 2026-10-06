@@ -9109,19 +9109,107 @@ screen is itself rendered by the rewritten `_renderLoadingScreen()`/
 `render()` methods, so this directly exercises the rewrite), zero new
 console/page errors.
 
+**`foundation-apps`/`react-foundation-apps` removed (done).** Checked
+scope first (8 files, `grep`): `foundation-apps` itself (the raw Zurb
+package) had zero direct JS importers anywhere in `app/` - this repo's
+SCSS already vendors its own copy
+(`assets/stylesheets/vendors/foundation/`, confirmed via `app/scss`'s
+own `@import "./foundation/_all.scss"` chain, never reaching into
+`node_modules`), so that dependency was already pure dead weight.
+`react-foundation-apps` had 2 real surfaces still in use:
+
+- `ZfApi` (`react-foundation-apps/src/utils/foundation-api`) -
+  `.subscribe`/`.publish`/`.unsubscribe`, used by 6 files
+  (`TransactionConfirmActions.ts`, `SendModal.tsx`, `BorrowModal.tsx`,
+  `AccountPortfolioList.tsx`, `WalletUnlockModal.tsx`, `Notifier.tsx`)
+  to open/close modals and notifications by id. Reading that package's
+  own source showed these 3 methods were themselves just direct aliases
+  of the `pubsub-js` npm package (`subscribe: PubSub.subscribe`, etc.) -
+  not Foundation-specific at all. Replaced with `lib/common/zfApi.ts`,
+  a ~10-line direct `pubsub-js` wrapper (imported as `common/zfApi`,
+  this repo's existing path-mapping convention for `lib/common/*`) -
+  pure dependency swap, zero behavior change. `pubsub-js` itself was
+  already in `node_modules` (a transitive dependency of
+  `react-foundation-apps`) - promoted to a direct `package.json`
+  dependency since it's now imported directly.
+- `Notification.Static` (`react-foundation-apps/src/notification`),
+  used only by `Notifier.tsx` (its one importer anywhere in the app) to
+  show a 5-second "order filled" toast. Ported locally to
+  `components/Notifier/FoundationNotification.tsx`, merging that
+  package's `notification.jsx` + `static.jsx` + the relevant parts of
+  `utils/animation.jsx` into one function component. This was the
+  riskier half of the batch - before simplifying anything, read the
+  compiled output of this repo's own vendored `_motion.scss` `fade()`
+  mixin to confirm the `ng-enter`/`ng-enter-active` (or `ng-leave`/
+  `ng-leave-active`) two-phase class dance actually drives the
+  `fadeIn`/`fadeOut` opacity transition (`.fadeIn.ng-enter { opacity:
+  0 }` / `.fadeIn.ng-enter.ng-enter-active { opacity: 1 }`) rather than
+  being vestigial Angular-motion-ui leftovers, so that two-phase
+  class-plus-reflow sequence is preserved exactly. Only genuinely
+  legacy-browser-only machinery was dropped: vendor-prefixed transition/
+  animation event name detection (`ReactTransitionEvents`, built for
+  IE/old-Android/old-Firefox) replaced with plain `transitionend`/
+  `animationend` listeners, and the string-concatenation `csscore`
+  class helper replaced with the DOM's native `classList`. One
+  pre-existing upstream bug preserved rather than fixed, per this
+  migration's "preserve known quirks" precedent: the `image` prop's
+  value was never actually used as the `<img>` src in the original (a
+  literal, uninterpolated `"{{ image }}"` string - an Angular-template
+  leftover never cleaned up in that package's own React port) - moot in
+  practice since `Notifier.tsx` always passes `image=""` (falsy), so
+  that branch never renders either way.
+
+Removed `foundation-apps`/`react-foundation-apps` from `package.json`,
+their two `node_modules/react-foundation-apps` babel-loader include
+paths in `webpack.config.js` (`.js`- and `.jsx`-rule variants - that
+package shipped untranspiled source needing the same special-case as
+`alt-react`/`alt-container` did), and the two
+`declare module "react-foundation-apps/..."` shims from
+`types/vendor-shims.d.ts` (added `declare module "pubsub-js"` in their
+place, since that package ships no types either). Ran `yarn install`
+to regenerate `yarn.lock` and confirmed `node_modules/foundation-apps`/
+`react-foundation-apps` no longer exist and `node_modules/pubsub-js`
+does.
+
+**Verification:** `npx tsc --noEmit -p .` 0 errors repo-wide; `eslint`
+on all 9 touched files 0 errors (only expected `any`-warnings, mostly
+pre-existing in the large files like `WalletUnlockModal.tsx`); `git
+status --short` showed only the 2 new files plus the 9 edited ones -
+every file whose *exported* interface didn't change (only internal
+imports did) needed no further changes anywhere else in the app; 19/19
+suites / 5,392 tests passing (the `"PubSub already loaded"` console
+warning seen during the test run is pre-existing - `walletDbCrypto-
+test.js`'s `jest.resetModules()` re-requires `WalletDb.ts` →
+`TransactionConfirmActions.ts` → `common/zfApi` → `pubsub-js` fresh
+for each of its 6 tests, which is exactly the same warning this
+produced before this batch too, not a new regression); `yarn build`
+shows only the 2 known pre-existing `charting_library.esm` errors.
+Live-browser Playwright sanity check: dev server compiled with only
+the 2 known errors, zero new console/page errors. (Visually exercising
+the ported notification/modal-open animations themselves wasn't
+possible in this sandbox - no outbound WebSocket to a real BitShares
+node means the app never gets past the node-picker screen - flagged
+for the human second-reviewer to manually confirm a notification toast
+fades in/out and a `ZfApi`-driven modal opens/closes correctly.)
+
 Remaining Phase 9 work: switch the ~126 `useAltStore()` call sites to
 `useSelector`/`useDispatch` file by file (now a purely optional/cosmetic
 cleanup, not a blocker - tracked separately, no urgency), then delete
 the `next/hooks/useAltStore.ts` adapter and each store's facade file
 once nothing references it that way - plus the separate, independent
-cleanup efforts below (`bitshares-ui-style-guide`, `foundation-apps`,
-react-router v5→v6, Babel stage-0 preset, react-hot-loader, Node/Electron
-version bumps).
+cleanup efforts below (`bitshares-ui-style-guide`, react-router v5→v6,
+react-hot-loader, Node/Electron version bumps). The Babel stage-0
+preset item from the original cleanup list turned out to already be
+gone - `.babelrc` only has `@babel/preset-env`/`@babel/preset-react`/
+`@babel/preset-typescript`, and no `stage-0`/`-1`/`-2`/`-3` package is
+even installed - resolved with no action needed, found while scoping
+this batch.
 
 - Exit criteria (unchanged from the original plan): zero references to
-  removed packages (`alt`/`alt-container`/`alt-react` - **done**);
-  bundle-size and Lighthouse/perf comparison published against the
-  pre-migration baseline (not done).
+  removed packages (`alt`/`alt-container`/`alt-react` - **done**;
+  `foundation-apps`/`react-foundation-apps` - **done**); bundle-size and
+  Lighthouse/perf comparison published against the pre-migration
+  baseline (not done).
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

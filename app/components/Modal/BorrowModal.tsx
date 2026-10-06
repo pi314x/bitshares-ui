@@ -171,7 +171,7 @@
 // `BorrowModalContainer`'s chain resolution of those same two props for
 // `BorrowModalCore`'s own use.
 import * as React from "react";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import ZfApi from "common/zfApi";
 import ReactTooltip from "react-tooltip";
 import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";

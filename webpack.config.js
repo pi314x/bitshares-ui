@@ -357,13 +357,7 @@ module.exports = function(env) {
                 },
                 {
                     test: /\.jsx$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(
-                            root_dir,
-                            "node_modules/react-foundation-apps"
-                        )
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",

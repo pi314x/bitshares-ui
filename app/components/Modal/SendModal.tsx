@@ -45,7 +45,7 @@
 // `true`. Reproduced by simply not threading a `from_error` parameter
 // through at all, since the real runtime behavior never depended on it.
 import * as React from "react";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import ZfApi from "common/zfApi";
 import Translate from "react-translate-component";
 import {ChainStore} from "bitsharesjs";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";

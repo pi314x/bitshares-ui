@@ -35,7 +35,7 @@
 // reproduced faithfully regardless.)
 import {ChainConfig} from "bitsharesjs-ws";
 import counterpart from "counterpart";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import ZfApi from "common/zfApi";
 import {reduxStore} from "../store/reduxStore";
 import {
     confirm as confirmAction,

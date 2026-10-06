@@ -55,8 +55,8 @@
 //   original compared `nextProps.account`, the incoming value, against
 //   `this.props.account`, the not-yet-updated previous value).
 import * as React from "react";
-import Notification from "react-foundation-apps/src/notification";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import FoundationNotification from "./FoundationNotification";
+import ZfApi from "common/zfApi";
 import {ChainStore, ChainTypes as GraphChainTypes} from "bitsharesjs";
 import Operation from "../Blockchain/Operation";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -150,7 +150,7 @@ function NotifierCore(props: {account?: any}) {
     }
 
     return (
-        <Notification.Static
+        <FoundationNotification
             id="account-notify"
             title={null}
             image=""
@@ -159,7 +159,7 @@ function NotifierCore(props: {account?: any}) {
             <table className="table">
                 <tbody>{info}</tbody>
             </table>
-        </Notification.Static>
+        </FoundationNotification>
     );
 }
 

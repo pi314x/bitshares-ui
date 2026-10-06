@@ -238,7 +238,7 @@ import SettingsActions from "actions/SettingsActions";
 import SettleModal from "../Modal/SettleModal";
 import DepositModal from "../Modal/DepositModal";
 import WithdrawModal from "../Modal/WithdrawModalNew";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import ZfApi from "common/zfApi";
 import ReserveAssetModal from "../Modal/ReserveAssetModal";
 import CustomTable from "../Utility/CustomTable";
 import {Tooltip, Icon as AntIcon} from "bitshares-ui-style-guide";

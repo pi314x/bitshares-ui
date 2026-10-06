@@ -59,7 +59,7 @@
 // `useAltStore(WalletUnlockStore)` subscription below provides the same
 // triggering re-render, so the reactivity timing matches.
 import * as React from "react";
-import ZfApi from "react-foundation-apps/src/utils/foundation-api";
+import ZfApi from "common/zfApi";
 import WalletDb from "stores/WalletDb";
 import WalletUnlockStore from "stores/WalletUnlockStore";
 import WalletManagerStore from "stores/WalletManagerStore";
