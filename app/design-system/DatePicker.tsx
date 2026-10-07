@@ -54,6 +54,19 @@ import styles from "./DatePicker.module.scss";
 // native `<input type="datetime-local">` is never read-only to begin
 // with, so the workaround's entire purpose is already satisfied by
 // construction.
+//
+// UPDATE (`Exchange/ScaledOrderTab.tsx`'s managed-form-API rewrite):
+// forwards its ref to the native `<input>` element (`React.forwardRef`,
+// matching `Input`'s own established ref-to-native-DOM pattern) - added
+// for that one real call site, which previously reached into antd's own
+// `DatePicker` ref (`datePickerRef.current.picker.handleOpenChange(...)`,
+// antd's own imperative open/close API for its calendar popup) to
+// programmatically open the picker when a separate dropdown selects
+// "Specific time". A native input's closest equivalent is
+// `.showPicker()` - called at that one call site via the forwarded ref -
+// with no native equivalent for closing it again; see that file's own
+// comment for the resulting behavior change (documented, not silently
+// dropped).
 export interface DatePickerProps {
     value?: moment.Moment | null;
     onChange?: (value: moment.Moment | null) => void;
@@ -80,46 +93,54 @@ export interface DatePickerProps {
 const DATE_FORMAT = "YYYY-MM-DD";
 const DATETIME_FORMAT = "YYYY-MM-DDTHH:mm";
 
-export function DatePicker({
-    value,
-    onChange,
-    onOk,
-    showTime,
-    disabledDate,
-    placeholder,
-    disabled,
-    tabIndex,
-    className,
-    style
-}: DatePickerProps): JSX.Element {
-    const format = showTime ? DATETIME_FORMAT : DATE_FORMAT;
-    const displayValue =
-        value && value.isValid() ? value.format(format) : "";
+export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
+    function DatePicker(
+        {
+            value,
+            onChange,
+            onOk,
+            showTime,
+            disabledDate,
+            placeholder,
+            disabled,
+            tabIndex,
+            className,
+            style
+        },
+        ref
+    ) {
+        const format = showTime ? DATETIME_FORMAT : DATE_FORMAT;
+        const displayValue =
+            value && value.isValid() ? value.format(format) : "";
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const raw = e.target.value;
-        if (!raw) {
-            if (onChange) onChange(null);
-            if (onOk) onOk(null);
-            return;
+        function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+            const raw = e.target.value;
+            if (!raw) {
+                if (onChange) onChange(null);
+                if (onOk) onOk(null);
+                return;
+            }
+            const next = moment(raw, format);
+            if (!next.isValid()) return;
+            if (disabledDate && disabledDate(next)) return;
+            if (onChange) onChange(next);
+            if (onOk) onOk(next);
         }
-        const next = moment(raw, format);
-        if (!next.isValid()) return;
-        if (disabledDate && disabledDate(next)) return;
-        if (onChange) onChange(next);
-        if (onOk) onOk(next);
-    }
 
-    return (
-        <input
-            type={showTime ? "datetime-local" : "date"}
-            className={[styles.input, className].filter(Boolean).join(" ")}
-            style={style}
-            value={displayValue}
-            placeholder={placeholder}
-            disabled={disabled}
-            tabIndex={tabIndex}
-            onChange={handleChange}
-        />
-    );
-}
+        return (
+            <input
+                ref={ref}
+                type={showTime ? "datetime-local" : "date"}
+                className={[styles.input, className]
+                    .filter(Boolean)
+                    .join(" ")}
+                style={style}
+                value={displayValue}
+                placeholder={placeholder}
+                disabled={disabled}
+                tabIndex={tabIndex}
+                onChange={handleChange}
+            />
+        );
+    }
+);

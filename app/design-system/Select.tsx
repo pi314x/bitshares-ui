@@ -104,6 +104,13 @@ export interface SelectProps {
      * use it to scope dropdown-only CSS (e.g. a wider panel) without
      * also restyling the trigger via `className`. */
     dropdownClassName?: string;
+    /** Default `true` (antd's own default): the open dropdown panel's
+     * width matches the closed trigger's. Real at one call site
+     * (`Exchange/ScaledOrderTab.tsx`'s fee-currency picker, a narrow
+     * 80-120px trigger whose dropdown still needs room for longer
+     * asset names) set to `false`, letting the panel size to its own
+     * content instead. */
+    dropdownMatchSelectWidth?: boolean;
     children?: React.ReactNode;
 }
 
@@ -124,6 +131,7 @@ function SelectBase({
     onSearch,
     optionLabelProp,
     dropdownClassName,
+    dropdownMatchSelectWidth = true,
     children
 }: SelectProps) {
     const [open, setOpenState] = React.useState(false);
@@ -203,7 +211,13 @@ function SelectBase({
             </button>
             {open ? (
                 <div
-                    className={[styles.dropdown, dropdownClassName]
+                    className={[
+                        styles.dropdown,
+                        dropdownMatchSelectWidth === false
+                            ? styles.dropdownAutoWidth
+                            : "",
+                        dropdownClassName
+                    ]
                         .filter(Boolean)
                         .join(" ")}
                     role="listbox"

@@ -11277,6 +11277,139 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 5,545/5,545 (up from 5,542 - 1 new suite/3 new tests), `yarn build`
 showing only the 2 known pre-existing `charting_library.esm` errors.
 
+**Twenty-sixth migration batch**: `Exchange/ScaledOrderTab.tsx` - the
+last of this migration's deferred managed-form-API rewrites, and the
+largest and most security-sensitive one (its own header flags it per
+AGENTS.md: wired to `Exchange.jsx`'s real `_createScaledOrder`,
+submitting real limit orders via `MarketsActions.createLimitOrder2`).
+Given the stakes, every behavioral subtlety below was verified by
+reading rc-form's and this app's own `Validation.js`'s actual source
+rather than assumed equivalent, and the rewrite is covered by 9 new
+tests (6 unit tests for the new `runRules` validator, 3 full-render
+tests covering submit-gating, the actual order-preparation math, and
+the external `lastClickedPrice`-sets-`priceLower` integration) - not
+just tsc/eslint/build, the bar most earlier "mechanical port" files in
+this migration were held to.
+
+The old `getFieldDecorator("action", {initialValue: ...})(<Radio.Group>
+...)` call - kept in the pre-rewrite file purely for rc-form's
+field-*registration* side effect, since the `Radio.Group` it decorates
+is never actually placed in the rendered JSX and so never mounts or
+fires `onChange` - pinned the "action" field permanently to whichever
+`initialValue` it registered with. That value only ever depends on
+`isBid` (itself derived from the `type` prop, confirmed fixed for a
+given `<ScaledOrderTab>` instance's whole lifetime: `Exchange.tsx`'s 2
+call sites each pass a literal, never-changing `type="bid"`/`"ask"`).
+A value fixed at mount and never changed again is exactly what a plain
+derived constant already is - `action` is now `isBid ? BUY : SELL`,
+recomputed each render with identical results, and the entire `Radio`/
+`Radio.Group` import and JSX are dropped with it.
+
+`priceLower`/`priceUpper`/`feeCurrency`/`amount`/`orderCount` become a
+single `values` state object, with `setFieldValue`/`setFieldsValue`
+helpers replacing `form.setFieldsValue` at every call site - both
+internal (`handleClickBalance`/`handleCurrentPriceClick`) and external
+(the outer `ScaledOrderTab`'s own `formRef.current.props.form
+.setFieldsValue(...)`/`.resetFields()` calls, reacting to `baseAsset`/
+`lastClickedPrice` prop changes). The outer component needed *no other
+changes* at all: `ScaledOrderFormInner` still exposes the exact same
+`{props: {form: {...}}}` shape via `useImperativeHandle`, so every one
+of the outer component's `formRef.current.props.form.X()` calls keeps
+working unmodified - only the inner form's own implementation of those
+4 methods changed, not their shape.
+
+A new `runRules(value, rules)` helper replicates rc-form's actual
+rule-running semantics directly against this app's own `Validation.js`
+rule objects (`{required: true, message}` - rc-form treats `required`
+specially, apart from custom validators - or `{validator: (rule,
+value, cb) => ..., message}`), stopping at the first failing rule,
+matching every real field's own `validateFirst: true`. `validateFields
+(callback)` runs this against the 4 fields that ever had `rules`
+(`feeCurrency`/`action` never did) and calls back with `null` or a
+truthy error map - matching rc-form's own contract, the only thing
+`handleSubmit`'s `if (err) return;` ever actually checked. Two things
+reading the original found were already inert, and so were
+deliberately *not* also replicated: no `Form.Item` anywhere derives
+its `help`/`validateStatus` from rc-form's validation state except
+`totalInput`'s (computed independently, untouched by this rewrite) -
+so the `rules` arrays never surfaced visible error text, only ever
+gating submission; and `isFormValid()` (which already independently
+disables the Buy/Sell button) does *not* check `amount` against
+`quoteAssetBalance` the way the sell-side `quantityRules`'s
+`Validation.Rules.balance(...)` entry does - making `validateFields`'s
+balance check the one real, non-redundant safety net past the
+disabled-button state, preserved exactly rather than assumed
+redundant.
+
+The separate `orderCount` React state (a redundant echo of the form's
+own `orderCount` field, synced purely so *its* drift from the form
+value could trigger `checkFeeAssets()`) is dropped - with `values
+.orderCount` now the only copy, there's nothing left to sync. Its
+effect is replaced by one comparing each render's numeric `values
+.orderCount` against a ref holding the previous render's, calling
+`checkFeeAssets()` only when they genuinely differ (skipped on the
+first render, exactly as before).
+
+Two real, narrow behavior changes surfaced and fixed, both a direct
+consequence of antd's `Button`/`DatePicker` defaulting certain
+behavior that this design system's thinner wrappers don't:
+
+- The submit `Button` gained an explicit `type="button"`: antd's own
+  `Button` defaults its internal `htmlType` to `"button"` (unlike a
+  native `<button>`, which defaults to `"submit"` inside a `<form>`),
+  but the design-system `Button` has no such default. Without this fix,
+  clicking submit would *also* fire a real (if inert, since `<Form>`
+  has no `onSubmit`/`action`) native form submission alongside
+  `handleSubmit` - caught by a jsdom test error ("HTMLFormElement
+  .prototype.submit not implemented") during this batch's own test
+  development, not a theoretical concern.
+- `datePickerRef.current.picker.handleOpenChange(true/false)` (antd's
+  imperative open/close API for its calendar popup, triggered when the
+  separate expiration `<select>` picks "Specific time") has no true
+  native equivalent. `DatePicker` was given a forwarded ref to its
+  underlying native `<input>` (new - see `DatePicker.tsx`'s own header
+  update) so this call site could use `.showPicker()` instead, but that
+  input renders with the pre-existing `expiration-datetime-picker
+  --hidden` CSS class (`visibility: hidden; height: 0`, since the real,
+  visible control is the adjacent `<select>`), and most browsers refuse
+  `.showPicker()` on an element that isn't actually being rendered.
+  Rather than restyle this picker to be visible - a real UI change, out
+  of scope for a managed-form-API swap on a security-sensitive file -
+  the call is wrapped in `try`/`catch` and silently no-ops where
+  refused: a known, narrow, documented UX gap (the calendar may not
+  auto-open in every browser), not a correctness regression in
+  anything this file actually computes or submits. There's no native
+  equivalent for the old "close" call either, dropped for the same
+  reason.
+
+One more real `Select` gap, fixed in the component: `dropdownMatchSelectWidth`
+(real at the fee-currency picker, `={false}` - antd's own default is
+`true`) lets the open dropdown panel size to its own content instead of
+matching the trigger's width, needed here since the trigger is only
+80-120px wide but asset names/symbols inside the dropdown can be
+longer. Added as a real, respected prop (a `dropdownAutoWidth` CSS
+class swapping `right: 0` for `width: max-content; min-width: 100%`),
+not a documented no-op, with a new test.
+
+`Form`'s antd-only `hideRequiredMark` prop is dropped (the design-
+system `Form.Item` never renders antd's required-asterisk in the first
+place); `getMarketFee()`'s `string | number | null` return assigned to
+`Input`'s `value` (which can be `null` when the relevant asset lookup
+fails) is coerced with `?? ""`, the same null-to-empty-string
+normalization used elsewhere in this migration.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,556/5,556 (up from 5,545 - 2 new suites/11 new tests: 9 for
+`ScaledOrderTab` itself, 1 for `DatePicker`'s new ref forwarding, 1 for
+`Select`'s `dropdownMatchSelectWidth`), `yarn build` showing only the 2
+known pre-existing `charting_library.esm` errors.
+
+With this batch, every file this migration had deferred for a missing
+component or a managed-form-API blocker is done. What remains is the
+wallet-sensitive final batch (handled last, with extra care, per
+AGENTS.md) - see this section's running list for exactly which files.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

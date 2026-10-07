@@ -66,6 +66,12 @@
     padding: 4px;
 }
 
+.dropdownAutoWidth {
+    right: auto;
+    width: max-content;
+    min-width: 100%;
+}
+
 .search {
     font: inherit;
     width: 100%;

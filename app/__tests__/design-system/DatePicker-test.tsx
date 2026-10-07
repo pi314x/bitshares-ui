@@ -79,4 +79,10 @@ describe("design-system/DatePicker", () => {
         const input = container.querySelector("input") as HTMLInputElement;
         expect(input.disabled).toBe(true);
     });
+
+    it("forwards its ref to the native input element", () => {
+        const ref = React.createRef<HTMLInputElement>();
+        const {container} = render(<DatePicker ref={ref} onChange={() => {}} />);
+        expect(ref.current).toBe(container.querySelector("input"));
+    });
 });

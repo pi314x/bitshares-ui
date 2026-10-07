@@ -165,4 +165,21 @@ describe("design-system/Select", () => {
         // prop is passed in, not from the click itself.
         expect(getByText("BTS")).toBeTruthy();
     });
+
+    it("lets the dropdown grow past the trigger's width when dropdownMatchSelectWidth is false", () => {
+        const {getByRole, container} = render(
+            <Select
+                value="BTS"
+                onChange={() => {}}
+                dropdownMatchSelectWidth={false}
+            >
+                <Select.Option value="BTS">BTS</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByRole("button"));
+        const dropdown = container.querySelector(
+            '[role="listbox"]'
+        ) as HTMLElement;
+        expect(dropdown.className).toMatch(/dropdownAutoWidth/);
+    });
 });
