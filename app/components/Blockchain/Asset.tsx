@@ -87,16 +87,12 @@ import {Icon} from "../../design-system/Icon";
 import {Table} from "../../design-system/Table";
 import {Tabs} from "../../design-system/Tabs";
 import {Alert} from "../../design-system/Alert";
-// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
-// §7.1) - a real, moderately-sized accordion component used at several
-// call sites, deferred as its own future component-build task rather
-// than migrated here alongside the rest of this file's imports.
-import {Collapse} from "bitshares-ui-style-guide";
+import {Collapse} from "../../design-system/Collapse";
 import GatewayStore from "../../stores/GatewayStore";
 import {useAltStore} from "../../next/hooks/useAltStore";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
-const {Panel} = Collapse as any;
+const {Panel} = Collapse;
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
 function AssetFlag({isSet, name}: {isSet: boolean; name: string}) {

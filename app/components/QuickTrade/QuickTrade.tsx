@@ -174,9 +174,7 @@ import {Table} from "../../design-system/Table";
 import {Button} from "../../design-system/Button";
 import {Switch} from "../../design-system/Switch";
 import {Tooltip} from "../../design-system/Tooltip";
-// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
-// §7.1), same deferral as `Blockchain/Asset.tsx`/`Gateways/GatewaySelectorModal.tsx`.
-import {Collapse} from "bitshares-ui-style-guide";
+import {Collapse} from "../../design-system/Collapse";
 import SellReceive from "components/QuickTrade/SellReceive";
 import MarketsActions from "actions/MarketsActions";
 import {

@@ -105,9 +105,7 @@ import {Button} from "../../design-system/Button";
 import {Modal} from "../../design-system/Modal";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Icon} from "../../design-system/Icon";
-// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
-// §7.1), same deferral as `Blockchain/Asset.tsx`.
-import {Collapse} from "bitshares-ui-style-guide";
+import {Collapse} from "../../design-system/Collapse";
 import SettingsStore from "stores/SettingsStore";
 import {availableGateways, availableBridges} from "common/gateways";
 import {getFaucet, allowedGateway} from "../../branding";

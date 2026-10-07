@@ -11029,6 +11029,52 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Twenty-first migration batch**: the 23rd design-system component
+(`Collapse`/`Collapse.Panel`), unblocking the 4 call sites that had
+been carrying a partial migration since this phase first found
+`Collapse` missing (`Blockchain/Asset.tsx`, `Gateways/
+GatewaySelectorModal.tsx`, `QuickTrade/QuickTrade.tsx`, `Exchange/
+Exchange.tsx`) - each now a full, single-import migration. Built
+following `Tabs`'s compound-component pattern (`Collapse.Panel` typed
+but never itself rendered; `Collapse` reads each panel child's props
+directly and renders the accordion itself).
+
+Grepped all 4 real call sites before designing it: every one allows
+more than one panel open simultaneously (never antd's `accordion`
+mode) - `Exchange.tsx`'s is the only controlled instance (`activeKey`/
+`onChange` both `string[]`, confirmed against its own `mobileKey:
+string[]` state and `onChangeMobilePanel = (val: string[]) =>
+setMobileKey(val)`); the other 3 are uncontrolled and start fully
+collapsed (no call site passes `defaultActiveKey`). Real `Panel`
+props: `header` (string or `ReactNode`), `extra` (`QuickTrade.tsx`,
+rendered next to the header, never itself collapsed), `showArrow=
+{false}` (`GatewaySelectorModal.tsx`). One real structural quirk,
+handled rather than worked around: no call site gives every `Panel` an
+explicit React `key` (`Asset.tsx`'s panels have none at all) - since
+these are direct JSX children rather than a `.map()`'d array, React
+itself never assigns them a key either, so `Collapse` falls back to
+each panel's position among its siblings when `child.key` is `null`,
+stable as long as the panel set doesn't reorder (true at every real
+call site). `Asset.tsx` also destructures `const {Panel} = Collapse`
+(previously cast `as any` to satisfy `tsc` against the untyped antd
+import) rather than writing `Collapse.Panel` - the cast is no longer
+needed and was dropped, since the real component's `Panel` is already
+properly typed via the same `Object.assign` pattern `Tabs.TabPane`
+uses.
+
+Visually verified via `yarn build-preview` in both dark and light
+themes (two panels, one with `extra` content, clicked both open to
+confirm independent/simultaneous expansion and the arrow's open-state
+rotation render correctly), the same extra step every genuinely new
+component in this build has gone through - not just its 8 new unit
+tests.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,530/5,530 (up from 5,522 - 1 new suite/8 new tests for `Collapse`),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

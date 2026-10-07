@@ -149,10 +149,7 @@ import {ChainStore, FetchChain} from "bitsharesjs";
 import {Tabs} from "../../design-system/Tabs";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
-// `Collapse` has no design-system replacement yet (docs/UI_MIGRATION_PLAN.md
-// §7.1), same deferral as `Blockchain/Asset.tsx`/`Gateways/GatewaySelectorModal.tsx`/
-// `QuickTrade/QuickTrade.tsx`.
-import {Collapse} from "bitshares-ui-style-guide";
+import {Collapse} from "../../design-system/Collapse";
 import cnames from "classnames";
 import translator from "counterpart";
 import guide from "intro.js";
