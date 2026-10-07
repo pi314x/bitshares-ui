@@ -9,7 +9,7 @@ import * as React from "react";
 import {saveAs} from "file-saver";
 import Translate from "react-translate-component";
 import SettingsStore from "stores/SettingsStore";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 export default function BackupFavorites() {
@@ -31,7 +31,7 @@ export default function BackupFavorites() {
             <p>
                 <Translate content="settings.backup_favoritestext" />
             </p>
-            <Button type="primary" onClick={makeBackup}>
+            <Button variant="accent" onClick={makeBackup}>
                 <Translate content="settings.backup_favoritesbtn" />
             </Button>
         </div>

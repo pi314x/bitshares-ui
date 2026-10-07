@@ -11410,6 +11410,69 @@ component or a managed-form-API blocker is done. What remains is the
 wallet-sensitive final batch (handled last, with extra care, per
 AGENTS.md) - see this section's running list for exactly which files.
 
+### 7.2 Wallet-sensitive final batch (in progress)
+
+A fresh sweep (`grep` for actual `import ... from "bitshares-ui-style-
+guide"` statements, not just the string appearing anywhere - several
+files mention it only in a header comment explaining why a symbol was
+dropped, e.g. `Gateways/GatewaySelectorModal.tsx`) found exactly 32
+real remaining importers, matching this plan's standing wallet-
+sensitive deferral list. Each file is read in full and its actual
+security-sensitivity independently re-confirmed (per AGENTS.md: what a
+file *touches*, not which directory it's filed under - this phase's
+own established precedent, e.g. `LoginSelector.tsx`/
+`TransactionConfirm.tsx` migrated earlier despite living among wallet
+code) before migrating it, with extra verification for anything that
+actually does.
+
+**`stores/WalletDb.ts`** - not a component, the wallet store itself,
+flagged in its own header as "security-sensitive per AGENTS.md, more
+than any other file in this migration." Its only `bitshares-ui-style-
+guide` import is `Notification`, used at exactly one call site
+(`Notification.success({message: ...})`, firing *after* a successful
+password check inside `_unlock_wallet` - never reading or touching the
+password/key material itself). Changed only that one import line;
+nothing else in the file was touched. Verified with extra scrutiny
+given the stakes: `app/__tests__/wallets/walletDbCrypto-test.js` (the
+dedicated characterization-test suite this file's own TS port was
+built against, covering `getPrivateKey`/`decryptTcomb_PrivateKey`
+round-tripping a real key through `aes_private` exactly as `saveKey`/
+`getPrivateKey` would) re-run and confirmed still 8/8 passing,
+byte-for-byte unaffected.
+
+**First wallet-batch sweep** (all independently confirmed to touch no
+key/password/brainkey material before migrating, 3 of the 5
+explicitly self-documenting this in their own header comments despite
+living among wallet-named files): `Settings/BackupFavorites.tsx`
+(`Button` - only exports starred markets as JSON), `Settings/
+BackupSettings.tsx` (`Select` - a tab switcher between `BackupCreate`/
+`BackupBrainkey`/`BackupFavorites`, all reused unchanged), `Settings/
+RestoreFavorites.tsx` (`Button`/`Notification` - only re-imports
+starred markets from JSON), `Settings/RestoreSettings.tsx` (`Button`/
+`Select` - a tab switcher between `BackupRestore`/`ImportKeys`/
+`CreateWalletFromBrainkey`/`RestoreFavorites`, all reused unchanged),
+`Settings/WalletSettings.tsx` (`Form`/`Button` - a tab switcher whose
+one direct wallet-internals call, `WalletDb.resetBrainKeySequence()`,
+passes straight through to the untouched, already-audited `WalletDb`
+module).
+
+One real type gap, same shape in both `BackupSettings.tsx`'s and
+`RestoreSettings.tsx`'s `changeType` handlers: each was typed `(value:
+string) => void`, but the design-system `Select`'s `onChange` is `(value:
+string | number) => void` (real option values elsewhere in the app are
+sometimes numbers, even though every option here is a string literal
+from a fixed `types` array) - widened to `string | number` with an `as
+string` cast at the one place it's used (`types.indexOf(value)`),
+matching the same narrowing pattern used at other real call sites
+earlier in this migration (e.g. `WithdrawModalNew.tsx`'s
+`onAddressSelected`).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,556/5,556 (unchanged - no new design-system behavior), including a
+dedicated re-run of `walletDbCrypto-test.js` (8/8), `yarn build`
+showing only the 2 known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

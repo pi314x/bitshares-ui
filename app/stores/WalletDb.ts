@@ -61,7 +61,7 @@ import {ChainStore, PrivateKey, key, Aes} from "bitsharesjs";
 import {Apis, ChainConfig} from "bitsharesjs-ws";
 import AddressIndex from "stores/AddressIndex";
 import SettingsActions from "actions/SettingsActions";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../design-system/Notification";
 import counterpart from "counterpart";
 import {reduxStore} from "../store/reduxStore";
 import {

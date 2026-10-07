@@ -21,7 +21,8 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import SettingsActions from "actions/SettingsActions";
 import RestoreFavorites from "./RestoreFavorites";
-import {Button, Select} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
 
 const Option = Select.Option;
 
@@ -42,8 +43,8 @@ export default function RestoreSettings({
         });
     }
 
-    function changeType(value: string) {
-        setRestoreType(types.indexOf(value));
+    function changeType(value: string | number) {
+        setRestoreType(types.indexOf(value as string));
     }
 
     if (passwordLogin) {
@@ -58,7 +59,7 @@ export default function RestoreSettings({
                 </p>
 
                 <Button
-                    type="primary"
+                    variant="accent"
                     className="button"
                     onClick={setWalletMode}
                 >

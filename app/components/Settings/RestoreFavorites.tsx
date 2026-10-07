@@ -10,7 +10,8 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
-import {Button, Notification} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Notification} from "../../design-system/Notification";
 
 export default function RestoreFavorites() {
     const [json, setJson] = React.useState<any>(null);
@@ -81,7 +82,7 @@ export default function RestoreFavorites() {
 
             {json && (
                 <p>
-                    <Button type={"primary"} onClick={finish}>
+                    <Button variant="accent" onClick={finish}>
                         <Translate content="settings.backup_favorites_finish" />
                     </Button>
                 </p>

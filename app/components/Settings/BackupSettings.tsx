@@ -12,7 +12,7 @@ import {BackupCreate} from "../Wallet/Backup";
 import BackupBrainkey from "../Wallet/BackupBrainkey";
 import counterpart from "counterpart";
 import BackupFavorites from "./BackupFavorites";
-import {Select} from "bitshares-ui-style-guide";
+import {Select} from "../../design-system/Select";
 
 const Option = Select.Option;
 
@@ -20,8 +20,8 @@ export default function BackupSettings() {
     const types = ["backup", "brainkey", "favorites"];
     const [restoreType, setRestoreType] = React.useState(0);
 
-    function changeType(value: string) {
-        setRestoreType(types.indexOf(value));
+    function changeType(value: string | number) {
+        setRestoreType(types.indexOf(value as string));
     }
 
     const options = types.map(type => {
