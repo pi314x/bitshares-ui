@@ -11197,6 +11197,34 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 new hooks, 4 for `CollapsibleTable`), `yarn build` showing only the 2
 known pre-existing `charting_library.esm` errors.
 
+**Twenty-fourth migration batch**: `Account/AccountReferralsTable.tsx`,
+the last of this phase's component-shaped deferrals - carried on the
+deferred list since an earlier batch as needing "a `Table` extension
+for server-side Elasticsearch pagination," but re-examining it against
+the design-system `Table` as it stands today found that extension
+already there: antd nests a page-change callback inside
+`pagination.onChange(page, pageSize)`, which this component used to
+drive its own `fetch(.../all_referrers?...&page=...)` calls against a
+real ES-backed wrapper endpoint (not an in-memory dataset `Table`
+could slice itself), but the design-system `Table` fires the
+equivalent notification through its own top-level `onChange`
+prop instead (`onChange={(pagination, filters, sorter) => ...}`,
+already built for the one other real call site that needs
+pagination/sort state back, `Utility/PaginatedList.tsx`). No real
+caller had combined that top-level `onChange` with server-supplied
+`pagination.total` before, but the prop was already shaped correctly
+for it - migrated by moving the page-change handler from `pagination
+.onChange` to `Table`'s own `onChange`, reading the new page off
+`pagination.current` (already 1-based, matching what the removed
+antd callback received directly). `showTotal` (real here too) stays
+nested inside the `pagination` config object, unaffected.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only), `yarn test` 5,542/5,542 (unchanged
+- no new design-system behavior, `Table`'s `onChange` was already
+tested), `yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

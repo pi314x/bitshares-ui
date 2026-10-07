@@ -40,7 +40,7 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import AccountStore from "stores/AccountStore";
 import Statistics from "./Statistics";
 import {settingsAPIs} from "api/apiConfig";
-import {Table} from "bitshares-ui-style-guide";
+import {Table} from "../../design-system/Table";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const LinkComponent = Link as React.ComponentType<any>;
@@ -284,7 +284,6 @@ function AccountReferralsTable({account}: AccountReferralsTableProps) {
                     (state.referralsCount as any) <= state.referralsIndex.length
                         ? state.referralsIndex.length
                         : state.referralsIndex.length + 20,
-                onChange: onPaginationChange,
                 showTotal: () => {
                     return (
                         <Translate
@@ -294,6 +293,12 @@ function AccountReferralsTable({account}: AccountReferralsTableProps) {
                     );
                 }
             }}
+            // The design-system `Table` fires page changes through its own
+            // top-level `onChange` (antd nests this inside `pagination
+            // .onChange` instead) - `pagination.current` carries the new,
+            // already-1-based page number antd's own callback passed
+            // directly.
+            onChange={pagination => onPaginationChange(pagination.current)}
         />
     );
 }
