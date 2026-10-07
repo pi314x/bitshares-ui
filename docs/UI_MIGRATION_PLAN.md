@@ -10980,6 +10980,55 @@ test` 5,518/5,518 (up from 5,510 - 1 new suite/8 new tests: 5 for
 tests folded into its existing suite), `yarn build` showing only the 2
 known pre-existing `charting_library.esm` errors.
 
+**Twentieth migration batch**: a fresh `grep -rl 'from
+"bitshares-ui-style-guide"'` sweep across `app/` to confirm exactly
+what's left before starting the wallet-sensitive final batch turned up
+3 files that weren't on any previously-identified deferred list -
+`Modal/View/BorrowModalView.tsx`, `Wallet/LoginTypeSelector.tsx`, and
+`Wallet/BalanceClaimByAsset.tsx` - all migrated here, plus a new, 22nd
+design-system component (`Slider`).
+
+`Modal/View/BorrowModalView.tsx` (`Checkbox`/`Tooltip`/`Form`/`Slider`/
+`Input`/`Icon`/`Row`/`Col`) is explicitly flagged "Not security-
+sensitive per AGENTS.md" in its own header comment - it's a pure
+presentational view, delegating every state change and the actual
+`WalletApi`/signing call to its already-ported caller, `Modal/
+BorrowModal.tsx`, via callback props. The one real blocker was
+`Slider` (antd's range input), never part of the original twenty and
+real at only this one call site (the target-collateral-ratio slider,
+`step`/`min`/`max`/`value`/`onChange` only, always controlled) - built
+as a native `<input type="range">` with a styled thumb/track,
+following `InputNumber`'s precedent of building a small, genuinely-new
+component mid-batch rather than deferring on it. One call-site type
+fix: a `validateStatus={... : null}` ternary → `: ""`, the same
+`ValidateStatus`-has-no-`null`-member normalization as `AccountSelector
+.tsx`'s earlier batch (not a behavior change, `""` is already the
+"no status" value).
+
+`Wallet/LoginTypeSelector.tsx` (`Form`/`Select`) and `Wallet/
+BalanceClaimByAsset.tsx` (`Card`) both live under `Wallet/`, but
+neither actually touches key/password/brainkey material -
+`LoginTypeSelector.tsx` only toggles the `passwordLogin` setting
+between two UI modes (the exact same "dispatches a flux action, never
+reads a secret" shape as `LoginSelector.tsx` from the seventeenth
+batch); `BalanceClaimByAsset.tsx` only reads `PrivateKeyStore`'s key
+*sequence* (an immutable Map's key listing, not key material) to know
+when to re-run `setPubkeys` for a balance query, and renders totals -
+it never calls the real claim action. Its near-identical sibling,
+`BalanceClaimActive.tsx`, stays deferred: its own header explicitly
+flags it security-sensitive, since - unlike this file - it actually
+calls `onClaimBalance`. This continues the migration's standing rule
+that security-sensitivity is about what a file touches, not which
+directory it's filed under (`AGENTS.md`, and this migration's own
+precedent with `LoginSelector.tsx`/`TransactionConfirm.tsx` versus
+`AccountLogin.tsx`/`DecryptBackup.tsx`).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,522/5,522 (up from 5,518 - 1 new suite/4 new tests for `Slider`),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

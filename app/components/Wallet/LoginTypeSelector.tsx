@@ -15,7 +15,8 @@
 // satisfy) - it doesn't change the (already-inert) runtime behavior.
 import * as React from "react";
 import counterpart from "counterpart";
-import {Form, Select} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Select} from "../../design-system/Select";
 import WalletUnlockStore from "stores/WalletUnlockStore";
 import SettingsActions from "actions/SettingsActions";
 import {getAllowedLogins} from "../../branding";

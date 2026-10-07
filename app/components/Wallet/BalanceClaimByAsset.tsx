@@ -17,7 +17,7 @@ import BalanceClaimActiveStore from "stores/BalanceClaimActiveStore";
 import BalanceClaimActiveActions from "actions/BalanceClaimActiveActions";
 import FormattedAsset from "components/Utility/FormattedAsset";
 import Translate from "react-translate-component";
-import {Card} from "bitshares-ui-style-guide";
+import {Card} from "../../design-system/Card";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 export default function BalanceClaimByAsset({children}: {children?: any}) {

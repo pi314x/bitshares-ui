@@ -48,16 +48,14 @@ import AmountSelector from "../../Utility/AmountSelectorStyleGuide";
 import FormattedPrice from "../../Utility/FormattedPrice";
 import counterpart from "counterpart";
 import HelpContent from "../../Utility/HelpContent";
-import {
-    Checkbox,
-    Tooltip,
-    Form,
-    Slider,
-    Input,
-    Icon,
-    Row,
-    Col
-} from "bitshares-ui-style-guide";
+import {Checkbox} from "../../../design-system/Checkbox";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Form} from "../../../design-system/Form";
+import {Slider} from "../../../design-system/Slider";
+import {Input} from "../../../design-system/Input";
+import {Icon} from "../../../design-system/Icon";
+import {Row} from "../../../design-system/Row";
+import {Col} from "../../../design-system/Col";
 import asset_utils from "../../../lib/common/asset_utils";
 
 interface BorrowModalViewProps {
@@ -361,7 +359,7 @@ export function BorrowModalView({
                                             ? "warning"
                                             : errors.below_maintenance
                                             ? "error"
-                                            : null
+                                            : ""
                                     }
                                     help={
                                         errors.close_maintenance
