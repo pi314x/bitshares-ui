@@ -11473,6 +11473,36 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 dedicated re-run of `walletDbCrypto-test.js` (8/8), `yarn build`
 showing only the 2 known pre-existing `charting_library.esm` errors.
 
+**Second wallet-batch sweep**: `Registration/WalletBlockSelection.tsx`/
+`AccountBlockSelection.tsx` (`Button` - purely presentational "pick
+wallet-model vs account-model" selector cards, only ever calling
+`onSelect`/`onChangeActive` callbacks the real parent
+`AccountRegistration.tsx` supplies; no password/key read anywhere),
+`Registration/AccountHeaderSelection.tsx`/`WalletHeaderSelection.tsx`
+(`Tooltip` - the header half of the same selector cards, equally
+presentational), and `Registration/AccountRegistrationConfirm.tsx`
+(`Notification`/`Button`/`Input`/`Checkbox`/`Form`/`Alert`).
+
+`AccountRegistrationConfirm.tsx` is explicitly flagged security-
+sensitive in its own header (`onCreateAccount`/`createAccount` submit
+an on-chain account-creation transaction with a raw password via
+`AccountActions.createAccountWithPassword(name, password, ...)`, and
+`unlockAccount` calls `WalletDb.validatePassword(password, true,
+name)` directly) - unlike the first 4 files in this batch, migrated
+with the same extra scrutiny as `WalletDb.ts` itself: the password
+only ever flows through this component as an opaque prop, displayed
+read-only in an `Input.TextArea` and forwarded unchanged into
+`WalletDb`/`AccountActions` (both untouched) - this component itself
+never reads, transforms, derives, or logs it. Only the 6 UI-primitive
+imports were swapped; `unlockAccount`/`createAccount`'s own bodies are
+byte-for-byte unchanged from before this migration touched the file.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,556/5,556 (unchanged), including a dedicated re-run of
+`walletDbCrypto-test.js` (8/8), `yarn build` showing only the 2 known
+pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

@@ -59,14 +59,12 @@ import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import {FetchChain} from "bitsharesjs";
 import WalletUnlockActions from "actions/WalletUnlockActions";
-import {
-    Notification,
-    Button,
-    Input,
-    Checkbox,
-    Form,
-    Alert
-} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Checkbox} from "../../design-system/Checkbox";
+import {Form} from "../../design-system/Form";
+import {Alert} from "../../design-system/Alert";
 import CopyButton from "../Utility/CopyButton";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -181,7 +179,7 @@ function AccountRegistrationConfirm({
 
             <Form.Item>
                 <Button
-                    type="primary"
+                    variant="accent"
                     disabled={!state.confirmed}
                     onClick={onCreateAccount}
                 >

@@ -3,7 +3,7 @@
 // mechanical PropTypes->TS conversion only, no logic changes.
 import * as React from "react";
 import Translate from "react-translate-component";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import counterpart from "counterpart";
 
 interface AccountBlockSelectionProps {
@@ -67,7 +67,7 @@ export default function AccountBlockSelection(
             />
 
             {props.active ? (
-                <Button onClick={props.onSelect} type="primary">
+                <Button onClick={props.onSelect} variant="accent">
                     {counterpart.translate("registration.continue")}
                 </Button>
             ) : (

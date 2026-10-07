@@ -5,7 +5,7 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface AccountHeaderSelectionProps {
     active: boolean;
