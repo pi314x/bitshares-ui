@@ -158,4 +158,19 @@ describe("design-system/Table", () => {
         fireEvent.click(getByText("USD"));
         expect(onRowClick).toHaveBeenCalledWith("b");
     });
+
+    it("carries the stable ds-table-* hooks Utility/CollapsibleTable.tsx targets", () => {
+        const {container} = render(
+            <Table
+                columns={columns}
+                dataSource={rows}
+                footer={() => "footer content"}
+                pagination={{pageSize: 1}}
+            />
+        );
+        expect(container.querySelector(".ds-table-thead")).toBeTruthy();
+        expect(container.querySelector(".ds-table-tbody")).toBeTruthy();
+        expect(container.querySelector(".ds-table-footer")).toBeTruthy();
+        expect(container.querySelector(".ds-table-pagination")).toBeTruthy();
+    });
 });

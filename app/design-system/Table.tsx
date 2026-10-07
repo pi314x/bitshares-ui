@@ -28,6 +28,15 @@ import styles from "./Table.module.scss";
 // index - confirmed by reading rc-table's own `TableCell.js`) rather than
 // setting an explicit `rowKey` prop, so that default is replicated
 // exactly rather than substituting a row-index fallback.
+//
+// `<thead>`/`<tbody>`/the footer and pagination `<div>`s each also carry
+// a fixed, un-hashed classname (`ds-table-thead`/`-tbody`/`-footer`/
+// `-pagination`, alongside their real `styles.*` CSS-module ones) -
+// stable DOM hooks added for `Utility/CollapsibleTable.tsx`, whose own
+// collapse/expand animation needs a predictable selector to target from
+// a plain global stylesheet (a CSS Module's own generated classnames are
+// hashed per build, unusable from outside the module that imports them).
+// Purely additive, no visual effect on their own.
 export type SortOrder = "ascend" | "descend";
 
 export interface TableColumn<T = any> {
@@ -317,7 +326,7 @@ export function Table<T = any>({
         >
             <div className={styles.scroller}>
                 <table className={styles.table}>
-                    <thead>
+                    <thead className="ds-table-thead">
                         <tr {...(onHeaderRow ? onHeaderRow(columns, 0) : {})}>
                             {rowSelection ? (
                                 <th className={styles.selectionCell}>
@@ -400,7 +409,7 @@ export function Table<T = any>({
                             })}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="ds-table-tbody">
                         {pagedRows.length === 0 ? (
                             <tr>
                                 <td
@@ -506,9 +515,13 @@ export function Table<T = any>({
                     </tbody>
                 </table>
             </div>
-            {footer ? <div className={styles.footer}>{footer()}</div> : null}
+            {footer ? (
+                <div className={`${styles.footer} ds-table-footer`}>
+                    {footer()}
+                </div>
+            ) : null}
             {showPagination ? (
-                <div className={styles.pagination}>
+                <div className={`${styles.pagination} ds-table-pagination`}>
                     {pagination && pagination.showTotal ? (
                         <span>{pagination.showTotal(total)}</span>
                     ) : null}

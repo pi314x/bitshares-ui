@@ -11152,6 +11152,51 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Twenty-third migration batch**: `Utility/CollapsibleTable.tsx`, the
+real (not prop-rename) deferral from the fifth batch - its whole
+collapse/expand animation targets antd's own internal classnames
+(`.ant-table-tbody` etc.) directly, which the design-system `Table` -
+built from scratch with scoped CSS Modules - never emits.
+
+Fixed by adding 4 small, purpose-built hooks to `Table.tsx` itself
+rather than reworking `CollapsibleTable.tsx`'s whole approach: its
+`<thead>`/`<tbody>`/footer/pagination elements each now also carry a
+fixed, un-hashed classname (`ds-table-thead`/`-tbody`/`-footer`/
+`-pagination`, alongside their real CSS-module ones) - stable DOM hooks
+a plain global stylesheet can target, which a CSS Module's own
+generated classnames (hashed per build) can't be. `_collapsible_table
+.scss`'s selectors were updated to match. One structural adjustment
+`CollapsibleTable.tsx` itself needed: the design-system `Table` is a
+plain function component, not `React.forwardRef`, so the original's
+`ref={tableRef}` passed straight into `<Table>` (then resolved via
+`ReactDOM.findDOMNode(tableRef.current)`, since antd's class-component
+ref didn't point at a DOM node directly) no longer type-checks or
+works. Replaced with a plain `<div ref={wrapperRef}>` wrapping
+`<Table>` - that div *is* a real DOM node on mount, so `findDOMNode`
+and its import are dropped entirely, not just re-pointed. The
+header-row click guard (skip toggling collapse when the row-selection
+"select all" checkbox itself is clicked, real at `Account/
+AccountOrders.tsx`'s `rowSelection` usage) checked the clicked
+element's class for antd's `ant-checkbox-input` - the design-system
+`Table`'s own select-all checkbox is a bare native `<input>` with no
+such class, so the guard now checks `event.target.tagName ===
+"INPUT"` instead, equivalent for every real case.
+
+Since this was a real behavioral/structural rework rather than a
+mechanical import swap, it's covered by new tests at both ends: 1 new
+`Table-test.tsx` case confirming the 4 `ds-table-*` hooks render, and
+a new `CollapsibleTable-test.tsx` (4 cases) confirming the toggle
+still flips the right className on header click, starts collapsed
+when `isCollapsed` is passed, skips toggling on a select-all-checkbox
+click, and still calls an externally-passed `onHeaderRow`'s own
+`onClick`.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,542/5,542 (up from 5,537 - 2 new suites/5 new tests: 1 for `Table`'s
+new hooks, 4 for `CollapsibleTable`), `yarn build` showing only the 2
+known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
