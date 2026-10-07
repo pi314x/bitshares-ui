@@ -18,6 +18,48 @@
 // is hoisted to a module-level constant rather than kept in `useState`,
 // since the original never updates it either - a static list masquerading
 // as state.
+//
+// UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.1): moved
+// off `bitshares-ui-style-guide` and off antd's managed-form API
+// (`Form.create()`/`getFieldDecorator`/`validateFields`/`setFieldsValue`)
+// entirely, onto the design-system `Form` (built as a layout primitive
+// only, not a managed-form replacement - see its own header comment) and
+// plain local state. `memo`/`toLabel`/`note` replace the 3 scalar
+// `getFieldDecorator`-wired fields 1:1, each a controlled `Input`/
+// `Input.TextArea`. `keys`/`lineItems` replace antd's dynamic-field-list
+// pattern (`line_items[${k}]label`-style bracket-path field names,
+// antd's own mechanism for building a nested array from flat field
+// names) with the equivalent plain shape directly: `keys: number[]`
+// (same role as the original `form`'s own "keys" field - the live line-
+// item row ids) and `lineItems: Record<number, {label, quantity,
+// price}>` (keyed by that same row id, replacing the auto-built nested
+// object antd's bracket-path syntax produced). `add`/`remove` now call
+// `setKeys` directly instead of `form.setFieldsValue({keys: ...})`.
+//
+// `hasErrors()` previously read `form.getFieldsValue(["line_items",
+// "memo", "keys"])` and iterated its 3 keys - inspection showed the
+// `"keys"` branch was always inert (`!values.keys` on a non-empty array
+// is always `false`, so it never contributed an error), and `note`/
+// `to_label` were never included in that field list at all, i.e. never
+// actually required for the submit button to enable. Replicated exactly
+// (not widened to also require `note`/`to_label`): only `memo` and every
+// live `line_items` entry's `label`/`quantity`/`price` gate `hasErrors`.
+//
+// `handleSubmit` previously ran everything inside `form.validateFields`'s
+// callback, gated on `!err` - but no field anywhere had a `rules` option
+// passed to `getFieldDecorator` (none of the decorator calls take a
+// second argument), so antd had nothing to actually validate and `err`
+// was always `null`/falsy in practice. Replicated by just always running
+// the body directly (the submit button is independently disabled by
+// `hasErrors()` already, exactly as before).
+//
+// `Form`'s `required={true}` prop is dropped: not a real antd `Form`
+// prop (antd's own `Form` never had one; `required` is an *input*-level
+// HTML attribute, not a form-level one) and confirmed inert under antd
+// too. `Button`'s antd-only `htmlType="submit"` becomes this component's
+// native `type="submit"` (`Button.type` already is the real HTML button
+// type here, unlike antd which overloads a separate `type` prop for
+// visual variant - see `variant="accent"` below).
 import * as React from "react";
 import {ChainStore} from "bitsharesjs";
 import AccountSelector from "../Account/AccountSelector";
@@ -25,15 +67,13 @@ import AssetSelect from "../Utility/AssetSelect";
 import {compress} from "lzma";
 import bs58 from "common/base58";
 import Translate from "react-translate-component";
-import {
-    Button,
-    Row,
-    Col,
-    Form,
-    Input,
-    Tooltip,
-    Icon
-} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Row} from "../../design-system/Row";
+import {Col} from "../../design-system/Col";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
 import counterpart from "counterpart";
 import CopyButton from "../Utility/CopyButton";
 
@@ -53,15 +93,19 @@ const DEFAULT_ASSETS = [
     "HERTZ"
 ];
 
+interface LineItem {
+    label: string;
+    quantity: string;
+    price: string;
+}
+
 interface InvoiceRequestProps {
-    form: any;
     currentAccount: any;
     validateFormat: (invoice: any) => boolean;
     [key: string]: any;
 }
 
-function InvoiceRequest({
-    form,
+export default function InvoiceRequest({
     currentAccount,
     validateFormat
 }: InvoiceRequestProps) {
@@ -71,6 +115,14 @@ function InvoiceRequest({
     );
     const [, setRecipientNameAccount] = React.useState<any>(null);
     const [currency, setCurrency] = React.useState("BTS");
+
+    const [memo, setMemo] = React.useState("");
+    const [toLabel, setToLabel] = React.useState("");
+    const [note, setNote] = React.useState("");
+    const [keys, setKeys] = React.useState<number[]>([0]);
+    const [lineItems, setLineItems] = React.useState<
+        Record<number, LineItem>
+    >({});
 
     // Mirrors componentDidMount exactly (runs after the first paint, so
     // the same brief "empty recipient" flash the original had on mount
@@ -112,64 +164,49 @@ function InvoiceRequest({
         setRecipientNameAccount(newRecipientNameAccount);
     };
 
-    const hasErrors = () => {
-        let formError: any = false;
-        const values = form.getFieldsValue(["line_items", "memo", "keys"]);
-
-        formError = Object.keys(values).some(field => {
-            if (field !== "line_items") {
-                return !values[field];
-            } else {
-                if (values.keys)
-                    return values.keys.some((item: any) => {
-                        return (
-                            !values[field][item].label ||
-                            !values[field][item].price ||
-                            !values[field][item].quantity
-                        );
-                    });
-            }
-        });
-
-        return formError || !recipientName;
+    const updateLineItem = (
+        k: number,
+        field: keyof LineItem,
+        value: string
+    ) => {
+        setLineItems(prev => ({
+            ...prev,
+            [k]: {...prev[k], [field]: value} as LineItem
+        }));
     };
 
-    const remove = (k: any) => {
-        const keys = form.getFieldValue("keys");
+    const hasErrors = () => {
+        const lineItemsError = keys.some(k => {
+            const item = lineItems[k];
+            return !item || !item.label || !item.price || !item.quantity;
+        });
+
+        return !memo || lineItemsError || !recipientName;
+    };
+
+    const remove = (k: number) => {
         if (keys.length === 1) {
             return;
         }
-        const nextKeys = keys.filter((key: any) => key !== k);
-        form.setFieldsValue({
-            keys: nextKeys
-        });
+        setKeys(keys.filter(key => key !== k));
     };
 
     const add = () => {
-        const keys = form.getFieldValue("keys");
-        const nextKeys = keys.concat(id++);
-        form.setFieldsValue({
-            keys: nextKeys
-        });
+        setKeys([...keys, id++]);
     };
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        form.validateFields((err: any, values: any) => {
-            if (!err) {
-                // eslint-disable-next-line prefer-const
-                let {line_items, memo, note, to_label} = values;
-                // remove empty lines
-                line_items = line_items.filter((item: any) => !!item);
-                _printInvoice({
-                    currency,
-                    line_items,
-                    memo,
-                    note,
-                    to: recipientName,
-                    to_label
-                });
-            }
+        const line_items = keys
+            .map(k => lineItems[k])
+            .filter(item => !!item);
+        _printInvoice({
+            currency,
+            line_items,
+            memo,
+            note,
+            to: recipientName,
+            to_label: toLabel
         });
     };
 
@@ -178,9 +215,6 @@ function InvoiceRequest({
         setCurrency(asset.get("symbol"));
     };
 
-    const {getFieldValue, getFieldDecorator} = form;
-    getFieldDecorator("keys", {initialValue: [0]});
-    const keys = getFieldValue("keys");
     const formItems = (
         <React.Fragment>
             <Row style={{marginTop: "0.5rem", marginBottom: "0.5rem"}}>
@@ -209,35 +243,58 @@ function InvoiceRequest({
                     />
                 </Col>
             </Row>
-            {keys.map((k: any) => (
+            {keys.map(k => (
                 <Form.Item key={k} style={{marginBottom: "0px"}}>
                     <Input.Group compact>
                         <Row>
                             <Col span={12}>
-                                {getFieldDecorator(`line_items[${k}]label`)(
-                                    <Input />
-                                )}
+                                <Input
+                                    value={lineItems[k]?.label || ""}
+                                    onChange={e =>
+                                        updateLineItem(
+                                            k,
+                                            "label",
+                                            e.target.value
+                                        )
+                                    }
+                                />
                             </Col>
                             <Col span={5}>
-                                {getFieldDecorator(`line_items[${k}]quantity`)(
-                                    <Input type="number" />
-                                )}
+                                <Input
+                                    type="number"
+                                    value={lineItems[k]?.quantity || ""}
+                                    onChange={e =>
+                                        updateLineItem(
+                                            k,
+                                            "quantity",
+                                            e.target.value
+                                        )
+                                    }
+                                />
                             </Col>
                             <Col span={5}>
-                                {getFieldDecorator(`line_items[${k}]price`)(
-                                    <Input type="number" />
-                                )}
+                                <Input
+                                    type="number"
+                                    value={lineItems[k]?.price || ""}
+                                    onChange={e =>
+                                        updateLineItem(
+                                            k,
+                                            "price",
+                                            e.target.value
+                                        )
+                                    }
+                                />
                             </Col>
                             <Col span={2}>
                                 {k == keys[keys.length - 1] ? (
                                     <Button
-                                        type="primary"
+                                        variant="accent"
                                         icon="plus-circle-o"
                                         onClick={() => add()}
                                     />
                                 ) : (
                                     <Button
-                                        type="primary"
+                                        variant="accent"
                                         icon="minus-circle-o"
                                         onClick={() => remove(k)}
                                     />
@@ -264,7 +321,7 @@ function InvoiceRequest({
                 typeahead={true}
                 size={32}
             />
-            <Form onSubmit={handleSubmit} required={true}>
+            <Form onSubmit={handleSubmit}>
                 <Form.Item
                     className="invoice-request-input"
                     label={
@@ -284,7 +341,10 @@ function InvoiceRequest({
                         </span>
                     }
                 >
-                    {getFieldDecorator("memo")(<Input />)}
+                    <Input
+                        value={memo}
+                        onChange={e => setMemo(e.target.value)}
+                    />
                 </Form.Item>
 
                 <Form.Item
@@ -332,7 +392,10 @@ function InvoiceRequest({
                         </span>
                     }
                 >
-                    {getFieldDecorator("to_label")(<Input />)}
+                    <Input
+                        value={toLabel}
+                        onChange={e => setToLabel(e.target.value)}
+                    />
                 </Form.Item>
                 <Form.Item
                     className="invoice-request-input"
@@ -351,12 +414,16 @@ function InvoiceRequest({
                         </span>
                     }
                 >
-                    {getFieldDecorator("note")(<Input.TextArea rows={3} />)}
+                    <Input.TextArea
+                        rows={3}
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                    />
                 </Form.Item>
 
                 {formItems}
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" disabled={error}>
+                    <Button variant="accent" type="submit" disabled={error}>
                         <Translate content="invoice.request.create_invoice_string" />
                     </Button>
                 </Form.Item>
@@ -374,5 +441,3 @@ function InvoiceRequest({
         </div>
     );
 }
-
-export default Form.create({name: "invoice_request"})(InvoiceRequest as any);

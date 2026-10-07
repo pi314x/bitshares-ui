@@ -89,6 +89,11 @@ import styles from "./Icon.module.scss";
 // {Create,Edit}Modal.tsx`'s remove-row-item buttons (2 call sites each,
 // via the `Icon as AntIcon` alias).
 //
+// `plus-circle-o`/`minus-circle-o` were added in a thirteenth pass, for
+// `Transfer/InvoiceRequest.tsx`'s add/remove-line-item buttons - the
+// fifth-pass comment above left these two unadded pending this file's
+// own migration (blocked until then on its managed-form-API rewrite).
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -134,7 +139,9 @@ export type IconType =
     | "caret-left"
     | "caret-right"
     | "deployment-unit"
-    | "close-circle";
+    | "close-circle"
+    | "plus-circle-o"
+    | "minus-circle-o";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -284,6 +291,18 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
         <>
             <circle cx="12" cy="12" r="9" />
             <path d="M9.5 9.5l5 5m0-5l-5 5" />
+        </>
+    ),
+    "plus-circle-o": (
+        <>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v8M8 12h8" />
+        </>
+    ),
+    "minus-circle-o": (
+        <>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8 12h8" />
         </>
     ),
     up: <path d="M12 19V5M5 12l7-7 7 7" />,

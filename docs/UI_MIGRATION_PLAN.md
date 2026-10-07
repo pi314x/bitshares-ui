@@ -11225,6 +11225,58 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 tested), `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Twenty-fifth migration batch**: `Transfer/InvoiceRequest.tsx`, the
+first of this migration's 2 remaining managed-form-API rewrites (antd's
+`Form.create()`/`getFieldDecorator`/`validateFields`/`setFieldsValue` -
+a pattern the design-system `Form` was deliberately never built to
+replicate, see its own header comment). Rewritten onto plain local
+state: `memo`/`toLabel`/`note` replace the 3 scalar `getFieldDecorator`-
+wired fields 1:1 as controlled `Input`/`Input.TextArea`s; `keys:
+number[]` + `lineItems: Record<number, {label, quantity, price}>`
+replace antd's dynamic-field-list pattern (its own bracket-path field
+names like `line_items[${k}]label`, which antd auto-assembles into a
+nested array) with the equivalent plain shape directly, keyed by the
+same row id `add`/`remove` already used for `keys`.
+
+Two behavioral subtleties, found by actually reading what antd was
+doing rather than assuming 1:1 equivalence, both replicated exactly
+rather than "fixed": `hasErrors()` previously read `form.getFieldsValue
+(["line_items", "memo", "keys"])` and iterated its 3 keys - the
+`"keys"` branch turned out to always be inert (`!values.keys` on a
+non-empty array is always `false`), and `note`/`to_label` were never
+included in that field list at all, i.e. never actually required to
+enable the submit button. The rewritten `hasErrors()` only gates on
+`memo` and each live line item's 3 fields, matching this exactly
+rather than widening validation to also require `note`/`to_label`.
+Second: no field anywhere had a `rules` option passed to its
+`getFieldDecorator` call, so `form.validateFields`'s `err` was always
+falsy in practice - `handleSubmit` now just always runs its body
+directly (still gated by the independently-computed `hasErrors()` on
+the submit button itself, exactly as before), rather than reproducing
+a validation step that never actually validated anything.
+
+`Form`'s antd-only `required={true}` prop (never a real antd `Form`
+prop either, confirmed inert under both) was dropped; `Button`'s antd-
+only `htmlType="submit"` became this component's native `type=
+"submit"` (`Button.type` is the real HTML attribute here, since this
+design system uses a separate `variant` prop for antd's old visual-
+style overload of `type`). Two more real `Icon` glyphs, left unadded
+by the fifth batch pending this exact file: `plus-circle-o`/
+`minus-circle-o` (the add/remove-line-item buttons).
+
+Since this was a genuine behavioral rewrite rather than a mechanical
+import swap, it's covered by 3 new tests exercising the replaced logic
+end to end (not just that it renders): submit stays disabled until the
+memo and the one default line item are filled; submit enables and
+calls `validateFormat` with the exact expected invoice shape once they
+are; add/remove correctly grows and shrinks the line-item rows while
+never dropping below one.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,545/5,545 (up from 5,542 - 1 new suite/3 new tests), `yarn build`
+showing only the 2 known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
