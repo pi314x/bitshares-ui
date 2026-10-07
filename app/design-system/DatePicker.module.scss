@@ -1,0 +1,32 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.input {
+    font: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.input:hover {
+    border-color: var(--faint);
+}
+
+.input:focus-visible {
+    border-color: var(--accent);
+}
+
+.input:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.input::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+}

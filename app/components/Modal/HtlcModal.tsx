@@ -81,16 +81,14 @@ import BalanceComponent from "../Utility/BalanceComponent";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import CopyButton from "../Utility/CopyButton";
-import {
-    Form,
-    Modal,
-    Button,
-    Select,
-    Input,
-    DatePicker,
-    Tooltip,
-    Radio
-} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
+import {Input} from "../../design-system/Input";
+import {DatePicker} from "../../design-system/DatePicker";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Radio} from "../../design-system/Radio";
 import moment from "moment";
 import HtlcActions from "actions/HtlcActions";
 import "../../assets/stylesheets/components/_htlc.scss";
@@ -294,7 +292,7 @@ function Preimage(props: PreimageProps) {
                     optionLabelProp={"value"}
                     style={{width: "19.5%"}}
                     onChange={onInputChanged}
-                    value={props.preimage_cipher}
+                    value={props.preimage_cipher ?? undefined}
                 >
                     {CIPHERS.map(cipher => (
                         <Select.Option key={cipher} value={cipher}>
@@ -309,7 +307,7 @@ function Preimage(props: PreimageProps) {
                     mouseEnterDelay={0.5}
                 >
                     <Button
-                        type="primary"
+                        variant="accent"
                         icon="deployment-unit"
                         style={{verticalAlign: "top"}}
                         onClick={generateRandom}
@@ -564,12 +562,6 @@ function HtlcModal(props: HtlcModalProps) {
         if (!fee) return;
         setStateSync({feeAmount: fee});
         _checkBalance();
-    };
-
-    const onDatepickerRef = (el: any) => {
-        if (el && el.picker.input) {
-            el.picker.input.readOnly = false;
-        }
     };
 
     const onExpirationDateChanged = (utcValue: any) => {
@@ -950,7 +942,6 @@ function HtlcModal(props: HtlcModalProps) {
         <Modal
             title={modalTitle}
             visible={isModalVisible}
-            overlay={true}
             onCancel={hideModal}
             footer={[
                 <Button
@@ -1053,6 +1044,13 @@ function HtlcModal(props: HtlcModalProps) {
                                 validateStatus={""}
                                 className="form-input-header"
                             >
+                                {/* The original's `ref={onDatepickerRef}`
+                                (forcing antd's internal `.picker.input
+                                .readOnly = false`) is dropped - the
+                                design-system `DatePicker` renders a
+                                native `<input>`, never read-only to
+                                begin with. See DatePicker.tsx's header
+                                comment. */}
                                 <DatePicker
                                     showToday={true}
                                     showTime
@@ -1060,7 +1058,6 @@ function HtlcModal(props: HtlcModalProps) {
                                     onChange={onExpirationDateChanged}
                                     className="date-picker-width100"
                                     style={{width: "100%"}}
-                                    ref={onDatepickerRef}
                                     disabledDate={(current: any) =>
                                         current && current < period_start_time
                                     }

@@ -137,18 +137,16 @@ import counterpart from "counterpart";
 import AccountStore from "stores/AccountStore";
 import SettingsStore from "stores/SettingsStore";
 import {ChainStore} from "bitsharesjs";
-import {
-    Alert,
-    Tooltip,
-    Table,
-    Modal,
-    Button,
-    Select,
-    Input,
-    Form,
-    DatePicker,
-    Icon as AntIcon
-} from "bitshares-ui-style-guide";
+import {Alert} from "../../../design-system/Alert";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Table} from "../../../design-system/Table";
+import {Modal} from "../../../design-system/Modal";
+import {Button} from "../../../design-system/Button";
+import {Select} from "../../../design-system/Select";
+import {Input} from "../../../design-system/Input";
+import {Form} from "../../../design-system/Form";
+import {DatePicker} from "../../../design-system/DatePicker";
+import {Icon as AntIcon} from "../../../design-system/Icon";
 import utils from "common/utils";
 import AmountSelector from "../../Utility/AmountSelectorStyleGuide";
 import FeeAssetSelector from "../../Utility/FeeAssetSelector";
@@ -715,8 +713,6 @@ const CreateModalCore = React.forwardRef<
                 wrapClassName="modal--transaction-confirm"
                 title={counterpart.translate("credit_offer.create")}
                 visible={state.showModal === 1}
-                id={props.id}
-                overlay={true}
                 onCancel={hideModal}
                 footer={[
                     <Button
@@ -949,8 +945,6 @@ const CreateModalCore = React.forwardRef<
                 wrapClassName="modal--transaction-confirm"
                 title={counterpart.translate("credit_offer.title_add_pawn")}
                 visible={showModalState === 2}
-                id={props.id}
-                overlay={true}
                 onCancel={_onHideAddPawnModal}
                 footer={[
                     <Button
@@ -1063,8 +1057,6 @@ const CreateModalCore = React.forwardRef<
                     "credit_offer.title_add_whitelist"
                 )}
                 visible={showModalState === 3}
-                id={props.id}
-                overlay={true}
                 onCancel={_onHideWhitelistModal}
                 footer={[
                     <Button key={"send"} onClick={_addWhitelistItem}>

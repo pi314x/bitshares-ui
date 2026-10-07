@@ -78,6 +78,17 @@ import styles from "./Icon.module.scss";
 // last two via dynamic `type={activePanels.includes(...) ? "caret-left"
 // : "caret-right"}` ternaries).
 //
+// `deployment-unit` was added in an eleventh pass, for `Modal/
+// HtlcModal.tsx`'s "generate a random preimage" button (`Button icon=
+// "deployment-unit"`) - the fifth-pass comment above left it unadded
+// pending this file's own migration; `plus-circle-o`/`minus-circle-o`
+// (`Transfer/InvoiceRequest.tsx`) are still unadded, that file still
+// blocked on the managed-form-API rewrite.
+//
+// `close-circle` was added in a twelfth pass, for `Account/CreditOffer/
+// {Create,Edit}Modal.tsx`'s remove-row-item buttons (2 call sites each,
+// via the `Icon as AntIcon` alias).
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -121,7 +132,9 @@ export type IconType =
     | "down"
     | "area-chart"
     | "caret-left"
-    | "caret-right";
+    | "caret-right"
+    | "deployment-unit"
+    | "close-circle";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -260,6 +273,18 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
     ),
     tool: (
         <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L2 19l3 3 7.1-7.1a4 4 0 0 0 5.6-5.6l-3 3-2-2z" />
+    ),
+    "deployment-unit": (
+        <>
+            <rect x="7" y="7" width="10" height="10" rx="1" />
+            <path d="M9 7V3M15 7V3M9 21v-4M15 21v-4M7 9H3M7 15H3M21 9h-4M21 15h-4" />
+        </>
+    ),
+    "close-circle": (
+        <>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.5 9.5l5 5m0-5l-5 5" />
+        </>
     ),
     up: <path d="M12 19V5M5 12l7-7 7 7" />,
     down: <path d="M12 5v14M5 12l7 7 7-7" />,

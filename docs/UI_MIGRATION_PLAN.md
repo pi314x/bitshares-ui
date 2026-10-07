@@ -11075,6 +11075,83 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Twenty-second migration batch**: the 24th and last of this
+migration's deferred-component build-outs, `DatePicker`, unblocking
+the 4 remaining call sites that had carried it on the deferred list
+since the very first call-site-migration batch (`Modal/HtlcModal.tsx`,
+`PredictionMarkets/CreateMarketModal.tsx`, `Account/CreditOffer/
+{Create,Edit}Modal.tsx`). All 4 are flagged security-sensitive in their
+own headers for building and submitting a real operation
+(`HtlcActions.create/redeem/extend`, `AssetActions.createAsset`,
+`CreditOfferActions`'s create/update) - migrated anyway, per this
+migration's established reading (`TransactionConfirm.tsx`/
+`AssetResolvePrediction.tsx`/`HtlcModal.tsx`'s own category): each
+builds and submits an already-constructed operation through the
+already-unlocked wallet, and none reads, validates, or derives a
+password/private-key/brainkey directly (re-confirmed by grepping all 4
+for `password`/`PrivateKey`/`brainkey`/`WalletDb` before touching
+them).
+
+Grepped all 4 real call sites before designing `DatePicker`: every one
+sets `showTime` (no real call site ever renders a bare date-only
+picker, though `showTime` stays a real, defaulting-`false` prop for API
+fidelity); `value`/`onChange` are always a `moment` object or `null` -
+`CreateMarketModal.tsx`'s `handleChange` even explicitly branches on
+`event instanceof moment`, confirming no real caller ever reads antd's
+second `dateString` argument. Rendered as a native `<input
+type="datetime-local">` (or `type="date"`) rather than a custom
+calendar grid, the same "native form element over a from-scratch
+popup" choice as `InputNumber`/`Slider`. Two real-but-unsupportable
+props are accepted and documented as no-ops rather than silently
+dropped: `locale` (`CreditOffer/{Create,Edit}Modal.tsx`'s `zh_CN`
+pack - a native date input's language follows the browser's own
+locale, not anything a component can override per-instance) and
+`showToday` (`HtlcModal.tsx`'s antd quick-link, no native
+equivalent). `disabledDate` (real in 3 of the 4, always a plain
+min/max-style range check in practice) is enforced on change instead
+of in the picker UI - a value failing it is simply rejected rather
+than calling `onChange`, behaviorally equivalent even without antd's
+greyed-out calendar cells. `HtlcModal.tsx`'s `ref={onDatepickerRef}` (a
+reach into antd's own internals, `el.picker.input.readOnly = false`,
+forcing antd's read-only-by-default input to accept typing) was
+dropped entirely at that one call site along with the now-unused
+`onDatepickerRef` function: a native `<input type="datetime-local">`
+is never read-only to begin with, so the workaround's purpose is
+already satisfied by construction.
+
+Two more real `Icon` glyphs, found while migrating these 4 files and
+fixed in the component: `deployment-unit` (`HtlcModal.tsx`'s
+"generate a random preimage" button, left unadded by an earlier batch
+pending this exact file) and `close-circle` (`CreditOffer/
+{Create,Edit}Modal.tsx`'s remove-row-item buttons, 2 call sites each).
+Other call-site-only fixes, all following patterns already established
+in earlier batches: `type="primary"` → `variant="accent"`
+(`HtlcModal.tsx`, `CreateMarketModal.tsx`); confirmed-dead `Modal`
+props dropped (`overlay` at all 4 files, `id={props.id}` at the 2
+`CreditOffer` files' 3 call sites each - `closable`/`wrapClassName` are
+real and kept); a `Select` `value` typed `string | null` → `??
+undefined` (`HtlcModal.tsx`'s cipher picker, same `Select`-rejects-
+`null` normalization as `AccountSelector.tsx`); `CreateMarketModal
+.tsx`'s `DatePicker name="expiry"` dropped as confirmed dead
+(`handleChange`'s `instanceof moment` branch hardcodes `name:
+"expiry"` itself, never reads the prop).
+
+Visually verified via `yarn build-preview` in both dark and light
+themes (the native date/time picker renders correctly styled in both),
+the same extra step every genuinely new component in this build has
+gone through - not just its 7 new unit tests.
+
+With this batch, every `bitshares-ui-style-guide` call site outside
+the still-deferred `Collapsible Table`/`AccountReferralsTable`/
+managed-form-API files and the wallet-sensitive final batch is done;
+see this section's running deferred list for what's left.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,537/5,537 (up from 5,530 - 1 new suite/7 new tests for `DatePicker`),
+`yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

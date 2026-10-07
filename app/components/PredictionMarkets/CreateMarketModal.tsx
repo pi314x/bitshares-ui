@@ -75,15 +75,13 @@
 // arbitrary string indexes `MarketOptions`/`MarketOptionsDescription`. No
 // behavior change.
 import * as React from "react";
-import {
-    Modal,
-    Input,
-    Form,
-    Button,
-    Tooltip,
-    Icon,
-    DatePicker
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Icon} from "../../design-system/Icon";
+import {DatePicker} from "../../design-system/DatePicker";
 import Translate from "react-translate-component";
 import AssetSelect from "../Utility/AssetSelect";
 import counterpart from "counterpart";
@@ -359,7 +357,7 @@ function CreateMarketModal({
 
     const footer = [
         <Button
-            type="primary"
+            variant="accent"
             key="submit"
             onClick={onSubmit}
             disabled={state.inProgress}
@@ -376,7 +374,6 @@ function CreateMarketModal({
             title={<Translate content="prediction.create_market_modal.title" />}
             visible={visible}
             onCancel={onClose}
-            overlay={true}
             closable={!state.inProgress}
             footer={footer}
         >
@@ -510,11 +507,15 @@ function CreateMarketModal({
                                     />
                                 </Tooltip>
                                 <div>
+                                    {/* `name="expiry"` dropped: confirmed
+                                    dead - `handleChange`'s `instanceof
+                                    moment` branch hardcodes `name:
+                                    "expiry"` itself, never reads the
+                                    DOM attribute. */}
                                     <DatePicker
                                         style={{
                                             width: "100%"
                                         }}
-                                        name="expiry"
                                         showTime
                                         placeholder={counterpart.translate(
                                             "prediction.create_market_modal.select_date_and_time"
