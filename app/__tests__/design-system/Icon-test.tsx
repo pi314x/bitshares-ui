@@ -96,6 +96,29 @@ describe("design-system/Icon", () => {
         });
     });
 
+    it("renders the bell glyph added during the call-site migration pass", () => {
+        const {container} = render(<Icon type="bell" />);
+        expect(container.querySelector("svg")).toBeTruthy();
+        expect(container.querySelector("path")).toBeTruthy();
+    });
+
+    it("renders the Exchange.tsx chart-controls glyphs added during the call-site migration pass", () => {
+        (
+            [
+                "tool",
+                "up",
+                "down",
+                "area-chart",
+                "caret-left",
+                "caret-right"
+            ] as const
+        ).forEach(type => {
+            const {container} = render(<Icon type={type} />);
+            expect(container.querySelector("svg")).toBeTruthy();
+            expect(container.querySelector("path")).toBeTruthy();
+        });
+    });
+
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
         expect(

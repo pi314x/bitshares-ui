@@ -48,7 +48,8 @@ import SettingsActions from "actions/SettingsActions";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 export interface QuoteSelectionModalProps {
     quotes: any;
@@ -137,9 +138,7 @@ export default function QuoteSelectionModal(props: QuoteSelectionModalProps) {
         <Modal
             title={counterpart.translate("exchange.quote_selection")}
             closable={false}
-            visible={props.visible}
-            id="quote_selection"
-            overlay={true}
+            visible={!!props.visible}
             onCancel={props.hideModal}
             footer={[
                 <Button key="close" onClick={props.hideModal}>

@@ -10884,6 +10884,102 @@ every changed file (pre-existing `any`-warnings only), `yarn test`
 visibility support), `yarn build` showing only the 2 known
 pre-existing `charting_library.esm` errors.
 
+**Nineteenth migration batch** (the rest of `Exchange/`): a new, 21st
+design-system component (`InputNumber`) plus 18 `Exchange/*.tsx` call
+sites. `InputNumber` was built for `Exchange/Personalize.tsx`'s chart-
+height field (`Wallet/WalletUnlockModal.tsx` also needs it, still
+deferred with the rest of the wallet-sensitive batch) - grepped every
+real call site first, same as the original twenty: only `value`/
+`onChange`/`placeholder`/`disabled`/`className`/`style` are real
+anywhere (no `min`/`max`/`step`/`formatter`/`parser`), and `value`
+itself is typed `number | false` to match `Personalize.tsx`'s own
+`typeof chartHeight === "number" && chartHeight` (which evaluates to
+`false`, not `undefined`, before a number is set). Renders a native
+`<input type="number">` plus up/down stepper buttons matching antd's
+visual signature. Verified visually via `yarn build-preview` in both
+dark and light themes (screenshotted, including a stepper-click
+increment check), not just by its 5 new unit tests - the same extra
+step every genuinely new component in this build has gone through.
+
+Two more real design-system gaps, both fixed in the component:
+
+- `Tabs`: `tabBarExtraContent`, real at 2 call sites in `Exchange
+  .tsx` itself (a title rendered next to the buy/sell order-type tab
+  bar) - missed by every earlier grep pass, which only covered the 4
+  call sites found at the time and didn't catch this one in a file
+  this large. Rendered right-aligned next to the tab bar row via a new
+  `.barRow` wrapper (the tab buttons and the extra content are now
+  siblings inside it, rather than the tab buttons' own row carrying
+  the bottom border directly).
+- `Icon`: 7 more glyphs, found the same way (grepping this one huge
+  file's actual `AntIcon`/`Icon` usage) - `bell` (`ExchangeHeader
+  .tsx`'s price-alert toggle) and, all in `Exchange.tsx`'s chart-
+  controls row, `tool` (chart-tools toggle), `up`/`down` (chart-height
+  increase/decrease), `area-chart` (market-depth/price-chart switch,
+  via `type={chartType == "market_depth" ? "bar-chart" : "area-
+  chart"}`), and `caret-left`/`caret-right` (left/right panel-collapse,
+  via `type={activePanels.includes("left") ? "caret-left" : "caret-
+  right"}`) - the last two glyphs only surfaced because both are
+  driven by a ternary rather than a literal string, the same reason
+  `lock`/`unlock` were missed in an earlier batch.
+
+`Exchange/Exchange.tsx` is also a **partial** migration, not a full
+one, for the same reason as `Asset.tsx`/`GatewaySelectorModal.tsx`/
+`QuickTrade.tsx`: its `bitshares-ui-style-guide` import pulled in
+`Tabs`/`Collapse`/`Icon`/`Tooltip`, of which only `Collapse` has no
+design-system replacement yet - split into two imports, `Collapse`
+staying on `bitshares-ui-style-guide` behind an explanatory comment
+until that component gets built. Its separate `Notification` import
+moved over cleanly (6 call sites, all `Notification.error`/`.warning`,
+already work against the real component - no new gap).
+
+The most structurally significant call-site fix this batch:
+`TradingViewPriceChart.tsx`'s `onSubmitConfirmation()` read and wrote
+`layoutName.current.state.value` - an antd-class-component-internals
+reach-through via ref (antd's old `Input` exposed its own React
+instance through the ref, with a `.state.value` holding the
+controlled text). The design-system `Input`'s ref forwards directly to
+the native `<input>` DOM node instead, which has a plain `.value`
+property and no `.state` at all - rewritten to `layoutName.current
+.value` at all 4 read/write sites (including the reset-to-empty-string
+on save, `.value = ""` rather than the original's `.value = null`,
+matching how a native input actually clears), preserving the exact
+same uncontrolled-input behavior. The file's own pre-existing header
+comment, which already documented the original antd quirk in detail,
+got an addendum recording this adaptation.
+
+Other call-site-only fixes, no component change needed:
+`Personalize.tsx`'s 7 `Switch checked={x}` props, each `x` typed
+`boolean | undefined` in this component's own state but `Switch
+.checked` a required plain `boolean` - coerced to `checked={!!x}`;
+`PriceAlert.tsx`'s `type="icon"` `Button` prop, not a real antd
+`Button` type (`"default" | "primary" | "ghost" | "dashed" |
+"danger"` are the only ones) and confirmed already inert under antd
+too - dropped with an inline comment, alongside the by-now-standard
+`type="primary"` → `variant="accent"`; `MarketPicker.tsx`'s/
+`Personalize.tsx`'s confirmed-dead `Modal` props (`id`/`overlay`/
+`noHeaderContainer`), the same drop as every earlier `Modal`-using
+batch; `QuoteSelectionModal.tsx`'s `visible={props.visible}`, where
+the wrapper's own `visible` prop is optional but `Modal.visible` is
+required - coerced to `visible={!!props.visible}`.
+
+Simple, gap-free swaps rounding out the batch: `ExchangeHeaderCollateral
+.tsx`/`PriceStatWithLabel.tsx`/`MarketRow.tsx`/`OpenSettleOrders.tsx`/
+`View/MarketHistoryView.tsx` (`Tooltip`), `View/MarketOrdersView.tsx`
+(`Tooltip`/`Checkbox`), `ExchangeInput.tsx` (`Input` - confirmed its
+`ref`-based direct `.value = ""` writes still work, since this
+component's ref also forwards to the native DOM node), `MyOpenOrders
+.tsx` (`Button`), `ConfirmOrderModal.tsx` (`Modal`/`Button`), `OrderBook
+.tsx` (`Select`/`Tooltip` - every `Select.Option` already had an
+explicit `value`).
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(622 pre-existing `any`-warnings only) on every changed file, `yarn
+test` 5,518/5,518 (up from 5,510 - 1 new suite/8 new tests: 5 for
+`InputNumber`, 1 for `Tabs.tabBarExtraContent`, plus the `Icon` glyph
+tests folded into its existing suite), `yarn build` showing only the 2
+known pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

@@ -26,7 +26,7 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import getLocale from "browser-locale";
 import TransitionWrapper from "../Utility/TransitionWrapper";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface SettleOrderRowProps {
     base: any;

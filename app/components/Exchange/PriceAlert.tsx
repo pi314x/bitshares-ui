@@ -22,14 +22,12 @@
 // migration for a `componentDidUpdate`/`componentWillReceiveProps` check
 // that only ever cares about one specific prop transition.
 import * as React from "react";
-import {
-    Modal,
-    Form,
-    Input,
-    Button,
-    Icon,
-    Select
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {Icon} from "../../design-system/Icon";
+import {Select} from "../../design-system/Select";
 import {Link, LinkProps} from "react-router-dom";
 import AssetName from "../Utility/AssetName";
 import {PRICE_ALERT_TYPES} from "../../services/Exchange";
@@ -217,7 +215,7 @@ function PriceAlert({
         return null;
 
     const footer = [
-        <Button key="submit" type="primary" onClick={handleSave}>
+        <Button key="submit" variant="accent" onClick={handleSave}>
             {counterpart.translate("modal.save")}
         </Button>,
         <Button key="cancel" onClick={hideModal}>
@@ -326,11 +324,15 @@ function PriceAlert({
                                             }
                                         />
 
+                                        {/* Dropped: `type="icon"` was never a
+                                            real antd Button type (only
+                                            "default"/"primary"/"ghost"/
+                                            "dashed"/"danger" are) - already
+                                            inert under antd too. */}
                                         <Button
                                             style={{width: "32px"}}
                                             onClick={handleDeleteRule(key)}
                                             className="exchange--price-alert--item--control"
-                                            type="icon"
                                             icon="delete"
                                         />
                                     </Input.Group>

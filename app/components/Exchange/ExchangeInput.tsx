@@ -20,7 +20,7 @@
 // previous render's `value` - the same substitution used elsewhere in
 // this migration for WRC-style "did this one prop change" checks.
 import * as React from "react";
-import {Input} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
 
 interface ExchangeInputProps {
     allowNaN?: boolean;

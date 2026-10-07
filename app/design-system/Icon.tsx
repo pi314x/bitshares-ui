@@ -68,6 +68,16 @@ import styles from "./Icon.module.scss";
 // `reload` only here, the latter via a dynamic `type={row.enabled ?
 // "poweroff" : "reload"}` ternary.
 //
+// `bell` was added in a ninth pass: real at `Exchange/ExchangeHeader
+// .tsx`'s price-alert toggle icon.
+//
+// `tool`/`up`/`down`/`area-chart`/`caret-left`/`caret-right` were added
+// in a tenth pass, for `Exchange/Exchange.tsx`'s chart-controls row
+// (chart tools toggle, increase/decrease chart height, market-depth/
+// price-chart switch, and the left/right panel collapse carets, the
+// last two via dynamic `type={activePanels.includes(...) ? "caret-left"
+// : "caret-right"}` ternaries).
+//
 // Hand-authored inline SVG paths (24x24 viewBox, 1.5px stroke,
 // `currentColor` - no icon-font/icon-library dependency, matching this
 // design system's "no extra deps for a solved-by-CSS/SVG problem"
@@ -104,7 +114,14 @@ export type IconType =
     | "dollar"
     | "edit"
     | "poweroff"
-    | "reload";
+    | "reload"
+    | "bell"
+    | "tool"
+    | "up"
+    | "down"
+    | "area-chart"
+    | "caret-left"
+    | "caret-right";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -237,7 +254,20 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
     ),
     reload: (
         <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
-    )
+    ),
+    bell: (
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
+    ),
+    tool: (
+        <path d="M14.7 6.3a4 4 0 0 0-5.6 5.6L2 19l3 3 7.1-7.1a4 4 0 0 0 5.6-5.6l-3 3-2-2z" />
+    ),
+    up: <path d="M12 19V5M5 12l7-7 7 7" />,
+    down: <path d="M12 5v14M5 12l7 7 7-7" />,
+    "area-chart": (
+        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2M4 10l6-6 6 7 6-6" />
+    ),
+    "caret-left": <path d="M15 6l-6 6 6 6" fill="currentColor" />,
+    "caret-right": <path d="M9 6l6 6-6 6" fill="currentColor" />
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {

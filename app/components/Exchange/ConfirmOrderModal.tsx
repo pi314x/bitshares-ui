@@ -10,7 +10,8 @@
 import * as React from "react";
 import utils from "common/utils";
 import Translate from "react-translate-component";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 import counterpart from "counterpart";
 
 interface ConfirmOrderModalProps {
@@ -50,7 +51,7 @@ export default function ConfirmOrderModal({
         <Button key="submit" onClick={submit}>
             {counterpart.translate("settings.yes")}
         </Button>,
-        <Button key="cancel" type="primary" onClick={cancel}>
+        <Button key="cancel" variant="accent" onClick={cancel}>
             {counterpart.translate("settings.no")}
         </Button>
     ];

@@ -18,7 +18,14 @@ import styles from "./Tabs.module.scss";
 // `animated={false}` - accepted here for API compatibility but a no-op,
 // since this design system has no animation primitives yet (the same
 // gap already flagged in `Modal.tsx`). No `type="card"`, `tabPosition`,
-// `tabBarExtraContent`, or `size` anywhere.
+// or `size` anywhere.
+//
+// `tabBarExtraContent` was added later, during the call-site migration
+// phase: real at 2 call sites in `Exchange/Exchange.tsx` (a title next
+// to the buy/sell order-type tab bar) - missed by the original grep,
+// which only covered the 4 call sites it found at the time and didn't
+// catch this one in a file this large. Rendered right-aligned next to
+// the tab bar row, matching antd's own layout.
 //
 // `Tabs.TabPane` follows `Select.Option`'s established compound-component
 // pattern: typed via `React.FC<TabPaneProps>` so JSX usage still
@@ -62,6 +69,9 @@ export interface TabsProps {
     /** Accepted for API compatibility (every real call site passes
      * `animated={false}`) but a no-op - see this file's header comment. */
     animated?: boolean;
+    /** Extra content rendered alongside the tab bar itself (not inside
+     * any pane) - real at `Exchange/Exchange.tsx`'s order-type tabs. */
+    tabBarExtraContent?: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
     children?: React.ReactNode;
@@ -71,6 +81,7 @@ function TabsBase({
     activeKey,
     defaultActiveKey,
     onChange,
+    tabBarExtraContent,
     className,
     style,
     children
@@ -93,24 +104,31 @@ function TabsBase({
             className={[styles.wrap, className].filter(Boolean).join(" ")}
             style={style}
         >
-            <div className={styles.bar} role="tablist">
-                {tabs.map(t => (
-                    <button
-                        type="button"
-                        role="tab"
-                        key={t.key}
-                        aria-selected={t.key === currentKey}
-                        className={[
-                            styles.tab,
-                            t.key === currentKey ? styles.active : ""
-                        ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        onClick={() => select(t.key)}
-                    >
-                        {t.tab}
-                    </button>
-                ))}
+            <div className={styles.barRow}>
+                <div className={styles.bar} role="tablist">
+                    {tabs.map(t => (
+                        <button
+                            type="button"
+                            role="tab"
+                            key={t.key}
+                            aria-selected={t.key === currentKey}
+                            className={[
+                                styles.tab,
+                                t.key === currentKey ? styles.active : ""
+                            ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            onClick={() => select(t.key)}
+                        >
+                            {t.tab}
+                        </button>
+                    ))}
+                </div>
+                {tabBarExtraContent ? (
+                    <div className={styles.barExtra}>
+                        {tabBarExtraContent}
+                    </div>
+                ) : null}
             </div>
             <div className={styles.content}>{active?.content}</div>
         </div>

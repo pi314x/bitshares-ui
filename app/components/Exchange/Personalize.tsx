@@ -16,16 +16,14 @@
 // removable too. Also dropped: the dynamic-string `ref={this.props.modalId}`
 // on `<Modal>` - never read via `this.refs` anywhere.
 import * as React from "react";
-import {
-    Button,
-    Form,
-    Select,
-    Switch,
-    InputNumber,
-    Modal,
-    Icon,
-    Tooltip
-} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Select} from "../../design-system/Select";
+import {Switch} from "../../design-system/Switch";
+import {InputNumber} from "../../design-system/InputNumber";
+import {Modal} from "../../design-system/Modal";
+import {Icon} from "../../design-system/Icon";
+import {Tooltip} from "../../design-system/Tooltip";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import {GroupOrderLimitSelector} from "./OrderBook";
@@ -166,15 +164,12 @@ export default function Personalize(props: PersonalizeProps) {
         <Modal
             title={counterpart.translate("exchange.settings.header.title")}
             visible={visible}
-            id={props.modalId}
-            overlay={true}
             footer={[
                 <Button key={"close"} onClick={onClose}>
                     {counterpart.translate("modal.close")}
                 </Button>
             ]}
             onCancel={onClose}
-            noHeaderContainer
         >
             <Form.Item>
                 <header>
@@ -283,7 +278,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={chartTools}
+                                checked={!!chartTools}
                                 onChange={onChartTools}
                             />
                         </div>
@@ -316,7 +311,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={chartZoom}
+                                checked={!!chartZoom}
                                 onChange={onChartZoom}
                             />
                         </div>
@@ -527,7 +522,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={autoScroll}
+                                checked={!!autoScroll}
                                 onChange={setAutoscroll}
                             />
                         </div>
@@ -552,7 +547,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={orderBookReversed}
+                                checked={!!orderBookReversed}
                                 onChange={onOrderBookReversed}
                             />
                         </div>
@@ -577,7 +572,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={singleColumnOrderForm}
+                                checked={!!singleColumnOrderForm}
                                 onChange={onToggleSingleColumnOrderForm}
                             />
                         </div>
@@ -728,7 +723,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={hideScrollbars}
+                                checked={!!hideScrollbars}
                                 onChange={onToggleScrollbars}
                             />
                         </div>
@@ -753,7 +748,7 @@ export default function Personalize(props: PersonalizeProps) {
                         <div className="small-6">
                             <Switch
                                 style={{margin: 6}}
-                                checked={hideFunctionButtons}
+                                checked={!!hideFunctionButtons}
                                 onChange={onHideFunctionButtons}
                             />
                         </div>

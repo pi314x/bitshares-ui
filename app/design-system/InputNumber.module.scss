@@ -1,0 +1,76 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.wrap {
+    display: inline-flex;
+    align-items: stretch;
+    width: 90px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    overflow: hidden;
+}
+
+.wrap:hover {
+    border-color: var(--faint);
+}
+
+.input {
+    font: inherit;
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    color: var(--ink);
+    padding: 7px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input:focus-visible {
+    outline: none;
+}
+
+.input::placeholder {
+    color: var(--muted);
+}
+
+.input:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.steppers {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--line);
+}
+
+.stepper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    border: none;
+    background: var(--raised);
+    color: var(--muted);
+    font-size: 8px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.stepper:first-child {
+    border-bottom: 1px solid var(--line);
+}
+
+.stepper:hover:not(:disabled) {
+    color: var(--ink);
+}
+
+.stepper:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}

@@ -108,12 +108,24 @@
 //   `mergeState({showSaveModal: false})` instead (no observable
 //   difference - `setState`'s callback form has no `useState` hook
 //   equivalent anyway).
+//   UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.1): now
+//   that `Input` is the design-system port, `ref` forwards to the
+//   native `<input>` DOM node directly, not an antd class-component
+//   instance with its own `.state` - `layoutName.current.state.value`
+//   became `layoutName.current.value` (reading the same uncontrolled
+//   input's current text either way), and the reset became
+//   `layoutName.current.value = ""` (DOM nodes have no `.state` to
+//   guard on, so that `if` check was dropped along with it).
 import * as React from "react";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const TradingView = require("../../../charting_library/charting_library.esm");
 import colors from "assets/colors";
 import {getResolutionsFromBuckets, getTVTimezone} from "./tradingViewClasses";
-import {Modal, Input, Table, Button, Icon} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Input} from "../../design-system/Input";
+import {Table} from "../../design-system/Table";
+import {Button} from "../../design-system/Button";
+import {Icon} from "../../design-system/Icon";
 import counterpart from "counterpart";
 import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
@@ -383,24 +395,29 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
     }, [props.marketReady, props.dataFeed]);
 
     const onSubmitConfirmation = () => {
+        // `layoutName.current` is now a native `<input>` DOM node (the
+        // design-system `Input`'s ref forwards there directly), not an
+        // antd class-component instance - reading/writing `.value`
+        // directly replaces the original's `.state.value` antd-internals
+        // reach-through, same uncontrolled-input behavior either way.
         const error = props.charts.some(
             (chart: any) =>
-                chart.key === layoutName.current.state.value &&
+                chart.key === layoutName.current.value &&
                 chart.symbol === props.quoteSymbol + "_" + props.baseSymbol
         );
         if (!error) {
             resetError();
             tvWidgetRef.current.save(function(object: any) {
                 const chart: any = {};
-                chart.key = layoutName.current.state.value || "";
+                chart.key = layoutName.current.value || "";
                 chart.object = object;
-                chart.name = layoutName.current.state.value || "";
+                chart.name = layoutName.current.value || "";
                 chart.symbol = props.quoteSymbol + "_" + props.baseSymbol;
                 chart.modified = new Date().toLocaleDateString("en-US");
                 SettingsActions.addChartLayout(chart);
                 mergeState({showSaveModal: false});
-                if (layoutName.current.state) {
-                    layoutName.current.state.value = null;
+                if (layoutName.current) {
+                    layoutName.current.value = "";
                 }
             });
         } else {
@@ -484,7 +501,7 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
                 closable={false}
                 visible={state.showSaveModal}
                 footer={[
-                    <Button key="submit" type="primary" onClick={onSubmitConfirmation}>
+                    <Button key="submit" variant="accent" onClick={onSubmitConfirmation}>
                         {counterpart.translate("modal.save")}
                     </Button>,
                     <Button key="cancel" onClick={hideModal}>

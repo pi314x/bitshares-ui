@@ -74,7 +74,7 @@ import utils from "common/utils";
 import cnames from "classnames";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import asset_utils from "../../lib/common/asset_utils";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";

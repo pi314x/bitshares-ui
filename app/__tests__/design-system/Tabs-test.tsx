@@ -77,6 +77,18 @@ describe("design-system/Tabs", () => {
         expect(getByText("Content two")).toBeTruthy();
     });
 
+    it("renders tabBarExtraContent alongside the tab bar", () => {
+        const {getByText} = render(
+            <Tabs tabBarExtraContent={<span>Extra</span>}>
+                <Tabs.TabPane key="one" tab="One">
+                    Content one
+                </Tabs.TabPane>
+            </Tabs>
+        );
+        expect(getByText("Extra")).toBeTruthy();
+        expect(getByText("One")).toBeTruthy();
+    });
+
     it("supports destructuring TabPane off Tabs directly", () => {
         const {TabPane} = Tabs;
         const {getByText} = render(

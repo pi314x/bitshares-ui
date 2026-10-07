@@ -40,7 +40,7 @@ import utils from "common/utils";
 import Icon from "../Icon/Icon";
 import MarketsActions from "actions/MarketsActions";
 import SettingsActions from "actions/SettingsActions";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 

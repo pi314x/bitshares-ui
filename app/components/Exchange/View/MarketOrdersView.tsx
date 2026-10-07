@@ -30,7 +30,8 @@ import utils from "common/utils";
 import Translate from "react-translate-component";
 import PriceText from "../../Utility/PriceText";
 import AssetName from "../../Utility/AssetName";
-import {Tooltip, Checkbox} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../../design-system/Tooltip";
+import {Checkbox} from "../../../design-system/Checkbox";
 
 const rightAlign = {textAlign: "right" as const};
 

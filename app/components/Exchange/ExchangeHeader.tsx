@@ -46,7 +46,7 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import ExchangeHeaderCollateral from "./ExchangeHeaderCollateral";
-import {Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import {Asset, Price} from "common/MarketClasses";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;

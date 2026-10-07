@@ -69,7 +69,7 @@ import SettingsActions from "actions/SettingsActions";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {LimitOrder, CallOrder} from "common/MarketClasses";
 import ReactTooltip from "react-tooltip";
-import {Button} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
 import {MarketsOrderView, MarketOrdersRowView} from "./View/MarketOrdersView";
 import NotificationActions from "actions/NotificationActions";
 

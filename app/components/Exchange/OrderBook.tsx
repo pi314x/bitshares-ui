@@ -98,7 +98,8 @@ import PriceText from "../Utility/PriceText";
 import TransitionWrapper from "../Utility/TransitionWrapper";
 import AssetName from "../Utility/AssetName";
 import Icon from "../Icon/Icon";
-import {Select, Tooltip} from "bitshares-ui-style-guide";
+import {Select} from "../../design-system/Select";
+import {Tooltip} from "../../design-system/Tooltip";
 import ReactDOM from "react-dom";
 
 interface OrderRowsProps {

@@ -69,7 +69,10 @@ import Translate from "react-translate-component";
 import {Link, LinkProps, useNavigate} from "react-router-dom";
 import AssetActions from "actions/AssetActions";
 import AssetStore from "stores/AssetStore";
-import {Form, Input, Modal, Icon as AntIcon} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Modal} from "../../design-system/Modal";
+import {Icon as AntIcon} from "../../design-system/Icon";
 import AssetName from "../Utility/AssetName";
 import {
     lookupAssets,
@@ -397,7 +400,6 @@ export default function MarketPicker(props: MarketPickerProps) {
     const {
         visible,
         hideModal,
-        modalId,
         quoteAsset,
         baseAsset,
         onToggleMarketPicker
@@ -424,10 +426,7 @@ export default function MarketPicker(props: MarketPickerProps) {
         <Modal
             title={counterpart.translate("exchange.market_picker.title")}
             closable={false}
-            id={modalId}
-            overlay={true}
             onCancel={onClose}
-            noHeaderContainer
             footer={null}
             {...props}
             visible={visible}
