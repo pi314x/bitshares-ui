@@ -14,7 +14,7 @@ import * as React from "react";
 import Immutable from "immutable";
 import cname from "classnames";
 import counterpart from "counterpart";
-import {Form} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
 
 const FormItem = Form.Item;
 

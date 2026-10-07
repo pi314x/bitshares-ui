@@ -11503,6 +11503,44 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 `walletDbCrypto-test.js` (8/8), `yarn build` showing only the 2 known
 pre-existing `charting_library.esm` errors.
 
+**Third wallet-batch sweep**, all 5 files explicitly flagged security-
+sensitive in their own headers and migrated with the same extra
+scrutiny as the rest of this batch - verifying what each component
+actually *does* with the password/key material (hold it in local
+state, forward it unread, or pass it straight into an untouched
+`WalletDb`/`Aes` call) before touching anything, and confirming the
+real password/brainkey input elements themselves are either plain
+native `<input>`s or the already-safe design-system `Input` (never
+anything that transforms or intercepts the typed value):
+`Wallet/PasswordConfirm.tsx` (`Form` only - the two `<input
+type="password">` fields are plain native HTML, untouched), `Wallet/
+PasswordConfirmStyleGuide.tsx` (`Form`/`Input` - the antd-styled
+sibling of the above), `Wallet/BackupBrainkey.tsx` (`Card`/`Input`/
+`Button`/`Notification` - reveals the brainkey after password
+verification via `WalletDb.validatePassword`/`.getBrainKey()`, both
+untouched), `Modal/QrcodeModal.tsx` (`Modal`/`Button` - AES-encrypts a
+raw private key passed in via `keyValue` with a typed password before
+rendering it as a QR code; the password input itself is a plain native
+`<input>`), `Wallet/BrainkeyInputStyleGuide.tsx` (`Input` only, for
+`.TextArea` - the brainkey-entry/spellcheck/check-digit component used
+by `WalletCreate.tsx`).
+
+One TS-forced (not behavioral) adjustment: `PasswordConfirmStyleGuide
+.tsx`'s `ref={getInputNode()}` - a preserved-verbatim pre-existing bug
+(the original *calls* the ref callback immediately instead of passing
+the function reference, so the ref is always `undefined` and the
+auto-focus effect is permanently inert) - needed an explicit `as any`
+to keep compiling, since the design-system `Input`'s `forwardRef` is
+strictly typed `Ref<HTMLInputElement>`, unlike the untyped antd shim
+it replaces. Not a behavior change, the ref was already always
+`undefined` at runtime either way.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,556/5,556 (unchanged), including a dedicated re-run of
+`walletDbCrypto-test.js` (8/8), `yarn build` showing only the 2 known
+pre-existing `charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

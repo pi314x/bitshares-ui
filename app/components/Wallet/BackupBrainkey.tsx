@@ -13,7 +13,10 @@ import Translate from "react-translate-component";
 import WalletActions from "actions/WalletActions";
 import WalletDb from "stores/WalletDb";
 import {hash} from "bitsharesjs";
-import {Card, Input, Button, Notification} from "bitshares-ui-style-guide";
+import {Card} from "../../design-system/Card";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {Notification} from "../../design-system/Notification";
 import counterpart from "counterpart";
 
 export default function BackupBrainkey() {
@@ -117,10 +120,10 @@ export default function BackupBrainkey() {
                     <Translate content="wallet.brainkey_w3" />
                 </div>
 
-                <Button type={"primary"} onClick={onComplete}>
+                <Button variant="accent" onClick={onComplete}>
                     <Translate content="wallet.verify" />
                 </Button>
-                <Button type={"default"} onClick={reset}>
+                <Button onClick={reset}>
                     <Translate content="wallet.cancel" />
                 </Button>
             </span>
@@ -143,7 +146,7 @@ export default function BackupBrainkey() {
                         {brainkey_backup_time}
                         <br />
                     </div>
-                    <Button type="primary" onClick={onSubmit}>
+                    <Button variant="accent" onClick={onSubmit}>
                         <Translate content="wallet.show_brainkey" />
                     </Button>
                 </form>

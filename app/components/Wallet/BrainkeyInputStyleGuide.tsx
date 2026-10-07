@@ -6,7 +6,7 @@
 import * as React from "react";
 import cname from "classnames";
 import {hash, key} from "bitsharesjs";
-import {Input} from "bitshares-ui-style-guide";
+import {Input} from "../../design-system/Input";
 
 let dictionary_set: Set<string> | undefined;
 

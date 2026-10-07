@@ -20,7 +20,8 @@ import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import QRCode from "qrcode.react";
 import {Aes} from "bitsharesjs";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
 
 interface QrcodeModalState {
     isShowQrcode: boolean;
@@ -93,7 +94,7 @@ export default function QrcodeModal({
 
     if (!state.isShowQrcode) {
         footer.push(
-            <Button type="primary" key="submit" onClick={onPasswordEnter}>
+            <Button variant="accent" key="submit" onClick={onPasswordEnter}>
                 {counterpart.translate("modal.ok")}
             </Button>
         );

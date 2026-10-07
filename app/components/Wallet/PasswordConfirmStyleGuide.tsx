@@ -13,11 +13,19 @@
 // fires. Replicated here by calling `getInputNode()` (with no argument)
 // directly in the JSX `ref` prop, so the effect below's `.focus()` call
 // is always a no-op, exactly as in the original.
+//
+// UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.2): the
+// design-system `Input` is `React.forwardRef<HTMLInputElement, ...>`,
+// strictly typed (unlike the untyped antd shim this replaces), so
+// `ref={getInputNode()}` - always `void` - now needs an explicit `as
+// any` to keep compiling. Not a behavior change, just spelling out in
+// types what was already true at runtime.
 import * as React from "react";
 import Immutable from "immutable";
 import cname from "classnames";
 import counterpart from "counterpart";
-import {Form, Input} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 
 const FormItem = Form.Item;
 
@@ -105,7 +113,7 @@ export default function PasswordConfirm({
                         type="password"
                         id="current-password"
                         autoComplete="current-password"
-                        ref={getInputNode()}
+                        ref={getInputNode() as any}
                         onChange={formChange}
                         value={password}
                         tabIndex={tabIndex++}
