@@ -1,13 +1,20 @@
-import alt from "alt-instance";
-import {Apis} from "bitsharesjs-ws";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): plain singleton replacing the real
+// Alt `alt.createActions(PoolActions)` wrapper - grep-confirmed no store
+// ever bound to this class AND no real call site anywhere in the app
+// calls `createPool`/`create_liquidity_pool` (both dead code already,
+// pre-existing). `createPool` returned an Alt thunk (`dispatch =>
+// {...}`) purely so it could call `dispatch` - dropped per the same
+// dead-dispatch precedent as `HtlcActions`/`AssetActions`/
+// `AccountActions`, with `WalletDb.process_transaction`'s real logic
+// preserved exactly. Also drops 4 already-unused bindings (`Apis`,
+// `gatewayPrefixes`, `price`, `inProgress` - dead since before this
+// port, confirmed via `git show` against the pre-port file) surfaced by
+// `yarn lint:changed` now that this file is part of a diff.
 import utils from "common/utils";
 import WalletApi from "api/WalletApi";
 import WalletDb from "stores/WalletDb";
 import {ChainStore} from "bitsharesjs";
 import big from "bignumber.js";
-import {gatewayPrefixes} from "common/gateways";
-import {price} from "bitsharesjs/es/serializer/src/operations";
-let inProgress = {};
 
 class PoolActions {
     createPool(
@@ -85,27 +92,19 @@ class PoolActions {
             operationJSON.bitasset_opts = bitasset_opts;
         }
         tr.add_type_operation("asset_create", operationJSON);
-        return dispatch => {
-            return WalletDb.process_transaction(tr, null, true)
-                .then(result => {
-                    // console.log("pool create result:", result);
-                    dispatch(true);
-                })
-                .catch(error => {
-                    console.log("----- createAsset error ----->", error);
-                    dispatch(false);
-                });
-        };
+        return WalletDb.process_transaction(tr, null, true)
+            .then(() => {
+                // console.log("pool create result:", result);
+            })
+            .catch(error => {
+                console.log("----- createAsset error ----->", error);
+            });
     }
 
-    create_liquidity_pool(
-        my_username,
-        asset_a,
-        asset_b,
-        share_asset,
-        taker_fee_percent,
-        withdrawal_fee_percent
-    ) {}
+    // Already an empty, uncalled stub before this port (confirmed via
+    // `git show` against the pre-port file) - params dropped since none
+    // were ever read.
+    create_liquidity_pool() {}
 }
 
-export default alt.createActions(PoolActions);
+export default new PoolActions();

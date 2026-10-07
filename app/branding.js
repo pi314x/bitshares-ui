@@ -10,8 +10,8 @@ import {Apis} from "bitsharesjs-ws";
  * @private
  */
 function _isTestnet() {
-    const testnet =
-        "39f5e2ede1f8bc1a3a54a7914414e3779e33193f1f5693510e73cb7a87617447"; // just for the record
+    // testnet chain id, just for the record:
+    // 39f5e2ede1f8bc1a3a54a7914414e3779e33193f1f5693510e73cb7a87617447
     const mainnet =
         "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8";
 
@@ -38,7 +38,7 @@ export function getWalletURL() {
 /**
  * Returns faucet information
  *
- * @returns {{url: string, show: boolean}}
+ * @returns {{url: string, show: boolean, editable: boolean}}
  */
 export function getFaucet() {
     return {
@@ -455,16 +455,10 @@ export function getAssetHideNamespaces() {
  */
 export function allowedGateway(gateway) {
     const allowedGateways = [
-        "TRADE",
-        "OPEN", // keep to display the warning icon, permanently disabled in gateways.js
-        "RUDEX", // keep to display the warning icon, permanently disabled in gateways.js
-        "GDEX",
         "PIRATE",
         "XBTSX",
         "IOB",
-        "CITADEL", // keep to display the warning icon, permanently disabled in gateways.js
-        "BRIDGE", // keep to display the warning icon, permanently disabled in gateways.js
-        "SPARKDEX" // keep to display the warning icon, permanently disabled in gateways.js
+        "BRIDGE" // keep to display the warning icon, permanently disabled in gateways.js
     ];
     if (!gateway) {
         // answers the question: are any allowed?

@@ -11,7 +11,7 @@ import {
     ChainTypes
 } from "bitsharesjs";
 import counterpart from "counterpart";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../design-system/Notification";
 
 const ApplicationApi = {
     create_account(

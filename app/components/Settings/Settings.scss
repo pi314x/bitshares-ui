@@ -1,0 +1,42 @@
+// Phase 2 (docs/UI_MIGRATION_PLAN.md): visual pass on the Settings shell
+// (Settings.jsx's left nav + content panel) using the new design tokens.
+// Additive only, same as Dashboard/DashboardList.scss: every class here is
+// added alongside Settings.jsx's existing classes, nothing removed, and
+// none of its tab-switching/setting-writing logic was touched — only
+// className attributes. `settings-menu`/`settings-container` (the classes
+// already there) aren't shared with any other component, but are left
+// alone anyway rather than edited in the shared theme SCSS files, to keep
+// this change scoped to new, additive rules only.
+
+.set-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.set-nav li.set-nav-item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.set-nav li.set-nav-item:hover {
+    background: var(--line-soft);
+    color: var(--ink);
+}
+
+.set-nav li.set-nav-item-active {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.set-content h3 {
+    font-family: var(--font-display);
+}

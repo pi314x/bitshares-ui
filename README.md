@@ -46,6 +46,25 @@ Once the compilation is done the UI will be available in your browser at:
 `localhost:8080` or `127.0.0.1:8080`. Hot Reloading is enabled so the browser 
 will live update as you edit the source files.
 
+## Testing, linting & type checking
+
+```
+yarn test              # Jest unit tests
+yarn lint:changed      # ESLint on files changed vs. the base branch (what CI gates on)
+yarn typecheck         # TypeScript typecheck for the new app/next and app/design-system code
+yarn build-preview     # Standalone preview build for a new app/next screen, without a live node
+```
+
+`.github/workflows/ci.yml` runs `lint:changed`, `typecheck` and `test` on every PR.
+
+## UI Migration in progress
+
+BitShares-UI is being migrated incrementally to a modern stack (React 18+,
+TypeScript, Redux Toolkit, CSS Modules), screen by screen, alongside the
+existing React 16/Alt.js code — see [docs/UI_MIGRATION_PLAN.md](docs/UI_MIGRATION_PLAN.md)
+for the phased plan and progress notes, and [AGENTS.md](AGENTS.md) for
+guidance aimed at contributors (human or AI) working in this repository.
+
 ## Testnet
 
 By default bitshares-ui connects to the BitShares mainnet, 

@@ -1,0 +1,58 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.bubble {
+    position: absolute;
+    z-index: 1100;
+    max-width: 260px;
+    width: max-content;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--raised);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.top {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.bottom {
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.topLeft {
+    bottom: calc(100% + 8px);
+    left: 0;
+}
+
+.topRight {
+    bottom: calc(100% + 8px);
+    right: 0;
+}
+
+.left {
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.right {
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+}

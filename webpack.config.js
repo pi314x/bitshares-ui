@@ -48,6 +48,30 @@ module.exports = function(env) {
         }
     ];
 
+    // CSS Modules for the new design system (files named *.module.scss),
+    // kept separate from the global, non-scoped SCSS used by legacy `app/`.
+    var scssModuleLoaders = [
+        {
+            loader: "style-loader"
+        },
+        {
+            loader: "css-loader",
+            options: {
+                modules: {
+                    localIdentName: env.prod
+                        ? "[hash:base64:8]"
+                        : "[name]__[local]__[hash:base64:5]"
+                }
+            }
+        },
+        {
+            loader: "postcss-loader"
+        },
+        {
+            loader: "sass-loader"
+        }
+    ];
+
     // OUTPUT PATH
     var outputPath = path.join(root_dir, "assets").replace(/\\/g, "/");
 
@@ -247,13 +271,14 @@ module.exports = function(env) {
         "bitshares-ui-style-guide$": path.resolve(
             root_dir,
             "node_modules/bitshares-ui-style-guide/dist/main.js"
-        )
+        ),
+        // Phase 8 (docs/UI_MIGRATION_PLAN.md): drop the `counterpart`
+        // package in favor of a local, tested replacement covering the
+        // exact subset of its API this app (and react-translate
+        // -component, which imports `counterpart` internally) actually
+        // uses. See app/lib/i18n/counterpartShim.js's header.
+        counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
     };
-    if (!env.prod) {
-        alias = Object.assign({}, alias, {
-            "react-dom": "@hot-loader/react-dom"
-        });
-    }
     var https = false;
     if (env.https) {
         https = {
@@ -264,12 +289,7 @@ module.exports = function(env) {
     var config = {
         mode: env.noUgly ? "none" : env.prod ? "production" : "development",
         entry: {
-            app: env.prod
-                ? path.resolve(root_dir, "app/Main.js")
-                : [
-                      "react-hot-loader/patch",
-                      path.resolve(root_dir, "app/Main.js")
-                  ]
+            app: path.resolve(root_dir, "app/Main.js")
         },
         output: {
             publicPath: env.prod ? "" : "/",
@@ -327,13 +347,7 @@ module.exports = function(env) {
                 },
                 {
                     test: /\.jsx$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(
-                            root_dir,
-                            "node_modules/react-foundation-apps"
-                        )
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",
@@ -344,26 +358,39 @@ module.exports = function(env) {
                                         {targets: {node: "current"}}
                                     ]
                                 ],
-                                cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"]
+                                cacheDirectory: env.prod ? false : true
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.tsx?$/,
+                    include: [path.join(root_dir, "app")],
+                    use: [
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                presets: [
+                                    "@babel/preset-typescript",
+                                    [
+                                        "@babel/preset-react",
+                                        {targets: {node: "current"}}
+                                    ]
+                                ],
+                                cacheDirectory: env.prod ? false : true
                             }
                         }
                     ]
                 },
                 {
                     test: /\.js$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(root_dir, "node_modules/alt-container"),
-                        path.join(root_dir, "node_modules/alt-react")
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",
                             options: {
                                 compact: false,
                                 cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"],
                                 presets: [
                                     [
                                         "@babel/preset-react",
@@ -392,7 +419,12 @@ module.exports = function(env) {
                     use: cssLoaders
                 },
                 {
+                    test: /\.module\.scss$/,
+                    use: scssModuleLoaders
+                },
+                {
                     test: /\.scss$/,
+                    exclude: /\.module\.scss$/,
                     use: scssLoaders
                 },
                 {
@@ -422,6 +454,20 @@ module.exports = function(env) {
                             options: {
                                 limit: 100000,
                                 mimetype: "application/font-woff"
+                            }
+                        }
+                    ]
+                },
+                {
+                    // @fontsource/ibm-plex-sans and @fontsource/ibm-plex-mono
+                    // (docs/UI_MIGRATION_PLAN.md Phase 0) ship .woff2.
+                    test: /\.woff2$/,
+                    use: [
+                        {
+                            loader: "url-loader",
+                            options: {
+                                limit: 100000,
+                                mimetype: "application/font-woff2"
                             }
                         }
                     ]
@@ -470,7 +516,7 @@ module.exports = function(env) {
                 path.resolve(root_dir, "app/lib"),
                 "node_modules"
             ],
-            extensions: [".js", ".jsx", ".coffee", ".json"],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".coffee", ".json"],
             mainFields: ["module", "jsnext:main", "browser", "main"],
             alias: alias,
             fallback: {

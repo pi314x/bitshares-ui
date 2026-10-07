@@ -1,0 +1,18 @@
+// Phase 2 (docs/UI_MIGRATION_PLAN.md): light wrapper pass on Explorer.jsx.
+// Deliberately minimal compared to Dashboard/Settings: this screen's tabs
+// are bitshares-ui-style-guide's (antd-based) <Tabs>, which is shared by
+// many other screens across the app (VotingAccountsList, Settings' Form/
+// Input, NodeSelector's TreeSelect, etc.) — restyling its internal classes
+// here would leak into all of them. So this only adds a panel background/
+// border around the existing, untouched Tabs component; the actual data
+// tables inside each tab (Blocks.jsx, Assets.jsx, Witnesses.jsx, etc.,
+// 3400+ lines total, all reading live chain data) are out of scope for the
+// same reason Dashboard's row-level math was: not verifiable against a
+// live node in this environment.
+
+.exp-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}

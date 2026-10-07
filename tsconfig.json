@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "lib": ["ES2019", "DOM", "DOM.Iterable"],
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "jsx": "react",
+        "allowJs": true,
+        "checkJs": false,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "baseUrl": "app",
+        "paths": {
+            "common/*": ["lib/common/*"],
+            "chain/*": ["lib/chain/*"],
+            "feature_detect/*": ["lib/feature_detect/*"],
+            "workers/*": ["lib/workers/*"]
+        }
+    },
+    "include": ["app/**/*.ts", "app/**/*.tsx"],
+    "exclude": ["node_modules", "build", "charting_library"]
+}

@@ -1,16 +1,40 @@
-import {hot} from "react-hot-loader";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): the real `alt`/`alt-react`
+// packages are being removed now that every Alt store has a Redux-
+// backed facade (`getState()`/`listen()`/`unlisten()`). This file used
+// to be wrapped with alt-react's `connect(AppInit, {listenTo, getProps})`
+// (subscribing to `[IntlStore, WalletManagerStore, SettingsStore]` and
+// injecting `locale`/`walletMode`/`theme`/`apiServer` as props) plus
+// `supplyFluxContext(alt)(AppInit)` (providing Alt's React context) -
+// grep-confirmed nothing downstream ever read `this.context.flux`/
+// `props.flux`, so `supplyFluxContext` was dropped outright. `connect`'s
+// subscribe/derive-props behavior is reproduced directly in this class
+// (componentDidMount/componentWillUnmount `listen`/`unlisten` the same
+// 3 stores, `forceUpdate` on change; `render()` computes the same 4
+// derived values inline instead of receiving them as injected props) -
+// `<AppInit />` is rendered with no explicit props (see `index.js`), so
+// there is no caller-prop-precedence case to preserve.
+//
+// Also drops `react-hot-loader`'s `hot(module)(...)` wrapper (Phase 9
+// dependency cleanup) - that package patches React's reconciler purely
+// to preserve component state across dev-mode hot reloads; it's a no-op
+// in production (`hot()` only activates when `process.env.NODE_ENV !==
+// "production"`) and was never load-bearing for correctness. Removing
+// it means a dev-mode edit now triggers webpack's plain
+// `HotModuleReplacementPlugin` module-replacement + full remount
+// instead of a state-preserving swap - an accepted dev-experience
+// tradeoff, not a behavior change for any shipped build.
 import React from "react";
+import {Provider} from "react-redux";
+import {reduxStore} from "./store/reduxStore";
 import App from "./App";
 import IntlActions from "actions/IntlActions";
 import WalletManagerStore from "stores/WalletManagerStore";
 import SettingsStore from "stores/SettingsStore";
 import IntlStore from "stores/IntlStore";
 import intlData from "./components/Utility/intlData";
-import alt from "alt-instance";
-import {connect, supplyFluxContext} from "alt-react";
 import {IntlProvider} from "react-intl";
 import willTransitionTo from "./routerTransition";
-import {BodyClassName} from "bitshares-ui-style-guide";
+import {BodyClassName} from "./design-system/BodyClassName";
 import LoadingIndicator from "./components/LoadingIndicator";
 import InitError from "./components/InitError";
 import SyncError from "./components/SyncError";
@@ -208,10 +232,18 @@ class AppInit extends React.Component {
                     windowsClass;
             }
         }
+
+        this._onStoreChange = () => this.forceUpdate();
+        IntlStore.listen(this._onStoreChange);
+        WalletManagerStore.listen(this._onStoreChange);
+        SettingsStore.listen(this._onStoreChange);
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        IntlStore.unlisten(this._onStoreChange);
+        WalletManagerStore.unlisten(this._onStoreChange);
+        SettingsStore.unlisten(this._onStoreChange);
     }
 
     _statusCallback(status) {
@@ -224,8 +256,7 @@ class AppInit extends React.Component {
         });
     }
 
-    _renderLoadingScreen() {
-        let server = this.props.apiServer;
+    _renderLoadingScreen(server) {
         if (!!!server) {
             server = "";
         }
@@ -257,8 +288,16 @@ class AppInit extends React.Component {
     }
 
     render() {
-        const {theme} = this.props;
         const {apiConnected, apiError, syncError} = this.state;
+        const locale = IntlStore.getState().currentLocale;
+        const walletMode =
+            !SettingsStore.getState().settings.get("passwordLogin") ||
+            !!WalletManagerStore.getState().current_wallet;
+        const theme = SettingsStore.getState().settings.get("themes");
+        const apiServer = SettingsStore.getState().settings.get(
+            "activeNode",
+            ""
+        );
 
         if (!apiConnected) {
             return (
@@ -270,7 +309,7 @@ class AppInit extends React.Component {
                         <div className="grid-frame vertical">
                             <BodyClassName className={theme}>
                                 {!apiError ? (
-                                    this._renderLoadingScreen()
+                                    this._renderLoadingScreen(apiServer)
                                 ) : syncError ? (
                                     <SyncError />
                                 ) : (
@@ -282,30 +321,28 @@ class AppInit extends React.Component {
                 </div>
             );
         }
-        return <RootIntl {...this.props} {...this.state} />;
+        return (
+            <RootIntl
+                {...this.props}
+                {...this.state}
+                locale={locale}
+                walletMode={walletMode}
+                theme={theme}
+                apiServer={apiServer}
+            />
+        );
     }
 }
 
-AppInit = connect(
-    AppInit,
-    {
-        listenTo() {
-            return [IntlStore, WalletManagerStore, SettingsStore];
-        },
-        getProps() {
-            return {
-                locale: IntlStore.getState().currentLocale,
-                walletMode:
-                    !SettingsStore.getState().settings.get("passwordLogin") ||
-                    !!WalletManagerStore.getState().current_wallet,
-                theme: SettingsStore.getState().settings.get("themes"),
-                apiServer: SettingsStore.getState().settings.get(
-                    "activeNode",
-                    ""
-                )
-            };
-        }
-    }
-);
-AppInit = supplyFluxContext(alt)(AppInit);
-export default hot(module)(AppInit);
+// Makes the Redux store available to any component using react-redux's
+// `useSelector`/`useDispatch` - see this file's own header above for why
+// the Alt.js flux context this used to run alongside is gone.
+function AppInitWithReduxProvider(props) {
+    return (
+        <Provider store={reduxStore}>
+            <AppInit {...props} />
+        </Provider>
+    );
+}
+
+export default AppInitWithReduxProvider;
