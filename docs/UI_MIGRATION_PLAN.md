@@ -12125,6 +12125,64 @@ CopyPlugin writes next to the real output, notably `dictionary.json`, which
 persistence bug at first. `scripts/smoke-boot.py` now serves it (and the
 locale files) from the sources when the dist folder lacks them.
 
+### 7.7 One colour palette (complete)
+
+**The problem:** the shell was navy (`--ground` #0e1218) and the legacy
+screens inside it neutral gray (`$bg-color` #2a2a2a, panels #3f3f3f, lists
+#3c3c3c): measured on eight real-data screens, **48% of the painted area in
+the dark theme was a pure gray**, and the light and midnight themes had their
+own unrelated hex values (an orange "info" colour, a pink "warning", a purple
+fee colour, a teal bid in midnight and a different green in dark).
+
+**What changed:**
+- `app/design-system/_palette.scss` is the only place colour values are
+  written down (`$palette-dark-*`, `$palette-light-*`, `$palette-midnight-*`).
+  `theme.scss` turns it into the CSS custom properties; `tokens.ts` mirrors it
+  for TS code; `assets/colors.js` (depth/price chart colours) follows it;
+  `app/__tests__/design-system/palette-test.ts` fails when `tokens.ts` or
+  `colors.js` disagree with the SCSS, and checks WCAG contrast (ink, secondary
+  and muted text, up/down/warn and the accent on its button text, against
+  ground/surface in both themes) - which caught two light-theme colours that
+  sat at 4.0-4.4:1 and are now darker.
+- The palette itself: cool slate neutrals stepped by elevation (ground <
+  surface < raised < hover, a new `--hover` token), one brand cyan accent, an
+  emerald up and a warm rose down, an amber warning. Light uses the same
+  structure with a darker accent family so text on it passes 4.5:1.
+- The legacy theme sheets (`themes/_{dark,light,midnight}-theme.scss`)
+  derive their ~60 colour variables from the palette instead of literals, so
+  `_theme-template.scss` (2,700 lines, untouched apart from one `gray`) keeps
+  working and every themed rule follows. Midnight keeps its deeper near-black
+  ground (`$palette-midnight-*`); the shell renders midnight with the dark
+  tokens, as before.
+- Colours the theme variables do not reach were found by the census and
+  changed: the 26 hard-coded literals of the trimmed `vendors/legacy-base.css`
+  (input borders and placeholders, error and warning states, links, text
+  selection, the three `body` backgrounds), the intro.js tooltips (which also
+  lost a hard-coded `sans-serif`), the scrollbars (now translucent so they suit
+  every theme) and a few partials (`_exchange`, `_dashboard`, `_forms`,
+  `_rudex`, `_shame`, `_loading-indicator`, `_settings`), which now use the
+  custom properties (`var(--hover)`, `var(--up)`, ...).
+- Elevation and scrim: five different literal shadows and a hard-coded black
+  modal scrim are now `--shadow-md`, `--shadow-lg` and `--overlay`, tuned per
+  theme. The `Switch` got a larger track, a white handle, an eased slide and a
+  focus ring.
+
+**Verification:** `python3 scripts/smoke-boot.py <dist> --colors --routes ...`
+computes the area-weighted share of painted backgrounds that are a pure gray
+and fails above 2%. Same routes, real chain data: the previous build 64.9%
+(`rgb(42,42,42)` alone 38%), the new build 0.0%; the light theme measures 0.0%
+on the same routes and midnight 0.0% on the dashboard, market and settings
+(near-black tinted grounds such as `rgb(5,8,12)` do not count as gray). Text colours: neutral gray share 44% ->
+0.3%. The eight screens were also reviewed by eye in dark and light, and the
+dashboard, market and settings in midnight. Not covered: the TradingView chart
+itself (licensed library, see §7.4), phone widths, and rare modals that need
+states the harness cannot reach.
+
+**Known leftovers (deliberate):** `_foundation_settings.scss` and the vendored
+Foundation partials still carry gray literals, but every themed rule overrides
+them (the census sees none); `activeMarket` keeps its `#4c85d8` blue and a
+few asset-name colours are brand-style and were left as is.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12220,7 +12278,7 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 ## 12. Where this stands (end of the incremental migration)
 
 **Done and verified by automated gates** (tsc, eslint on changed files, Jest
-5,609 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
+5,613 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
 build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
@@ -12267,9 +12325,9 @@ introduced); each has a regression test or a measurable check.
   untested.
 - The **TradingView chart** (licensed library not in the repo) and **Electron**
   packaging.
-- Visual review in the midnight theme and at phone widths. Dark and light
-  were reviewed on nine real-data screens in §7.6; midnight and narrow
-  viewports were not.
+- Visual review at phone widths. Dark and light were reviewed on nine
+  real-data screens in §7.6 and the colour pass (§7.7) added midnight for the
+  dashboard, market and settings; narrow viewports were not.
 - Re-enable immer's auto-freeze (`store/immerConfig.ts`) after auditing the
   `getState()` consumers; and decide whether to extract CSS Modules in the
   production build (§7.5).

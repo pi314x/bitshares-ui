@@ -36,6 +36,13 @@ resolve to IBM Plex Sans/Mono as its first font family. Unrendered nodes
 the run and is listed, so a stray `font-family` in a legacy stylesheet or an
 inline style shows up here rather than on a user's screen.
 
+With `--colors` every visited route is also checked for leftovers of the old
+neutral-gray palette: the area-weighted share of painted backgrounds that are
+a pure gray (no blue cast, not near-black or white) must stay under 2%. The palette
+(`app/design-system/_palette.scss`) is cool slate throughout, so a neutral gray
+means a hard-coded legacy colour that bypasses it; the worst offenders are
+listed with the element that carries them.
+
 Limits of the default stub: it returns `null` for every other object, so screens
 that need real accounts, assets or blocks can legitimately throw on `null`
 (`/explorer/fees`, `/barter`, `/block/1` do) - read those as "needs a real
@@ -158,6 +165,35 @@ FONT_CENSUS_JS = r"""() => {
 }"""
 
 
+COLOR_CENSUS_JS = r"""() => {
+  const area = {}, sample = {};
+  const walk = (el) => {
+    if (el.nodeType !== 1) return;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HEAD'].includes(el.tagName)) return;
+    const cs = getComputedStyle(el); const r = el.getBoundingClientRect();
+    if (cs.display === 'none' || cs.visibility === 'hidden' || r.width <= 0 || r.height <= 0) return;
+    const b = cs.backgroundColor;
+    if (b && b !== 'rgba(0, 0, 0, 0)') {
+      area[b] = (area[b] || 0) + r.width * r.height;
+      sample[b] = sample[b] || (el.tagName.toLowerCase() + '.' + String(el.className).slice(0, 30));
+    }
+    [...el.children].forEach(walk);
+  };
+  walk(document.body);
+  return {area, sample};
+}"""
+
+
+def neutral_gray(css_color):
+    """True for an opaque-ish gray with no hue (and not near-black or white)."""
+    m = re.match(r"rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?\)", css_color)
+    if not m:
+        return False
+    r, g, b = (float(m.group(i)) for i in (1, 2, 3))
+    alpha = float(m.group(4)) if m.group(4) else 1.0
+    return alpha > 0.5 and max(r, g, b) - min(r, g, b) < 9 and 24 <= max(r, g, b) <= 245
+
+
 def serve(dist, live_node=None):
     cache = {}
     cache_path = os.environ.get("SMOKE_RPC_CACHE")  # persist relayed replies between runs (warm runs are much faster)
@@ -265,6 +301,7 @@ def main():
     ap.add_argument("--dismiss", default="", help="comma-separated button labels to click when visible after boot and after each route (e.g. 'Not now' for the first-run gateway modal)")
     ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
     ap.add_argument("--fonts", action="store_true", help="also fail on any visible text that is not set in IBM Plex Sans/Mono (see the module docstring)")
+    ap.add_argument("--colors", action="store_true", help="also fail when more than 2%% of the painted background area is a neutral gray, i.e. a colour that bypasses the palette (see the module docstring)")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
@@ -325,6 +362,16 @@ def main():
                 for line in census["off"][:6]:
                     print("      not Plex:", line)
                 if census["off"]:
+                    failed = True
+            if args.colors:
+                census = page.evaluate(COLOR_CENSUS_JS)
+                total = sum(census["area"].values()) or 1
+                gray = {c: a for c, a in census["area"].items() if neutral_gray(c)}
+                share = 100.0 * sum(gray.values()) / total
+                print(f"{'':<34} colors: {share:.1f}% of painted area is a neutral gray")
+                for c, a in sorted(gray.items(), key=lambda kv: -kv[1])[:4]:
+                    print(f"      neutral {c} ({100.0 * a / total:.1f}%) e.g. {census['sample'].get(c, '')}")
+                if share > 2.0:
                     failed = True
             blank = not body.strip()
             errors.clear()

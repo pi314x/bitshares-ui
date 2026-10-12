@@ -84,8 +84,8 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   add `--live-node https://node.xbts.io/ws` to relay to a real node over
   HTTPS for real accounts/markets - this is what finds first-render bugs
   that unit tests with hand-built props cannot).
-  Add `--fonts` to also fail on any visible text that is not IBM Plex
-  (see Conventions). A custom `--output-path` build lacks the CopyPlugin
+  Add `--fonts` to also fail on any visible text that is not IBM Plex and
+  `--colors` to fail on neutral-gray leftovers (see Conventions). A custom `--output-path` build lacks the CopyPlugin
   files (`dictionary.json`, locale files); the script serves them from the
   sources, so wallet creation works in the harness.
   See `docs/UI_MIGRATION_PLAN.md` §7.4 and §7.6. A `yarn build-preview`
@@ -114,6 +114,14 @@ lint/test CI gate at all.
   `base/_fonts.scss`); never hardcode another family, not even in an inline
   style. `python3 scripts/smoke-boot.py <dist> --fonts --routes ...` checks it
   against the real bundle.
+- Colours: never write a hex value in new code. Raw values live only in
+  `app/design-system/_palette.scss` (mirrored in `tokens.ts`, checked by
+  `app/__tests__/design-system/palette-test.ts`); components use the CSS custom
+  properties (`var(--surface)`, `var(--up)`, `--hover`, `--line`, ...), legacy
+  theme sheets use `$palette-*`. Change a colour in the palette and `tokens.ts`
+  together. `python3 scripts/smoke-boot.py <dist> --colors --routes ...` fails
+  when a screen paints more than 2% of its area in a neutral gray, i.e. a
+  hard-coded colour that bypasses the palette (plan §7.7).
 - Form controls: use the design-system `Button`/`Input`/`Select`/... Legacy
   `.button` and native `input`/`textarea`/`select` are styled by
   `app/design-system/legacy-controls.scss` from the same `--control-h`,
