@@ -207,7 +207,7 @@ div.transfer-input {
 
     > div:first-of-type {
         font-size: 0.875rem;
-        @include RobotoMedium;
+        @include PlexMedium;
 
         > span.hidden {
             visibility: hidden;
@@ -256,7 +256,7 @@ div.transfer-input {
 
             > span {
                 font-size: 0.875rem;
-                @include RobotoMedium;
+                @include PlexMedium;
                 display: block;
                 text-decoration: none;
                 color: #333;
@@ -386,7 +386,7 @@ button.disabled {
 
 .button.hollow {
     background-color: transparent;
-    @include RobotoCondensed;
+    @include PlexCondensed;
 
     &:hover {
         color: #fff;

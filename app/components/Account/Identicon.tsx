@@ -49,7 +49,7 @@ function Identicon({account, size}: IdenticonProps) {
             ctx.clearRect(0, 0, canvasSize, canvasSize);
             ctx.fillRect(0, 0, canvasSize, canvasSize);
             ctx.clearRect(0 + 1, 0 + 1, canvasSize - 2, canvasSize - 2);
-            ctx.font = `${canvasSize}px sans-serif`;
+            ctx.font = `${canvasSize}px "IBM Plex Sans", sans-serif`;
             ctx.fillText("?", canvasSize / 4, canvasSize - canvasSize / 6);
         }
     };

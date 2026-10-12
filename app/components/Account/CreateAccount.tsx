@@ -192,7 +192,8 @@ function CreateAccount() {
 
     const createAccount = (name: string) => {
         const refcode = refcodeRef.current ? refcodeRef.current.value() : null;
-        const referralAccount = (AccountStore as any).getState().referralAccount;
+        const referralAccount = (AccountStore as any).getState()
+            .referralAccount;
         (WalletUnlockActions as any)
             .unlock()
             .then(() => {
@@ -341,7 +342,7 @@ function CreateAccount() {
                 <p
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal"
                     }}
                 >
@@ -446,7 +447,7 @@ function CreateAccount() {
                 <h4
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal",
                         paddingBottom: 15,
                         marginTop: 0
@@ -512,7 +513,7 @@ function CreateAccount() {
                 <p
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal"
                     }}
                 >
@@ -601,7 +602,7 @@ function CreateAccount() {
                 <p
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal"
                     }}
                 >
@@ -636,7 +637,7 @@ function CreateAccount() {
                     <p
                         style={{
                             fontWeight: "normal",
-                            fontFamily: "Roboto-Medium, arial, sans-serif",
+                            fontFamily: "var(--font-sans)",
                             fontStyle: "normal"
                         }}
                     >

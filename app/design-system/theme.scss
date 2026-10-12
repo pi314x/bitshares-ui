@@ -6,18 +6,12 @@
 // `[data-theme="light"]` on the root element, never derived from
 // `prefers-color-scheme`.
 
-// The three type families from the reference "BitShares Desk" mockup, all
-// open source (SIL Open Font License 1.1): Archivo for headings/display,
-// IBM Plex Sans for body text, IBM Plex Mono for numbers/code.
-//
-// Self-hosted via the @fontsource/archivo, @fontsource/ibm-plex-sans and
-// @fontsource/ibm-plex-mono packages (imported in app/next/NextShell.tsx,
-// not here — SCSS `@import` can't reliably resolve npm package paths the
-// way JS imports can through webpack) rather than a Google Fonts CDN link,
-// like the mockup used: the Electron build has no business depending on
-// network access just to render its own UI font, and this sandboxed
-// environment's proxy doesn't reach fonts.googleapis.com either, which is
-// exactly the failure mode self-hosting avoids.
+// IBM Plex is the only type family: IBM Plex Sans for all text (headings
+// included), IBM Plex Mono for numbers/code. Self-hosted via @fontsource
+// (imported in app/design-system/fonts.ts from the app entry - SCSS
+// `@import` can't reliably resolve npm package paths the way JS imports can
+// through webpack) rather than a CDN link: the Electron build must not depend
+// on the network just to render its own UI font.
 
 :root {
     --ground: #0e1218;
@@ -39,8 +33,8 @@
     --warn: #d9a227;
     --on-accent: #06222c;
 
-    --font-display: Archivo, "IBM Plex Sans", ui-sans-serif, system-ui,
-        -apple-system, "Segoe UI", sans-serif;
+    --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+        "Segoe UI", sans-serif;
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
         "Segoe UI", sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,

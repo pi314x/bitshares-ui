@@ -809,7 +809,7 @@
                 color: $info-color;
             }
             > span {
-                @include RobotoMedium;
+                @include PlexMedium;
             }
         }
         svg path {
@@ -1226,11 +1226,11 @@
     }
     .value.negative {
         color: $ask-color !important;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .value.positive {
         color: $bid-color !important;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .active-bucket {
         background-color: lighten($light-panel-bg-color, 12%);
@@ -1256,7 +1256,7 @@
             color: $primary-text-color;
         }
         h6 {
-            @include RobotoMedium;
+            @include PlexMedium;
         }
         .bottom {
             border-top-color: $bg-color;
@@ -1275,7 +1275,7 @@
             background: transparent;
             border: 2px solid $button-bg-color;
             > a {
-                @include RobotoMedium;
+                @include PlexMedium;
                 color: $primary-text-color;
             }
         }
@@ -1303,7 +1303,7 @@
     .my-account h4,
     .my-account p,
     table.table > tbody > tr > td.my-account > span {
-        @include RobotoMedium;
+        @include PlexMedium;
         color: $info-color;
     }
     .account-left-menu {
@@ -1570,13 +1570,13 @@
     }
     // .block-content-header {
     // //text-transform: uppercase;
-    // @include RobotoLight;
+    // @include PlexLight;
     // }
     .orderHistoryBid {
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $bid-color;
         }
         > span.price-decimal,
@@ -1589,7 +1589,7 @@
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $ask-color;
         }
         > span.price-decimal,
@@ -1602,7 +1602,7 @@
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $call-color;
         }
         > span.price-decimal,
@@ -1747,7 +1747,7 @@
         background-color: $header-color;
         padding: 8px 35px;
         border-bottom: 1px solid grey;
-        @include RobotoMedium;
+        @include PlexMedium;
         text-transform: uppercase;
         cursor: pointer;
     }
@@ -1888,7 +1888,7 @@
     }
     .margin-ratio {
         padding: 6px;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .margin-ratio.danger {
         background-color: darken($alert-color, 15%) !important;
@@ -1902,12 +1902,12 @@
         > td.danger {
             background-color: darken($alert-color, 15%) !important;
             color: $dark-text-color;
-            @include RobotoMedium;
+            @include PlexMedium;
         }
         > td.warning {
             background-color: darken($warning-color, 15%) !important;
             color: $dark-text-color;
-            @include RobotoMedium;
+            @include PlexMedium;
         }
     }
     .nodes-header {
@@ -1969,7 +1969,7 @@
     }
     table.table > tbody > tr.in-use {
         > td:nth-child(2) {
-            @include RobotoMedium;
+            @include PlexMedium;
         }
     }
     .SimpleDepositBridge__info-row {
@@ -1983,7 +1983,7 @@
     }
     input.my-key,
     td.my-key a {
-        @include RobotoMedium;
+        @include PlexMedium;
         color: $info-color;
     }
     td.pub-key {

@@ -181,7 +181,8 @@ function CreateAccountPassword() {
 
     const createAccount = (name: string, password: string) => {
         const refcode = refcodeRef.current ? refcodeRef.current.value() : null;
-        const referralAccount = (AccountStore as any).getState().referralAccount;
+        const referralAccount = (AccountStore as any).getState()
+            .referralAccount;
         mergeState({loading: true});
 
         (AccountActions as any)
@@ -544,8 +545,7 @@ function CreateAccountPassword() {
                             <p
                                 style={{
                                     fontWeight: "normal",
-                                    fontFamily:
-                                        "Roboto-Medium, arial, sans-serif",
+                                    fontFamily: "var(--font-sans)",
                                     fontStyle: "normal",
                                     textAlign: "center"
                                 }}
@@ -646,7 +646,7 @@ function CreateAccountPassword() {
                 <p
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal"
                     }}
                 >
@@ -682,7 +682,7 @@ function CreateAccountPassword() {
                     <p
                         style={{
                             fontWeight: "normal",
-                            fontFamily: "Roboto-Medium, arial, sans-serif",
+                            fontFamily: "var(--font-sans)",
                             fontStyle: "normal"
                         }}
                     >

@@ -1,5 +1,5 @@
 .node-access-popup {
-    @include RobotoRegular;
+    @include PlexRegular;
 
     right: 55px;
     bottom: 35px;
@@ -20,7 +20,7 @@
 }
 
 .footer {
-    @include RobotoRegular;
+    @include PlexRegular;
     text-transform: lowercase;
     font-variant: small-caps;
     div.footer-status {

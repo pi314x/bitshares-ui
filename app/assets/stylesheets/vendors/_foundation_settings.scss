@@ -89,7 +89,8 @@ $include-css: (
 // We use these to control various global styles
 // $body-background: #fff;
 // $body-font-color: #222;
-$body-font-family: Roboto-Regular, Helvetica, Arial, sans-serif;
+$body-font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
 // $body-font-weight: $font-weight-normal;
 // $body-font-style: normal;
 // $body-antialiased: true;
@@ -184,7 +185,7 @@ $breakpoint-classes: (small medium large xlarge);
 
 // We use these to style <code> tags
 // $code-color: grayscale($primary-color);
-// $code-font-family: Consolas, 'Liberation Mono', Courier, monospace;
+$code-font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 // $code-font-weight: $font-weight-normal;
 // $code-background-color: scale-color($secondary-color, $lightness: 70%);
 // $code-border-size: 1px;

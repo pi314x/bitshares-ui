@@ -322,7 +322,7 @@ table.table.dashboard-table {
         padding-right: 1.5rem;
     }
     > thead > tr > th {
-        @include RobotoMedium;
+        @include PlexMedium;
         font-size: 0.875rem;
         text-align: center;
         border: none;
@@ -363,10 +363,10 @@ table.table.dashboard-table {
             td:first-of-type {
                 text-align: left;
                 text-transform: uppercase;
-                @include RobotoMedium;
+                @include PlexMedium;
             }
             td:nth-child(3) {
-                @include RobotoMedium;
+                @include PlexMedium;
                 text-align: right;
             }
         }
@@ -393,7 +393,7 @@ table.table.dashboard-table {
     .text {
         margin-right: 20px;
         text-transform: uppercase;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
 }
 
@@ -472,7 +472,7 @@ div.tabs-container {
 .account-treemap {
     padding: 10px;
     text {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 }
 

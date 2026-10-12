@@ -32,15 +32,13 @@ export default function ResetSettings() {
                     component="span"
                     style={{
                         fontWeight: "normal",
-                        fontFamily: "Roboto-Medium, arial, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontStyle: "normal"
                     }}
                     content={"settings.reset_text_description"}
                     generalName={counterpart.translate("settings.general")}
                     with={{
-                        generalName: counterpart.translate(
-                            "settings.general"
-                        ),
+                        generalName: counterpart.translate("settings.general"),
                         accessName: counterpart.translate("settings.access"),
                         faucetName: counterpart.translate(
                             "settings.faucet_address"

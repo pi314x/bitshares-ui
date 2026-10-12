@@ -192,10 +192,8 @@ form.order-form {
 
     .ant-form-item-label {
         text-align: left;
-        font-family: Roboto Medium, Monospaced Number, Chinese Quote,
-            -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, PingFang SC,
-            Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial,
-            sans-serif;
+        font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 500;
 
         label {
             font-size: 90% !important;
@@ -453,7 +451,7 @@ ul.market-stats {
     > span {
         > span:first-of-type {
             padding-right: 5px;
-            @include RobotoMedium;
+            @include PlexMedium;
         }
     }
 }
