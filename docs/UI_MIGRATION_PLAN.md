@@ -11843,8 +11843,12 @@ booted.** `scripts/smoke-boot.py` serves a built dist folder, stubs
 chain id, a valid `2.1.0` object so ChainStore reports "synced"), loads the
 app in headless Chromium and visits routes by client-side navigation,
 reporting console and uncaught page errors per route (see its docstring for
-usage and limits). It found four real defects that every earlier gate had
-passed:
+usage and limits). Its `--live-node https://<node>/ws` mode swaps the canned
+stub for a bridge that relays each call to a real node over HTTPS JSON-RPC
+(a WebSocket route out of the sandbox is not available, HTTPS is), which
+gives real accounts, assets, markets and blocks. Together they found eight
+real defects that every earlier gate had passed (1-4 with the stub, 5-8
+with real data):
 
 1. **The app could not connect at all.** `SettingsStore` has been Redux
    Toolkit-backed since Phase 9, so `getState()` returns immer-frozen
@@ -11880,6 +11884,29 @@ passed:
    class in `Topbar.module.scss`/`Rail.module.scss`. **Lesson for new
    screens:** a screenshot from `yarn build-preview` does not exercise the
    legacy global CSS; check new screens in the real app as well.
+5. **Every voting page crashed the app.** The `AccountVoting` port dropped
+   the original `static defaultProps = {globalObject: "2.0.0"}`, so
+   `ChainStore.getObject(undefined)` threw on every account's voting tab
+   (and `/voting`, which redirects there). Default restored; test added.
+6. **`design-system/Table` crashed on a `null` `dataSource`**, which antd
+   tolerated: `/htlc` passes `null` while an account has no HTLCs. Now
+   `null`/`undefined` mean empty; test added.
+7. **Every account's permissions page crashed on first render.** The port
+   seeded its state in a `useEffect`, but the original did it in
+   `UNSAFE_componentWillMount` and `render()` reads that state at once
+   (`sumUpWeights(...).reduce` of `undefined`). State is now seeded in the
+   `useState` initializer and re-seeded only when a different account
+   object arrives. The page's fee-asset cache warm-up
+   (`getFinalFeeAsset`) also throws on a cold `ChainStore` (default fee
+   asset not fetched yet) and is now guarded. This screen publishes
+   `account_update`; the publish path is untouched.
+8. A pattern worth knowing about: a lost `defaultProps` or a state seed
+   moved from before the first render into an effect fails **only against
+   real data and only on the first render**, which is why unit tests with
+   hand-built props never saw it. A scan of the original sources'
+   `defaultProps` holding chain object ids against their ports found only
+   the `AccountVoting` case; the `useState({}) + useEffect` seeding pattern
+   has not been audited elsewhere.
 
 Also checked with a stub chain, no errors (apart from external requests the
 sandbox blocks, e.g. the news feed and gateway lookups): `/`, `/accounts`, `/settings` and
@@ -11889,12 +11916,21 @@ tabs, `/market/*`, `/pools`, `/news`, `/voting`, `/help`, `/borrow`,
 `/deposit-withdraw`, `/login`, `/registration*`, `/create-account/*`,
 `/spotlight`, `/wallet`, `/existing-account`, `/direct-debit`,
 `/account/:name`, `/asset/:symbol`, `/create-worker`, and the 404 page.
-Three routes throw `null` dereferences that come from the stub returning
-`null` for every object (`/explorer/fees` reads the global fee schedule,
-`/barter` an account, `/block/1` a block): they need a real chain to judge.
+With real data (`--live-node https://node.xbts.io/ws`, snapshot only - no
+subscriptions) all of the above plus the account tabs (`overview`,
+`assets`, `pools`, `create-asset`, `member-stats`, `vesting`, `permissions`,
+`voting[/tab]`, `whitelist`, `signedmessages`, `orders`, `deposit-withdraw`),
+the wallet routes, `/market/CNY_BTS`, `/asset/*`, `/block/*` and every
+`/explorer/*` tab render without errors. Not defects: `/wallet/backup/
+brainkey` opened with no wallet reads `WalletDb.getWallet().brainkey_backup_
+date` on `null` (the original does too; the menu never links there without a
+wallet), and the voting page logs two large id arrays through
+`console.error` because the bridge cannot relay a `get_objects` batch of
+thousands of ids.
 
-Still not verifiable here: any screen that needs real chain data (balances,
-orders, history), wallet unlock/signing flows end to end, and Electron.
+Still not verifiable here: screens that need a logged-in account with
+balances/orders (no account can be unlocked), live updates (subscriptions),
+wallet unlock/signing flows end to end, and Electron.
 
 ### 7.5 Legacy SCSS -> CSS Modules (partial, by design)
 

@@ -80,7 +80,10 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   `npx webpack --env prod --optimization-emit-on-errors --output-path
   build/dist_smoke`, then `python3 scripts/smoke-boot.py build/dist_smoke
   --routes /,/settings/access --shots build/smoke-shots` (needs the
-  `playwright` Python package and Chromium; it stubs the chain connection).
+  `playwright` Python package and Chromium; it stubs the chain connection;
+  add `--live-node https://node.xbts.io/ws` to relay to a real node over
+  HTTPS for real accounts/markets - this is what finds first-render bugs
+  that unit tests with hand-built props cannot).
   See `docs/UI_MIGRATION_PLAN.md` §7.4. A `yarn build-preview` screenshot
   does not load the legacy global CSS, so check new screens in the real app
   too.

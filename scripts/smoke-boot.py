@@ -21,7 +21,15 @@ the given routes, and prints console errors / uncaught page errors per
 route. Exit status is 1 if any uncaught page error or console error (other
 than failed external network requests) was seen.
 
-Limits: the stub chain returns `null` for every other object, so screens
+With `--live-node https://<node>/ws` the stub is replaced by a bridge: the
+page's fake WebSocket forwards each call to the local server, which relays
+it to that node over HTTPS JSON-RPC (named APIs, so no session is needed)
+and returns the real result. This gives real accounts, assets, markets and
+blocks - without a working WebSocket route out of a sandbox - at the price of
+no live subscriptions (`set_subscribe_callback` is acknowledged but never
+pushes), so screens show a snapshot.
+
+Limits of the default stub: it returns `null` for every other object, so screens
 that need real accounts, assets or blocks can legitimately throw on `null`
 (`/explorer/fees`, `/barter`, `/block/1` do) - read those as "needs a real
 chain", not as regressions. A blank tree after a route is reported and the
@@ -36,8 +44,10 @@ import http.server
 import json
 import os
 import socketserver
+import ssl
 import sys
 import threading
+import urllib.request
 
 from playwright.sync_api import sync_playwright
 
@@ -73,8 +83,69 @@ STUB_WEBSOCKET = r"""
 })();
 """
 
+LIVE_WEBSOCKET = r"""
+(() => {
+  const API_IDS = {database: 2, history: 3, network_broadcast: 4, crypto: 5, orders: 6};
+  const API_NAMES = Object.fromEntries(Object.entries(API_IDS).map(([k, v]) => [v, k]));
+  class LiveWS {
+    constructor(url) {
+      this.url = url; this.readyState = 0;
+      setTimeout(() => { this.readyState = 1; this.onopen && this.onopen({}); }, 10);
+    }
+    addEventListener(type, fn) { this['on' + type] = fn; }
+    removeEventListener() {}
+    _reply(id, result, error) {
+      const payload = error ? {id, jsonrpc: '2.0', error} : {id, jsonrpc: '2.0', result};
+      setTimeout(() => this.onmessage && this.onmessage({data: JSON.stringify(payload)}), 0);
+    }
+    send(data) {
+      let msg; try { msg = JSON.parse(data); } catch (e) { return; }
+      const [api, method, params] = msg.params || [];
+      if (method === 'login') return this._reply(msg.id, true);
+      if (api === 1 && API_IDS[method]) return this._reply(msg.id, API_IDS[method]);
+      if (method === 'set_subscribe_callback' || method === 'cancel_all_subscriptions') return this._reply(msg.id, null);
+      LiveWS._queue.push(() => fetch('/__rpc', {method: 'POST', body: JSON.stringify({api: API_NAMES[api] || 'database', method, params})})
+        .then(r => r.json())
+        .then(j => j.error ? this._reply(msg.id, null, j.error) : this._reply(msg.id, j.result))
+        .catch(e => this._reply(msg.id, null, {code: -1, message: String(e)})));
+      LiveWS._pump();
+    }
+    static _pump() {
+      while (LiveWS._active < 6 && LiveWS._queue.length) {
+        LiveWS._active++;
+        Promise.resolve(LiveWS._queue.shift()()).finally(() => { LiveWS._active--; LiveWS._pump(); });
+      }
+    }
+    close() { this.readyState = 3; this.onclose && this.onclose({}); }
+  }
+  LiveWS._queue = []; LiveWS._active = 0;
+  LiveWS.CONNECTING = 0; LiveWS.OPEN = 1; LiveWS.CLOSING = 2; LiveWS.CLOSED = 3;
+  window.WebSocket = LiveWS;
+})();
+"""
 
-def serve(dist):
+
+def serve(dist, live_node=None):
+    cache = {}
+    ca_file = os.environ.get("SSL_CERT_FILE") or "/root/.ccr/ca-bundle.crt"
+    context = ssl.create_default_context(cafile=ca_file) if os.path.exists(ca_file) else ssl.create_default_context()
+
+    def relay(payload):
+        key = json.dumps(payload, sort_keys=True)
+        volatile = "2.1.0" in key or payload["method"] == "get_dynamic_global_properties"
+        if key in cache and not volatile:
+            return cache[key]
+        body = json.dumps({"jsonrpc": "2.0", "method": "call", "params": [payload["api"], payload["method"], payload["params"]], "id": 1}).encode()
+        request = urllib.request.Request(live_node, data=body, headers={"content-type": "application/json", "user-agent": "curl/8 smoke-boot"})
+        try:
+            with urllib.request.urlopen(request, timeout=30, context=context) as response:
+                result = response.read()
+        except Exception as exc:  # network failure: surface as an RPC error
+            result = json.dumps({"error": {"code": -1, "message": str(exc)}}).encode()
+        if not volatile:
+            cache[key] = result
+        return result
+
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **k):
             super().__init__(*a, directory=dist, **k)
@@ -85,10 +156,29 @@ def serve(dist):
                 self.path = "/index.html"
             return super().do_GET()
 
+        def do_POST(self):
+            if self.path != "/__rpc" or not live_node:
+                self.send_error(404)
+                return
+            payload = json.loads(self.rfile.read(int(self.headers.get("content-length", 0))))
+            result = relay(payload)
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(result)))
+            self.end_headers()
+            try:
+                self.wfile.write(result)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # the page navigated away and dropped the request
+
         def log_message(self, *a):
             pass
 
-    httpd = socketserver.TCPServer(("127.0.0.1", 0), Handler)
+    class Server(socketserver.ThreadingMixIn, socketserver.TCPServer):
+        daemon_threads = True
+        allow_reuse_address = True
+
+    httpd = Server(("127.0.0.1", 0), Handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
 
@@ -101,10 +191,11 @@ def main():
     ap.add_argument("--route-wait", type=float, default=2.5, help="seconds to wait per route")
     ap.add_argument("--shots", help="directory for one screenshot per route (and boot.png)")
     ap.add_argument("--no-stub-chain", action="store_true", help="do not stub the WebSocket (boots to the init-error screen)")
+    ap.add_argument("--live-node", help="relay chain calls to this node's HTTPS JSON-RPC endpoint (e.g. https://node.xbts.io/ws) instead of the canned stub")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
-    httpd = serve(os.path.abspath(args.dist))
+    httpd = serve(os.path.abspath(args.dist), args.live_node)
     base = f"http://127.0.0.1:{httpd.server_address[1]}/"
     errors, page_errors = [], []
     failed = False
@@ -114,7 +205,9 @@ def main():
         page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)[:300]))
         page.on("console", lambda m: errors.append(m.text[:300]) if m.type == "error" else None)
-        if not args.no_stub_chain:
+        if args.live_node:
+            page.add_init_script(LIVE_WEBSOCKET)
+        elif not args.no_stub_chain:
             page.add_init_script(STUB_WEBSOCKET)
 
         def boot():
