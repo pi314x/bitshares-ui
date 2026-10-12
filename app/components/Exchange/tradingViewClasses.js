@@ -75,7 +75,6 @@ function getResolutionsFromBuckets(buckets, convertToFrame = false) {
         .map(r => {
             let minute = r / 60;
             let day = minute / 60 / 24;
-            let week = day / 7;
 
             if (minute < 1 && !convertToFrame) {
                 // below 1 minute we return Seconds
@@ -209,8 +208,7 @@ class DataFeed {
         symbolInfo,
         resolution,
         periodParams,
-        onHistoryCallback,
-        onErrorCallback
+        onHistoryCallback
     ) {
         // https://www.tradingview.com/charting-library-docs/latest/connecting_data/Datafeed-API/#correct-amount-of-data
         //
@@ -349,7 +347,7 @@ class DataFeed {
         // this.latestBar = null;
     }
 
-    calculateHistoryDepth(resolution, resolutionBack, intervalBack) {
+    calculateHistoryDepth() {
         return undefined;
     }
 
