@@ -86,10 +86,16 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   `CallOrder` math, see the note in `app/test/marketTests.js` — not yet
   wired into CI)
 - Typecheck (new TS code): `yarn typecheck`
-- Lint changed files (what CI actually gates on): `yarn lint:changed`. Full
-  legacy-inclusive lint (`yarn lint`) currently has ~800 pre-existing
-  errors and is not a useful signal yet — don't try to fix those as a side
-  effect of an unrelated change.
+- Lint: `yarn lint` (the whole `app/` tree) has **0 errors** and is what CI
+  gates on; keep it that way. Only errors fail it (the `no-explicit-any`
+  warnings are the known backlog). `yarn lint:changed` lints just the files
+  that are committed on your branch relative to the base (it does NOT see
+  uncommitted edits) and is the quick local check.
+- Format: Prettier is pinned to 1.19, which does not understand some newer
+  TypeScript syntax (it drops `catch (e: any)` annotations; `tsconfig.json`
+  sets `useUnknownInCatchVariables: false` so that is harmless). Format only
+  files you author or touch; do not run it over the whole tree, and do not
+  upgrade it as a side effect.
 - Standalone preview of an `app/next` screen, without booting the full
   legacy app shell (which blocks on a live blockchain connection): `yarn
   build-preview`, then serve `build/preview/`. Use this to screenshot new
@@ -112,9 +118,9 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   real app too.
 - Format check (pre-commit hook): `pretty-quick --staged` (via husky)
 
-`.github/workflows/ci.yml` runs lint:changed + typecheck + test on every
-PR — this is new as of the Phase 0 migration work; before it, there was no
-lint/test CI gate at all.
+`.github/workflows/ci.yml` runs lint + typecheck + test on every PR — this
+is new as of the Phase 0 migration work; before it, there was no lint/test CI
+gate at all.
 
 ## Conventions
 

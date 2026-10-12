@@ -12427,6 +12427,36 @@ late approval; the README's `transfer` example does not match the code and
 says the approval window is 2 minutes where the code uses 60 s;
 `BeetCompatAPI.requestIdentity` reads `.name` off `{account, balances}`.
 
+### 7.12 Lint to zero, one-time formatting (complete)
+
+- **`yarn lint` has 0 errors** over the whole of `app/` (26 were left, in 10
+  files; AGENTS.md still said ~800). Fixed with minimal edits: unused locals and
+  trailing parameters removed, three dead leftovers deleted (the stale mocha
+  `app/test/wallet_action_test.js`, whose imports point at `../src/...` that no
+  longer exists; the unused `__tests__/utils/stub_router_context.js`; the
+  never-read `ref="bound_component"` string ref in `BindToChainState`), and
+  `eslint-disable` comments where a signature is deliberate (abstract
+  `_get/_set/_remove/_has`, a parameter TypeScript checks callers against).
+  CI now runs the full `yarn lint` instead of `lint:changed`, so the count
+  cannot creep back up.
+- **`lint:changed` only sees committed changes** (it diffs the base against
+  `HEAD`), so it passes on a dirty tree. Commit first, then run it; the full
+  `yarn lint` has no such blind spot.
+- **228 files formatted once** with the pinned Prettier (they had never been
+  formatted, so the pre-commit hook would have reformatted each whole file the
+  next time it was touched). Checked by transpiling and minifying the HEAD and
+  the formatted version of every file: identical, except 3 JSX text nodes split
+  into adjacent strings (same rendered text); the one `.scss` file compiles to
+  identical CSS. **Prettier 1.19 drops `catch (e: any)` annotations**, which
+  broke the typecheck; `tsconfig.json` now sets `useUnknownInCatchVariables:
+  false` (TypeScript's behaviour before 4.4, which the catch blocks were written
+  for) so that is harmless. Four legacy files with old lint errors were left
+  unformatted; they are now clean too and could be formatted next time.
+- **Left as it is, on purpose:** the global SCSS (the inventory script is a
+  heuristic and each class needs a computed-style diff against live data), the
+  14 class-component files and the remaining `.js`/`.jsx` (§7.9), and
+  Prettier's version.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
