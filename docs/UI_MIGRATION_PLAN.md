@@ -12112,3 +12112,56 @@ disjoint component trees. Phase 5 (wallet/signing) should not be
 parallelized with anything else touching `WalletDb.js`. Phase 6 starts only
 once its own design is approved, independent of the rest of the timeline.
 Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
+
+## 12. Where this stands (end of the incremental migration)
+
+**Done and verified by automated gates** (tsc, eslint on changed files, Jest
+5,604 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
+build with only the 2 known `charting_library` errors): the app shell and
+design system; every component call site off `bitshares-ui-style-guide`
+(§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
+stylesheet trimmed from 1.6 MB to ~99 KB with a computed-style equivalence
+proof (§7.3); React 18 with `createRoot` (§7.4); the Alt.js stores/actions as
+facades over Redux Toolkit slices; react-router 6; a local i18n shim instead
+of `counterpart`; three isolated SCSS partials as CSS Modules (§7.5).
+
+**Verified by booting the real bundle** (`scripts/smoke-boot.py`, §7.4):
+every route and the account/wallet sub-routes against a stub chain and,
+with `--live-node`, against real mainnet data - dashboard and accounts with
+a selected account, voting, permissions, explorer, the Exchange with real
+ticker/order-book data, the top-bar modals and the Personalize modal. That
+pass found and fixed ten defects the unit tests could not see (all listed in
+§7.4); each has a regression test.
+
+**Not done, and why:**
+- **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
+  shared class names make scoping a class a multi-screen change that needs a
+  fixture-rich environment to verify.
+- **~95 `.js`/`.jsx` files remain**, mostly `app/lib` services and API
+  helpers (AGENTS.md: reuse, don't rewrite), plus 17 files with class
+  components. 127 `useAltStore` call sites could move to `useSelector`;
+  optional cleanup, no behavior gain.
+- **Twelve dependencies declare React <=17 peers** (§7.4); none breaks on 18
+  today, all are unmaintained.
+- **Phase 6 (wallet extension signing)** was never started: it needs the
+  requester's confirmation of the extension/protocol first (§10, item 3).
+
+**Needs a human, cannot be done from an agent sandbox:**
+- A second-reviewer sign-off on the wallet/signing screens (Phase 5/§7.2:
+  `WalletDb`, backup/restore, key import/export, transaction confirmation).
+  Their password/key code paths are unchanged apart from imports and the
+  `AccountPermissions` state seed, but a person has to read them.
+- A pass with an **unlocked wallet**: send/withdraw/limit-order/update-
+  account end to end against a testnet or a throwaway account. The smoke runs
+  are read-only (wallet locked, no keys), so no signing flow has been
+  exercised.
+- **Live updates**: the bridge answers each call once and never pushes
+  subscription updates, so order-book/balance refreshes over a WebSocket are
+  untested.
+- The **TradingView chart** (licensed library not in the repo) and **Electron**
+  packaging.
+- Visual review in light/midnight themes and at phone widths for the screens
+  that were only checked in the dark theme.
+- Re-enable immer's auto-freeze (`store/immerConfig.ts`) after auditing the
+  `getState()` consumers; and decide whether to extract CSS Modules in the
+  production build (§7.5).
