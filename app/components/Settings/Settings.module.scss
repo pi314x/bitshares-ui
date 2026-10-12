@@ -1,0 +1,41 @@
+// Phase 2 (docs/UI_MIGRATION_PLAN.md): visual pass on the Settings shell
+// (Settings.jsx's left nav + content panel) using the new design tokens.
+// Additive only: every class here is added alongside Settings.tsx's
+// existing classes, nothing removed, and none of its tab-switching/
+// setting-writing logic was touched — only className attributes.
+//
+// CSS Module (docs/UI_MIGRATION_PLAN.md, section 7.5): these classes were
+// referenced by Settings.tsx only, so they are scoped now.
+
+.nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nav li.navItem {
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.nav li.navItem:hover {
+    background: var(--line-soft);
+    color: var(--ink);
+}
+
+.nav li.navItemActive {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.content h3 {
+    font-family: var(--font-display);
+}

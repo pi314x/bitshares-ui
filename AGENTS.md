@@ -94,6 +94,13 @@ lint/test CI gate at all.
 
 - Commit messages and all documentation/comments: English only, even for
   agent-generated commits.
+- Styles: new component styles go in a `*.module.scss` next to the
+  component (CSS Modules + the CSS custom properties from
+  `app/design-system/theme.scss`); don't add classes to the global SCSS
+  partials. Moving an existing global class into a module is only safe if
+  one component uses it and no other stylesheet mentions it
+  (`python3 scripts/scss-isolation-inventory.py`); verify with a before/
+  after computed-style diff of the affected routes (see plan §7.5).
 - Prefer editing existing components/stores over introducing a second,
   parallel implementation unless working from `docs/UI_MIGRATION_PLAN.md`'s
   explicit strangler-fig pattern.

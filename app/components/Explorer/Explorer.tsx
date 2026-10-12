@@ -29,7 +29,7 @@ import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
 import MarketsContainer from "../Exchange/MarketsContainer";
 import {Tabs} from "../../design-system/Tabs";
-import "./Explorer.scss";
+import styles from "./Explorer.module.scss";
 
 const tabs = [
     {
@@ -95,7 +95,7 @@ export default function Explorer() {
             activeKey={location.pathname}
             animated={false}
             style={{display: "table", height: "100%", width: "100%"}}
-            className="exp-panel"
+            className={styles.panel}
             onChange={onChange}
         >
             {tabs.map(tab => {

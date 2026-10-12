@@ -39,6 +39,7 @@ const LinkComponent = Link as React.ComponentType<any>;
 import light from "assets/logo-404-light.png";
 import dark from "assets/logo-404-dark.png";
 import midnight from "assets/logo-404-midnight.png";
+import styles from "./Page404.module.scss";
 
 export interface Page404Props {
     subtitle?: string;
@@ -68,15 +69,15 @@ function Page404Core(props: Page404Props) {
     }
 
     return (
-        <div className="page-404">
+        <div className={styles.page}>
             <div className="page-404-container">
                 <div className="page-404-logo">
                     <img src={logo} alt="Logo" />
                 </div>
-                <div className="page-404-title">
+                <div className={styles.title}>
                     <Translate content="page404.page_not_found_title" />
                 </div>
-                <div className="page-404-subtitle">
+                <div className={styles.subtitle}>
                     <Translate content={"page404." + subtitle} />
                 </div>
                 <div className="page-404-button-back">

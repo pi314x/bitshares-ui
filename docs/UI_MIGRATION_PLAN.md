@@ -11896,6 +11896,68 @@ Three routes throw `null` dereferences that come from the stub returning
 Still not verifiable here: any screen that needs real chain data (balances,
 orders, history), wallet unlock/signing flows end to end, and Electron.
 
+### 7.5 Legacy SCSS -> CSS Modules (partial, by design)
+
+**Rule used:** a class moves into a `*.module.scss` only if exactly one
+component references it and no other stylesheet does
+(`scripts/scss-isolation-inventory.py` lists candidates; it is a token
+heuristic, so every conversion is then verified, below). Everything else
+stays global because the cascade between shared names is the actual design
+of the legacy CSS.
+
+**Verification, not judgement:** `app/` was built before and after, both
+booted against the stub chain, and the computed style + bounding box of
+every element under `#content` was diffed per route (`/settings/general`,
+`/explorer`, `/explorer/assets`, `/no-such-page`, `/accounts`, `/`): 0
+element/property differences, after confirming the baseline itself is
+stable between two runs. The module rules were checked to actually apply
+(nav `gap`, `h3` font, panel radius, 404 title size), so "no diff" does not
+mean "no rule".
+
+**Converted (3 files, 8 classes):**
+- `components/Settings/Settings.scss` -> `Settings.module.scss`
+  (`nav`, `navItem`, `navItemActive`, `content`).
+- `components/Explorer/Explorer.scss` -> `Explorer.module.scss` (`panel`).
+- `assets/stylesheets/components/_page404.scss` ->
+  `components/Page404/Page404.module.scss` (`page`, `title`, `subtitle`;
+  the two empty rules and the `@import "page404"` are gone).
+
+**Not converted, and why** (102 SCSS files before this step; run the
+inventory for the live numbers):
+- `vendors/foundation/**` (about two dozen files), `_foundation_overrides`,
+  `introjs-*`: third-party grid/utility classes that components use by
+  name (`small-12`, `grid-block`, `button`, ...). Global by nature.
+- `themes/_theme-template.scss` (394 classes, 268 shared with components):
+  it restyles components' classes per theme under `body.<theme> .x`. A
+  component's class cannot be scoped without converting its theme block in
+  the same change, and a class referenced from another stylesheet is by
+  definition not isolated.
+- `_shame.scss`, `components/_forms.scss`, `_exchange.scss` (152 classes,
+  71 shared), `_account.scss`, `layout/*`, `login/registration` partials:
+  the same sharing, at a larger scale; each class group should move with
+  the screen that owns it, and only once that screen can be rendered with
+  real data to compare before/after.
+- `components/Dashboard/DashboardList.scss`, `Barter`, `ImportKeys`,
+  `operations`, `prediction`: isolated or nearly so, but these screens do
+  not render without account/chain data under the stub, so the equivalence
+  check cannot cover them here. They are the first candidates once a
+  fuller chain fixture exists.
+- `#console_input`/`code` rules and the `div > div.asset-list` selectors
+  are id/element-based, not class-based; they cannot be scoped.
+
+**Production note for whoever continues:** `webpack.config.js` only swaps
+the plain `.scss`/`.css` loaders to `MiniCssExtractPlugin` in the production
+branch; `*.module.scss` (`scssModuleLoaders`) keeps `style-loader`, so
+module CSS - the design system and these three files - is injected as
+`<style>` tags at runtime rather than extracted. It works (and is what the
+verification above exercised); extracting it would also change the cascade
+order against the global sheets, so do that as its own, separately
+verified step.
+
+**Convention going forward:** new component styles are `*.module.scss`
+next to the component (AGENTS.md); do not add classes to the global
+partials.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

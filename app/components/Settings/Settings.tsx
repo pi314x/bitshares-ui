@@ -43,7 +43,7 @@ import {set} from "lodash-es";
 import {getAllowedLogins, getFaucet} from "../../branding";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
-import "./Settings.scss";
+import styles from "./Settings.module.scss";
 
 function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
     if (deprecated) {
@@ -416,14 +416,14 @@ export default function Settings(props: SettingsProps) {
                             className={"panel-bg-color"}
                         />
 
-                        <ul className="set-nav">
+                        <ul className={styles.nav}>
                             {menuEntries.map((entry, index) => {
                                 return (
                                     <li
                                         className={
-                                            "set-nav-item" +
+                                            styles.navItem +
                                             (index === activeSetting
-                                                ? " active set-nav-item-active"
+                                                ? ` active ${styles.navItemActive}`
                                                 : "")
                                         }
                                         onClick={() => redirectToEntry(entry)}
@@ -439,7 +439,7 @@ export default function Settings(props: SettingsProps) {
                     </div>
 
                     <div
-                        className="grid-content set-content"
+                        className={`grid-content ${styles.content}`}
                         style={{
                             height: "100%"
                         }}

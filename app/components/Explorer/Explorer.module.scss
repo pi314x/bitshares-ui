@@ -9,8 +9,11 @@
 // 3400+ lines total, all reading live chain data) are out of scope for the
 // same reason Dashboard's row-level math was: not verifiable against a
 // live node in this environment.
+//
+// CSS Module (docs/UI_MIGRATION_PLAN.md, section 7.5): `.panel` was only
+// referenced by Explorer.tsx.
 
-.exp-panel {
+.panel {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 10px;
