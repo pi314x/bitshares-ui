@@ -58,7 +58,7 @@ export function getGatewayStatusByAsset(
 
             // Gateway has EOS.* asset names
             if (backingCoin.toUpperCase().indexOf("EOS.") !== -1) {
-                let [_network, _coin] = backingCoin.split(".");
+                let [, _coin] = backingCoin.split(".");
                 backingCoin = _coin;
             }
 
