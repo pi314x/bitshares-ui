@@ -98,11 +98,7 @@ interface OpenSettleOrdersProps {
     currentAccount?: any;
 }
 
-function OpenSettleOrdersInner({
-    orders,
-    base,
-    quote
-}: OpenSettleOrdersProps) {
+function OpenSettleOrdersInner({orders, base, quote}: OpenSettleOrdersProps) {
     let activeOrders = null;
 
     const emptyRow = (

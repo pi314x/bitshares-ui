@@ -56,9 +56,7 @@ describe("components/Exchange/ScaledOrderTab runRules", () => {
     });
 
     it("enforces a balance rule (the one check isFormValid doesn't replicate)", () => {
-        const rules = [
-            Validation.Rules.balance({balance: 5, symbol: "BTS"})
-        ];
+        const rules = [Validation.Rules.balance({balance: 5, symbol: "BTS"})];
         expect(runRules("10", rules)).toBe(
             Validation.Rules.balance({balance: 5, symbol: "BTS"}).message
         );
@@ -86,8 +84,7 @@ jest.mock("bitsharesjs", () => ({
         getAsset: (idOrSymbol: string) =>
             idOrSymbol === "1.3.0" || idOrSymbol === "BTS"
                 ? {
-                      get: (k: string) =>
-                          k === "symbol" ? "BTS" : "1.3.0"
+                      get: (k: string) => (k === "symbol" ? "BTS" : "1.3.0")
                   }
                 : null,
         getObject: () => null
@@ -139,7 +136,9 @@ function makeAccount() {
     };
 }
 
-function renderTab(overrides: Partial<React.ComponentProps<typeof ScaledOrderTab>> = {}) {
+function renderTab(
+    overrides: Partial<React.ComponentProps<typeof ScaledOrderTab>> = {}
+) {
     const baseAsset = makeAsset("1.3.0", "BTS");
     const quoteAsset = makeAsset("1.3.100", "USD");
     const createScaledOrder = jest.fn();
@@ -184,7 +183,12 @@ function fillScaledOrderForm(
         priceUpper,
         amount,
         orderCount
-    }: {priceLower: string; priceUpper: string; amount: string; orderCount: string}
+    }: {
+        priceLower: string;
+        priceUpper: string;
+        amount: string;
+        orderCount: string;
+    }
 ) {
     const priceAndAmountInputs = Array.from(
         container.querySelectorAll('input[placeholder="0.0"]:not([disabled])')
@@ -243,9 +247,7 @@ describe("components/Exchange/ScaledOrderTab", () => {
         // (for_sale), receive quote (to_receive), scaled by price per order.
         const expectedPrices = [1, 1.5, 2];
         orders.forEach((order: any, i: number) => {
-            const scaledAmount = Number(
-                (3 * expectedPrices[i]).toPrecision(5)
-            );
+            const scaledAmount = Number((3 * expectedPrices[i]).toPrecision(5));
             expect(order.for_sale.amount).toBeCloseTo(
                 scaledAmount * Math.pow(10, 5),
                 5

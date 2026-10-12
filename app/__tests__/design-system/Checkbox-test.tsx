@@ -7,14 +7,10 @@ describe("design-system/Checkbox", () => {
         const {getByRole, rerender} = render(
             <Checkbox checked={false}>Label</Checkbox>
         );
-        expect((getByRole("checkbox") as HTMLInputElement).checked).toBe(
-            false
-        );
+        expect((getByRole("checkbox") as HTMLInputElement).checked).toBe(false);
 
         rerender(<Checkbox checked={true}>Label</Checkbox>);
-        expect((getByRole("checkbox") as HTMLInputElement).checked).toBe(
-            true
-        );
+        expect((getByRole("checkbox") as HTMLInputElement).checked).toBe(true);
     });
 
     it("calls onChange with the native event carrying target.checked", () => {
@@ -23,11 +19,9 @@ describe("design-system/Checkbox", () => {
         // the handler itself rather than from the mock's recorded args
         // afterwards.
         let observedChecked: boolean | undefined;
-        const onChange = jest.fn(
-            (e: React.ChangeEvent<HTMLInputElement>) => {
-                observedChecked = e.target.checked;
-            }
-        );
+        const onChange = jest.fn((e: React.ChangeEvent<HTMLInputElement>) => {
+            observedChecked = e.target.checked;
+        });
         const {getByRole} = render(
             <Checkbox checked={false} onChange={onChange}>
                 Label
@@ -67,8 +61,6 @@ describe("design-system/Checkbox", () => {
         const input = getByRole("checkbox") as HTMLInputElement;
         expect(input.disabled).toBe(true);
         expect(input.id).toBe("my-checkbox");
-        expect(input.closest("label")?.className).toContain(
-            "custom-checkbox"
-        );
+        expect(input.closest("label")?.className).toContain("custom-checkbox");
     });
 });

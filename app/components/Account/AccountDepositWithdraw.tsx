@@ -112,10 +112,7 @@ function AccountDepositWithdraw({
 }: AccountDepositWithdrawCoreProps) {
     const [state, setState] = React.useState<AccountDepositWithdrawState>(
         () => ({
-            piratecashService: viewSettings.get(
-                "piratecashService",
-                "gateway"
-            ),
+            piratecashService: viewSettings.get("piratecashService", "gateway"),
             xbtsxService: viewSettings.get("xbtsxService", "gateway"),
             activeService: viewSettings.get("activeService", 0)
         })
@@ -210,9 +207,7 @@ function AccountDepositWithdraw({
                     >
                         <ul className="button-group segmented no-margin">
                             <li
-                                onClick={() =>
-                                    toggleXbtsxService("gateway")
-                                }
+                                onClick={() => toggleXbtsxService("gateway")}
                                 className={
                                     xbtsxService === "gateway"
                                         ? "is-active"
@@ -470,10 +465,7 @@ function AccountDepositWithdrawContainer(
             }
             viewSettings={settingsState.viewSettings}
             backedCoins={gatewayState.backedCoins}
-            piratecashBackedCoins={gatewayState.backedCoins.get(
-                "PIRATE",
-                []
-            )}
+            piratecashBackedCoins={gatewayState.backedCoins.get("PIRATE", [])}
             xbtsxBackedCoins={gatewayState.backedCoins.get("XBTSX", [])}
             servicesDown={gatewayState.down || {}}
         />

@@ -26,9 +26,7 @@ interface WalletSettingsProps {
 
 export default function WalletSettings({deprecated}: WalletSettingsProps) {
     const [lookupActive, setLookupActive] = React.useState(false);
-    const [resetMessage, setResetMessage] = React.useState<string | null>(
-        null
-    );
+    const [resetMessage, setResetMessage] = React.useState<string | null>(null);
 
     function onLookup() {
         setLookupActive(true);
@@ -36,9 +34,7 @@ export default function WalletSettings({deprecated}: WalletSettingsProps) {
 
     function onResetBrainkeySequence() {
         (WalletDb as any).resetBrainKeySequence();
-        setResetMessage(
-            counterpart.translate("wallet.brainkey_reset_success")
-        );
+        setResetMessage(counterpart.translate("wallet.brainkey_reset_success"));
     }
 
     if (deprecated) {

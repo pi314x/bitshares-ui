@@ -115,7 +115,9 @@ function AssetWrapper(
 ): React.ComponentType<any> {
     const asList = !!options.asList;
     const withDynamic = !!options.withDynamic;
-    const propNames: string[] = options.propNames || [asList ? "assets" : "asset"];
+    const propNames: string[] = options.propNames || [
+        asList ? "assets" : "asset"
+    ];
     const tempComponent =
         options.defaultProps && options.defaultProps.tempComponent;
 
@@ -169,7 +171,9 @@ function AssetWrapper(
             // placeholder - `defaultProps.tempComponent` (e.g. "tr") if
             // configured, a plain `<span />` otherwise - until it
             // resolves.
-            return tempComponent ? React.createElement(tempComponent) : (
+            return tempComponent ? (
+                React.createElement(tempComponent)
+            ) : (
                 <span />
             );
         }

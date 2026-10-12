@@ -81,7 +81,9 @@ export default function JoinCommitteeModal({
     };
 
     const onUrlChanged = (e: any) => {
-        mergeState({url: (utils as any).sanitize(e.target.value.toLowerCase())});
+        mergeState({
+            url: (utils as any).sanitize(e.target.value.toLowerCase())
+        });
     };
 
     const onClose = () => {
@@ -119,7 +121,11 @@ export default function JoinCommitteeModal({
                     size={35}
                     typeahead={true}
                 />
-                <Translate content="modal.committee.text" unsafe component="p" />
+                <Translate
+                    content="modal.committee.text"
+                    unsafe
+                    component="p"
+                />
                 <Form.Item label={counterpart.translate("modal.committee.url")}>
                     <Input
                         value={url}

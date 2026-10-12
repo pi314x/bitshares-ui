@@ -64,9 +64,7 @@ class TransactionConfirmActionsFacade {
         resolve?: (...args: any[]) => void,
         reject?: (...args: any[]) => void
     ) {
-        reduxStore.dispatch(
-            broadcastPatch({broadcasting: true, closed: true})
-        );
+        reduxStore.dispatch(broadcastPatch({broadcasting: true, closed: true}));
 
         const broadcast_timeout = setTimeout(() => {
             reduxStore.dispatch(

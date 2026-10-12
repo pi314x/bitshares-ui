@@ -57,16 +57,34 @@ describe("balanceCalculations (verified against live node.xbts.io data)", () => 
 
     it("returns 0 from convertAssetValue when either asset is missing", () => {
         expect(
-            convertAssetValue(100, undefined, objects["1.3.0"], ImmutableMap(), objects["1.3.0"])
+            convertAssetValue(
+                100,
+                undefined,
+                objects["1.3.0"],
+                ImmutableMap(),
+                objects["1.3.0"]
+            )
         ).toBe(0);
         expect(
-            convertAssetValue(100, objects["1.3.0"], undefined, ImmutableMap(), objects["1.3.0"])
+            convertAssetValue(
+                100,
+                objects["1.3.0"],
+                undefined,
+                ImmutableMap(),
+                objects["1.3.0"]
+            )
         ).toBe(0);
     });
 
     it("convertAssetValue returns the amount unconverted when from === to", () => {
         const core = objects["1.3.0"];
-        const value = convertAssetValue(12345, core, core, ImmutableMap(), core);
+        const value = convertAssetValue(
+            12345,
+            core,
+            core,
+            ImmutableMap(),
+            core
+        );
         expect(value).toBe(12345);
     });
 

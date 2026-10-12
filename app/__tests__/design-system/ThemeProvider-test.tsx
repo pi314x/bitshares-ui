@@ -4,9 +4,7 @@ import {ThemeProvider, useTheme} from "../../design-system/ThemeProvider";
 
 function ToggleProbe() {
     const {theme, toggleTheme} = useTheme();
-    return (
-        <button onClick={toggleTheme}>{`theme:${theme}`}</button>
-    );
+    return <button onClick={toggleTheme}>{`theme:${theme}`}</button>;
 }
 
 describe("design-system/ThemeProvider", () => {

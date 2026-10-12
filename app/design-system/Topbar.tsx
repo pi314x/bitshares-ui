@@ -59,9 +59,7 @@ export function Topbar({
             <NodePicker
                 connected={connected}
                 label={
-                    connected
-                        ? "Connected"
-                        : connectionStatus || "Connecting…"
+                    connected ? "Connected" : connectionStatus || "Connecting…"
                 }
             >
                 <div

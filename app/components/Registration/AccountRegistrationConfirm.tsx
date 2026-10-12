@@ -88,9 +88,9 @@ function AccountRegistrationConfirm({
 }: AccountRegistrationConfirmProps) {
     useReduxState<any>(selectAccountState);
 
-    const [state, setState] = React.useState<AccountRegistrationConfirmState>(
-        {confirmed: false}
-    );
+    const [state, setState] = React.useState<AccountRegistrationConfirmState>({
+        confirmed: false
+    });
 
     const unlockAccount = (name: string, pw: string) => {
         (WalletDb as any).validatePassword(pw, true, name);
@@ -143,7 +143,9 @@ function AccountRegistrationConfirm({
 
     return (
         <Form layout={"vertical"}>
-            <Form.Item label={counterpart.translate("registration.copyPassword")}>
+            <Form.Item
+                label={counterpart.translate("registration.copyPassword")}
+            >
                 <Input.TextArea
                     disabled={true}
                     rows={2}

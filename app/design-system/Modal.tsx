@@ -130,9 +130,7 @@ export function Modal({
             style={zIndex !== undefined ? {zIndex} : undefined}
         >
             <div
-                className={[styles.dialog, className]
-                    .filter(Boolean)
-                    .join(" ")}
+                className={[styles.dialog, className].filter(Boolean).join(" ")}
                 style={width !== undefined ? {width} : undefined}
                 role="dialog"
                 aria-modal="true"

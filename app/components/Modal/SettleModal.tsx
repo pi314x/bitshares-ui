@@ -348,10 +348,7 @@ function ModalContent({
     );
 
     let isFundsToLow = false;
-    if (
-        state.amount >
-        balanceAmount / Math.pow(10, asset.get("precision"))
-    ) {
+    if (state.amount > balanceAmount / Math.pow(10, asset.get("precision"))) {
         isFundsToLow = true;
     }
 
@@ -399,9 +396,7 @@ function ModalContent({
 
     const modalContent = isPredictionMarket ? (
         <Alert
-            message={counterpart.translate(
-                "tooltip.settle_market_prediction"
-            )}
+            message={counterpart.translate("tooltip.settle_market_prediction")}
             type="info"
             showIcon
         />

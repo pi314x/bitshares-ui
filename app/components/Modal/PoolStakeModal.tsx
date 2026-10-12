@@ -354,13 +354,17 @@ function PoolStakeModalCore({
                             Number(v.amount) *
                             Number(new (big as any)(10).toPower(precisionA))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP)),
                         (Number(poolsupply) *
                             assetBAmount *
                             Number(new (big as any)(10).toPower(precisionB))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP))
                     )
                 });
@@ -378,13 +382,17 @@ function PoolStakeModalCore({
                             Number(v.amount) *
                             Number(new (big as any)(10).toPower(precisionA))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP)),
                         (Number(poolsupply) *
                             assetBAmount *
                             Number(new (big as any)(10).toPower(precisionB))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP))
                     )
                 });
@@ -440,13 +448,17 @@ function PoolStakeModalCore({
                             Number(v.amount) *
                             Number(new (big as any)(10).toPower(precisionB))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP)),
                         (Number(poolsupply) *
                             assetAAmount *
                             Number(new (big as any)(10).toPower(precisionA))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP))
                     )
                 });
@@ -464,13 +476,17 @@ function PoolStakeModalCore({
                             Number(v.amount) *
                             Number(new (big as any)(10).toPower(precisionB))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP)),
                         (Number(poolsupply) *
                             assetAAmount *
                             Number(new (big as any)(10).toPower(precisionA))) /
                             (Number(poolamounta) /
-                                Number(new (big as any)(10).toPower(precisionA))) /
+                                Number(
+                                    new (big as any)(10).toPower(precisionA)
+                                )) /
                             Number(new (big as any)(10).toPower(precisionPP))
                     )
                 });
@@ -504,7 +520,8 @@ function PoolStakeModalCore({
             let amountA = bigAssetA.toNumber();
             let amountB = bigAssetB.toNumber();
 
-            const withDrawalPercentFee = pool.get("withdrawal_fee_percent") / 100;
+            const withDrawalPercentFee =
+                pool.get("withdrawal_fee_percent") / 100;
             const poolamounta = pool.get("balance_a");
             const poolamountap = new (big as any)(10).toPower(
                 pool.get("asset_a").get("precision")
@@ -639,9 +656,7 @@ function PoolStakeModalCore({
                                         <a
                                             onClick={e => {
                                                 e.preventDefault();
-                                                console.log(
-                                                    "poolstakeModal: "
-                                                );
+                                                console.log("poolstakeModal: ");
 
                                                 onChangeAssetAAmount({
                                                     amount: getBalanceA().toNumber(),
@@ -672,9 +687,7 @@ function PoolStakeModalCore({
                                     onChange={onChangeAssetBAmount}
                                 />
                                 {account && (
-                                    <div
-                                        style={{textAlign: "right"}}
-                                    >
+                                    <div style={{textAlign: "right"}}>
                                         <span>
                                             {counterpart.translate(
                                                 "transfer.available"
@@ -770,7 +783,9 @@ function PoolStakeModalCore({
                                                         shareAsset.get("id")
                                                     ]
                                                 );
-                                                let amount = new (big as any)(0);
+                                                let amount = new (big as any)(
+                                                    0
+                                                );
                                                 if (balances) {
                                                     const balObj = (ChainStore as any).getObject(
                                                         balances
@@ -781,9 +796,9 @@ function PoolStakeModalCore({
                                                     amount = new (big as any)(
                                                         balance
                                                     ).dividedBy(
-                                                        new (big as any)(10).toPower(
-                                                            precision
-                                                        )
+                                                        new (big as any)(
+                                                            10
+                                                        ).toPower(precision)
                                                     );
                                                 }
 
@@ -795,9 +810,7 @@ function PoolStakeModalCore({
                                         >
                                             <AccountBalance
                                                 account={account}
-                                                asset={shareAsset.get(
-                                                    "symbol"
-                                                )}
+                                                asset={shareAsset.get("symbol")}
                                             />
                                         </a>
                                     </div>

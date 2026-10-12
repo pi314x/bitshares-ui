@@ -212,9 +212,7 @@ export function Table<T = any>({
     const sortedRows =
         activeSort && activeSort.column.sorter
             ? (() => {
-                  const sorted = [...dataSource].sort(
-                      activeSort.column.sorter
-                  );
+                  const sorted = [...dataSource].sort(activeSort.column.sorter);
                   return activeSort.order === "descend"
                       ? sorted.reverse()
                       : sorted;
@@ -315,7 +313,11 @@ export function Table<T = any>({
     }
 
     const pageKeys = pagedRows.map((record, index) =>
-        getRowKeyValue(record, rowKey, (currentPage - 1) * effectivePageSize + index)
+        getRowKeyValue(
+            record,
+            rowKey,
+            (currentPage - 1) * effectivePageSize + index
+        )
     );
     const allPageSelected =
         pageKeys.length > 0 && pageKeys.every(k => selectedKeys.includes(k));
@@ -333,8 +335,7 @@ export function Table<T = any>({
     }
 
     const pageSizeOptions =
-        (pagination && pagination.pageSizeOptions) ||
-        DEFAULT_PAGE_SIZE_OPTIONS;
+        (pagination && pagination.pageSizeOptions) || DEFAULT_PAGE_SIZE_OPTIONS;
     const showPagination =
         paginationEnabled &&
         !(pagination && pagination.hideOnSinglePage && pageCount <= 1);
@@ -389,9 +390,7 @@ export function Table<T = any>({
                                             width: column.width,
                                             textAlign: column.align
                                         }}
-                                        onClick={() =>
-                                            handleSortClick(column)
-                                        }
+                                        onClick={() => handleSortClick(column)}
                                     >
                                         <span className={styles.thContent}>
                                             {column.title}
@@ -413,8 +412,7 @@ export function Table<T = any>({
                                                     </span>
                                                     <span
                                                         className={
-                                                            order ===
-                                                            "descend"
+                                                            order === "descend"
                                                                 ? styles.sortArrowActive
                                                                 : ""
                                                         }
@@ -472,9 +470,7 @@ export function Table<T = any>({
                                     >
                                         {rowSelection ? (
                                             <td
-                                                className={
-                                                    styles.selectionCell
-                                                }
+                                                className={styles.selectionCell}
                                             >
                                                 <input
                                                     type={
@@ -506,7 +502,10 @@ export function Table<T = any>({
                                                 : record;
                                             return (
                                                 <td
-                                                    key={column.key ?? columnIndex}
+                                                    key={
+                                                        column.key ??
+                                                        columnIndex
+                                                    }
                                                     className={[
                                                         styles.td,
                                                         column.className || ""
@@ -514,8 +513,7 @@ export function Table<T = any>({
                                                         .filter(Boolean)
                                                         .join(" ")}
                                                     style={{
-                                                        textAlign:
-                                                            column.align
+                                                        textAlign: column.align
                                                     }}
                                                 >
                                                     {column.render

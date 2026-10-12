@@ -251,7 +251,7 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
                 throw file_name + " is an unrecognized format";
 
             unfiltered_account_keys = json_contents.account_keys;
-        } catch (e: any) {
+        } catch (e) {
             throw e.message || e;
         }
 
@@ -441,7 +441,7 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
             // unconditionally unreachable-without-throwing. Preserved
             // exactly: reaching this point always throws.
             throw referenceErrorLikeOriginal("enckeys");
-        } catch (e: any) {
+        } catch (e) {
             throw e.message || e;
         }
 
@@ -564,7 +564,7 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
                         account_names,
                         public_key_string
                     };
-                } catch (e: any) {
+                } catch (e) {
                     console.log(e, e.stack);
                     const message = e.message || e;
                     Notification.error({

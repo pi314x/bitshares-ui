@@ -106,7 +106,11 @@ export default function Accounts() {
             key: "accountId",
             defaultSortOrder: "ascend" as const,
             sorter: (a: AccountRow, b: AccountRow) =>
-                a.accountId > b.accountId ? 1 : a.accountId < b.accountId ? -1 : 0,
+                a.accountId > b.accountId
+                    ? 1
+                    : a.accountId < b.accountId
+                    ? -1
+                    : 0,
             render: (id: string) => <div>{id}</div>
         },
         {
@@ -143,7 +147,9 @@ export default function Accounts() {
                     : 0,
             render: (name: string) => (
                 <div>
-                    <TypedLink to={`/account/${name}/overview`}>{name}</TypedLink>
+                    <TypedLink to={`/account/${name}/overview`}>
+                        {name}
+                    </TypedLink>
                 </div>
             )
         },
@@ -163,7 +169,9 @@ export default function Accounts() {
                     : 0;
             },
             render: (balance: string | null) => (
-                <div>{!balance ? "n/a" : <BalanceComponent balance={balance} />}</div>
+                <div>
+                    {!balance ? "n/a" : <BalanceComponent balance={balance} />}
+                </div>
             )
         },
         {
@@ -186,7 +194,10 @@ export default function Accounts() {
                     {!balance ? (
                         "n/a"
                     ) : (
-                        <BalanceComponent balance={balance} asPercentage={true} />
+                        <BalanceComponent
+                            balance={balance}
+                            asPercentage={true}
+                        />
                     )}
                 </div>
             )
@@ -197,7 +208,13 @@ export default function Accounts() {
     if (searchAccounts.size > 0 && searchTerm && searchTerm.length > 0) {
         searchAccounts
             .filter(a => (a as string).indexOf(searchTerm) !== -1)
-            .sort((a, b) => ((a as string) > (b as string) ? 1 : (a as string) < (b as string) ? -1 : 0))
+            .sort((a, b) =>
+                (a as string) > (b as string)
+                    ? 1
+                    : (a as string) < (b as string)
+                    ? -1
+                    : 0
+            )
             .forEach((name, id) => {
                 const currentAccount = ChainStore.getAccount(
                     (id as string).toLowerCase()

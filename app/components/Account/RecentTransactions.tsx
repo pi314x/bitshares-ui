@@ -56,15 +56,12 @@ import {Fragment} from "react";
 import Translate from "react-translate-component";
 import JSONModal from "components/Modal/JSONModal";
 import {Icon as AntIcon} from "../../design-system/Icon";
-import {
-    ChainTypes as grapheneChainTypes,
-    ChainStore
-} from "bitsharesjs";
+import {ChainTypes as grapheneChainTypes, ChainStore} from "bitsharesjs";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
-const {operations} = (grapheneChainTypes as any);
+const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Modal} from "../../design-system/Modal";
@@ -163,10 +160,7 @@ function RecentTransactionsCore({
         accountHistoryError: false,
         showModal: false,
         esNodeCustom: false,
-        esNode:
-            esWrapperList.length > 0
-                ? esWrapperList[0].url
-                : null,
+        esNode: esWrapperList.length > 0 ? esWrapperList[0].url : null,
         visibleId: ""
     });
 
@@ -307,10 +301,7 @@ function RecentTransactionsCore({
                 fetchingAccountHistory: false,
                 accountHistoryError: err,
                 esNodeCustom: false,
-                esNode:
-                    esWrapperList.length > 0
-                        ? esWrapperList[0].url
-                        : null
+                esNode: esWrapperList.length > 0 ? esWrapperList[0].url : null
             });
         }
     };
@@ -480,16 +471,16 @@ function RecentTransactionsCore({
                             width: "100%"
                         }}
                     >
-                        {esWrapperList.concat([
-                            {url: useCustom}
-                        ]).map((wrapper: any) => (
-                            <Select.Option
-                                key={wrapper.url}
-                                value={wrapper.url}
-                            >
-                                {wrapper.url}
-                            </Select.Option>
-                        ))}
+                        {esWrapperList
+                            .concat([{url: useCustom}])
+                            .map((wrapper: any) => (
+                                <Select.Option
+                                    key={wrapper.url}
+                                    value={wrapper.url}
+                                >
+                                    {wrapper.url}
+                                </Select.Option>
+                            ))}
                     </Select>
                 )}
             </Modal>

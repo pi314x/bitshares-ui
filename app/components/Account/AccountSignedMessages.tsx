@@ -71,17 +71,19 @@ interface AccountSignedMessagesCoreProps {
 
 function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
     // initialize state (do not use setState method!)
-    const [state, setState] = React.useState<AccountSignedMessagesState>(() => ({
-        tabsm_memo_key: account.get("options").get("memo_key"),
-        tabsm_popup: "",
-        tabsm_message_text: "",
-        tabsm_message_signed: "",
-        tabvm_popup: "",
-        tabvm_message_signed: "",
-        tabvm_verified: null,
-        tabvm_message_signed_and_verified: null,
-        tabvm_flag_verifyonchange: false
-    }));
+    const [state, setState] = React.useState<AccountSignedMessagesState>(
+        () => ({
+            tabsm_memo_key: account.get("options").get("memo_key"),
+            tabsm_popup: "",
+            tabsm_message_text: "",
+            tabsm_message_signed: "",
+            tabvm_popup: "",
+            tabvm_message_signed: "",
+            tabvm_verified: null,
+            tabvm_message_signed_and_verified: null,
+            tabvm_flag_verifyonchange: false
+        })
+    );
 
     const mergeState = (partial: Partial<AccountSignedMessagesState>) => {
         setState(prev => ({...prev, ...partial}));
@@ -288,7 +290,10 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                         segmented={false}
                     >
                         <Tab title="account.signedmessages.signmessage">
-                            <div className="grid-content" style={{overflowX: "hidden"}}>
+                            <div
+                                className="grid-content"
+                                style={{overflowX: "hidden"}}
+                            >
                                 <div className="content-block no-margin">
                                     <h3>
                                         <Translate content="account.signedmessages.signmessage" />
@@ -312,7 +317,10 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                                     )}
                                 />
                                 <span>
-                                    <button className="button" onClick={tabSMSignAction}>
+                                    <button
+                                        className="button"
+                                        onClick={tabSMSignAction}
+                                    >
                                         <Translate content="account.signedmessages.sign" />
                                     </button>
                                     <div style={{color: "gray"}}>
@@ -334,7 +342,10 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                         </Tab>
 
                         <Tab title="account.signedmessages.verifymessage">
-                            <div className="grid-content" style={{overflowX: "hidden"}}>
+                            <div
+                                className="grid-content"
+                                style={{overflowX: "hidden"}}
+                            >
                                 <div className="content-block no-margin">
                                     <h3>
                                         <Translate content="account.signedmessages.verifymessage" />
@@ -352,7 +363,8 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                                                     <label
                                                         style={{
                                                             marginBottom: 0,
-                                                            marginRight: "0.5rem"
+                                                            marginRight:
+                                                                "0.5rem"
                                                         }}
                                                     >
                                                         <Translate content="account.signedmessages.verifyonchange" />
@@ -381,7 +393,10 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                                     )}
                                 />
                                 <span>
-                                    <button className="button" onClick={tabVMAction}>
+                                    <button
+                                        className="button"
+                                        onClick={tabVMAction}
+                                    >
                                         <Translate content="account.signedmessages.verify" />
                                     </button>
                                     <text style={{color: "gray"} as any}>
@@ -412,7 +427,9 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                                         <div>
                                             <br />
                                             <SignedMessage
-                                                message={state.tabvm_message_signed}
+                                                message={
+                                                    state.tabvm_message_signed
+                                                }
                                             />
                                         </div>
                                     )}

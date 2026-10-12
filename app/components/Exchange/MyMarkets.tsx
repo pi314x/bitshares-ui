@@ -436,7 +436,10 @@ function marketGroupPropsAreEqual(
         return false;
     }
     return (
-        (utils as any).are_equal_shallow(nextProps.markets, prevProps.markets) &&
+        (utils as any).are_equal_shallow(
+            nextProps.markets,
+            prevProps.markets
+        ) &&
         nextProps.starredMarkets === prevProps.starredMarkets &&
         nextProps.marketStats === prevProps.marketStats &&
         nextProps.userMarkets === prevProps.userMarkets
@@ -496,9 +499,7 @@ function MyMarketsInner(props: MyMarketsProps) {
         activeTab: activeTabProp = "my-market"
     } = props;
 
-    const [isQuoteModalVisible, setIsQuoteModalVisible] = React.useState(
-        false
-    );
+    const [isQuoteModalVisible, setIsQuoteModalVisible] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState(
         viewSettings.get("favMarketTab", "my-market")
     );
@@ -653,9 +654,7 @@ function MyMarketsInner(props: MyMarketsProps) {
     };
 
     const handleSearchUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setMyMarketFilter(
-            e.target.value && e.target.value.toUpperCase()
-        );
+        setMyMarketFilter(e.target.value && e.target.value.toUpperCase());
     };
 
     const getBases = () => {
@@ -1146,7 +1145,9 @@ function MyMarketsInner(props: MyMarketsProps) {
                 ) : null}
                 {preferredBases
                     .filter((a: any) => {
-                        return a === preferredBases.get(effectiveActiveMarketTab);
+                        return (
+                            a === preferredBases.get(effectiveActiveMarketTab)
+                        );
                     })
                     .map((base: any, index: number) => {
                         return (

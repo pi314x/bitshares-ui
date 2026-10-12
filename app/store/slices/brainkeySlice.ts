@@ -66,11 +66,16 @@ const brainkeySlice = createSlice({
     }
 });
 
-export const {clearInstanceCache, setBrnkey, setAccountIds} = brainkeySlice.actions;
+export const {
+    clearInstanceCache,
+    setBrnkey,
+    setAccountIds
+} = brainkeySlice.actions;
 
 export const selectBrainkeyInstanceState = (
     state: {brainkey: BrainkeyState},
     name: string
-): BrainkeyInstanceState => state.brainkey.instances[name] || emptyInstanceState();
+): BrainkeyInstanceState =>
+    state.brainkey.instances[name] || emptyInstanceState();
 
 export default brainkeySlice.reducer;

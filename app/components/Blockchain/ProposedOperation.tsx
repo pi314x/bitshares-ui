@@ -157,19 +157,18 @@ function RowCore({
                     </span>
                 )}
             </span>
-            {!hideExpiration &&
-                expiration && (
-                    <TransactionIDAndExpiry
-                        id={id}
-                        expiration={expiration}
-                        style={{
-                            paddingTop: 5,
-                            fontSize: "0.85rem",
-                            paddingBottom: "0.5rem",
-                            display: "block"
-                        }}
-                    />
-                )}
+            {!hideExpiration && expiration && (
+                <TransactionIDAndExpiry
+                    id={id}
+                    expiration={expiration}
+                    style={{
+                        paddingTop: 5,
+                        fontSize: "0.85rem",
+                        paddingBottom: "0.5rem",
+                        display: "block"
+                    }}
+                />
+            )}
         </div>
     );
 }

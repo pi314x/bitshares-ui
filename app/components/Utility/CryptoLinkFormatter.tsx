@@ -88,24 +88,28 @@ interface CryptoLinkFormatterProps {
     [key: string]: any;
 }
 
-function CryptoLinkFormatter({size = 140, asset, ...conf}: CryptoLinkFormatterProps) {
+function CryptoLinkFormatter({
+    size = 140,
+    asset,
+    ...conf
+}: CryptoLinkFormatterProps) {
     const assetTemplate = assetTemplates[asset];
 
     let error = false;
     if (typeof assetTemplate != "undefined") {
         // template handling
-        let link = assetTemplate.template.replace(
-            /{([a-zA-Z0-9]+)}/g,
-            function(match, tokenName) {
-                if (tokenName in conf) {
-                    return (conf as any)[tokenName];
-                } else {
-                    // some variable required by template was not found  - can't proceed next
-                    error = true;
-                    return true as any;
-                }
+        let link = assetTemplate.template.replace(/{([a-zA-Z0-9]+)}/g, function(
+            match,
+            tokenName
+        ) {
+            if (tokenName in conf) {
+                return (conf as any)[tokenName];
+            } else {
+                // some variable required by template was not found  - can't proceed next
+                error = true;
+                return true as any;
             }
-        );
+        });
 
         // if error encountered - its better not to show any broken qr
         if (error) {
@@ -128,7 +132,9 @@ function CryptoLinkFormatter({size = 140, asset, ...conf}: CryptoLinkFormatterPr
                 }
 
                 if (typeof (conf as any)[parameter["bind"]] !== "undefined") {
-                    parameters.push(name + "=" + (conf as any)[parameter["bind"]]);
+                    parameters.push(
+                        name + "=" + (conf as any)[parameter["bind"]]
+                    );
                 }
             });
 

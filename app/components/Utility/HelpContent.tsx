@@ -145,8 +145,9 @@ function HelpContent(props: HelpContentProps) {
     React.useEffect(() => {
         (window as any)._onClickLink = (e: any) => {
             e.preventDefault();
-            const clickedPath = (
-                __HASH_HISTORY__ ? e.target.hash : e.target.pathname
+            const clickedPath = (__HASH_HISTORY__
+                ? e.target.hash
+                : e.target.pathname
             )
                 .split("/")
                 .filter((p: string) => p && p !== "#");

@@ -169,8 +169,8 @@ function getHeader(
                 return a.marketConfidence > b.marketConfidence
                     ? 1
                     : a.marketConfidence < b.marketConfidence
-                        ? -1
-                        : 0;
+                    ? -1
+                    : 0;
             },
             render: (item: any, row: any) => {
                 const rowTicker = Object.assign({}, ticker[row.asset_id]);
@@ -203,9 +203,7 @@ function getHeader(
                             rowTicker.percent_change = "0%";
                         } else {
                             rowTicker.percent_change =
-                                (parseFloat(rowTicker.latest) > 0
-                                    ? "+"
-                                    : "-") +
+                                (parseFloat(rowTicker.latest) > 0 ? "+" : "-") +
                                 rowTicker.percent_change +
                                 "%";
                         }
@@ -237,8 +235,8 @@ function getHeader(
                 return a.marketLikelihood > b.marketLikelihood
                     ? 1
                     : a.marketLikelihood < b.marketLikelihood
-                        ? -1
-                        : 0;
+                    ? -1
+                    : 0;
             },
             render: (item: any, row: any) => {
                 const rowTicker = Object.assign({}, ticker[row.asset_id]);
@@ -447,12 +445,7 @@ function PredictionMarketsOverviewTable({
             return;
         }
         predictionMarkets.forEach(market => {
-            if (
-                !(
-                    market.asset.id in
-                    Object.keys(tickersLoadedRef.current)
-                )
-            ) {
+            if (!(market.asset.id in Object.keys(tickersLoadedRef.current))) {
                 tickersLoadedRef.current[market.asset.id] = {};
                 MarketsActions.getTicker(
                     market.short_backing_asset,

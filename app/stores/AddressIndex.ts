@@ -126,7 +126,8 @@ class AddressIndexFacade {
                                         const pubkey = pubkeys[i];
                                         if (this.pubkeys.has(pubkey)) continue;
                                         this.pubkeys.add(pubkey);
-                                        const address_strings = key_addresses[i];
+                                        const address_strings =
+                                            key_addresses[i];
                                         for (const address of address_strings) {
                                             addresses.set(address, pubkey);
                                             dirty = true;
@@ -158,8 +159,12 @@ class AddressIndexFacade {
         this.loadAddyMapPromise = (iDB as any).root
             .getProperty("AddressIndex")
             .then((map: any) => {
-                const addresses: any = map ? Immutable.Map(map) : Immutable.Map();
-                addresses.valueSeq().forEach((pubkey: string) => this.pubkeys.add(pubkey));
+                const addresses: any = map
+                    ? Immutable.Map(map)
+                    : Immutable.Map();
+                addresses
+                    .valueSeq()
+                    .forEach((pubkey: string) => this.pubkeys.add(pubkey));
                 reduxStore.dispatch(setAddresses(addresses));
             });
         return this.loadAddyMapPromise as Promise<void>;

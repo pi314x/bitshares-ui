@@ -228,12 +228,7 @@ function ProposalModalCore({
 
             const tr = (WalletApi as any).new_transaction();
             tr.add_type_operation("proposal_update", proposalUpdate);
-            (WalletDb as any).process_transaction(
-                tr,
-                null,
-                true,
-                neededKeys
-            );
+            (WalletDb as any).process_transaction(tr, null, true, neededKeys);
         }
 
         hideModal();
@@ -309,9 +304,7 @@ function ProposalModalCore({
     return (
         <Modal
             visible={visible}
-            title={counterpart.translate(
-                `modal.proposals.actions.${action}`
-            )}
+            title={counterpart.translate(`modal.proposals.actions.${action}`)}
             footer={footer}
             onCancel={hideModal}
         >
@@ -430,9 +423,7 @@ function ProposalModalContainer({
     useChainStoreTick();
     const resolvedAccounts = resolveAccountsList(accounts, undefined);
 
-    return (
-        <ProposalModalCore {...(rest as any)} accounts={resolvedAccounts} />
-    );
+    return <ProposalModalCore {...(rest as any)} accounts={resolvedAccounts} />;
 }
 
 interface FirstLevelCoreProps {

@@ -331,32 +331,30 @@ function AccountPortfolioListCore({
     bridgeCoins,
     allMarketStats
 }: AccountPortfolioListCoreProps) {
-    const [state, setState] = React.useState<AccountPortfolioListState>(
-        () => ({
-            isSettleModalVisible: false,
-            isBorrowModalVisible: false,
-            isDepositModalVisible: false,
-            isWithdrawModalVisible: false,
-            isBurnModalVisible: false,
-            isSettleModalVisibleBefore: false,
-            isBorrowModalVisibleBefore: false,
-            isDepositModalVisibleBefore: false,
-            isWithdrawModalVisibleBefore: false,
-            isBurnModalVisibleBefore: false,
-            borrow: null,
-            settleAsset: "1.3.0",
-            depositAsset: null,
-            withdrawAsset: null,
-            allRefsAssigned: false,
-            portfolioSort: viewSettings.get("portfolioSort", "value"),
-            portfolioSortDirection: viewSettings.get(
-                "portfolioSortDirection",
-                "descend"
-            ),
-            send_asset: null,
-            reserve: null
-        })
-    );
+    const [state, setState] = React.useState<AccountPortfolioListState>(() => ({
+        isSettleModalVisible: false,
+        isBorrowModalVisible: false,
+        isDepositModalVisible: false,
+        isWithdrawModalVisible: false,
+        isBurnModalVisible: false,
+        isSettleModalVisibleBefore: false,
+        isBorrowModalVisibleBefore: false,
+        isDepositModalVisibleBefore: false,
+        isWithdrawModalVisibleBefore: false,
+        isBurnModalVisibleBefore: false,
+        borrow: null,
+        settleAsset: "1.3.0",
+        depositAsset: null,
+        withdrawAsset: null,
+        allRefsAssigned: false,
+        portfolioSort: viewSettings.get("portfolioSort", "value"),
+        portfolioSortDirection: viewSettings.get(
+            "portfolioSortDirection",
+            "descend"
+        ),
+        send_asset: null,
+        reserve: null
+    }));
 
     const mergeState = (partial: Partial<AccountPortfolioListState>) => {
         setState(prev => ({...prev, ...partial}));
@@ -452,12 +450,7 @@ function AccountPortfolioListCore({
     // reference), closing over `coreAsset` and `changeRefsRef`.
     const byKey = (a: any, b: any) => a.key > b.key;
 
-    const byTypedValue = (
-        a: any,
-        b: any,
-        aValueRaw: any,
-        bValueRaw: any
-    ) => {
+    const byTypedValue = (a: any, b: any, aValueRaw: any, bValueRaw: any) => {
         const aValue = utils.convert_satoshi_to_typed(aValueRaw, a.asset);
         const bValue = utils.convert_satoshi_to_typed(bValueRaw, b.asset);
         if (aValue && bValue) {
@@ -1174,11 +1167,7 @@ function AccountPortfolioListCore({
                     isPrediction && !globally_settled ? (
                         <AntIcon type={"question-circle"} />
                     ) : (
-                        <a
-                            onClick={e =>
-                                _onSettleAsset(asset.get("id"), e)
-                            }
-                        >
+                        <a onClick={e => _onSettleAsset(asset.get("id"), e)}>
                             <Icon
                                 name="settle"
                                 title="icons.settle"
@@ -1306,9 +1295,7 @@ function AccountPortfolioListCore({
                             className={
                                 includeAsset ? "order-cancel" : "action-plus"
                             }
-                            onClick={() =>
-                                _hideAsset(asset_type, includeAsset)
-                            }
+                            onClick={() => _hideAsset(asset_type, includeAsset)}
                         >
                             <Icon
                                 name={

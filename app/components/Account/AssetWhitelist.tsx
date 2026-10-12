@@ -126,7 +126,10 @@ function AssetWhitelist({
                         label={`account.whitelist.${listType}`}
                         accountName={authority_name}
                         account={authority_name}
-                        onChange={onAccountNameChanged.bind(null, "authority_name")}
+                        onChange={onAccountNameChanged.bind(
+                            null,
+                            "authority_name"
+                        )}
                         onAccountChanged={onAccountChanged.bind(
                             null,
                             "new_authority_id"
@@ -205,7 +208,12 @@ function AssetWhitelist({
                         style={{width: "100%"}}
                         onFound={onAssetFound}
                         action_label="account.perm.confirm_add"
-                        onAction={onChangeList.bind(null, listType, "add", asset_id)}
+                        onAction={onChangeList.bind(
+                            null,
+                            listType,
+                            "add",
+                            asset_id
+                        )}
                     />
                 </div>
             </div>
@@ -225,7 +233,10 @@ function AssetWhitelist({
     return (
         <div className="small-12 large-8 large-offset-2 grid-content">
             <div>
-                <div className="header-selector" style={{paddingBottom: "2rem"}}>
+                <div
+                    className="header-selector"
+                    style={{paddingBottom: "2rem"}}
+                >
                     <div className="selector">
                         {LIST_TYPES.map((type, index) => {
                             return (
@@ -260,7 +271,12 @@ function AssetWhitelistContainer(
         "whitelist_authorities"
     );
 
-    return <AssetWhitelist {...(props as any)} assetWhiteListType={assetWhiteListType} />;
+    return (
+        <AssetWhitelist
+            {...(props as any)}
+            assetWhiteListType={assetWhiteListType}
+        />
+    );
 }
 
 export default AssetWhitelistContainer;

@@ -355,7 +355,10 @@ function BuySellInner(props: BuySellProps) {
                             value={baseFee}
                             addonAfter={
                                 <span>
-                                    <AssetName noTip name={base.get("symbol")} />
+                                    <AssetName
+                                        noTip
+                                        name={base.get("symbol")}
+                                    />
                                 </span>
                             }
                         />
@@ -382,7 +385,10 @@ function BuySellInner(props: BuySellProps) {
                             value={baseFee}
                             addonAfter={
                                 <span>
-                                    <AssetName noTip name={base.get("symbol")} />
+                                    <AssetName
+                                        noTip
+                                        name={base.get("symbol")}
+                                    />
                                 </span>
                             }
                         />
@@ -409,7 +415,10 @@ function BuySellInner(props: BuySellProps) {
                             value={baseFee}
                             addonAfter={
                                 <span>
-                                    <AssetName noTip name={base.get("symbol")} />
+                                    <AssetName
+                                        noTip
+                                        name={base.get("symbol")}
+                                    />
                                 </span>
                             }
                         />
@@ -1085,7 +1094,8 @@ function BuySellInner(props: BuySellProps) {
                                 &#8646;
                             </span>
                         ) : null}
-                        {props.onTogglePosition && !props.hideFunctionButtons ? (
+                        {props.onTogglePosition &&
+                        !props.hideFunctionButtons ? (
                             <span
                                 onClick={props.onTogglePosition}
                                 style={{
@@ -1262,7 +1272,9 @@ function BuySellInner(props: BuySellProps) {
                                     >
                                         <Button
                                             className={
-                                                disabled ? undefined : buttonClass
+                                                disabled
+                                                    ? undefined
+                                                    : buttonClass
                                             }
                                             disabled={disabled}
                                             onClick={(e: any) =>
@@ -1336,7 +1348,9 @@ function BuySellInner(props: BuySellProps) {
                                         >
                                             <Button
                                                 style={{margin: 5}}
-                                                onClick={() => props.onDeposit()}
+                                                onClick={() =>
+                                                    props.onDeposit()
+                                                }
                                                 disabled={
                                                     (GatewayStore as any).isDown(
                                                         "OPEN"
@@ -1561,7 +1575,10 @@ function BuySellInner(props: BuySellProps) {
     );
 }
 
-function buySellPropsAreEqual(prevProps: BuySellProps, nextProps: BuySellProps) {
+function buySellPropsAreEqual(
+    prevProps: BuySellProps,
+    nextProps: BuySellProps
+) {
     return !(
         nextProps.amount !== prevProps.amount ||
         nextProps.onBorrow !== prevProps.onBorrow ||

@@ -347,9 +347,10 @@ function DirectDebitModal({
     });
 
     const doCheckBalance = (overrides: Partial<DirectDebitModalState> = {}) => {
-        const feeAmount = "feeAmount" in overrides
-            ? overrides.feeAmount
-            : stateRef.current.feeAmount;
+        const feeAmount =
+            "feeAmount" in overrides
+                ? overrides.feeAmount
+                : stateRef.current.feeAmount;
         const amount =
             "amount" in overrides ? overrides.amount : stateRef.current.amount;
         const from_account =
@@ -370,7 +371,10 @@ function DirectDebitModal({
         const feeBalanceObject = feeBalanceID
             ? ChainStore.getObject(feeBalanceID)
             : null;
-        if (!feeBalanceObject || (feeBalanceObject as any).get("balance") === 0) {
+        if (
+            !feeBalanceObject ||
+            (feeBalanceObject as any).get("balance") === 0
+        ) {
             mergeState({fee_asset_id: stateRef.current.fee_asset_id});
         }
         if (!balanceObject || !feeAmount) return;
@@ -414,9 +418,7 @@ function DirectDebitModal({
             return {asset_types, fee_asset_types};
         }
         const account_balances = state.from_account.get("balances").toJS();
-        asset_types = Object.keys(account_balances).sort(
-            (utils as any).sortID
-        );
+        asset_types = Object.keys(account_balances).sort((utils as any).sortID);
         fee_asset_types = Object.keys(account_balances).sort(
             (utils as any).sortID
         );
@@ -505,8 +507,7 @@ function DirectDebitModal({
 
             balance = (
                 <span>
-                    <Translate component="span" content="transfer.available" />
-                    :{" "}
+                    <Translate component="span" content="transfer.available" />:{" "}
                     <span
                         className={_error}
                         style={{
@@ -577,7 +578,9 @@ function DirectDebitModal({
                 >
                     {operation && operation.type === "create"
                         ? counterpart.translate("showcases.direct_debit.create")
-                        : counterpart.translate("showcases.direct_debit.update")}
+                        : counterpart.translate(
+                              "showcases.direct_debit.update"
+                          )}
                 </Button>,
                 <Button key="Cancel" onClick={hideModal}>
                     <Translate component="span" content="transfer.cancel" />
@@ -624,8 +627,8 @@ function DirectDebitModal({
                                     asset_types.length > 0 && asset
                                         ? asset.get("id")
                                         : asset_id
-                                            ? asset_id
-                                            : asset_types[0]
+                                        ? asset_id
+                                        : asset_types[0]
                                 }
                                 assets={asset_types}
                                 display_balance={balance}
@@ -705,7 +708,8 @@ function DirectDebitModal({
                                 style={{width: "100%"}}
                                 disabledDate={(current: any) =>
                                     current &&
-                                    current < (moment as any)().add(2, "minutes")
+                                    current <
+                                        (moment as any)().add(2, "minutes")
                                 }
                             />
                         </Tooltip>

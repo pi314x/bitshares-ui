@@ -351,7 +351,9 @@ export default function Settings(props: SettingsProps) {
 
         case "restore":
             entries = (
-                <RestoreSettings passwordLogin={settings.get("passwordLogin")} />
+                <RestoreSettings
+                    passwordLogin={settings.get("passwordLogin")}
+                />
             );
             break;
 
@@ -407,9 +409,7 @@ export default function Settings(props: SettingsProps) {
 
     return (
         <Form layout={"vertical"}>
-            <div
-                className={deprecated ? "" : "grid-block settings-container"}
-            >
+            <div className={deprecated ? "" : "grid-block settings-container"}>
                 <div className="grid-block main-content margin-block wrap">
                     <div
                         className="grid-content shrink settings-menu"
@@ -458,7 +458,9 @@ export default function Settings(props: SettingsProps) {
                         >
                             <Translate
                                 component="h3"
-                                content={"settings." + menuEntries[activeSetting]}
+                                content={
+                                    "settings." + menuEntries[activeSetting]
+                                }
                             />
                             {activeEntry != "access" && (
                                 <Translate

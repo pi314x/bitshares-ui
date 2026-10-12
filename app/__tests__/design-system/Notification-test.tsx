@@ -79,9 +79,7 @@ describe("design-system/Notification", () => {
             });
         });
         expect(document.body.textContent).toContain("Price alert");
-        expect(document.body.textContent).toContain(
-            "BTS/USD crossed 0.05"
-        );
+        expect(document.body.textContent).toContain("BTS/USD crossed 0.05");
         expect(
             document.body.querySelector("[data-testid='custom-icon']")
         ).toBeTruthy();
@@ -118,7 +116,7 @@ describe("design-system/Notification", () => {
 
         document
             .querySelectorAll("button[aria-label='Close']")
-            .forEach((button) => {
+            .forEach(button => {
                 act(() => {
                     fireEvent.click(button);
                 });

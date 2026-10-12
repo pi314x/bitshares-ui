@@ -48,9 +48,10 @@ export default function Committee({
     filterSearch,
     account
 }: CommitteeProps) {
-    const [showCreateCommitteeModal, setShowCreateCommitteeModal] = React.useState(
-        false
-    );
+    const [
+        showCreateCommitteeModal,
+        setShowCreateCommitteeModal
+    ] = React.useState(false);
 
     function showCommitteeModal() {
         console.log("show committee modal");

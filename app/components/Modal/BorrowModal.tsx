@@ -437,7 +437,8 @@ function BorrowModalCore({
     const setUpdatedPosition = (newState: any) => {
         mergeState({
             newPosition:
-                parseFloat(newState.debtAmount) / parseFloat(newState.collateral)
+                parseFloat(newState.debtAmount) /
+                parseFloat(newState.collateral)
         });
     };
 
@@ -581,7 +582,9 @@ function BorrowModalCore({
             0
         );
 
-        onCollateralChange(new Object({amount: maximizedCollateral.toString()}));
+        onCollateralChange(
+            new Object({amount: maximizedCollateral.toString()})
+        );
     };
 
     const payDebt = () => {
@@ -701,11 +704,13 @@ function BorrowModalCore({
                 }
             });
         }
-        (WalletDb as any).process_transaction(tr, null, true).catch((err: any) => {
-            if (__DEV__) {
-                console.log("unlock failed:", err);
-            }
-        });
+        (WalletDb as any)
+            .process_transaction(tr, null, true)
+            .catch((err: any) => {
+                if (__DEV__) {
+                    console.log("unlock failed:", err);
+                }
+            });
 
         (ZfApi as any).publish(modalId, "close");
     };
@@ -841,7 +846,8 @@ function BorrowModalCore({
         10
     );
 
-    const remainingBackingBalance = collateralBalanceObjJS.balance - collateralChange;
+    const remainingBackingBalance =
+        collateralBalanceObjJS.balance - collateralChange;
     const remainingDebtBalance = debtBalanceObjJS.balance + debtChange;
 
     const feed_price = getFeedPrice();
@@ -871,7 +877,12 @@ function BorrowModalCore({
         );
     } else {
         footer.push(
-            <Button tabIndex={6} key="submit" variant="accent" onClick={onSubmit}>
+            <Button
+                tabIndex={6}
+                key="submit"
+                variant="accent"
+                onClick={onSubmit}
+            >
                 {counterpart.translate("borrow.adjust")}
             </Button>
         );

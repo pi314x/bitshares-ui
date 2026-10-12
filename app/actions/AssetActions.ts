@@ -373,7 +373,9 @@ function updateAsset(
     // Create asset action here...
     const tr = WalletApi.new_transaction();
     if (assetChanged) {
-        const quotePrecision = utils.get_asset_precision(asset.get("precision"));
+        const quotePrecision = utils.get_asset_precision(
+            asset.get("precision")
+        );
 
         big.config({DECIMAL_PLACES: asset.get("precision")});
         const max_supply = new big(update.max_supply)
@@ -536,11 +538,7 @@ async function loadAssets() {
     console.log("Assets loaded: ", assets.length);
 }
 
-function getAssetList(
-    start: any,
-    count: any,
-    includeGateways = false
-) {
+function getAssetList(start: any, count: any, includeGateways = false) {
     const id = start + "_" + count;
     if (!inProgress[id]) {
         inProgress[id] = true;

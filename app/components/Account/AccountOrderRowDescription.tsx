@@ -42,10 +42,18 @@ function AccountOrderRowDescription({
                 false
             )}
             baseName={
-                <AssetName noTip customClass={quoteColor} name={quote.get("symbol")} />
+                <AssetName
+                    noTip
+                    customClass={quoteColor}
+                    name={quote.get("symbol")}
+                />
             }
             quoteName={
-                <AssetName noTip customClass={baseColor} name={base.get("symbol")} />
+                <AssetName
+                    noTip
+                    customClass={baseColor}
+                    name={base.get("symbol")}
+                />
             }
         />
     );

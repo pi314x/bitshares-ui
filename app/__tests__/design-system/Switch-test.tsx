@@ -7,14 +7,10 @@ describe("design-system/Switch", () => {
         const {getByRole, rerender} = render(
             <Switch checked={false} onChange={() => {}} />
         );
-        expect(getByRole("switch").getAttribute("aria-checked")).toBe(
-            "false"
-        );
+        expect(getByRole("switch").getAttribute("aria-checked")).toBe("false");
 
         rerender(<Switch checked={true} onChange={() => {}} />);
-        expect(getByRole("switch").getAttribute("aria-checked")).toBe(
-            "true"
-        );
+        expect(getByRole("switch").getAttribute("aria-checked")).toBe("true");
     });
 
     it("calls onChange with the toggled value on click", () => {
@@ -23,10 +19,7 @@ describe("design-system/Switch", () => {
             <Switch checked={false} onChange={onChange} />
         );
         fireEvent.click(getByRole("switch"));
-        expect(onChange).toHaveBeenCalledWith(
-            true,
-            expect.anything()
-        );
+        expect(onChange).toHaveBeenCalledWith(true, expect.anything());
     });
 
     it("shows checkedChildren/unCheckedChildren depending on state", () => {

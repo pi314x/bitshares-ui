@@ -4,9 +4,7 @@ import {Slider} from "../../design-system/Slider";
 
 describe("design-system/Slider", () => {
     it("renders the current value", () => {
-        const {getByRole} = render(
-            <Slider value={25} onChange={() => {}} />
-        );
+        const {getByRole} = render(<Slider value={25} onChange={() => {}} />);
         expect((getByRole("slider") as HTMLInputElement).value).toBe("25");
     });
 

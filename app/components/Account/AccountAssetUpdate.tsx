@@ -311,7 +311,9 @@ function AccountAssetUpdateInner({
     globalObject,
     account
 }: AccountAssetUpdateProps) {
-    const stateRef = React.useRef<any>(resetState({asset, core, globalObject, account}));
+    const stateRef = React.useRef<any>(
+        resetState({asset, core, globalObject, account})
+    );
     const forceUpdate = useForceUpdate();
 
     const propsRef = React.useRef({asset, core, globalObject, account});
@@ -1205,10 +1207,7 @@ function AccountAssetUpdateInner({
                                                         .amount
                                                 }
                                                 onChange={(e: any) =>
-                                                    onCoreRateChange(
-                                                        "quote",
-                                                        e
-                                                    )
+                                                    onCoreRateChange("quote", e)
                                                 }
                                                 asset={
                                                     core_exchange_rate.quote
@@ -1326,9 +1325,7 @@ function AccountAssetUpdateInner({
                                 new_authority_id={
                                     stateRef.current.new_authority_id
                                 }
-                                authority_name={
-                                    stateRef.current.authority_name
-                                }
+                                authority_name={stateRef.current.authority_name}
                                 onAccountNameChanged={onAccountNameChanged}
                                 onAccountChanged={onAccountChanged}
                                 onChangeList={onChangeList}
@@ -1366,14 +1363,10 @@ function AccountAssetUpdateInner({
                                     <input
                                         type="text"
                                         value={
-                                            update.description.short_name ||
-                                            ""
+                                            update.description.short_name || ""
                                         }
                                         onChange={(e: any) =>
-                                            onUpdateDescription(
-                                                "short_name",
-                                                e
-                                            )
+                                            onUpdateDescription("short_name", e)
                                         }
                                     />
                                 </label>
@@ -1411,8 +1404,7 @@ function AccountAssetUpdateInner({
                                             <input
                                                 type="text"
                                                 value={
-                                                    update.description
-                                                        .condition
+                                                    update.description.condition
                                                 }
                                                 onChange={(e: any) =>
                                                     onUpdateDescription(
@@ -1465,9 +1457,7 @@ function AccountAssetUpdateInner({
                                         backingAsset={
                                             bitasset_opts.short_backing_asset
                                         }
-                                        assetPrecision={asset.get(
-                                            "precision"
-                                        )}
+                                        assetPrecision={asset.get("precision")}
                                         assetSymbol={asset.get("symbol")}
                                         disableBackingAssetChange={
                                             getCurrentSupply() > 0
@@ -1598,9 +1588,7 @@ function AccountAssetUpdateInner({
                                                         )
                                                     }
                                                     asset={asset.get("id")}
-                                                    assets={[
-                                                        asset.get("id")
-                                                    ]}
+                                                    assets={[asset.get("id")]}
                                                     placeholder="0.0"
                                                     tabIndex={1}
                                                 />
@@ -1687,9 +1675,7 @@ function AccountAssetUpdateInner({
             </div>
             {/* Confirmation Modal on Multiple Changes */}
             <ConfirmModal
-                visible={
-                    stateRef.current.isAssetUpdateConfirmationModalVisible
-                }
+                visible={stateRef.current.isAssetUpdateConfirmationModalVisible}
                 hideModal={hideAssetUpdateConfirmationModal}
                 tabsChanged={tabsChanged()}
                 updateAsset={updateAsset}

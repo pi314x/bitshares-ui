@@ -17,14 +17,15 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     children?: React.ReactNode;
 }
 
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-    function Card({className, ...rest}, ref) {
-        return (
-            <div
-                ref={ref}
-                className={[styles.card, className].filter(Boolean).join(" ")}
-                {...rest}
-            />
-        );
-    }
-);
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
+    {className, ...rest},
+    ref
+) {
+    return (
+        <div
+            ref={ref}
+            className={[styles.card, className].filter(Boolean).join(" ")}
+            {...rest}
+        />
+    );
+});

@@ -225,7 +225,9 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
         try {
             if (steps[current].has_legend) {
                 legend = counterpart.translate(
-                    "showcases.borrow.steps_" + steps[current].key + ".text_legend"
+                    "showcases.borrow.steps_" +
+                        steps[current].key +
+                        ".text_legend"
                 );
                 legend = legend.split("\n").map((item: string) => {
                     return item.split(":");
@@ -299,7 +301,8 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                                     width: "12rem"
                                 }}
                                 disabled={
-                                    state.selectedAsset !== null && accountLoaded
+                                    state.selectedAsset !== null &&
+                                    accountLoaded
                                         ? (currentAccount as any).get("id") ===
                                           "1.2.3"
                                         : true
@@ -415,14 +418,18 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
 
                             {!!steps[current].has_legend && (
                                 <React.Fragment>
-                                    {legend.map((content: any, index: number) => {
-                                        return (
-                                            <p key={"borrow_subp_" + index}>
-                                                <strong>{content[0]}</strong>:{" "}
-                                                {content[1]}
-                                            </p>
-                                        );
-                                    })}
+                                    {legend.map(
+                                        (content: any, index: number) => {
+                                            return (
+                                                <p key={"borrow_subp_" + index}>
+                                                    <strong>
+                                                        {content[0]}
+                                                    </strong>
+                                                    : {content[1]}
+                                                </p>
+                                            );
+                                        }
+                                    )}
                                 </React.Fragment>
                             )}
                         </Card>

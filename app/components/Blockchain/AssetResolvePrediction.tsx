@@ -180,9 +180,7 @@ function AssetResolvePredictionCore({
                     </Radio>
                     <Radio
                         value={
-                            !state.customPrice
-                                ? 2
-                                : state.globalSettlementPrice
+                            !state.customPrice ? 2 : state.globalSettlementPrice
                         }
                     >
                         <Translate content="settings.custom" />
@@ -243,7 +241,10 @@ function AssetResolvePrediction({
     }
 
     return (
-        <AssetResolvePredictionCore {...(rest as any)} account={resolvedAccount} />
+        <AssetResolvePredictionCore
+            {...(rest as any)}
+            account={resolvedAccount}
+        />
     );
 }
 

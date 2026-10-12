@@ -45,8 +45,7 @@ function ListBase<T = any>({
     const [page, setPage] = React.useState(1);
 
     const paginated = pagination !== undefined && pagination !== false;
-    const pageSize =
-        (pagination && pagination.pageSize) || DEFAULT_PAGE_SIZE;
+    const pageSize = (pagination && pagination.pageSize) || DEFAULT_PAGE_SIZE;
     const pageCount = paginated
         ? Math.max(1, Math.ceil(dataSource.length / pageSize))
         : 1;

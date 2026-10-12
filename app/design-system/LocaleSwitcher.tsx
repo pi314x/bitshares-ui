@@ -56,9 +56,7 @@ export function LocaleSwitcher({
                             type="button"
                             role="menuitem"
                             className={`${styles.item} ${
-                                code === currentLocale
-                                    ? styles.itemActive
-                                    : ""
+                                code === currentLocale ? styles.itemActive : ""
                             }`}
                             onClick={() => {
                                 onSelect(code);

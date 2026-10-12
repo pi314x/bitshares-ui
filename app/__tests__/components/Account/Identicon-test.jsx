@@ -7,8 +7,7 @@ jest.mock("jdenticon", () => ({updateById: jest.fn()}));
 import * as React from "react";
 import {render} from "@testing-library/react";
 
-const Identicon = require("../../../components/Account/Identicon")
-    .default;
+const Identicon = require("../../../components/Account/Identicon").default;
 
 describe("<Identicon>", function() {
     it("renders a canvas sized to 2x the given width/height", function() {
@@ -20,5 +19,4 @@ describe("<Identicon>", function() {
         expect(canvas.getAttribute("width")).toBe("80");
         expect(canvas.getAttribute("height")).toBe("60");
     });
-
 });

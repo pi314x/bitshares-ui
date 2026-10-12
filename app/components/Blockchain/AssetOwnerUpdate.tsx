@@ -62,10 +62,7 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 function resolveAccount(prop: any, autosubscribe?: boolean): any {
     if (!prop) return undefined;
     let resolvedProp = prop;
-    if (
-        resolvedProp[0] === "#" &&
-        Number.parseInt(resolvedProp.substring(1))
-    ) {
+    if (resolvedProp[0] === "#" && Number.parseInt(resolvedProp.substring(1))) {
         resolvedProp = "1.2." + resolvedProp.substring(1);
     }
     if (

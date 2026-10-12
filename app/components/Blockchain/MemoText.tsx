@@ -81,9 +81,7 @@ function MemoText({memo, fullLength = false}: MemoTextCoreProps) {
     if (!text && isMine) {
         return (
             <div className="memo">
-                <span>
-                    {counterpart.translate("transfer.memo_unlock")}{" "}
-                </span>
+                <span>{counterpart.translate("transfer.memo_unlock")} </span>
                 <a onClick={toggleLock}>
                     <Icon name="locked" title="icons.locked.action" />
                 </a>

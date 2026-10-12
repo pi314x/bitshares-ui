@@ -78,7 +78,11 @@ function AccountRow({account, onRemove, index}: AccountRowProps) {
     }
 
     return (
-        <AccountRowCore account={resolvedAccount} onRemove={onRemove} index={index} />
+        <AccountRowCore
+            account={resolvedAccount}
+            onRemove={onRemove}
+            index={index}
+        />
     );
 }
 
@@ -148,7 +152,10 @@ function AccountListCore({
         rows.push(
             <tr key="empty">
                 <td style={{padding: "1rem 0"}} colSpan={removeButton ? 4 : 3}>
-                    <Translate content={emptyText} account={account.get("name")} />
+                    <Translate
+                        content={emptyText}
+                        account={account.get("name")}
+                    />
                 </td>
             </tr>
         );
@@ -227,7 +234,7 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
 
     const onAccountFound = (foundAccount: any) => {
         console.log("accountFound:", foundAccount);
-        setAccountName(foundAccount ? foundAccount.get("name") : null as any);
+        setAccountName(foundAccount ? foundAccount.get("name") : (null as any));
         setAccountToList(foundAccount ? foundAccount.get("id") : null);
     };
 
@@ -249,15 +256,19 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
                         segmented={false}
                     >
                         <Tab title="account.whitelist.title">
-                            <div style={{paddingBottom: "1rem"}} className="small-12">
+                            <div
+                                style={{paddingBottom: "1rem"}}
+                                className="small-12"
+                            >
                                 <div>
                                     <AccountList
                                         emptyText="account.whitelist.empty"
                                         account={account}
                                         getCurrentState={getCurrentState}
                                         list={
-                                            account.get("whitelisted_accounts") ||
-                                            Immutable.List()
+                                            account.get(
+                                                "whitelisted_accounts"
+                                            ) || Immutable.List()
                                         }
                                         removeButton
                                         white={true}
@@ -277,7 +288,10 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
                                         onChange={onAccountChanged}
                                         account={accountName}
                                         tabIndex={2}
-                                        onAction={onAdd.bind(null, "white_listed")}
+                                        onAction={onAdd.bind(
+                                            null,
+                                            "white_listed"
+                                        )}
                                         action_label="account.perm.confirm_add"
                                         white={false}
                                         typeahead={true}
@@ -287,13 +301,18 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
                         </Tab>
 
                         <Tab title="account.whitelist.black">
-                            <div style={{paddingBottom: "1rem"}} className="small-12">
+                            <div
+                                style={{paddingBottom: "1rem"}}
+                                className="small-12"
+                            >
                                 <div>
                                     <AccountList
                                         emptyText="account.whitelist.empty_black"
                                         account={account}
                                         getCurrentState={getCurrentState}
-                                        list={account.get("blacklisted_accounts")}
+                                        list={account.get(
+                                            "blacklisted_accounts"
+                                        )}
                                         removeButton
                                     />
                                 </div>
@@ -305,7 +324,10 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
                                         onChange={onAccountChanged}
                                         account={accountName}
                                         tabIndex={2}
-                                        onAction={onAdd.bind(null, "black_listed")}
+                                        onAction={onAdd.bind(
+                                            null,
+                                            "black_listed"
+                                        )}
                                         action_label="account.perm.confirm_add"
                                         typeahead={true}
                                     />
@@ -314,24 +336,34 @@ function AccountWhitelist({account}: AccountWhitelistProps) {
                         </Tab>
 
                         <Tab title="account.whitelist.white_by">
-                            <div style={{paddingBottom: "1rem"}} className="small-12">
+                            <div
+                                style={{paddingBottom: "1rem"}}
+                                className="small-12"
+                            >
                                 <div>
                                     <AccountList
                                         emptyText="account.whitelist.empty_white_by"
                                         account={account}
-                                        list={account.get("whitelisting_accounts")}
+                                        list={account.get(
+                                            "whitelisting_accounts"
+                                        )}
                                     />
                                 </div>
                             </div>
                         </Tab>
 
                         <Tab title="account.whitelist.black_by">
-                            <div style={{paddingBottom: "1rem"}} className="small-12">
+                            <div
+                                style={{paddingBottom: "1rem"}}
+                                className="small-12"
+                            >
                                 <div>
                                     <AccountList
                                         emptyText="account.whitelist.empty_black_by"
                                         account={account}
-                                        list={account.get("blacklisting_accounts")}
+                                        list={account.get(
+                                            "blacklisting_accounts"
+                                        )}
                                     />
                                 </div>
                             </div>

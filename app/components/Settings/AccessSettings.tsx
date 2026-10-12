@@ -222,20 +222,14 @@ function ApiNode({
                         <Icon
                             className={"shuffle"}
                             name={hidden ? "eye-striked" : "eye"}
-                            title={
-                                hidden ? "icons.eye_striked" : "icons.eye"
-                            }
+                            title={hidden ? "icons.eye_striked" : "icons.eye"}
                             size="1_5x"
                         />
                     </a>
                 )}
                 {canBeRemoved && (
                     <a onClick={() => showRemoveNodeModal(url, title)}>
-                        <Icon
-                            name={"times"}
-                            title="icons.times"
-                            size="1_5x"
-                        />
+                        <Icon name={"times"} title="icons.times" size="1_5x" />
                     </a>
                 )}
                 <div className="api-status">
@@ -451,9 +445,7 @@ export default function AccessSettings({
                     })}
                 </div>
                 {activeTab === "my_nodes" && (
-                    <div
-                        style={{paddingLeft: "1rem", paddingBottom: "1rem"}}
-                    >
+                    <div style={{paddingLeft: "1rem", paddingBottom: "1rem"}}>
                         <Button variant="accent" onClick={showAddNodeModal}>
                             <Translate
                                 id="add"
@@ -469,13 +461,12 @@ export default function AccessSettings({
                         content={"settings.testnet_nodes_disclaimer"}
                     />
                 )}
-                {nodesToShow.map((node: any) => renderNode(node, connectedNode))}
+                {nodesToShow.map((node: any) =>
+                    renderNode(node, connectedNode)
+                )}
                 {onlyPersonalNodeActive ? (
                     <div className="api-node">
-                        <p
-                            className="api-node-title"
-                            style={{padding: "1rem"}}
-                        >
+                        <p className="api-node-title" style={{padding: "1rem"}}>
                             <Translate content="settings.personal_active" />
                         </p>
                     </div>

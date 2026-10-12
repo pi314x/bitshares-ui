@@ -80,9 +80,7 @@ export default function RegistrationSelector({
                     <div className="v-align">
                         <div
                             className={`${
-                                !activeWalletModel
-                                    ? "inactive-model-block"
-                                    : ""
+                                !activeWalletModel ? "inactive-model-block" : ""
                             } selection-block align-center plate`}
                         >
                             {renderHeader(true)}
@@ -94,18 +92,14 @@ export default function RegistrationSelector({
                         </div>
                         <div
                             className={`${
-                                activeWalletModel
-                                    ? "inactive-model-block"
-                                    : ""
+                                activeWalletModel ? "inactive-model-block" : ""
                             } selection-block align-center plate`}
                         >
                             {renderHeader(false)}
                             <AccountBlockSelection
                                 onSelect={() => onSelect("cloud")}
                                 active={!activeWalletModel}
-                                onChangeActive={() =>
-                                    changeActiveModel(false)
-                                }
+                                onChangeActive={() => changeActiveModel(false)}
                             />
                         </div>
                     </div>

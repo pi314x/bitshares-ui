@@ -139,26 +139,28 @@ function CustomTable({
                                 "customizable_table.customize_the_columns"
                             )}
                     </Option>
-                    {getCustomizableColumns(headerProp || []).map((item, key) => {
-                        return (
-                            <Option
-                                key={key}
-                                className="customizable-column--selector--option"
-                                value={item.dataIndex}
-                                disabled
-                            >
-                                <Checkbox
-                                    checked={isColumnChecked(item)}
-                                    onChange={columnCheckboxChange.bind(
-                                        null,
-                                        item.dataIndex
-                                    )}
+                    {getCustomizableColumns(headerProp || []).map(
+                        (item, key) => {
+                            return (
+                                <Option
+                                    key={key}
+                                    className="customizable-column--selector--option"
+                                    value={item.dataIndex}
+                                    disabled
                                 >
-                                    {item.title}
-                                </Checkbox>
-                            </Option>
-                        );
-                    })}
+                                    <Checkbox
+                                        checked={isColumnChecked(item)}
+                                        onChange={columnCheckboxChange.bind(
+                                            null,
+                                            item.dataIndex
+                                        )}
+                                    >
+                                        {item.title}
+                                    </Checkbox>
+                                </Option>
+                            );
+                        }
+                    )}
                 </Select>
             </div>
         );

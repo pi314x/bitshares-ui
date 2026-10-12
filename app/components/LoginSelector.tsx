@@ -75,9 +75,7 @@ export default function LoginSelector() {
 
     const [state, setState] = React.useState<LoginSelectorState>({
         locales: (SettingsStore as any).getState().defaults.locale,
-        currentLocale: (SettingsStore as any).getState().settings.get(
-            "locale"
-        )
+        currentLocale: (SettingsStore as any).getState().settings.get("locale")
     });
 
     // componentDidUpdate() {
@@ -181,9 +179,7 @@ export default function LoginSelector() {
                         <LinkAny
                             id="account_login_button"
                             to={
-                                (getAllowedLogins as any)().includes(
-                                    "password"
-                                )
+                                (getAllowedLogins as any)().includes("password")
                                     ? "/create-account/password"
                                     : "/create-account/wallet"
                             }

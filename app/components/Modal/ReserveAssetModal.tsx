@@ -121,9 +121,7 @@ function ReserveAssetModal({
             ]}
         >
             <Alert
-                message={counterpart.translate(
-                    "modal.reserve.warning_message"
-                )}
+                message={counterpart.translate("modal.reserve.warning_message")}
                 type="warning"
                 showIcon
                 style={{marginBottom: "2em"}}
@@ -139,9 +137,7 @@ function ReserveAssetModal({
                         <div
                             onClick={() => {
                                 state.amountAsset.setAmount({
-                                    sats: (currentBalance as any).get(
-                                        "balance"
-                                    )
+                                    sats: (currentBalance as any).get("balance")
                                 });
                                 mergeState({
                                     amount: state.amountAsset.getAmount({

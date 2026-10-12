@@ -188,19 +188,25 @@ class AccountStoreFacade {
                     ),
                     starredAccounts: Immutable.Map(
                         ss.get(
-                            this._getStorageKey("starredAccounts", {wallet_name})
+                            this._getStorageKey("starredAccounts", {
+                                wallet_name
+                            })
                         )
                     ),
                     myActiveAccounts: Immutable.Set(),
                     accountContacts: Immutable.Set(
                         ss.get(
-                            this._getStorageKey("accountContacts", {wallet_name}),
+                            this._getStorageKey("accountContacts", {
+                                wallet_name
+                            }),
                             []
                         )
                     ),
                     myHiddenAccounts: Immutable.Set(
                         ss.get(
-                            this._getStorageKey("hiddenAccounts", {wallet_name}),
+                            this._getStorageKey("hiddenAccounts", {
+                                wallet_name
+                            }),
                             []
                         )
                     )
@@ -257,7 +263,10 @@ class AccountStoreFacade {
             });
             reduxStore.dispatch(patchState({starredAccounts}));
 
-            ss.set(this._getStorageKey("starredAccounts"), starredAccounts.toJS());
+            ss.set(
+                this._getStorageKey("starredAccounts"),
+                starredAccounts.toJS()
+            );
         } else {
             return false;
         }
@@ -363,15 +372,23 @@ class AccountStoreFacade {
                             }
 
                             if (!this.getState().subbed)
-                                (ChainStore as any).subscribe(this.chainStoreUpdate);
-                            reduxStore.dispatch(patchState({subbed: true} as any));
+                                (ChainStore as any).subscribe(
+                                    this.chainStoreUpdate
+                                );
+                            reduxStore.dispatch(
+                                patchState({subbed: true} as any)
+                            );
                             this.chainStoreUpdate();
                             resolve();
                         })
                         .catch((err: any) => {
                             if (!this.getState().subbed)
-                                (ChainStore as any).subscribe(this.chainStoreUpdate);
-                            reduxStore.dispatch(patchState({subbed: true} as any));
+                                (ChainStore as any).subscribe(
+                                    this.chainStoreUpdate
+                                );
+                            reduxStore.dispatch(
+                                patchState({subbed: true} as any)
+                            );
                             this.chainStoreUpdate();
                             reject(err);
                         });
@@ -444,7 +461,8 @@ class AccountStoreFacade {
                      */
                     const nameOnlyEntry = linkedAccounts.findKey((a: any) => {
                         return (
-                            a.get("name") === linkedEntry.name && !a.has("chainId")
+                            a.get("name") === linkedEntry.name &&
+                            !a.has("chainId")
                         );
                     });
                     if (!!nameOnlyEntry) {
@@ -452,7 +470,11 @@ class AccountStoreFacade {
                         this._unlinkAccount(account.get("name"));
                         isAlreadyLinked = false;
                     }
-                    if (account && this.isMyAccount(account) && !isAlreadyLinked) {
+                    if (
+                        account &&
+                        this.isMyAccount(account) &&
+                        !isAlreadyLinked
+                    ) {
                         const linked = this._linkAccount(
                             account.get("name"),
                             linkedAccounts,
@@ -633,7 +655,10 @@ class AccountStoreFacade {
         );
     }
 
-    private _getStorageKey(key = "currentAccount", state: any = this.getState()) {
+    private _getStorageKey(
+        key = "currentAccount",
+        state: any = this.getState()
+    ) {
         const wallet = state.wallet_name;
         const chainId = (Apis as any).instance().chain_id;
         return (
@@ -661,7 +686,9 @@ class AccountStoreFacade {
             return this.setCurrentAccount(starredAccounts.first().name);
         }
         if (this.getState().myActiveAccounts.size) {
-            return this.setCurrentAccount(this.getState().myActiveAccounts.first());
+            return this.setCurrentAccount(
+                this.getState().myActiveAccounts.first()
+            );
         }
     }
 
@@ -695,10 +722,7 @@ class AccountStoreFacade {
         if (account["toJS"]) account = account.toJS();
 
         const state = this.getState();
-        if (
-            account.name == "" ||
-            state.myActiveAccounts.get(account.name)
-        )
+        if (account.name == "" || state.myActiveAccounts.get(account.name))
             return Promise.resolve();
 
         if (!(ChainValidation as any).is_account_name(account.name))
@@ -731,7 +755,10 @@ class AccountStoreFacade {
         const state = this.getState();
         if (!state.accountContacts.has(name)) {
             const accountContacts = state.accountContacts.add(name);
-            ss.set(this._getStorageKey("accountContacts"), accountContacts.toArray());
+            ss.set(
+                this._getStorageKey("accountContacts"),
+                accountContacts.toArray()
+            );
             reduxStore.dispatch(patchState({accountContacts}));
         }
     }
@@ -744,7 +771,10 @@ class AccountStoreFacade {
         if (state.accountContacts.has(name)) {
             const accountContacts = state.accountContacts.remove(name);
 
-            ss.set(this._getStorageKey("accountContacts"), accountContacts as any);
+            ss.set(
+                this._getStorageKey("accountContacts"),
+                accountContacts as any
+            );
 
             reduxStore.dispatch(patchState({accountContacts}));
         }
@@ -805,7 +835,9 @@ class AccountStoreFacade {
                 ss.remove(this._getStorageKey());
                 this.loadDbData();
             } else {
-                reduxStore.dispatch(patchState({myActiveAccounts: Immutable.Set()}));
+                reduxStore.dispatch(
+                    patchState({myActiveAccounts: Immutable.Set()})
+                );
             }
             reduxStore.dispatch(patchState({passwordLogin: payload.value}));
         }

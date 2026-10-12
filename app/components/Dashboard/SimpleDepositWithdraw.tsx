@@ -301,8 +301,8 @@ function getInitialState(
 }
 
 function DepositWithdrawContent(props: DepositWithdrawContentProps) {
-    const [state, setState] = React.useState<DepositWithdrawContentState>(
-        () => getInitialState(props)
+    const [state, setState] = React.useState<DepositWithdrawContentState>(() =>
+        getInitialState(props)
     );
     const stateRef = React.useRef(state);
     const mergeState = (patch: Partial<DepositWithdrawContentState>) => {

@@ -278,7 +278,9 @@ function AccountVesting({account}: AccountVestingProps) {
                 render: (item: any) => {
                     return (
                         <span>
-                            <Translate content={"account.vesting.type." + item} />
+                            <Translate
+                                content={"account.vesting.type." + item}
+                            />
                         </span>
                     );
                 }
@@ -288,7 +290,12 @@ function AccountVesting({account}: AccountVestingProps) {
                 dataIndex: "vestingBalance",
                 align: "left",
                 render: (item: any) => {
-                    return <FormattedAsset amount={item.amount} asset={item.asset} />;
+                    return (
+                        <FormattedAsset
+                            amount={item.amount}
+                            asset={item.asset}
+                        />
+                    );
                 }
             },
             {
@@ -350,7 +357,9 @@ function AccountVesting({account}: AccountVestingProps) {
                 dataIndex: "availablePercent",
                 align: "left",
                 render: (item: any) => {
-                    return item ? <span>{(item * 100).toFixed(2)}%</span> : null;
+                    return item ? (
+                        <span>{(item * 100).toFixed(2)}%</span>
+                    ) : null;
                 }
             },
             {

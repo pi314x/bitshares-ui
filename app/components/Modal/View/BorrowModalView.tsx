@@ -417,7 +417,9 @@ export function BorrowModalView({
                                         style={{marginBottom: 8}}
                                     >
                                         <Checkbox
-                                            onClick={onSetUseTCR.bind(undefined)}
+                                            onClick={onSetUseTCR.bind(
+                                                undefined
+                                            )}
                                             checked={useTargetCollateral}
                                             tabIndex={4}
                                         >

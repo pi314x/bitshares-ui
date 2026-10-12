@@ -52,11 +52,12 @@ describe("XbtsxMethods", () => {
 
         const result = await fetchCoinList("https://apis.xbts.io/api/v2/coin");
 
-        expect(
-            global.fetch
-        ).toHaveBeenCalledWith("https://apis.xbts.io/api/v2/coin", {
-            method: "post"
-        });
+        expect(global.fetch).toHaveBeenCalledWith(
+            "https://apis.xbts.io/api/v2/coin",
+            {
+                method: "post"
+            }
+        );
         expect(result).toEqual(fixture);
     });
 

@@ -374,8 +374,7 @@ export default function Barter(props: BarterProps) {
     // equivalent to reading `this.state` at that point in the original.
     React.useEffect(() => {
         const currentAccount = AccountStore.getState().currentAccount;
-        if (!state.from_name)
-            mergeState({from_name: currentAccount as any});
+        if (!state.from_name) mergeState({from_name: currentAccount as any});
     }, []);
 
     function fromChanged(from_name: any) {
@@ -470,7 +469,12 @@ export default function Barter(props: BarterProps) {
                 barter[index].to_balanceError = false;
                 return mergeState({to_barter: barter});
             }
-        const hasBalance = checkBalance(amount, asset, feeAmount, balanceObject);
+        const hasBalance = checkBalance(
+            amount,
+            asset,
+            feeAmount,
+            balanceObject
+        );
 
         if (hasBalance === null) return;
         if (from) {
@@ -525,19 +529,22 @@ export default function Barter(props: BarterProps) {
             }
         });
 
-        const peer1AmountsFormated = map(peer1Amounts, (item: any, key: any) => {
-            const balanceOfCurrentAsset = getBalance(from_account, key);
-            const decimals = Math.max(0, item.precision);
-            const formatedBalance = balanceOfCurrentAsset
-                ? moveDecimal(balanceOfCurrentAsset, decimals)
-                : 0;
-            item.assetId = key;
-            if (item.amount > (formatedBalance as any)) {
-                item.warning = true;
-                item.balance = formatedBalance;
+        const peer1AmountsFormated = map(
+            peer1Amounts,
+            (item: any, key: any) => {
+                const balanceOfCurrentAsset = getBalance(from_account, key);
+                const decimals = Math.max(0, item.precision);
+                const formatedBalance = balanceOfCurrentAsset
+                    ? moveDecimal(balanceOfCurrentAsset, decimals)
+                    : 0;
+                item.assetId = key;
+                if (item.amount > (formatedBalance as any)) {
+                    item.warning = true;
+                    item.balance = formatedBalance;
+                }
+                return item;
             }
-            return item;
-        });
+        );
 
         // for peer2
         to_barter.forEach(function(item) {
@@ -560,19 +567,22 @@ export default function Barter(props: BarterProps) {
             }
         });
 
-        const peer2AmountsFormated = map(peer2Amounts, (item: any, key: any) => {
-            const balanceOfCurrentAsset = getBalance(to_account, key);
-            const decimals = Math.max(0, item.precision);
-            const formatedBalance = balanceOfCurrentAsset
-                ? moveDecimal(balanceOfCurrentAsset, decimals)
-                : 0;
-            item.assetId = key;
-            if (item.amount > (formatedBalance as any)) {
-                item.warning = true;
-                item.balance = formatedBalance;
+        const peer2AmountsFormated = map(
+            peer2Amounts,
+            (item: any, key: any) => {
+                const balanceOfCurrentAsset = getBalance(to_account, key);
+                const decimals = Math.max(0, item.precision);
+                const formatedBalance = balanceOfCurrentAsset
+                    ? moveDecimal(balanceOfCurrentAsset, decimals)
+                    : 0;
+                item.assetId = key;
+                if (item.amount > (formatedBalance as any)) {
+                    item.warning = true;
+                    item.balance = formatedBalance;
+                }
+                return item;
             }
-            return item;
-        });
+        );
 
         mergeState({
             balanceWarning: {
@@ -664,7 +674,9 @@ export default function Barter(props: BarterProps) {
             fee_asset_types = Object.keys(account_balances).sort(utils.sortID);
 
             for (const key in account_balances) {
-                const balanceObject = ChainStore.getObject(account_balances[key]);
+                const balanceObject = ChainStore.getObject(
+                    account_balances[key]
+                );
                 if (balanceObject && balanceObject.get("balance") === 0) {
                     asset_types.splice(asset_types.indexOf(key), 1);
                     if (fee_asset_types.indexOf(key) !== -1) {
@@ -822,7 +834,10 @@ export default function Barter(props: BarterProps) {
             });
         });
 
-        ApplicationApi.transfer_list(transfer_list, state.proposal_fee.asset_id);
+        ApplicationApi.transfer_list(
+            transfer_list,
+            state.proposal_fee.asset_id
+        );
     }
 
     const onMemoChanged = (type: string, index: number) => (e: any) => {
@@ -1086,11 +1101,7 @@ export default function Barter(props: BarterProps) {
 
         for (const item of to_barter) {
             const amountValue = parseFloat(
-                (String.prototype.replace.call as any)(
-                    item.to_amount,
-                    /,/g,
-                    ""
-                )
+                (String.prototype.replace.call as any)(item.to_amount, /,/g, "")
             );
             if (isNaN(amountValue) || amountValue === 0) return false;
         }
@@ -1156,7 +1167,9 @@ export default function Barter(props: BarterProps) {
             if (asset_types.length === 1)
                 asset = ChainStore.getAsset(asset_types[0]);
             if (asset_types.length > 0) {
-                const current_asset_id = asset ? asset.get("id") : asset_types[0];
+                const current_asset_id = asset
+                    ? asset.get("id")
+                    : asset_types[0];
 
                 return (
                     <span>
@@ -1263,7 +1276,8 @@ export default function Barter(props: BarterProps) {
             );
         }
         const isMemoShown =
-            state.memo["to_barter"][index] && state.memo["to_barter"][index].shown;
+            state.memo["to_barter"][index] &&
+            state.memo["to_barter"][index].shown;
 
         return (
             <div key={amount_index++}>

@@ -1,5 +1,10 @@
 import * as React from "react";
-import {DEFAULT_THEME, isThemeName, THEME_STORAGE_KEY, ThemeName} from "./tokens";
+import {
+    DEFAULT_THEME,
+    isThemeName,
+    THEME_STORAGE_KEY,
+    ThemeName
+} from "./tokens";
 
 interface ThemeContextValue {
     theme: ThemeName;
@@ -66,10 +71,11 @@ export function ThemeProvider({children, value, onChange}: ThemeProviderProps) {
         setTheme(theme === "dark" ? "light" : "dark");
     }, [theme, setTheme]);
 
-    const contextValue = React.useMemo(
-        () => ({theme, setTheme, toggleTheme}),
-        [theme, setTheme, toggleTheme]
-    );
+    const contextValue = React.useMemo(() => ({theme, setTheme, toggleTheme}), [
+        theme,
+        setTheme,
+        toggleTheme
+    ]);
 
     return (
         <ThemeContext.Provider value={contextValue}>

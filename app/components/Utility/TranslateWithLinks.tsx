@@ -238,7 +238,10 @@ export default function TranslateWithLinks({
                                                           </span>
                                                       ))
                                                       .reduce(
-                                                          (prev: any, curr: any) => [
+                                                          (
+                                                              prev: any,
+                                                              curr: any
+                                                          ) => [
                                                               prev,
                                                               ", ",
                                                               curr
@@ -270,7 +273,10 @@ export default function TranslateWithLinks({
                                                           </span>
                                                       ))
                                                       .reduce(
-                                                          (prev: any, curr: any) => [
+                                                          (
+                                                              prev: any,
+                                                              curr: any
+                                                          ) => [
                                                               prev,
                                                               ", ",
                                                               curr
@@ -296,7 +302,9 @@ export default function TranslateWithLinks({
                         );
                         const ownerDiv = owner && (
                             <React.Fragment>
-                                <Translate content={"proposal.changes_to_owner"} />
+                                <Translate
+                                    content={"proposal.changes_to_owner"}
+                                />
                                 <div style={{marginLeft: "0.5rem"}}>
                                     {(owner.keys.plus.length > 0 ||
                                         owner.accounts.plus.length > 0) && (
@@ -321,7 +329,10 @@ export default function TranslateWithLinks({
                                                           </span>
                                                       ))
                                                       .reduce(
-                                                          (prev: any, curr: any) => [
+                                                          (
+                                                              prev: any,
+                                                              curr: any
+                                                          ) => [
                                                               prev,
                                                               ", ",
                                                               curr
@@ -353,7 +364,10 @@ export default function TranslateWithLinks({
                                                           </span>
                                                       ))
                                                       .reduce(
-                                                          (prev: any, curr: any) => [
+                                                          (
+                                                              prev: any,
+                                                              curr: any
+                                                          ) => [
                                                               prev,
                                                               ", ",
                                                               curr
@@ -381,12 +395,20 @@ export default function TranslateWithLinks({
                             (memo.keys.plus.length > 0 ||
                                 memo.keys.minus.length > 0) && (
                                 <div>
-                                    <Translate content={"proposal.changes_to_memo"} />
+                                    <Translate
+                                        content={"proposal.changes_to_memo"}
+                                    />
                                     {memo.keys.plus.length > 0 && (
-                                        <div> + {memo.keys.plus.join(", ")}</div>
+                                        <div>
+                                            {" "}
+                                            + {memo.keys.plus.join(", ")}
+                                        </div>
                                     )}
                                     {memo.keys.minus.length > 0 && (
-                                        <div> - {memo.keys.minus.join(", ")}</div>
+                                        <div>
+                                            {" "}
+                                            - {memo.keys.minus.join(", ")}
+                                        </div>
                                     )}
                                 </div>
                             );

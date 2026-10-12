@@ -40,7 +40,11 @@ for (const localeCode of localeCodes as any) {
     addLocaleData(require(`react-intl/locale-data/${localeCode}`));
 }
 
-import {setCurrentLocale, addLocale, selectIntlState} from "../store/slices/intlSlice";
+import {
+    setCurrentLocale,
+    addLocale,
+    selectIntlState
+} from "../store/slices/intlSlice";
 
 class IntlStoreFacade {
     private localesObject: any = {en: locale_en};

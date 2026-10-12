@@ -70,7 +70,10 @@ interface PasswordInputState {
 interface PasswordInputProps {
     onChange?: (password: string) => void;
     onEnter?: (e: any) => void;
-    onValidationChange?: (validation: {errorMessage: any; valid: boolean}) => void;
+    onValidationChange?: (validation: {
+        errorMessage: any;
+        valid: boolean;
+    }) => void;
     label?: any;
     wrongPassword?: boolean;
     noValidation?: boolean;

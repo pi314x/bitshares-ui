@@ -82,8 +82,8 @@ function getHeader(
                 return a.order_id > b.order_id
                     ? 1
                     : a.order_id < b.order_id
-                        ? -1
-                        : 0;
+                    ? -1
+                    : 0;
             },
             render: (item: any) => {
                 return (
@@ -130,8 +130,8 @@ function getHeader(
                 return a.opinion > b.opinion
                     ? 1
                     : a.opinion < b.opinion
-                        ? -1
-                        : 0;
+                    ? -1
+                    : 0;
             },
             render: (item: any) => {
                 return (
@@ -163,8 +163,8 @@ function getHeader(
                 return a.likelihood > b.likelihood
                     ? 1
                     : a.likelihood < b.likelihood
-                        ? -1
-                        : 0;
+                    ? -1
+                    : 0;
             },
             render: (item: any) => {
                 return (
@@ -229,9 +229,7 @@ function getHeader(
             }
         },
         {
-            title: counterpart.translate(
-                "prediction.details.potential_profit"
-            ),
+            title: counterpart.translate("prediction.details.potential_profit"),
             dataIndex: "potentialProfit",
             align: "left",
             sorter_inactive: (a: any, b: any) => {
@@ -323,32 +321,30 @@ export default function PredictionMarketDetailsTable({
 }: PredictionMarketDetailsTableProps) {
     const header = getHeader(currentAccount, opinionFilter, onOppose, onCancel);
 
-    let filteredOpinions = predictionMarketData.opinions.filter(
-        (item: any) => {
-            const accountName = (ChainStore as any).getAccount(item.opinionator)
-                ? (ChainStore as any).getAccount(item.opinionator).get("name")
-                : null;
-            if (detailsSearchTerm) {
-                if (
-                    (accountName + "\0" + item.opinion)
-                        .toUpperCase()
-                        .indexOf(detailsSearchTerm) === -1
-                ) {
+    let filteredOpinions = predictionMarketData.opinions.filter((item: any) => {
+        const accountName = (ChainStore as any).getAccount(item.opinionator)
+            ? (ChainStore as any).getAccount(item.opinionator).get("name")
+            : null;
+        if (detailsSearchTerm) {
+            if (
+                (accountName + "\0" + item.opinion)
+                    .toUpperCase()
+                    .indexOf(detailsSearchTerm) === -1
+            ) {
+                return false;
+            }
+        }
+        if (opinionFilter) {
+            if (opinionFilter == "all") {
+                return true;
+            } else {
+                if (!(opinionFilter == item.opinion)) {
                     return false;
                 }
             }
-            if (opinionFilter) {
-                if (opinionFilter == "all") {
-                    return true;
-                } else {
-                    if (!(opinionFilter == item.opinion)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
-    );
+        return true;
+    });
 
     let i = 0;
     filteredOpinions = filteredOpinions.map((item: any) => ({

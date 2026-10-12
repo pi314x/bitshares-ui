@@ -196,7 +196,8 @@ class CreditOfferActionsFacade {
         return WalletDb.process_transaction(tr, null, true)
             .then((res: any) => {
                 if (res && res.length > 0) {
-                    const disabled_offer_id = res[0].trx.operations[0][1].offer_id;
+                    const disabled_offer_id =
+                        res[0].trx.operations[0][1].offer_id;
                     const disabled_owner_account =
                         res[0].trx.operations[0][1].owner_account;
                     this.getCreditOffersByOwner({
@@ -272,7 +273,8 @@ class CreditOfferActionsFacade {
         return WalletDb.process_transaction(tr, null, true)
             .then((res: any) => {
                 if (res && res.length > 0) {
-                    const accepted_offer_id = res[0].trx.operations[0][1].offer_id;
+                    const accepted_offer_id =
+                        res[0].trx.operations[0][1].offer_id;
                     this.getAll({
                         limit: 1,
                         start_id: accepted_offer_id,
@@ -288,7 +290,13 @@ class CreditOfferActionsFacade {
             });
     }
 
-    repay({account, deal_id, repay_amount, credit_fee, fee_asset = "1.3.0"}: any) {
+    repay({
+        account,
+        deal_id,
+        repay_amount,
+        credit_fee,
+        fee_asset = "1.3.0"
+    }: any) {
         if (typeof account !== "string") {
             account = account.get("id");
         }
@@ -342,14 +350,11 @@ class CreditOfferActionsFacade {
                 if (result && result.length == limit) {
                     const payload = {
                         list: result,
-                        end:
-                            flag === false || flag === "first" ? false : true,
+                        end: flag === false || flag === "first" ? false : true,
                         flag,
                         pars: {name_or_id, limit, start_id}
                     };
-                    reduxStore.dispatch(
-                        getCreditOffersByOwnerAction(payload)
-                    );
+                    reduxStore.dispatch(getCreditOffersByOwnerAction(payload));
                     if (payload.end === false) {
                         const oId = payload.list[
                             payload.list.length - 1
@@ -357,9 +362,8 @@ class CreditOfferActionsFacade {
                         this.getCreditOffersByOwner({
                             name_or_id: payload.pars.name_or_id,
                             limit: payload.pars.limit,
-                            start_id: `${oId[0]}.${oId[1]}.${parseInt(
-                                oId[2]
-                            ) + 1}`
+                            start_id: `${oId[0]}.${oId[1]}.${parseInt(oId[2]) +
+                                1}`
                         });
                     }
                 } else {
@@ -388,17 +392,12 @@ class CreditOfferActionsFacade {
     }: any) {
         Apis.instance()
             .db_api()
-            .exec("get_credit_deals_by_borrower", [
-                name_or_id,
-                limit,
-                start_id
-            ])
+            .exec("get_credit_deals_by_borrower", [name_or_id, limit, start_id])
             .then((result: any) => {
                 if (result && result.length == limit) {
                     const payload = {
                         list: result,
-                        end:
-                            flag === false || flag === "first" ? false : true,
+                        end: flag === false || flag === "first" ? false : true,
                         flag,
                         pars: {name_or_id, limit, start_id}
                     };
@@ -412,9 +411,8 @@ class CreditOfferActionsFacade {
                         this.getCreditDealsByBorrower({
                             name_or_id: payload.pars.name_or_id,
                             limit: payload.pars.limit,
-                            start_id: `${oId[0]}.${oId[1]}.${parseInt(
-                                oId[2]
-                            ) + 1}`
+                            start_id: `${oId[0]}.${oId[1]}.${parseInt(oId[2]) +
+                                1}`
                         });
                     }
                 } else {
@@ -457,8 +455,7 @@ class CreditOfferActionsFacade {
                 if (result && result.length == limit) {
                     const payload = {
                         list: result,
-                        end:
-                            flag === false || flag === "first" ? false : true,
+                        end: flag === false || flag === "first" ? false : true,
                         flag,
                         pars: {name_or_id, limit, start_id}
                     };
@@ -472,9 +469,8 @@ class CreditOfferActionsFacade {
                         this.getCreditDealsByOfferOwner({
                             name_or_id: payload.pars.name_or_id,
                             limit: payload.pars.limit,
-                            start_id: `${oId[0]}.${oId[1]}.${parseInt(
-                                oId[2]
-                            ) + 1}`
+                            start_id: `${oId[0]}.${oId[1]}.${parseInt(oId[2]) +
+                                1}`
                         });
                     }
                 } else {
@@ -507,8 +503,7 @@ class CreditOfferActionsFacade {
                 if (result && result.length == limit) {
                     const payload = {
                         list: result,
-                        end:
-                            flag === false || flag === "first" ? false : true,
+                        end: flag === false || flag === "first" ? false : true,
                         flag,
                         pars: {limit, start_id}
                     };
@@ -519,9 +514,8 @@ class CreditOfferActionsFacade {
                         ].id.split(".");
                         this.getAll({
                             limit: payload.pars.limit,
-                            start_id: `${oId[0]}.${oId[1]}.${parseInt(
-                                oId[2]
-                            ) + 1}`
+                            start_id: `${oId[0]}.${oId[1]}.${parseInt(oId[2]) +
+                                1}`
                         });
                     }
                 } else {
@@ -532,9 +526,7 @@ class CreditOfferActionsFacade {
             })
             .catch((err: any) => {
                 console.error(err);
-                reduxStore.dispatch(
-                    getAllAction({list: [], end: true, flag})
-                );
+                reduxStore.dispatch(getAllAction({list: [], end: true, flag}));
             });
     }
 }

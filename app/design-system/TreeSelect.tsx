@@ -75,9 +75,11 @@ function indexTree(
 }
 
 function matches(node: TreeSelectNode, query: string): boolean {
-    return String(node.value)
-        .toLowerCase()
-        .indexOf(query) >= 0;
+    return (
+        String(node.value)
+            .toLowerCase()
+            .indexOf(query) >= 0
+    );
 }
 
 function isVisible(node: TreeSelectNode, query: string): boolean {
@@ -259,7 +261,9 @@ export function TreeSelect({
             >
                 {selected.map(v => (
                     <span key={v} className={styles.tag}>
-                        {index.get(v) ? (index.get(v) as TreeSelectNode).title : v}
+                        {index.get(v)
+                            ? (index.get(v) as TreeSelectNode).title
+                            : v}
                         <button
                             type="button"
                             className={styles.tagRemove}

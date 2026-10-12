@@ -13,9 +13,15 @@ const columns = [{key: "name", dataIndex: "name", title: "Header"}];
 describe("components/Utility/CollapsibleTable", () => {
     it("starts uncollapsed by default and toggles on header click", () => {
         const {container, getByText} = render(
-            <CollapsibleTable columns={columns} dataSource={rows} pagination={false} />
+            <CollapsibleTable
+                columns={columns}
+                dataSource={rows}
+                pagination={false}
+            />
         );
-        const table = container.querySelector(".collapsible-table") as HTMLElement;
+        const table = container.querySelector(
+            ".collapsible-table"
+        ) as HTMLElement;
         expect(table.className).toContain("collapsible-table-uncollapsed");
 
         fireEvent.click(getByText("Header"));
@@ -35,7 +41,9 @@ describe("components/Utility/CollapsibleTable", () => {
                 isCollapsed={true}
             />
         );
-        const table = container.querySelector(".collapsible-table") as HTMLElement;
+        const table = container.querySelector(
+            ".collapsible-table"
+        ) as HTMLElement;
         expect(table.className).toContain("collapsible-table-collapsed");
     });
 
@@ -49,7 +57,9 @@ describe("components/Utility/CollapsibleTable", () => {
                 rowSelection={{selectedRowKeys: [], onChange}}
             />
         );
-        const table = container.querySelector(".collapsible-table") as HTMLElement;
+        const table = container.querySelector(
+            ".collapsible-table"
+        ) as HTMLElement;
         expect(table.className).toContain("collapsible-table-uncollapsed");
 
         const checkbox = container.querySelector(

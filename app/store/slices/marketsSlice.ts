@@ -264,12 +264,7 @@ function getFeed(state: any): any {
         ].getIn(["bitasset", "current_feed", "maximum_short_squeeze_ratio"]);
         const mcfr = state[
             state.invertedCalls ? "baseAsset" : "quoteAsset"
-        ].getIn([
-            "bitasset",
-            "options",
-            "extensions",
-            "margin_call_fee_ratio"
-        ]);
+        ].getIn(["bitasset", "options", "extensions", "margin_call_fee_ratio"]);
 
         state.is_prediction_market = state[
             state.invertedCalls ? "baseAsset" : "quoteAsset"
@@ -456,11 +451,17 @@ function constructCalls(state: any, callsArray: any): any[] {
                 if (state.invertedCalls) {
                     state.lowestCallPrice = !state.lowestCallPrice
                         ? order.getPrice(false)
-                        : Math.max(state.lowestCallPrice, order.getPrice(false));
+                        : Math.max(
+                              state.lowestCallPrice,
+                              order.getPrice(false)
+                          );
                 } else {
                     state.lowestCallPrice = !state.lowestCallPrice
                         ? order.getPrice(false)
-                        : Math.min(state.lowestCallPrice, order.getPrice(false));
+                        : Math.min(
+                              state.lowestCallPrice,
+                              order.getPrice(false)
+                          );
                 }
 
                 return order;
@@ -547,11 +548,7 @@ function combineOrders(state: any) {
     state.marketData.combinedAsks = combinedAsks;
 }
 
-function orderBook(
-    state: any,
-    limitsChanged = true,
-    callsChanged = false
-) {
+function orderBook(state: any, limitsChanged = true, callsChanged = false) {
     const constructBids = (orderArray: any) => {
         const bids = orderArray
             .filter((a: any) => {
@@ -796,30 +793,25 @@ function depthChart(state: any) {
     }
 
     if (state.marketSettleOrders.size) {
-        flat_settles = state.marketSettleOrders.reduce(
-            (final: any, a: any) => {
-                if (!final) {
-                    return [
-                        [
-                            a.getPrice(),
-                            a[
-                                !a.isBid()
-                                    ? "amountForSale"
-                                    : "amountToReceive"
-                            ]().getAmount({real: true})
-                        ]
-                    ];
-                } else {
-                    final[0][1] =
-                        final[0][1] +
+        flat_settles = state.marketSettleOrders.reduce((final: any, a: any) => {
+            if (!final) {
+                return [
+                    [
+                        a.getPrice(),
                         a[
                             !a.isBid() ? "amountForSale" : "amountToReceive"
-                        ]().getAmount({real: true});
-                    return final;
-                }
-            },
-            null
-        );
+                        ]().getAmount({real: true})
+                    ]
+                ];
+            } else {
+                final[0][1] =
+                    final[0][1] +
+                    a[
+                        !a.isBid() ? "amountForSale" : "amountToReceive"
+                    ]().getAmount({real: true});
+                return final;
+            }
+        }, null);
 
         if (!state.feedPrice.inverted) {
             flat_settles.unshift([0, flat_settles[0][1]]);
@@ -1091,7 +1083,11 @@ const marketsSlice = createSlice({
                     order.expiration = new Date(order.expiration);
                     state.marketLimitOrders = state.marketLimitOrders.set(
                         order.id,
-                        new LimitOrder(order, assets, state.quoteAsset.get("id"))
+                        new LimitOrder(
+                            order,
+                            assets,
+                            state.quoteAsset.get("id")
+                        )
                     );
                 });
 
@@ -1106,14 +1102,12 @@ const marketsSlice = createSlice({
                     i--
                 ) {
                     const myOrder = state.pendingCreateLimitOrders[i];
-                    const order = state.marketLimitOrders.find(
-                        (order: any) => {
-                            return (
-                                myOrder.seller === order.seller &&
-                                myOrder.expiration === order.expiration
-                            );
-                        }
-                    );
+                    const order = state.marketLimitOrders.find((order: any) => {
+                        return (
+                            myOrder.seller === order.seller &&
+                            myOrder.expiration === order.expiration
+                        );
+                    });
 
                     if (order) {
                         state.pendingCreateLimitOrders.splice(i, 1);
@@ -1219,10 +1213,10 @@ const marketsSlice = createSlice({
                     marketName,
                     stats
                 );
-                const {
-                    invertedStats,
-                    invertedMarketName
-                } = invertMarketStats(stats, marketName);
+                const {invertedStats, invertedMarketName} = invertMarketStats(
+                    stats,
+                    marketName
+                );
                 state.allMarketStats = state.allMarketStats.set(
                     invertedMarketName,
                     invertedStats
@@ -1334,9 +1328,7 @@ const marketsSlice = createSlice({
         onCloseCallOrderSuccess(state, action: PayloadAction<any>) {
             const orderID = action.payload;
             if (orderID && state.marketCallOrders.has(orderID)) {
-                state.marketCallOrders = state.marketCallOrders.delete(
-                    orderID
-                );
+                state.marketCallOrders = state.marketCallOrders.delete(orderID);
                 if (state.marketCallOrders.size === 0) {
                     state.marketData.calls = [];
                     state.marketData.flatCalls = [];
@@ -1559,7 +1551,6 @@ export const {
     onChangeCurrentGroupLimit
 } = marketsSlice.actions;
 
-export const selectMarkets = (state: {markets: MarketsState}) =>
-    state.markets;
+export const selectMarkets = (state: {markets: MarketsState}) => state.markets;
 
 export default marketsSlice.reducer;

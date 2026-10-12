@@ -304,7 +304,9 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
                             item.withdrawal_limit.amount,
                             asset
                         ) + " "}
-                        <LinkToAssetById asset={item.withdrawal_limit.asset_id} />
+                        <LinkToAssetById
+                            asset={item.withdrawal_limit.asset_id}
+                        />
                     </span>
                 ),
                 until: currentPeriodExpires
@@ -328,7 +330,9 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
                                 item.claimed_this_period,
                                 asset
                             ) + " "}
-                            <LinkToAssetById asset={item.withdrawal_limit.asset_id} />
+                            <LinkToAssetById
+                                asset={item.withdrawal_limit.asset_id}
+                            />
                         </span>
                     ),
                 rawData: {
@@ -340,7 +344,8 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
             dataSource.filter((item: any) => {
                 // if filter is chained to map, possible bugs with initial render of table
                 return (
-                    item.authorized && item.authorized.indexOf(filterString) !== -1
+                    item.authorized &&
+                    item.authorized.indexOf(filterString) !== -1
                 );
             });
     }
@@ -416,7 +421,11 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
             dataIndex: "expires",
             key: "expires",
             sorter: (a: any, b: any) => {
-                return a.expires > b.expires ? 1 : a.expires < b.expires ? -1 : 0;
+                return a.expires > b.expires
+                    ? 1
+                    : a.expires < b.expires
+                    ? -1
+                    : 0;
             }
         },
         {
@@ -506,7 +515,9 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
                                 )}
                             </Button>
                             {!!state.errorMessage && (
-                                <span className="red">{state.errorMessage}</span>
+                                <span className="red">
+                                    {state.errorMessage}
+                                </span>
                             )}
                         </div>
 

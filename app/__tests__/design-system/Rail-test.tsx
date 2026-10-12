@@ -36,9 +36,7 @@ describe("design-system/Rail", () => {
             </MemoryRouter>
         );
         expect(getByText("Accounts").className).toContain("navItemActive");
-        expect(getByText("Dashboard").className).not.toContain(
-            "navItemActive"
-        );
+        expect(getByText("Dashboard").className).not.toContain("navItemActive");
     });
 
     it("links to real react-router paths, not a fake in-page toggle", () => {
@@ -47,9 +45,7 @@ describe("design-system/Rail", () => {
                 <Rail groups={groups} />
             </MemoryRouter>
         );
-        expect(getByText("Trade").getAttribute("href")).toBe(
-            "/market/BTS_CNY"
-        );
+        expect(getByText("Trade").getAttribute("href")).toBe("/market/BTS_CNY");
     });
 
     it("renders the real BitShares logo, not a placeholder letter", () => {

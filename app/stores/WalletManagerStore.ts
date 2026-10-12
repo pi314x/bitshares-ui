@@ -66,7 +66,13 @@ class WalletManagerStoreFacade {
     }
 
     /** This will change the current wallet the newly restored wallet. */
-    onRestore({wallet_name, wallet_object}: {wallet_name: string; wallet_object: any}) {
+    onRestore({
+        wallet_name,
+        wallet_object
+    }: {
+        wallet_name: string;
+        wallet_object: any;
+    }) {
         (iDB as any)
             .restore(wallet_name, wallet_object)
             .then(() => {
@@ -106,7 +112,10 @@ class WalletManagerStoreFacade {
             let add;
             if (!state.wallet_names.has(wallet_name)) {
                 const wallet_names = state.wallet_names.add(wallet_name);
-                add = (iDB as any).root.setProperty("wallet_names", wallet_names);
+                add = (iDB as any).root.setProperty(
+                    "wallet_names",
+                    wallet_names
+                );
                 reduxStore.dispatch(patchState({wallet_names}));
             }
 
@@ -123,40 +132,50 @@ class WalletManagerStoreFacade {
                     (ChainStore as any).clearCache();
                     (BalanceClaimActiveStore as any).reset();
                     // Stores may reset when loadDbData is called
-                    return (iDB as any).init_instance().init_promise.then(() => {
-                        // Make sure the database is ready when calling CachedPropertyStore.reset()
-                        (CachedPropertyStore as any).reset();
-                        return Promise.all([
-                            (WalletDb as any)
-                                .loadDbData()
-                                .then(() => (AccountStore as any).loadDbData()),
-                            (PrivateKeyActions as any)
-                                .loadDbData()
-                                .then(() => (AccountRefsStore as any).loadDbData())
-                        ]).then(() => {
-                            // Update state here again to make sure listeners re-render
-
-                            if (!create_wallet_password) {
-                                reduxStore.dispatch(
-                                    patchState({current_wallet: wallet_name})
-                                );
-                                return;
-                            }
-
-                            return (WalletDb as any)
-                                .onCreateWallet(
-                                    create_wallet_password,
-                                    brnkey, //brainkey,
-                                    true, //unlock
-                                    wallet_name
-                                )
-                                .then(() =>
-                                    reduxStore.dispatch(
-                                        patchState({current_wallet: wallet_name})
+                    return (iDB as any)
+                        .init_instance()
+                        .init_promise.then(() => {
+                            // Make sure the database is ready when calling CachedPropertyStore.reset()
+                            (CachedPropertyStore as any).reset();
+                            return Promise.all([
+                                (WalletDb as any)
+                                    .loadDbData()
+                                    .then(() =>
+                                        (AccountStore as any).loadDbData()
+                                    ),
+                                (PrivateKeyActions as any)
+                                    .loadDbData()
+                                    .then(() =>
+                                        (AccountRefsStore as any).loadDbData()
                                     )
-                                );
+                            ]).then(() => {
+                                // Update state here again to make sure listeners re-render
+
+                                if (!create_wallet_password) {
+                                    reduxStore.dispatch(
+                                        patchState({
+                                            current_wallet: wallet_name
+                                        })
+                                    );
+                                    return;
+                                }
+
+                                return (WalletDb as any)
+                                    .onCreateWallet(
+                                        create_wallet_password,
+                                        brnkey, //brainkey,
+                                        true, //unlock
+                                        wallet_name
+                                    )
+                                    .then(() =>
+                                        reduxStore.dispatch(
+                                            patchState({
+                                                current_wallet: wallet_name
+                                            })
+                                        )
+                                    );
+                            });
                         });
-                    });
                 })
             );
         }).catch(error => {
@@ -215,7 +234,9 @@ class WalletManagerStoreFacade {
                     (WalletActions as any).setWallet(current_wallet);
             }
             reduxStore.dispatch(patchState({current_wallet, wallet_names}));
-            const database_name = (iDB as any).getDatabaseName(delete_wallet_name);
+            const database_name = (iDB as any).getDatabaseName(
+                delete_wallet_name
+            );
             (iDB as any).impl.deleteDatabase(database_name);
             resolve(database_name);
         });

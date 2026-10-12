@@ -144,7 +144,9 @@ export default function Witnesses() {
                 if (!a) return false;
                 const witness = ChainStore.getObject(a.get("witness_account"));
                 if (!witness) return false;
-                const witnessData = ChainStore.getWitnessById(witness.get("id"));
+                const witnessData = ChainStore.getWitnessById(
+                    witness.get("id")
+                );
                 if (!witnessData) return false;
                 const name = witness.get("name");
                 if (!name) return false;
@@ -152,7 +154,9 @@ export default function Witnesses() {
             })
             .map((a: any) => {
                 const witness = ChainStore.getObject(a.get("witness_account"));
-                const witnessData = ChainStore.getWitnessById(witness.get("id"));
+                const witnessData = ChainStore.getWitnessById(
+                    witness.get("id")
+                );
                 const witnessAslot = witnessData.get("last_aslot");
                 const lastAslotTime = new Date(
                     Date.now() -
@@ -315,7 +319,9 @@ export default function Witnesses() {
                                                 : null}
                                         </td>
                                         <td>{witnessIds.length}</td>
-                                        <td>{dynGlobalObject.participation}%</td>
+                                        <td>
+                                            {dynGlobalObject.participation}%
+                                        </td>
                                         <td>
                                             <FormattedAsset
                                                 amount={

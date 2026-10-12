@@ -142,9 +142,7 @@ interface GatewayRow {
 
 type OnChainConfigMap = Record<string, any>;
 
-export default function GatewaySelectorModal(
-    props: GatewaySelectorModalProps
-) {
+export default function GatewaySelectorModal(props: GatewaySelectorModalProps) {
     useReduxState<any>(selectSettingsState);
     const settingsState = SettingsStore.getState();
     const filteredServiceProviders: string[] = settingsState.settings.get(
@@ -157,9 +155,9 @@ export default function GatewaySelectorModal(
     );
 
     const [showIntroduction, setShowIntroduction] = React.useState(true);
-    const [onChainConfig, setOnChainConfig] = React.useState<
-        OnChainConfigMap
-    >({});
+    const [onChainConfig, setOnChainConfig] = React.useState<OnChainConfigMap>(
+        {}
+    );
 
     const getReferrerLink = (): string => {
         // `getFaucet()`'s JSDoc-declared return shape

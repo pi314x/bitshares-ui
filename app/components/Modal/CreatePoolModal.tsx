@@ -181,7 +181,11 @@ interface SearchListItemProps {
     itemData: any;
 }
 
-function SearchListItem({itemSelect, itemLabel, itemData}: SearchListItemProps) {
+function SearchListItem({
+    itemSelect,
+    itemLabel,
+    itemData
+}: SearchListItemProps) {
     const onClick = () => {
         itemSelect(itemData);
     };
@@ -477,7 +481,10 @@ function CreatePoolModal({
     const onPoolNameChange = (getBackedAssets: boolean, e: any) => {
         mergeState(getInitAlertState());
         const toFind = e.target.value.trim().toUpperCase();
-        const isValidName = !ChainValidation.is_valid_symbol_error(toFind, true);
+        const isValidName = !ChainValidation.is_valid_symbol_error(
+            toFind,
+            true
+        );
 
         if (!isValidName) {
             mergeState({
@@ -517,7 +524,10 @@ function CreatePoolModal({
     const onAssetASearch = (getBackedAssets: boolean, e: any) => {
         mergeState(getInitAlertState());
         const toFind = e.target.value.trim().toUpperCase();
-        const isValidName = !ChainValidation.is_valid_symbol_error(toFind, true);
+        const isValidName = !ChainValidation.is_valid_symbol_error(
+            toFind,
+            true
+        );
 
         if (!isValidName) {
             /* Don't lookup invalid asset names */
@@ -553,7 +563,10 @@ function CreatePoolModal({
         mergeState(getInitAlertState());
 
         const toFind = e.target.value.trim().toUpperCase();
-        const isValidName = !ChainValidation.is_valid_symbol_error(toFind, true);
+        const isValidName = !ChainValidation.is_valid_symbol_error(
+            toFind,
+            true
+        );
 
         if (!isValidName) {
             /* Don't lookup invalid asset names */

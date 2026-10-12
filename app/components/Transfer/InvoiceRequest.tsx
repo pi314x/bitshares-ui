@@ -120,9 +120,9 @@ export default function InvoiceRequest({
     const [toLabel, setToLabel] = React.useState("");
     const [note, setNote] = React.useState("");
     const [keys, setKeys] = React.useState<number[]>([0]);
-    const [lineItems, setLineItems] = React.useState<
-        Record<number, LineItem>
-    >({});
+    const [lineItems, setLineItems] = React.useState<Record<number, LineItem>>(
+        {}
+    );
 
     // Mirrors componentDidMount exactly (runs after the first paint, so
     // the same brief "empty recipient" flash the original had on mount
@@ -197,9 +197,7 @@ export default function InvoiceRequest({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const line_items = keys
-            .map(k => lineItems[k])
-            .filter(item => !!item);
+        const line_items = keys.map(k => lineItems[k]).filter(item => !!item);
         _printInvoice({
             currency,
             line_items,

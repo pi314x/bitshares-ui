@@ -120,7 +120,10 @@ function AccountPage({
             prevCurrentAccountRef.current = currentAccount;
             return;
         }
-        if (prevCurrentAccountRef.current !== currentAccount && currentAccount) {
+        if (
+            prevCurrentAccountRef.current !== currentAccount &&
+            currentAccount
+        ) {
             const currentPath = location.pathname.split("/");
             currentPath[2] = currentAccount;
             navigate(currentPath.join("/"));
@@ -158,22 +161,13 @@ function AccountPage({
     // style the original `Redirect`s already used).
     return (
         <Routes>
-            <Route
-                index
-                element={<AccountOverview {...passOnProps} />}
-            />
+            <Route index element={<AccountOverview {...passOnProps} />} />
             <Route
                 path="overview"
                 element={<Navigate to={`/account/${account_name}`} replace />}
             />
-            <Route
-                path="assets"
-                element={<AccountAssets {...passOnProps} />}
-            />
-            <Route
-                path="pools"
-                element={<AccountPools {...passOnProps} />}
-            />
+            <Route path="assets" element={<AccountAssets {...passOnProps} />} />
+            <Route path="pools" element={<AccountPools {...passOnProps} />} />
             <Route
                 path="create-asset"
                 element={<AccountAssetCreate {...(passOnProps as any)} />}

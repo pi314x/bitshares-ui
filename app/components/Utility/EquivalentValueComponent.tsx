@@ -148,10 +148,10 @@ class ValueComponent extends MarketStatsCheck {
                     toSymbol.indexOf("BTC") !== -1
                         ? 4
                         : (this.props as any).fullDecimals
-                            ? 0
-                            : (this.props as any).noDecimals
-                                ? toAsset.get("precision")
-                                : toAsset.get("precision") - 2
+                        ? 0
+                        : (this.props as any).noDecimals
+                        ? toAsset.get("precision")
+                        : toAsset.get("precision") - 2
                 }
                 {...others}
             />

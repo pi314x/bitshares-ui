@@ -456,8 +456,8 @@ function MarketOrdersInner(props: MarketOrdersProps) {
                             selectedOrders.length > 0 &&
                             selectedOrders.includes(order.id)
                         }
-                        onCancel={
-                            () => props.onCancel && props.onCancel(order.id)
+                        onCancel={() =>
+                            props.onCancel && props.onCancel(order.id)
                         }
                         onCheckCancel={(evt: any) =>
                             onCheckCancel(order.id, evt)
@@ -486,8 +486,8 @@ function MarketOrdersInner(props: MarketOrdersProps) {
                             selectedOrders.length > 0 &&
                             selectedOrders.includes(order.id)
                         }
-                        onCancel={
-                            () => props.onCancel && props.onCancel(order.id)
+                        onCancel={() =>
+                            props.onCancel && props.onCancel(order.id)
                         }
                         onCheckCancel={(evt: any) =>
                             onCheckCancel(order.id, evt)

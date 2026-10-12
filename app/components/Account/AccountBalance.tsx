@@ -32,7 +32,8 @@ function AccountBalance({account, asset, replace}: AccountBalanceCoreProps) {
     const asset_id = asset.get("id");
     const balance_id = account.getIn(["balances", asset_id]);
 
-    if (balance_id) return <BalanceComponent balance={balance_id} replace={replace} />;
+    if (balance_id)
+        return <BalanceComponent balance={balance_id} replace={replace} />;
     else
         return (
             <span>
@@ -42,7 +43,11 @@ function AccountBalance({account, asset, replace}: AccountBalanceCoreProps) {
         );
 }
 
-function AccountBalanceContainer({account, asset, replace}: AccountBalanceProps) {
+function AccountBalanceContainer({
+    account,
+    asset,
+    replace
+}: AccountBalanceProps) {
     useChainStoreTick();
     const resolvedAccount = (ChainStore as any).getAccount(account, false);
     const resolvedAsset = ChainStore.getAsset(asset);

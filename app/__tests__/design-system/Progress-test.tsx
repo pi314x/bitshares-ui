@@ -5,9 +5,7 @@ import {Progress} from "../../design-system/Progress";
 describe("design-system/Progress", () => {
     it("sizes the fill bar to the given percent", () => {
         const {container} = render(<Progress percent={40} />);
-        const fill = container.querySelector(
-            "[class*='fill']"
-        ) as HTMLElement;
+        const fill = container.querySelector("[class*='fill']") as HTMLElement;
         expect(fill.style.width).toBe("40%");
     });
 
@@ -26,14 +24,12 @@ describe("design-system/Progress", () => {
     it("clamps percent to the 0-100 range", () => {
         const {container: over} = render(<Progress percent={150} />);
         expect(
-            (over.querySelector("[class*='fill']") as HTMLElement).style
-                .width
+            (over.querySelector("[class*='fill']") as HTMLElement).style.width
         ).toBe("100%");
 
         const {container: under} = render(<Progress percent={-10} />);
         expect(
-            (under.querySelector("[class*='fill']") as HTMLElement).style
-                .width
+            (under.querySelector("[class*='fill']") as HTMLElement).style.width
         ).toBe("0%");
     });
 });

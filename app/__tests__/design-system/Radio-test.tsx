@@ -13,9 +13,7 @@ describe("design-system/Radio", () => {
         expect((getByLabelText("Zero") as HTMLInputElement).checked).toBe(
             false
         );
-        expect((getByLabelText("One") as HTMLInputElement).checked).toBe(
-            true
-        );
+        expect((getByLabelText("One") as HTMLInputElement).checked).toBe(true);
     });
 
     it("calls Radio.Group's onChange with the original (non-stringified) value", () => {
@@ -41,9 +39,7 @@ describe("design-system/Radio", () => {
         );
         fireEvent.click(getByLabelText("B"));
         expect((getByLabelText("B") as HTMLInputElement).checked).toBe(true);
-        expect((getByLabelText("A") as HTMLInputElement).checked).toBe(
-            false
-        );
+        expect((getByLabelText("A") as HTMLInputElement).checked).toBe(false);
     });
 
     it("supports a standalone Radio outside any Group, controlled via checked/onChange", () => {
@@ -68,11 +64,7 @@ describe("design-system/Radio", () => {
                 </Radio>
             </Radio.Group>
         );
-        expect((getByLabelText("A") as HTMLInputElement).disabled).toBe(
-            true
-        );
-        expect((getByLabelText("B") as HTMLInputElement).disabled).toBe(
-            false
-        );
+        expect((getByLabelText("A") as HTMLInputElement).disabled).toBe(true);
+        expect((getByLabelText("B") as HTMLInputElement).disabled).toBe(false);
     });
 });

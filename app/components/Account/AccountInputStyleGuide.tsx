@@ -88,7 +88,9 @@ function AccountInputStyleGuide({
             const isKnownScammer = isAccountScammer();
 
             if (isKnownScammer) {
-                return counterpart.translate("account.member.suspected_scammer");
+                return counterpart.translate(
+                    "account.member.suspected_scammer"
+                );
             }
 
             // get status (basic or lifetime member)
@@ -123,7 +125,8 @@ function AccountInputStyleGuide({
     const getHelp = () => {
         if (isInputActive || !value) return "";
 
-        if (!isAccountFound()) return counterpart.translate("account.errors.unknown");
+        if (!isAccountFound())
+            return counterpart.translate("account.errors.unknown");
 
         return "";
     };

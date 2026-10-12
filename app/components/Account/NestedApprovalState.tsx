@@ -56,7 +56,10 @@ function resolveAccountsList(prop: any, autosubscribe: boolean): any[] {
     let index = 0;
     prop.forEach((obj_id: any) => {
         if (obj_id) {
-            result[index] = (ChainStore as any).getAccount(obj_id, autosubscribe);
+            result[index] = (ChainStore as any).getAccount(
+                obj_id,
+                autosubscribe
+            );
         }
         ++index;
     });
@@ -108,7 +111,10 @@ function AccountPermissionTreeCore({
             <tr>
                 <td colSpan={2}>
                     <ApprovedIcon approved={isOK} />
-                    <LinkToAccountById subpage="permissions" account={account.get("id")} />
+                    <LinkToAccountById
+                        subpage="permissions"
+                        account={account.get("id")}
+                    />
                 </td>
                 <td>
                     {!isNested && notNestedWeight
@@ -125,7 +131,10 @@ function AccountPermissionTreeCore({
             <tr>
                 <td colSpan={2}>
                     <ApprovedIcon approved={isOK} />
-                    <LinkToAccountById subpage="permissions" account={account.get("id")} />
+                    <LinkToAccountById
+                        subpage="permissions"
+                        account={account.get("id")}
+                    />
                 </td>
                 <td>
                     {expanded ? (
@@ -141,12 +150,21 @@ function AccountPermissionTreeCore({
                                 : ""
                         }${notNestedWeight} `
                     )}
-                    <ExpandButton onToggle={handleExpandToggle} expanded={expanded} />
-                    {expanded && <span className="appended">({nestedWeight})</span>}
+                    <ExpandButton
+                        onToggle={handleExpandToggle}
+                        expanded={expanded}
+                    />
+                    {expanded && (
+                        <span className="appended">({nestedWeight})</span>
+                    )}
                     {authorityDepthOverflow ? (
                         <AuthorityDepthOverflowWarning />
                     ) : (
-                        hasAuthorityDepthProblem(maxAuthorityDepth, permission, level) &&
+                        hasAuthorityDepthProblem(
+                            maxAuthorityDepth,
+                            permission,
+                            level
+                        ) &&
                         !expanded && <ChildAuthorityDepthOverflowWarning />
                     )}
                 </td>
@@ -337,12 +355,21 @@ function FirstLevel({
                     oPermission.threshold > 1 &&
                     statusText(oPermission, available, availableKeys)
                 )}
-                {(!oPermission || oPermission.isMultiSig() || oPermission.isNested()) && (
-                    <ExpandButton onToggle={handleExpandToggle} expanded={!!expanded} />
+                {(!oPermission ||
+                    oPermission.isMultiSig() ||
+                    oPermission.isNested()) && (
+                    <ExpandButton
+                        onToggle={handleExpandToggle}
+                        expanded={!!expanded}
+                    />
                 )}
                 {!expanded &&
                     requiredPermissions.some((permission: any) =>
-                        hasAuthorityDepthProblem(maxAuthorityDepth, permission, 0)
+                        hasAuthorityDepthProblem(
+                            maxAuthorityDepth,
+                            permission,
+                            0
+                        )
                     ) && <ChildAuthorityDepthOverflowWarning />}
             </div>
             {expanded && <table>{rows}</table>}

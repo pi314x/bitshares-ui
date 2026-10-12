@@ -9,7 +9,10 @@
 // (pure side-effect chaining to further `CreditOfferActions` calls) now
 // lives in `../actions/CreditOfferActions.ts` - see those files' headers.
 import {reduxStore} from "../store/reduxStore";
-import {selectCreditOffer, CreditOfferState} from "../store/slices/creditOfferSlice";
+import {
+    selectCreditOffer,
+    CreditOfferState
+} from "../store/slices/creditOfferSlice";
 
 class CreditOfferStoreFacade {
     private unsubscribers = new Map<() => void, () => void>();

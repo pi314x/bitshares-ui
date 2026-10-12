@@ -76,9 +76,7 @@ function AccountPermissionRow({
         );
     } else if (pubKey) {
         name = item_id = pubKey;
-        name_or_key = (
-            <PrivateKeyView pubkey={pubKey}>{pubKey}</PrivateKeyView>
-        );
+        name_or_key = <PrivateKeyView pubkey={pubKey}>{pubKey}</PrivateKeyView>;
         suffix = "_keys";
         has_private = keys.has(pubKey);
     } else if (address) {
@@ -240,17 +238,9 @@ export default function AccountPermissionsList({
     });
 
     let displayError = error;
-    if (
-        !displayError &&
-        selectedItem &&
-        accounts.indexOf(selectedItem) !== -1
-    )
+    if (!displayError && selectedItem && accounts.indexOf(selectedItem) !== -1)
         displayError = counterpart.translate("account.perm.warning3");
-    if (
-        !displayError &&
-        itemNameInput &&
-        keys.indexOf(itemNameInput) !== -1
-    )
+    if (!displayError && itemNameInput && keys.indexOf(itemNameInput) !== -1)
         displayError = counterpart.translate("account.perm.warning4");
 
     const cw = ["10%", "70%", "30%", "10%"];

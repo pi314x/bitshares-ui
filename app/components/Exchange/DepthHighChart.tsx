@@ -173,10 +173,8 @@ function DepthHighChartInner(props: DepthHighChartProps) {
 
     const baseNameParts = (utils as any).replaceName(base);
     const quoteNameParts = (utils as any).replaceName(quote);
-    const baseSymbol =
-        (baseNameParts.prefix || "") + baseNameParts.name;
-    const quoteSymbol =
-        (quoteNameParts.prefix || "") + quoteNameParts.name;
+    const baseSymbol = (baseNameParts.prefix || "") + baseNameParts.name;
+    const quoteSymbol = (quoteNameParts.prefix || "") + quoteNameParts.name;
 
     const flatBids = cloneDeep(flat_bids),
         flatAsks = cloneDeep(flat_asks),
@@ -559,7 +557,10 @@ function arePropsEqual(
         : nextProps.feedPrice !== prevProps.feedPrice;
     return !(
         (didOrdersChange as any)(nextProps.orders, prevProps.orders) ||
-        (didOrdersChange as any)(nextProps.call_orders, prevProps.call_orders) ||
+        (didOrdersChange as any)(
+            nextProps.call_orders,
+            prevProps.call_orders
+        ) ||
         settleCheck ||
         nextProps.feedPrice !== prevProps.feedPrice ||
         nextProps.height !== prevProps.height ||

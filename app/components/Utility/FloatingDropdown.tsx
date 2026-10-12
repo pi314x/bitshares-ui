@@ -133,10 +133,7 @@ export default function Dropdown({
                 <li
                     className={upperCase ? "upper-case" : ""}
                     key={entryValue}
-                    onClick={onChangeOption.bind(
-                        null,
-                        values[entryValue]
-                    )}
+                    onClick={onChangeOption.bind(null, values[entryValue])}
                 >
                     <span>{entryValue}</span>
                 </li>

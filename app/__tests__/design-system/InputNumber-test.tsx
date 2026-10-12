@@ -47,8 +47,8 @@ describe("design-system/InputNumber", () => {
         expect((getByRole("spinbutton") as HTMLInputElement).disabled).toBe(
             true
         );
-        expect(
-            (getByLabelText("Increase") as HTMLButtonElement).disabled
-        ).toBe(true);
+        expect((getByLabelText("Increase") as HTMLButtonElement).disabled).toBe(
+            true
+        );
     });
 });

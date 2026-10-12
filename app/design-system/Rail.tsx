@@ -30,11 +30,7 @@ export function Rail({groups, footer}: RailProps): JSX.Element {
     return (
         <nav className={styles.rail} aria-label="Main">
             <div className={styles.brand}>
-                <img
-                    className={styles.brandMark}
-                    src={logo}
-                    alt="BitShares"
-                />
+                <img className={styles.brandMark} src={logo} alt="BitShares" />
                 <span className={styles.brandName}>BitShares</span>
             </div>
 

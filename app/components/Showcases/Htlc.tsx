@@ -204,8 +204,7 @@ function Htlc({currentAccount}: HtlcProps) {
             };
             const expiration = item.conditions.time_lock.expiration;
             const asset = (ChainStore as any).getAsset(amount.asset_id, false);
-            const toAccountName =
-                (ChainStore as any).getAccountName(to) || to;
+            const toAccountName = (ChainStore as any).getAccountName(to) || to;
             const fromAccountName =
                 (ChainStore as any).getAccountName(from) || from;
             return {
@@ -333,9 +332,7 @@ function Htlc({currentAccount}: HtlcProps) {
                                     payload: record.rawData
                                 })}
                             >
-                                {counterpart.translate(
-                                    "showcases.htlc.extend"
-                                )}
+                                {counterpart.translate("showcases.htlc.extend")}
                             </Button>
                         </span>
                     ) : (
@@ -346,9 +343,7 @@ function Htlc({currentAccount}: HtlcProps) {
                             })}
                         >
                             <Button>
-                                {counterpart.translate(
-                                    "showcases.htlc.redeem"
-                                )}
+                                {counterpart.translate("showcases.htlc.redeem")}
                             </Button>
                         </span>
                     );

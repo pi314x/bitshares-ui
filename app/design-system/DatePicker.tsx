@@ -131,9 +131,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
             <input
                 ref={ref}
                 type={showTime ? "datetime-local" : "date"}
-                className={[styles.input, className]
-                    .filter(Boolean)
-                    .join(" ")}
+                className={[styles.input, className].filter(Boolean).join(" ")}
                 style={style}
                 value={displayValue}
                 placeholder={placeholder}

@@ -283,12 +283,20 @@ const CreateModalCore = React.forwardRef<
         const feeBalanceObject = feeBalanceID
             ? ChainStore.getObject(feeBalanceID)
             : null;
-        if (!feeBalanceObject || (feeBalanceObject as any).get("balance") === 0) {
+        if (
+            !feeBalanceObject ||
+            (feeBalanceObject as any).get("balance") === 0
+        ) {
             mergeState({feeAmount: getUninitializedFeeAmount()});
         }
         if (!balanceObject || !feeAmount) return;
         if (!amount) return mergeState({balanceError: false});
-        const hasBalance = checkBalance(amount, asset, feeAmount, balanceObject);
+        const hasBalance = checkBalance(
+            amount,
+            asset,
+            feeAmount,
+            balanceObject
+        );
         if (hasBalance === null) return;
         mergeState({balanceError: !hasBalance});
     };
@@ -364,7 +372,9 @@ const CreateModalCore = React.forwardRef<
         const account_balances = account.get("balances").toJS();
         asset_types = Object.keys(account_balances).sort(utils.sortID);
         for (const key in account_balances) {
-            const balanceObject: any = ChainStore.getObject(account_balances[key]);
+            const balanceObject: any = ChainStore.getObject(
+                account_balances[key]
+            );
             if (balanceObject && balanceObject.get("balance") === 0) {
                 asset_types.splice(asset_types.indexOf(key), 1);
             }
@@ -670,7 +680,9 @@ const CreateModalCore = React.forwardRef<
             if (asset_types.length === 1)
                 asset = ChainStore.getAsset(asset_types[0]);
             if (asset_types.length > 0) {
-                const current_asset_id = asset ? asset.get("id") : asset_types[0];
+                const current_asset_id = asset
+                    ? asset.get("id")
+                    : asset_types[0];
                 balance = (
                     <span>
                         <Translate
@@ -807,7 +819,10 @@ const CreateModalCore = React.forwardRef<
                                     >
                                         {listRepayPeriod.map(
                                             (v: any, i: number) => (
-                                                <Select.Option key={v} value={v}>
+                                                <Select.Option
+                                                    key={v}
+                                                    value={v}
+                                                >
                                                     {counterpart.translate(
                                                         "credit_offer.list_repay_period.period_" +
                                                             i
@@ -1008,7 +1023,9 @@ const CreateModalCore = React.forwardRef<
 
     function _delWhitelistItem(account: any) {
         const {whitelist} = state;
-        const index = whitelist.findIndex(v => v.account.get("name") == account);
+        const index = whitelist.findIndex(
+            v => v.account.get("name") == account
+        );
         whitelist.splice(index, 1);
         if (index > -1) mergeState({whitelist});
     }

@@ -29,7 +29,14 @@ const TransitionWrapper = React.forwardRef<
     TransitionWrapperHandle,
     TransitionWrapperProps
 >(function TransitionWrapper(
-    {component = "span", enterTimeout = 2000, id, className, transitionName, children},
+    {
+        component = "span",
+        enterTimeout = 2000,
+        id,
+        className,
+        transitionName,
+        children
+    },
     ref
 ) {
     const [animateEnter, setAnimateEnter] = React.useState(false);
@@ -62,7 +69,11 @@ const TransitionWrapper = React.forwardRef<
         return React.createElement(component);
     } else {
         return (
-            <TransitionGroup component={component} id={id} className={className}>
+            <TransitionGroup
+                component={component}
+                id={id}
+                className={className}
+            >
                 {React.Children.map(children, (child, index) => (
                     <CSSTransition
                         key={index}

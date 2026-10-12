@@ -25,7 +25,9 @@ export default function AccountFeedProducers({
     producers,
     onChangeList
 }: AccountFeedProducersProps) {
-    const [producer_name, setProducerName] = React.useState<string | null>(null);
+    const [producer_name, setProducerName] = React.useState<string | null>(
+        null
+    );
     const [new_producer_id, setNewProducerId] = React.useState<any>(undefined);
 
     const onAccountChanged = (account: any) => {
@@ -76,7 +78,11 @@ export default function AccountFeedProducers({
                                 </td>
                                 <td
                                     className="clickable"
-                                    onClick={onChangeList.bind(null, "remove", a)}
+                                    onClick={onChangeList.bind(
+                                        null,
+                                        "remove",
+                                        a
+                                    )}
                                 >
                                     <Icon
                                         name="cross-circle"

@@ -56,10 +56,7 @@ function ChainSelectView({
         >
             {chains.filter(Map.isMap).map(chain => {
                 return (
-                    <Select.Option
-                        key={chain as any}
-                        value={chain as any}
-                    >
+                    <Select.Option key={chain as any} value={chain as any}>
                         {chain as any}
                     </Select.Option>
                 );

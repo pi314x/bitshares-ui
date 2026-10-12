@@ -67,12 +67,14 @@ function getFulfilledRules(rules: any[]) {
         if (isNaN(Number(rule.actualPrice))) return false;
 
         if (
-            Number(rule.type) === Number((PRICE_ALERT_TYPES as any).HIGHER_THAN) &&
+            Number(rule.type) ===
+                Number((PRICE_ALERT_TYPES as any).HIGHER_THAN) &&
             Number(rule.actualPrice) >= Number(rule.expectedPrice)
         ) {
             return true;
         } else if (
-            Number(rule.type) === Number((PRICE_ALERT_TYPES as any).LOWER_THAN) &&
+            Number(rule.type) ===
+                Number((PRICE_ALERT_TYPES as any).LOWER_THAN) &&
             Number(rule.actualPrice) <= Number(rule.expectedPrice)
         ) {
             return true;
@@ -94,7 +96,9 @@ function notifyAboutRules(rules: any[]) {
     // Notification.
 
     rules.forEach(rule => {
-        if (Number(rule.type) === Number((PRICE_ALERT_TYPES as any).LOWER_THAN)) {
+        if (
+            Number(rule.type) === Number((PRICE_ALERT_TYPES as any).LOWER_THAN)
+        ) {
             (Notification as any).info({
                 duration: 30,
                 message: counterpart.translate("exchange.price_alert.title"),
@@ -129,7 +133,9 @@ function notifyAboutRules(rules: any[]) {
             });
         }
 
-        if (Number(rule.type) === Number((PRICE_ALERT_TYPES as any).HIGHER_THAN)) {
+        if (
+            Number(rule.type) === Number((PRICE_ALERT_TYPES as any).HIGHER_THAN)
+        ) {
             (Notification as any).info({
                 duration: 30,
                 message: counterpart.translate("exchange.price_alert.title"),

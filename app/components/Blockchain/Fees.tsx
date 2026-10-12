@@ -90,12 +90,18 @@ interface FeeGroupCoreProps {
     title: string;
 }
 
-function FeeGroupCore({globalObject, settings, opIds, title}: FeeGroupCoreProps) {
+function FeeGroupCore({
+    globalObject,
+    settings,
+    opIds,
+    title
+}: FeeGroupCoreProps) {
     const resolvedGlobalObject = globalObject.toJS();
     const core_asset = (ChainStore as any).getAsset("1.3.0");
 
     const current_fees = resolvedGlobalObject.parameters.current_fees;
-    const network_fee = resolvedGlobalObject.parameters.network_percent_of_fee / 1e4;
+    const network_fee =
+        resolvedGlobalObject.parameters.network_percent_of_fee / 1e4;
     const scale = current_fees.scale;
     const feesRaw = current_fees.parameters;
     const preferredUnit = settings.get("fee_asset") || core_asset.get("symbol");

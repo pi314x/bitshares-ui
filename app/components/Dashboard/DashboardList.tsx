@@ -183,9 +183,11 @@ export default function DashboardList(props: DashboardListProps) {
                     account.get("orders"),
                     id => ChainStore.getObject(id)
                 );
-                const {collateral, debt} = aggregateCollateralAndDebt(
-                    account.get("call_orders"),
-                    id => ChainStore.getObject(id)
+                const {
+                    collateral,
+                    debt
+                } = aggregateCollateralAndDebt(account.get("call_orders"), id =>
+                    ChainStore.getObject(id)
                 );
                 const balanceList = resolveAccountBalanceIds(
                     account.get("balances"),
@@ -219,7 +221,9 @@ export default function DashboardList(props: DashboardListProps) {
                                     />
                                 </td>
                             ) : (
-                                <td onClick={() => onRemoveContact(accountName)}>
+                                <td
+                                    onClick={() => onRemoveContact(accountName)}
+                                >
                                     <Icon
                                         name="minus-circle"
                                         title="icons.minus_circle.remove_contact"
@@ -347,7 +351,9 @@ export default function DashboardList(props: DashboardListProps) {
                         >
                             <Translate
                                 content={`account.${
-                                    showIgnored ? "hide_ignored" : "show_ignored"
+                                    showIgnored
+                                        ? "hide_ignored"
+                                        : "show_ignored"
                                 }`}
                             />
                         </div>
@@ -373,7 +379,10 @@ export default function DashboardList(props: DashboardListProps) {
                             </th>
                             {isContactsList ? (
                                 <th>
-                                    <Icon name="user" title="icons.user.account" />
+                                    <Icon
+                                        name="user"
+                                        title="icons.user.account"
+                                    />
                                 </th>
                             ) : null}
                             <th style={{textAlign: "left"}}>ID</th>

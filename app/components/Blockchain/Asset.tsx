@@ -140,9 +140,10 @@ function Asset({
 }: AssetProps) {
     const [callOrders, setCallOrders] = React.useState<any[]>([]);
     const [collateralBids, setCollateralBids] = React.useState<any[]>([]);
-    const [showCollateralBidInInfo, setShowCollateralBidInInfo] = React.useState(
-        false
-    );
+    const [
+        showCollateralBidInInfo,
+        setShowCollateralBidInInfo
+    ] = React.useState(false);
     const [cumulativeGrouping, setCumulativeGrouping] = React.useState(false);
     const [activeFeedTab, setActiveFeedTab] = React.useState("margin");
     const [activeAssetTab, setActiveAssetTab] = React.useState("info");
@@ -267,11 +268,7 @@ function Asset({
                     (Apis as any)
                         .instance()
                         .db_api()
-                        .exec("get_collateral_bids", [
-                            asset.get("id"),
-                            100,
-                            0
-                        ])
+                        .exec("get_collateral_bids", [asset.get("id"), 100, 0])
                         .then((coll_orders: any) => {
                             const bids = coll_orders.map((c: any) => {
                                 return new (CollateralBid as any)(
@@ -814,8 +811,7 @@ function Asset({
                                 <Translate content={mssr_item_content} />
                             </td>
                             <td>
-                                {currentFeed.maximum_short_squeeze_ratio /
-                                    1000}
+                                {currentFeed.maximum_short_squeeze_ratio / 1000}
                             </td>
                         </tr>
                         {renderMCFR(bitAsset.options.extensions)}
@@ -1185,7 +1181,8 @@ function Asset({
                             <tr>
                                 <td>
                                     <Translate content="explorer.asset.settlement.price" />
-                                    &nbsp; ({(settlementOffset as number) / 100}%{" "}
+                                    &nbsp; ({(settlementOffset as number) / 100}
+                                    %{" "}
                                     <Translate content="explorer.asset.settlement.offset" />
                                     )
                                 </td>
@@ -1307,9 +1304,7 @@ function Asset({
                                     <Translate content="explorer.asset.fee_pool.core_exchange_rate" />
                                 </td>
                                 <td>
-                                    {formattedPrice(
-                                        options.core_exchange_rate
-                                    )}
+                                    {formattedPrice(options.core_exchange_rate)}
                                 </td>
                             </tr>
                             <tr>
@@ -1565,9 +1560,7 @@ function Asset({
                         <React.Fragment>
                             <Translate content="explorer.asset.permissions.blacklist_authorities" />
                             : &nbsp;
-                            {renderAuthorityList(
-                                options.blacklist_authorities
-                            )}
+                            {renderAuthorityList(options.blacklist_authorities)}
                         </React.Fragment>
                     )}
                 {!!options.blacklist_markets &&
@@ -1588,9 +1581,7 @@ function Asset({
                             <br />
                             <Translate content="explorer.asset.permissions.whitelist_authorities" />
                             : &nbsp;
-                            {renderAuthorityList(
-                                options.whitelist_authorities
-                            )}
+                            {renderAuthorityList(options.whitelist_authorities)}
                         </React.Fragment>
                     )}
                 {!!options.whitelist_markets &&
@@ -1817,11 +1808,7 @@ function Asset({
                     <React.Fragment>
                         <Translate content="explorer.asset.price_feed_data.core_exchange_rate" />{" "}
                         (
-                        {formattedPrice(
-                            core_exchange_rate_header,
-                            false,
-                            true
-                        )}
+                        {formattedPrice(core_exchange_rate_header, false, true)}
                         )
                     </React.Fragment>
                 ),
@@ -2004,8 +1991,7 @@ function Asset({
                     ),
                     dataIndex: "collateral",
                     sorter: (a: any, b: any) => {
-                        if (a.collateral.amount > b.collateral.amount)
-                            return 1;
+                        if (a.collateral.amount > b.collateral.amount) return 1;
                         if (a.collateral.amount < b.collateral.amount)
                             return -1;
                         return 0;

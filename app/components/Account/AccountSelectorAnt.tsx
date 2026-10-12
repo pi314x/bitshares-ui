@@ -119,10 +119,7 @@ function AccountSelector({
             return "id";
         if ((ChainValidation as any).is_account_name(value, true))
             return "name";
-        if (
-            props.allowPubKey &&
-            (PublicKey as any).fromPublicKeyString(value)
-        )
+        if (props.allowPubKey && (PublicKey as any).fromPublicKeyString(value))
             return "pubkey";
         return null;
     };
@@ -224,7 +221,12 @@ function AccountSelector({
     };
 
     const onAction = (e: any) => {
-        const {onAction: onActionProp, disableActionButton, account, accountName} = props;
+        const {
+            onAction: onActionProp,
+            disableActionButton,
+            account,
+            accountName
+        } = props;
         e.preventDefault();
         if (!getError() && onActionProp && !disableActionButton) {
             if (account) onActionProp(account);
@@ -244,9 +246,7 @@ function AccountSelector({
                      * help text, not arbitrary children, per its own
                      * header comment (see `Utility/AssetInput.tsx`'s
                      * identical drop). */
-                    validateStatus={
-                        error ? "error" : account ? "success" : ""
-                    }
+                    validateStatus={error ? "error" : account ? "success" : ""}
                     help={
                         error ? (
                             error
@@ -334,9 +334,9 @@ function AccountSelector({
                 const account_status = (ChainStore as any).getAccountMemberStatus(
                     acc
                 );
-                const account_status_text = !(
-                    accountUtils as any
-                ).isKnownScammer(accName)
+                const account_status_text = !(accountUtils as any).isKnownScammer(
+                    accName
+                )
                     ? "account.member." + account_status
                     : "account.member.suspected_scammer";
 

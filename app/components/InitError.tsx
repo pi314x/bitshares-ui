@@ -176,9 +176,7 @@ export default function InitError() {
                         </Form.Item>
 
                         <Form.Item
-                            label={counterpart.translate(
-                                "app_init.ws_status"
-                            )}
+                            label={counterpart.translate("app_init.ws_status")}
                         >
                             {rpc_connection_status === "open" ? (
                                 <span className="txtlabel success">
@@ -196,10 +194,7 @@ export default function InitError() {
                         <Button variant="accent" onClick={onReloadClick}>
                             {counterpart.translate(`app_init.retry`)}
                         </Button>
-                        <Button
-                            style={{marginLeft: "16px"}}
-                            onClick={onReset}
-                        >
+                        <Button style={{marginLeft: "16px"}} onClick={onReset}>
                             {counterpart.translate(`settings.reset`)}
                         </Button>
                     </Form>

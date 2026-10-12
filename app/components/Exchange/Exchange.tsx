@@ -307,7 +307,9 @@ function getInitialExchangeState(props: any) {
 function setReceiveHelper(state: any) {
     if (state.price.isValid() && state.for_sale.hasAmount()) {
         state.to_receive = state.for_sale.times(state.price);
-        state.toReceiveText = state.to_receive.getAmount({real: true}).toString();
+        state.toReceiveText = state.to_receive
+            .getAmount({real: true})
+            .toString();
         return true;
     }
     return false;
@@ -324,7 +326,10 @@ function setForSaleHelper(state: any) {
 
 function setPriceHelper(state: any) {
     if (state.for_sale.hasAmount() && state.to_receive.hasAmount()) {
-        state.price = new Price({base: state.for_sale, quote: state.to_receive});
+        state.price = new Price({
+            base: state.for_sale,
+            quote: state.to_receive
+        });
         state.priceText = state.price.toReal().toString();
         return true;
     }
@@ -393,19 +398,22 @@ function ExchangeInner(props: any) {
     const [isDepositModalLoaded, setIsDepositModalLoaded] = React.useState(
         initial.current.isDepositModalLoaded
     );
-    const [isPersonalizeModalLoaded, setIsPersonalizeModalLoaded] = React.useState(
-        initial.current.isPersonalizeModalLoaded
-    );
+    const [
+        isPersonalizeModalLoaded,
+        setIsPersonalizeModalLoaded
+    ] = React.useState(initial.current.isPersonalizeModalLoaded);
     const [
         isMarketPickerModalLoaded,
         setIsMarketPickerModalLoaded
     ] = React.useState(initial.current.isMarketPickerModalLoaded);
-    const [isBorrowQuoteModalLoaded, setIsBorrowQuoteModalLoaded] = React.useState(
-        initial.current.isBorrowQuoteModalLoaded
-    );
-    const [isBorrowBaseModalLoaded, setIsBorrowBaseModalLoaded] = React.useState(
-        initial.current.isBorrowBaseModalLoaded
-    );
+    const [
+        isBorrowQuoteModalLoaded,
+        setIsBorrowQuoteModalLoaded
+    ] = React.useState(initial.current.isBorrowQuoteModalLoaded);
+    const [
+        isBorrowBaseModalLoaded,
+        setIsBorrowBaseModalLoaded
+    ] = React.useState(initial.current.isBorrowBaseModalLoaded);
     const [isDepositModalVisible, setIsDepositModalVisible] = React.useState(
         initial.current.isDepositModalVisible
     );
@@ -437,9 +445,10 @@ function ExchangeInner(props: any) {
         isConfirmSellOrderModalVisible,
         setIsConfirmSellOrderModalVisible
     ] = React.useState(initial.current.isConfirmSellOrderModalVisible);
-    const [isPriceAlertModalVisible, setIsPriceAlertModalVisible] = React.useState(
-        initial.current.isPriceAlertModalVisible
-    );
+    const [
+        isPriceAlertModalVisible,
+        setIsPriceAlertModalVisible
+    ] = React.useState(initial.current.isPriceAlertModalVisible);
     const [
         isConfirmSellOrderModalLoaded,
         setIsConfirmSellOrderModalLoaded
@@ -447,7 +456,9 @@ function ExchangeInner(props: any) {
     const [tabVerticalPanel, setTabVerticalPanel] = React.useState(
         initial.current.tabVerticalPanel
     );
-    const [tabBuySell, setTabBuySell] = React.useState(initial.current.tabBuySell);
+    const [tabBuySell, setTabBuySell] = React.useState(
+        initial.current.tabBuySell
+    );
     const [buySellOpen, setBuySellOpen] = React.useState(
         initial.current.buySellOpen
     );
@@ -456,9 +467,15 @@ function ExchangeInner(props: any) {
     const [height, setHeight] = React.useState(initial.current.height);
     const [width, setWidth] = React.useState(initial.current.width);
     const [buyDiff, setBuyDiff] = React.useState<any>(initial.current.buyDiff);
-    const [sellDiff, setSellDiff] = React.useState<any>(initial.current.sellDiff);
-    const [autoScroll, setAutoScroll] = React.useState(initial.current.autoScroll);
-    const [buySellTop, setBuySellTop] = React.useState(initial.current.buySellTop);
+    const [sellDiff, setSellDiff] = React.useState<any>(
+        initial.current.sellDiff
+    );
+    const [autoScroll, setAutoScroll] = React.useState(
+        initial.current.autoScroll
+    );
+    const [buySellTop, setBuySellTop] = React.useState(
+        initial.current.buySellTop
+    );
     const [buyFeeAssetIdx, setBuyFeeAssetIdx] = React.useState(
         initial.current.buyFeeAssetIdx
     );
@@ -492,7 +509,9 @@ function ExchangeInner(props: any) {
         initial.current.chartHeight
     );
     const [chartZoom, setChartZoom] = React.useState(initial.current.chartZoom);
-    const [chartTools, setChartTools] = React.useState(initial.current.chartTools);
+    const [chartTools, setChartTools] = React.useState(
+        initial.current.chartTools
+    );
     const [hideFunctionButtons, setHideFunctionButtons] = React.useState(
         initial.current.hideFunctionButtons
     );
@@ -518,10 +537,12 @@ function ExchangeInner(props: any) {
         bid: exchange.getIn(["lastExpiration", "bid"]) || "YEAR",
         ask: exchange.getIn(["lastExpiration", "ask"]) || "YEAR"
     });
-    const [expirationCustomTime, setExpirationCustomTime] = React.useState<any>({
-        bid: "Specific",
-        ask: "Specific"
-    });
+    const [expirationCustomTime, setExpirationCustomTime] = React.useState<any>(
+        {
+            bid: "Specific",
+            ask: "Specific"
+        }
+    );
     const [feeStatus, setFeeStatus] = React.useState<any>({});
     const [marketPickerAsset, setMarketPickerAsset] = React.useState<any>(
         undefined
@@ -643,7 +664,10 @@ function ExchangeInner(props: any) {
             const {innerHeight, innerWidth} = window;
             setHeight(prevHeight => {
                 setWidth(prevWidth => {
-                    if (innerHeight !== prevHeight || innerWidth !== prevWidth) {
+                    if (
+                        innerHeight !== prevHeight ||
+                        innerWidth !== prevWidth
+                    ) {
                         const container = centerRef.current;
                         if (container) {
                             Ps.update(container);
@@ -654,10 +678,7 @@ function ExchangeInner(props: any) {
                 return innerHeight !== prevHeight ? innerHeight : prevHeight;
             });
         };
-        const debouncedResize = (debounce as any)(
-            onWindowResize,
-            150
-        );
+        const debouncedResize = (debounce as any)(onWindowResize, 150);
         window.addEventListener("resize", debouncedResize, {
             capture: false,
             passive: true
@@ -724,7 +745,9 @@ function ExchangeInner(props: any) {
         setIsConfirmBuyOrderModalVisible(
             freshState.isConfirmBuyOrderModalVisible
         );
-        setIsConfirmBuyOrderModalLoaded(freshState.isConfirmBuyOrderModalLoaded);
+        setIsConfirmBuyOrderModalLoaded(
+            freshState.isConfirmBuyOrderModalLoaded
+        );
         setIsConfirmSellOrderModalVisible(
             freshState.isConfirmSellOrderModalVisible
         );
@@ -958,7 +981,10 @@ function ExchangeInner(props: any) {
                     : sell.getAmount();
             if (sellSum <= sellBalance) {
                 return fee.asset_id;
-            } else if (coreFee.getAmount() <= coreBalance && fee.asset_id !== "1.3.0") {
+            } else if (
+                coreFee.getAmount() <= coreBalance &&
+                fee.asset_id !== "1.3.0"
+            ) {
                 return "1.3.0";
             } else {
                 return null;
@@ -1311,9 +1337,9 @@ function ExchangeInner(props: any) {
         const sellBalance = current.for_sale.clone(
             sellBalanceArg
                 ? parseInt(
-                      (ChainStore as any).getObject(sellBalanceArg).get(
-                          "balance"
-                      ),
+                      (ChainStore as any)
+                          .getObject(sellBalanceArg)
+                          .get("balance"),
                       10
                   )
                 : 0
@@ -1820,7 +1846,9 @@ function ExchangeInner(props: any) {
     } = marketData;
 
     const spread =
-        lowestAsk && highestBid ? lowestAsk.getPrice() - highestBid.getPrice() : 0;
+        lowestAsk && highestBid
+            ? lowestAsk.getPrice() - highestBid.getPrice()
+            : 0;
 
     if (activeMarketHistory.size) {
         const latest_two = activeMarketHistory.take(2);
@@ -1878,7 +1906,9 @@ function ExchangeInner(props: any) {
                         },
                         {
                             type: "translate",
-                            value: isBidTitle ? "exchange.buy" : "exchange.sell",
+                            value: isBidTitle
+                                ? "exchange.buy"
+                                : "exchange.sell",
                             arg: "direction"
                         }
                     ]}
@@ -1887,290 +1917,284 @@ function ExchangeInner(props: any) {
         );
     };
 
-    const buyForm =
-        isFrozen ? null : tinyScreen && !mobileKey.includes("buySellTab") ? null : (
-            <Tabs
-                animated={false}
-                activeKey={viewSettings.get("order-form-bid") || "limit"}
-                onChange={(value: any) =>
-                    handleOrderTypeTabChange("bid", value)
-                }
-                tabBarExtraContent={<div>{buySellTitle(true)}</div>}
-                defaultActiveKey={"limit"}
-                className={cnames(
-                    "exchange--buy-sell-form",
-                    verticalOrderForm && !smallScreen
-                        ? ""
-                        : centerContainerWidth > 1200
-                        ? "medium-6 large-6 xlarge-4"
-                        : centerContainerWidth > 800
-                        ? "medium-6"
-                        : "",
-                    "small-12 exchange-padded middle-content",
-                    flipBuySell
-                        ? `order-${buySellTop ? 2 : 3} large-order-${
-                              buySellTop ? 2 : 5
-                          } sell-form`
-                        : `order-${buySellTop ? 1 : 2} large-order-${
-                              buySellTop ? 1 : 4
-                          } buy-form`
-                )}
+    const buyForm = isFrozen ? null : tinyScreen &&
+      !mobileKey.includes("buySellTab") ? null : (
+        <Tabs
+            animated={false}
+            activeKey={viewSettings.get("order-form-bid") || "limit"}
+            onChange={(value: any) => handleOrderTypeTabChange("bid", value)}
+            tabBarExtraContent={<div>{buySellTitle(true)}</div>}
+            defaultActiveKey={"limit"}
+            className={cnames(
+                "exchange--buy-sell-form",
+                verticalOrderForm && !smallScreen
+                    ? ""
+                    : centerContainerWidth > 1200
+                    ? "medium-6 large-6 xlarge-4"
+                    : centerContainerWidth > 800
+                    ? "medium-6"
+                    : "",
+                "small-12 exchange-padded middle-content",
+                flipBuySell
+                    ? `order-${buySellTop ? 2 : 3} large-order-${
+                          buySellTop ? 2 : 5
+                      } sell-form`
+                    : `order-${buySellTop ? 1 : 2} large-order-${
+                          buySellTop ? 1 : 4
+                      } buy-form`
+            )}
+        >
+            <Tabs.TabPane
+                tab={counterpart.translate("exchange.limit")}
+                key={"limit"}
             >
-                <Tabs.TabPane
-                    tab={counterpart.translate("exchange.limit")}
-                    key={"limit"}
-                >
-                    <BuySell
-                        key={`actionCard_${actionCardIndex++}`}
-                        onBorrow={baseIsBitAsset ? borrowBase : null}
-                        onBuy={() => {}}
-                        onDeposit={() => onDeposit("bid")}
-                        currentAccount={currentAccount}
-                        backedCoin={backedCoins.find(
-                            (a: any) => a.symbol === base.get("symbol")
-                        )}
-                        currentBridges={
-                            bridgeCoins.get(base.get("symbol")) || null
-                        }
-                        isOpen={buySellOpen}
-                        parentWidth={centerContainerWidth}
-                        styles={{
-                            padding: 5,
-                            paddingRight: mirrorPanels ? 15 : 5
-                        }}
-                        type="bid"
-                        hideHeader={true}
-                        expirationType={expirationType["bid"]}
-                        expirations={EXPIRATIONS}
-                        expirationCustomTime={expirationCustomTime["bid"]}
-                        onExpirationTypeChange={(e: any) =>
-                            handleExpirationChange("bid", e)
-                        }
-                        onExpirationCustomChange={(time: any) =>
-                            handleCustomExpirationChange("bid", time)
-                        }
-                        amount={numberExponentToLarge(bid.toReceiveText)}
-                        price={numberExponentToLarge(bid.priceText)}
-                        total={numberExponentToLarge(bid.forSaleText)}
-                        quote={quote}
-                        base={base}
-                        amountChange={(e: any) => onInputReceive("bid", true, e)}
-                        priceChange={(e: any) => onInputPrice("bid", e)}
-                        setPrice={(price: any) => currentPriceClick("bid", price)}
-                        totalChange={(e: any) => onInputSell("bid", false, e)}
-                        balance={baseBalance}
-                        balanceId={base.get("id")}
-                        onSubmit={(short: boolean, e: any) =>
-                            createLimitOrderConfirm(
-                                quote,
-                                base,
-                                baseBalance,
-                                coreBalance,
-                                buyFeeAsset,
-                                "buy",
-                                short,
-                                e
-                            )
-                        }
-                        balancePrecision={base.get("precision")}
-                        currentPrice={lowestAsk.getPrice()}
-                        currentPriceObject={lowestAsk}
-                        account={currentAccount.get("name")}
-                        fee={buyFee}
-                        hasFeeBalance={feeStatus[buyFee.asset_id].hasBalance}
-                        feeAssets={buyFeeAssets}
-                        feeAsset={buyFeeAsset}
-                        onChangeFeeAsset={(value: any) =>
-                            onChangeFeeAsset("buy", value)
-                        }
-                        isPredictionMarket={base.getIn([
-                            "bitasset",
-                            "is_prediction_market"
-                        ])}
-                        onFlip={!flipBuySell ? flipBuySellToggle : undefined}
-                        onTogglePosition={
-                            buySellTop && !verticalOrderBook
-                                ? toggleBuySellPosition
-                                : undefined
-                        }
-                        moveOrderForm={
-                            !smallScreen && (!flipBuySell || verticalOrderForm)
-                                ? moveOrderForm
-                                : undefined
-                        }
-                        verticalOrderForm={!smallScreen ? verticalOrderForm : false}
-                        singleColumnOrderForm={singleColumnOrderForm}
-                        hideFunctionButtons={hideFunctionButtons}
-                    />
-                </Tabs.TabPane>
-                <Tabs.TabPane
-                    tab={counterpart.translate("exchange.scaled")}
-                    key={"scaled"}
-                >
-                    <ScaledOrderTab
-                        expirationType={expirationType["bid"]}
-                        expirations={EXPIRATIONS}
-                        expirationCustomTime={expirationCustomTime["bid"]}
-                        onExpirationTypeChange={(e: any) =>
-                            handleExpirationChange("bid", e)
-                        }
-                        onExpirationCustomChange={(time: any) =>
-                            handleCustomExpirationChange("bid", time)
-                        }
-                        currentPrice={lowestAsk.getPrice()}
-                        lastClickedPrice={ask && ask.priceText}
-                        currentAccount={currentAccount}
-                        createScaledOrder={createScaledOrder}
-                        type={"bid"}
-                        quoteAsset={quote}
-                        baseAsset={base}
-                    />
-                </Tabs.TabPane>
-            </Tabs>
-        );
-
-    const sellForm =
-        isFrozen ? null : tinyScreen && !mobileKey.includes("buySellTab") ? null : (
-            <Tabs
-                activeKey={viewSettings.get("order-form-ask") || "limit"}
-                onChange={(value: any) =>
-                    handleOrderTypeTabChange("ask", value)
-                }
-                animated={false}
-                tabBarExtraContent={<div>{buySellTitle(false)}</div>}
-                defaultActiveKey={"limit"}
-                className={cnames(
-                    "exchange--buy-sell-form",
-                    verticalOrderForm && !smallScreen
-                        ? ""
-                        : centerContainerWidth > 1200
-                        ? "medium-6 large-6 xlarge-4"
-                        : centerContainerWidth > 800
-                        ? "medium-6"
-                        : "",
-                    "small-12 exchange-padded middle-content",
-                    flipBuySell
-                        ? `order-${buySellTop ? 1 : 2} large-order-${
-                              buySellTop ? 1 : 4
-                          } buy-form`
-                        : `order-${buySellTop ? 2 : 3} large-order-${
-                              buySellTop ? 2 : 5
-                          } sell-form`
-                )}
+                <BuySell
+                    key={`actionCard_${actionCardIndex++}`}
+                    onBorrow={baseIsBitAsset ? borrowBase : null}
+                    onBuy={() => {}}
+                    onDeposit={() => onDeposit("bid")}
+                    currentAccount={currentAccount}
+                    backedCoin={backedCoins.find(
+                        (a: any) => a.symbol === base.get("symbol")
+                    )}
+                    currentBridges={bridgeCoins.get(base.get("symbol")) || null}
+                    isOpen={buySellOpen}
+                    parentWidth={centerContainerWidth}
+                    styles={{
+                        padding: 5,
+                        paddingRight: mirrorPanels ? 15 : 5
+                    }}
+                    type="bid"
+                    hideHeader={true}
+                    expirationType={expirationType["bid"]}
+                    expirations={EXPIRATIONS}
+                    expirationCustomTime={expirationCustomTime["bid"]}
+                    onExpirationTypeChange={(e: any) =>
+                        handleExpirationChange("bid", e)
+                    }
+                    onExpirationCustomChange={(time: any) =>
+                        handleCustomExpirationChange("bid", time)
+                    }
+                    amount={numberExponentToLarge(bid.toReceiveText)}
+                    price={numberExponentToLarge(bid.priceText)}
+                    total={numberExponentToLarge(bid.forSaleText)}
+                    quote={quote}
+                    base={base}
+                    amountChange={(e: any) => onInputReceive("bid", true, e)}
+                    priceChange={(e: any) => onInputPrice("bid", e)}
+                    setPrice={(price: any) => currentPriceClick("bid", price)}
+                    totalChange={(e: any) => onInputSell("bid", false, e)}
+                    balance={baseBalance}
+                    balanceId={base.get("id")}
+                    onSubmit={(short: boolean, e: any) =>
+                        createLimitOrderConfirm(
+                            quote,
+                            base,
+                            baseBalance,
+                            coreBalance,
+                            buyFeeAsset,
+                            "buy",
+                            short,
+                            e
+                        )
+                    }
+                    balancePrecision={base.get("precision")}
+                    currentPrice={lowestAsk.getPrice()}
+                    currentPriceObject={lowestAsk}
+                    account={currentAccount.get("name")}
+                    fee={buyFee}
+                    hasFeeBalance={feeStatus[buyFee.asset_id].hasBalance}
+                    feeAssets={buyFeeAssets}
+                    feeAsset={buyFeeAsset}
+                    onChangeFeeAsset={(value: any) =>
+                        onChangeFeeAsset("buy", value)
+                    }
+                    isPredictionMarket={base.getIn([
+                        "bitasset",
+                        "is_prediction_market"
+                    ])}
+                    onFlip={!flipBuySell ? flipBuySellToggle : undefined}
+                    onTogglePosition={
+                        buySellTop && !verticalOrderBook
+                            ? toggleBuySellPosition
+                            : undefined
+                    }
+                    moveOrderForm={
+                        !smallScreen && (!flipBuySell || verticalOrderForm)
+                            ? moveOrderForm
+                            : undefined
+                    }
+                    verticalOrderForm={!smallScreen ? verticalOrderForm : false}
+                    singleColumnOrderForm={singleColumnOrderForm}
+                    hideFunctionButtons={hideFunctionButtons}
+                />
+            </Tabs.TabPane>
+            <Tabs.TabPane
+                tab={counterpart.translate("exchange.scaled")}
+                key={"scaled"}
             >
-                <Tabs.TabPane
-                    tab={counterpart.translate("exchange.limit")}
-                    key={"limit"}
-                >
-                    <BuySell
-                        key={`actionCard_${actionCardIndex++}`}
-                        onBorrow={quoteIsBitAsset ? borrowQuote : null}
-                        onBuy={() => {}}
-                        onDeposit={() => onDeposit("ask")}
-                        currentAccount={currentAccount}
-                        backedCoin={backedCoins.find(
-                            (a: any) => a.symbol === quote.get("symbol")
-                        )}
-                        currentBridges={
-                            bridgeCoins.get(quote.get("symbol")) || null
-                        }
-                        isOpen={buySellOpen}
-                        parentWidth={centerContainerWidth}
-                        styles={{
-                            padding: 5,
-                            paddingRight: mirrorPanels ? 15 : 5
-                        }}
-                        type="ask"
-                        hideHeader={true}
-                        amount={numberExponentToLarge(ask.forSaleText)}
-                        price={numberExponentToLarge(ask.priceText)}
-                        total={numberExponentToLarge(ask.toReceiveText)}
-                        quote={quote}
-                        base={base}
-                        expirationType={expirationType["ask"]}
-                        expirations={EXPIRATIONS}
-                        expirationCustomTime={expirationCustomTime["ask"]}
-                        onExpirationTypeChange={(e: any) =>
-                            handleExpirationChange("ask", e)
-                        }
-                        onExpirationCustomChange={(time: any) =>
-                            handleCustomExpirationChange("ask", time)
-                        }
-                        amountChange={(e: any) => onInputSell("ask", false, e)}
-                        priceChange={(e: any) => onInputPrice("ask", e)}
-                        setPrice={(price: any) => currentPriceClick("ask", price)}
-                        totalChange={(e: any) => onInputReceive("ask", true, e)}
-                        balance={quoteBalance}
-                        balanceId={quote.get("id")}
-                        onSubmit={(short: boolean, e: any) =>
-                            createLimitOrderConfirm(
-                                base,
-                                quote,
-                                quoteBalance,
-                                coreBalance,
-                                sellFeeAsset,
-                                "sell",
-                                short,
-                                e
-                            )
-                        }
-                        balancePrecision={quote.get("precision")}
-                        currentPrice={highestBid.getPrice()}
-                        currentPriceObject={highestBid}
-                        account={currentAccount.get("name")}
-                        fee={sellFee}
-                        hasFeeBalance={feeStatus[sellFee.asset_id].hasBalance}
-                        feeAssets={sellFeeAssets}
-                        feeAsset={sellFeeAsset}
-                        onChangeFeeAsset={(value: any) =>
-                            onChangeFeeAsset("sell", value)
-                        }
-                        isPredictionMarket={quote.getIn([
-                            "bitasset",
-                            "is_prediction_market"
-                        ])}
-                        onFlip={flipBuySell ? flipBuySellToggle : undefined}
-                        onTogglePosition={
-                            buySellTop && !verticalOrderBook
-                                ? toggleBuySellPosition
-                                : undefined
-                        }
-                        moveOrderForm={
-                            !smallScreen && (flipBuySell || verticalOrderForm)
-                                ? moveOrderForm
-                                : undefined
-                        }
-                        verticalOrderForm={!smallScreen ? verticalOrderForm : false}
-                        singleColumnOrderForm={singleColumnOrderForm}
-                        hideFunctionButtons={hideFunctionButtons}
-                    />
-                </Tabs.TabPane>
+                <ScaledOrderTab
+                    expirationType={expirationType["bid"]}
+                    expirations={EXPIRATIONS}
+                    expirationCustomTime={expirationCustomTime["bid"]}
+                    onExpirationTypeChange={(e: any) =>
+                        handleExpirationChange("bid", e)
+                    }
+                    onExpirationCustomChange={(time: any) =>
+                        handleCustomExpirationChange("bid", time)
+                    }
+                    currentPrice={lowestAsk.getPrice()}
+                    lastClickedPrice={ask && ask.priceText}
+                    currentAccount={currentAccount}
+                    createScaledOrder={createScaledOrder}
+                    type={"bid"}
+                    quoteAsset={quote}
+                    baseAsset={base}
+                />
+            </Tabs.TabPane>
+        </Tabs>
+    );
 
-                <Tabs.TabPane
-                    tab={counterpart.translate("exchange.scaled")}
-                    key={"scaled"}
-                >
-                    <ScaledOrderTab
-                        expirationType={expirationType["ask"]}
-                        expirations={EXPIRATIONS}
-                        expirationCustomTime={expirationCustomTime["ask"]}
-                        onExpirationTypeChange={(e: any) =>
-                            handleExpirationChange("ask", e)
-                        }
-                        onExpirationCustomChange={(time: any) =>
-                            handleCustomExpirationChange("ask", time)
-                        }
-                        currentPrice={highestBid.getPrice()}
-                        lastClickedPrice={ask && ask.priceText}
-                        currentAccount={currentAccount}
-                        createScaledOrder={createScaledOrder}
-                        type="ask"
-                        baseAsset={base}
-                        quoteAsset={quote}
-                    />
-                </Tabs.TabPane>
-            </Tabs>
-        );
+    const sellForm = isFrozen ? null : tinyScreen &&
+      !mobileKey.includes("buySellTab") ? null : (
+        <Tabs
+            activeKey={viewSettings.get("order-form-ask") || "limit"}
+            onChange={(value: any) => handleOrderTypeTabChange("ask", value)}
+            animated={false}
+            tabBarExtraContent={<div>{buySellTitle(false)}</div>}
+            defaultActiveKey={"limit"}
+            className={cnames(
+                "exchange--buy-sell-form",
+                verticalOrderForm && !smallScreen
+                    ? ""
+                    : centerContainerWidth > 1200
+                    ? "medium-6 large-6 xlarge-4"
+                    : centerContainerWidth > 800
+                    ? "medium-6"
+                    : "",
+                "small-12 exchange-padded middle-content",
+                flipBuySell
+                    ? `order-${buySellTop ? 1 : 2} large-order-${
+                          buySellTop ? 1 : 4
+                      } buy-form`
+                    : `order-${buySellTop ? 2 : 3} large-order-${
+                          buySellTop ? 2 : 5
+                      } sell-form`
+            )}
+        >
+            <Tabs.TabPane
+                tab={counterpart.translate("exchange.limit")}
+                key={"limit"}
+            >
+                <BuySell
+                    key={`actionCard_${actionCardIndex++}`}
+                    onBorrow={quoteIsBitAsset ? borrowQuote : null}
+                    onBuy={() => {}}
+                    onDeposit={() => onDeposit("ask")}
+                    currentAccount={currentAccount}
+                    backedCoin={backedCoins.find(
+                        (a: any) => a.symbol === quote.get("symbol")
+                    )}
+                    currentBridges={
+                        bridgeCoins.get(quote.get("symbol")) || null
+                    }
+                    isOpen={buySellOpen}
+                    parentWidth={centerContainerWidth}
+                    styles={{
+                        padding: 5,
+                        paddingRight: mirrorPanels ? 15 : 5
+                    }}
+                    type="ask"
+                    hideHeader={true}
+                    amount={numberExponentToLarge(ask.forSaleText)}
+                    price={numberExponentToLarge(ask.priceText)}
+                    total={numberExponentToLarge(ask.toReceiveText)}
+                    quote={quote}
+                    base={base}
+                    expirationType={expirationType["ask"]}
+                    expirations={EXPIRATIONS}
+                    expirationCustomTime={expirationCustomTime["ask"]}
+                    onExpirationTypeChange={(e: any) =>
+                        handleExpirationChange("ask", e)
+                    }
+                    onExpirationCustomChange={(time: any) =>
+                        handleCustomExpirationChange("ask", time)
+                    }
+                    amountChange={(e: any) => onInputSell("ask", false, e)}
+                    priceChange={(e: any) => onInputPrice("ask", e)}
+                    setPrice={(price: any) => currentPriceClick("ask", price)}
+                    totalChange={(e: any) => onInputReceive("ask", true, e)}
+                    balance={quoteBalance}
+                    balanceId={quote.get("id")}
+                    onSubmit={(short: boolean, e: any) =>
+                        createLimitOrderConfirm(
+                            base,
+                            quote,
+                            quoteBalance,
+                            coreBalance,
+                            sellFeeAsset,
+                            "sell",
+                            short,
+                            e
+                        )
+                    }
+                    balancePrecision={quote.get("precision")}
+                    currentPrice={highestBid.getPrice()}
+                    currentPriceObject={highestBid}
+                    account={currentAccount.get("name")}
+                    fee={sellFee}
+                    hasFeeBalance={feeStatus[sellFee.asset_id].hasBalance}
+                    feeAssets={sellFeeAssets}
+                    feeAsset={sellFeeAsset}
+                    onChangeFeeAsset={(value: any) =>
+                        onChangeFeeAsset("sell", value)
+                    }
+                    isPredictionMarket={quote.getIn([
+                        "bitasset",
+                        "is_prediction_market"
+                    ])}
+                    onFlip={flipBuySell ? flipBuySellToggle : undefined}
+                    onTogglePosition={
+                        buySellTop && !verticalOrderBook
+                            ? toggleBuySellPosition
+                            : undefined
+                    }
+                    moveOrderForm={
+                        !smallScreen && (flipBuySell || verticalOrderForm)
+                            ? moveOrderForm
+                            : undefined
+                    }
+                    verticalOrderForm={!smallScreen ? verticalOrderForm : false}
+                    singleColumnOrderForm={singleColumnOrderForm}
+                    hideFunctionButtons={hideFunctionButtons}
+                />
+            </Tabs.TabPane>
+
+            <Tabs.TabPane
+                tab={counterpart.translate("exchange.scaled")}
+                key={"scaled"}
+            >
+                <ScaledOrderTab
+                    expirationType={expirationType["ask"]}
+                    expirations={EXPIRATIONS}
+                    expirationCustomTime={expirationCustomTime["ask"]}
+                    onExpirationTypeChange={(e: any) =>
+                        handleExpirationChange("ask", e)
+                    }
+                    onExpirationCustomChange={(time: any) =>
+                        handleCustomExpirationChange("ask", time)
+                    }
+                    currentPrice={highestBid.getPrice()}
+                    lastClickedPrice={ask && ask.priceText}
+                    currentAccount={currentAccount}
+                    createScaledOrder={createScaledOrder}
+                    type="ask"
+                    baseAsset={base}
+                    quoteAsset={quote}
+                />
+            </Tabs.TabPane>
+        </Tabs>
+    );
 
     const myMarkets =
         tinyScreen && !mobileKey.includes("myMarkets") ? null : (
@@ -2279,8 +2303,9 @@ function ExchangeInner(props: any) {
         orderBookRef.current.verticalStickyTable.current &&
         orderBookRef.current.verticalStickyTable.current.scrollData
     ) {
-        panelWidth = orderBookRef.current.verticalStickyTable.current.scrollData
-            .scrollWidth;
+        panelWidth =
+            orderBookRef.current.verticalStickyTable.current.scrollData
+                .scrollWidth;
     }
 
     const marketHistory =
@@ -2327,7 +2352,9 @@ function ExchangeInner(props: any) {
                             : ""
                         : "medium-12",
                     "no-padding no-overflow middle-content small-12",
-                    verticalOrderBook || verticalOrderForm ? "order-4" : "order-3"
+                    verticalOrderBook || verticalOrderForm
+                        ? "order-4"
+                        : "order-3"
                 )}
                 innerClass={!tinyScreen ? "exchange-padded" : ""}
                 innerStyle={{paddingBottom: !tinyScreen ? "1.2rem" : "0"}}
@@ -2561,7 +2588,9 @@ function ExchangeInner(props: any) {
                             toggleChart("market_depth");
                         }
                     }}
-                    type={chartType == "market_depth" ? "bar-chart" : "area-chart"}
+                    type={
+                        chartType == "market_depth" ? "bar-chart" : "area-chart"
+                    }
                 />
             </Tooltip>
         </div>
@@ -2699,9 +2728,7 @@ function ExchangeInner(props: any) {
                 if (a == "open_settlement" && settlementOrders !== null) {
                     groupTabs[panelTabs[a]].push(
                         <Tabs.TabPane
-                            tab={translator.translate(
-                                "exchange.settle_orders"
-                            )}
+                            tab={translator.translate("exchange.settle_orders")}
                             key="open_settlement"
                         >
                             {settlementOrders}
@@ -2906,9 +2933,7 @@ function ExchangeInner(props: any) {
                 </Collapse.Panel>
                 {settlementOrders !== null ? (
                     <Collapse.Panel
-                        header={translator.translate(
-                            "exchange.settle_orders"
-                        )}
+                        header={translator.translate("exchange.settle_orders")}
                         key="settlementOrders"
                     >
                         {settlementOrders}
@@ -3172,7 +3197,9 @@ function ExchangeInner(props: any) {
 
                 <div
                     style={{paddingTop: 0}}
-                    className={cnames("grid-block main-content vertical no-overflow")}
+                    className={cnames(
+                        "grid-block main-content vertical no-overflow"
+                    )}
                 >
                     <div
                         className="grid-block vertical no-padding ps-container"
@@ -3276,7 +3303,12 @@ function ExchangeInner(props: any) {
                     hideModal={hideConfirmBuyOrderModal}
                     type="buy"
                     onForce={() =>
-                        forceBuyOrSell("buy", buyFeeAsset, baseBalance, coreBalance)
+                        forceBuyOrSell(
+                            "buy",
+                            buyFeeAsset,
+                            baseBalance,
+                            coreBalance
+                        )
                     }
                     diff={buyDiff}
                     hasOrders={combinedAsks.length > 0}

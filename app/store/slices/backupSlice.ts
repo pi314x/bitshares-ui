@@ -57,8 +57,14 @@ const backupSlice = createSlice({
                 public_key: any;
             }>
         ) {
-            const {name, contents, sha1, size, last_modified, public_key} =
-                action.payload;
+            const {
+                name,
+                contents,
+                sha1,
+                size,
+                last_modified,
+                public_key
+            } = action.payload;
             state.name = name;
             state.contents = contents;
             state.sha1 = sha1;

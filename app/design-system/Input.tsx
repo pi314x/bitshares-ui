@@ -34,59 +34,57 @@ function handlePressEnter(
     if (event.key === "Enter" && onPressEnter) onPressEnter(event);
 }
 
-const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
-    function Input(
-        {
-            addonBefore,
-            addonAfter,
-            suffix,
-            onPressEnter,
-            onKeyDown,
-            className,
-            ...rest
-        },
-        ref
-    ) {
-        const input = (
-            <input
-                ref={ref}
-                className={[
-                    styles.input,
-                    addonBefore ? styles.hasAddonBefore : "",
-                    addonAfter ? styles.hasAddonAfter : "",
-                    className
-                ]
-                    .filter(Boolean)
-                    .join(" ")}
-                onKeyDown={event =>
-                    handlePressEnter(event, onKeyDown, onPressEnter)
-                }
-                {...rest}
-            />
-        );
+const InputBase = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+    {
+        addonBefore,
+        addonAfter,
+        suffix,
+        onPressEnter,
+        onKeyDown,
+        className,
+        ...rest
+    },
+    ref
+) {
+    const input = (
+        <input
+            ref={ref}
+            className={[
+                styles.input,
+                addonBefore ? styles.hasAddonBefore : "",
+                addonAfter ? styles.hasAddonAfter : "",
+                className
+            ]
+                .filter(Boolean)
+                .join(" ")}
+            onKeyDown={event =>
+                handlePressEnter(event, onKeyDown, onPressEnter)
+            }
+            {...rest}
+        />
+    );
 
-        if (!addonBefore && !addonAfter && !suffix) return input;
+    if (!addonBefore && !addonAfter && !suffix) return input;
 
-        return (
-            <span className={styles.wrap}>
-                {addonBefore ? (
-                    <span className={styles.addonBefore}>{addonBefore}</span>
-                ) : null}
-                {suffix ? (
-                    <span className={styles.withSuffix}>
-                        {input}
-                        <span className={styles.suffix}>{suffix}</span>
-                    </span>
-                ) : (
-                    input
-                )}
-                {addonAfter ? (
-                    <span className={styles.addonAfter}>{addonAfter}</span>
-                ) : null}
-            </span>
-        );
-    }
-);
+    return (
+        <span className={styles.wrap}>
+            {addonBefore ? (
+                <span className={styles.addonBefore}>{addonBefore}</span>
+            ) : null}
+            {suffix ? (
+                <span className={styles.withSuffix}>
+                    {input}
+                    <span className={styles.suffix}>{suffix}</span>
+                </span>
+            ) : (
+                input
+            )}
+            {addonAfter ? (
+                <span className={styles.addonAfter}>{addonAfter}</span>
+            ) : null}
+        </span>
+    );
+});
 
 export interface TextAreaProps
     extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -112,8 +110,7 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     }
 );
 
-export interface InputGroupProps
-    extends React.HTMLAttributes<HTMLDivElement> {
+export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
     /** Removes the gap and rounds only the outer corners between
      * adjacent children, so a run of inputs/addons reads as one box -
      * antd's `compact` option, the only `Input.Group` mode any real
@@ -124,11 +121,7 @@ export interface InputGroupProps
 function InputGroup({compact, className, ...rest}: InputGroupProps) {
     return (
         <div
-            className={[
-                styles.group,
-                compact ? styles.compact : "",
-                className
-            ]
+            className={[styles.group, compact ? styles.compact : "", className]
                 .filter(Boolean)
                 .join(" ")}
             {...rest}

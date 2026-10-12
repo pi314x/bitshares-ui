@@ -130,9 +130,9 @@ function AccountTreemap({
                 const percent = (finalValue / totalValue) * 100;
 
                 /*
-                * Filter out assets that make up a small percentage of
-                * the total value of the account
-                */
+                 * Filter out assets that make up a small percentage of
+                 * the total value of the account
+                 */
                 if (percent < 0.5) return null;
                 if (finalValue < 1) return null;
                 const symbol = asset.get("symbol");
@@ -142,9 +142,8 @@ function AccountTreemap({
                         totalValue === 0 ? 0 : percent.toFixed(2)
                     }%)`,
                     value: finalValue,
-                    color: (ReactHighcharts as any).Highcharts.getOptions().colors[
-                        index
-                    ]
+                    color: (ReactHighcharts as any).Highcharts.getOptions()
+                        .colors[index]
                 };
             })
             .filter((n: any) => !!n);
@@ -220,7 +219,9 @@ function AccountTreemap({
         }
     };
 
-    return <AccountTreemapView accountBalances={accountBalances} config={config} />;
+    return (
+        <AccountTreemapView accountBalances={accountBalances} config={config} />
+    );
 }
 
 function AccountTreemapView({
@@ -237,7 +238,10 @@ function AccountTreemapView({
                     accountBalances.map(
                         ({name, symbol, color}: any, key: number) => {
                             return (
-                                <LinkComponent key={key} to={`/asset/${symbol}`}>
+                                <LinkComponent
+                                    key={key}
+                                    to={`/asset/${symbol}`}
+                                >
                                     <div className="legend-item">
                                         <div
                                             className="legend-square"
@@ -272,9 +276,7 @@ function AccountTreemapContainer({
         return <span />;
     }
 
-    return (
-        <AccountTreemap {...rest} preferredAsset={resolvedPreferredAsset} />
-    );
+    return <AccountTreemap {...rest} preferredAsset={resolvedPreferredAsset} />;
 }
 
 interface AccountTreemapBalanceWrapperProps {

@@ -98,7 +98,9 @@ function IssueModal({
                 asset_to_issue.get("issuer"),
                 asset_to_issue.get("id"),
                 amount,
-                state.memo ? new (Buffer as any)(state.memo, "utf-8") : state.memo
+                state.memo
+                    ? new (Buffer as any)(state.memo, "utf-8")
+                    : state.memo
             )
             .catch((err: any) => {
                 console.log("issue error caught here:", err);
@@ -175,7 +177,10 @@ function IssueModal({
                     {/*  M E M O  */}
                     <div className="content-block">
                         <label>
-                            <Translate component="span" content="transfer.memo" />{" "}
+                            <Translate
+                                component="span"
+                                content="transfer.memo"
+                            />{" "}
                             (<Translate content="transfer.optional" />)
                         </label>
                         <textarea

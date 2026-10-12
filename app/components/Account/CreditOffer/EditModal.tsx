@@ -342,7 +342,10 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             const {feeAmount, amount, account, asset} = s;
             if (!asset || !account) return;
             const balanceID = account.getIn(["balances", asset.get("id")]);
-            const feeBalanceID = account.getIn(["balances", feeAmount.asset_id]);
+            const feeBalanceID = account.getIn([
+                "balances",
+                feeAmount.asset_id
+            ]);
             if (!asset || !account) return;
             if (!balanceID) return mergeState({balanceError: true});
             const balanceObject = ChainStore.getObject(balanceID);
@@ -364,7 +367,13 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             mergeState({balanceError: !hasBalance});
         };
 
-        const onAmountChanged = ({amount, asset}: {amount: any; asset: any}) => {
+        const onAmountChanged = ({
+            amount,
+            asset
+        }: {
+            amount: any;
+            asset: any;
+        }) => {
             if (!asset) return;
 
             if (typeof asset !== "object") {
@@ -407,7 +416,10 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                 if (feeAmount.asset_id === balance.asset_id) {
                     balance.minus(feeAmount);
                 }
-                const patch = {maxAmount: true, amount: balance.getAmount({real: true})};
+                const patch = {
+                    maxAmount: true,
+                    amount: balance.getAmount({real: true})
+                };
                 mergeState(patch);
                 _checkBalance(patch);
             }
@@ -479,7 +491,9 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
         const _getWhitelistColumns = () => {
             return [
                 {
-                    title: counterpart.translate("credit_offer.whitelist_account"),
+                    title: counterpart.translate(
+                        "credit_offer.whitelist_account"
+                    ),
                     dataIndex: "account",
                     key: "account",
                     render: (text: any) => <AccountName account={text} />
@@ -534,7 +548,10 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             return (
                 <Button onClick={() => showModal(2)}>
                     <AntIcon type="plus-circle" />{" "}
-                    <Translate component="span" content="credit_offer.add_pawn" />
+                    <Translate
+                        component="span"
+                        content="credit_offer.add_pawn"
+                    />
                 </Button>
             );
         };
@@ -632,7 +649,10 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                             "precision"
                         );
                         const p = new (Price as any)({
-                            base: new (Asset as any)({asset_id, precision: asset_precision}),
+                            base: new (Asset as any)({
+                                asset_id,
+                                precision: asset_precision
+                            }),
                             quote: new (Asset as any)({
                                 asset_id: v.asset_id,
                                 precision: v_precision
@@ -670,7 +690,7 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                     .catch((err: any) => {
                         console.error(err);
                     });
-            } catch (err: any) {
+            } catch (err) {
                 if (err.toString().indexOf("overflow") >= 0) {
                     mergeState({
                         submitErr: counterpart.translate(
@@ -716,7 +736,11 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                 if (asset_id && !asset) asset = ChainStore.getAsset(asset_id);
                 balance = (
                     <span>
-                        <Translate component="span" content="transfer.available" />:{" "}
+                        <Translate
+                            component="span"
+                            content="transfer.available"
+                        />
+                        :{" "}
                         <span
                             className={_error}
                             style={{
@@ -828,14 +852,19 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                                             value={repay_period}
                                             onChange={_onRepayPeriodChange}
                                         >
-                                            {listRepayPeriod.map((v: any, i: number) => (
-                                                <Select.Option key={v} value={v}>
-                                                    {counterpart.translate(
-                                                        "credit_offer.list_repay_period.period_" +
-                                                            i
-                                                    )}
-                                                </Select.Option>
-                                            ))}
+                                            {listRepayPeriod.map(
+                                                (v: any, i: number) => (
+                                                    <Select.Option
+                                                        key={v}
+                                                        value={v}
+                                                    >
+                                                        {counterpart.translate(
+                                                            "credit_offer.list_repay_period.period_" +
+                                                                i
+                                                        )}
+                                                    </Select.Option>
+                                                )
+                                            )}
                                         </Select>
                                     </div>
                                 </div>
@@ -877,7 +906,8 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                                             disabledDate={(current: any) =>
                                                 current <
                                                     moment().add(-1, "days") ||
-                                                current > moment().add(380, "days")
+                                                current >
+                                                    moment().add(380, "days")
                                             }
                                         />
                                     </div>
@@ -961,7 +991,9 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                     footer={[
                         <Button
                             key={"send"}
-                            disabled={!pawn_price || pawn_price <= 0 || !pawnInput}
+                            disabled={
+                                !pawn_price || pawn_price <= 0 || !pawnInput
+                            }
                             onClick={_addPawnItem}
                         >
                             <Translate content="wallet.submit" />
@@ -1011,7 +1043,11 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
         };
 
         const _addWhitelistItem = () => {
-            const {whitelist, whitelist_account, whitelist_amount} = stateRef.current;
+            const {
+                whitelist,
+                whitelist_account,
+                whitelist_amount
+            } = stateRef.current;
             if (!whitelist_account || !whitelist_amount) {
                 showModal(1);
                 return;
@@ -1040,7 +1076,13 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             mergeState({whitelist_account: account});
         };
 
-        const _onWhitelistAmountChanged = ({amount, asset}: {amount: any; asset: any}) => {
+        const _onWhitelistAmountChanged = ({
+            amount,
+            asset
+        }: {
+            amount: any;
+            asset: any;
+        }) => {
             if (!asset) return;
 
             if (typeof asset !== "object") {

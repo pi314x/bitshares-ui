@@ -50,7 +50,14 @@ class BackupActionsFacade {
             const size = contents.length;
             const public_key = getBackupPublicKey(contents);
             reduxStore.dispatch(
-                setIncomingFile({name, contents, sha1, size, last_modified, public_key})
+                setIncomingFile({
+                    name,
+                    contents,
+                    sha1,
+                    size,
+                    last_modified,
+                    public_key
+                })
             );
         };
         reader.readAsBinaryString(file);

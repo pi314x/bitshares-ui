@@ -122,7 +122,10 @@ function MarketHistoryView({
         <div className={cnames(className)}>
             <div className={innerClass} style={innerStyle}>
                 {noHeader ? null : (
-                    <div style={headerStyle} className="exchange-content-header">
+                    <div
+                        style={headerStyle}
+                        className="exchange-content-header"
+                    >
                         {activeTab === "my_history" ? (
                             <Translate content="exchange.my_history" />
                         ) : null}

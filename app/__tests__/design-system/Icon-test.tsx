@@ -28,9 +28,9 @@ describe("design-system/Icon", () => {
 
     it("applies the spin class only to the loading glyph", () => {
         const {container: loading} = render(<Icon type="loading" />);
-        expect(
-            loading.querySelector("svg")?.getAttribute("class")
-        ).toContain("spin");
+        expect(loading.querySelector("svg")?.getAttribute("class")).toContain(
+            "spin"
+        );
 
         const {container: notLoading} = render(<Icon type="search" />);
         expect(
@@ -103,16 +103,14 @@ describe("design-system/Icon", () => {
     });
 
     it("renders the Exchange.tsx chart-controls glyphs added during the call-site migration pass", () => {
-        (
-            [
-                "tool",
-                "up",
-                "down",
-                "area-chart",
-                "caret-left",
-                "caret-right"
-            ] as const
-        ).forEach(type => {
+        ([
+            "tool",
+            "up",
+            "down",
+            "area-chart",
+            "caret-left",
+            "caret-right"
+        ] as const).forEach(type => {
             const {container} = render(<Icon type={type} />);
             expect(container.querySelector("svg")).toBeTruthy();
             expect(container.querySelector("path")).toBeTruthy();
@@ -121,13 +119,11 @@ describe("design-system/Icon", () => {
 
     it("renders star's filled variant distinctly from its outline", () => {
         const {container: outline} = render(<Icon type="star" />);
-        expect(
-            outline.querySelector("path")?.getAttribute("fill")
-        ).not.toBe("currentColor");
-
-        const {container: filled} = render(
-            <Icon type="star" theme="filled" />
+        expect(outline.querySelector("path")?.getAttribute("fill")).not.toBe(
+            "currentColor"
         );
+
+        const {container: filled} = render(<Icon type="star" theme="filled" />);
         expect(filled.querySelector("path")?.getAttribute("fill")).toBe(
             "currentColor"
         );

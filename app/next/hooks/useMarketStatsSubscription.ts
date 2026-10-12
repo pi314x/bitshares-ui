@@ -45,9 +45,7 @@ export function useMarketStatsSubscription(
     const directIntervals = React.useRef<{[marketName: string]: () => void}>(
         {}
     );
-    const fromIntervals = React.useRef<{[marketName: string]: () => void}>(
-        {}
-    );
+    const fromIntervals = React.useRef<{[marketName: string]: () => void}>({});
     const toInterval = React.useRef<(() => void) | null>(null);
     const throttleTimer = React.useRef<ReturnType<typeof setTimeout> | null>(
         null

@@ -275,13 +275,7 @@ function CreditDebtList(props: CreditDebtListProps) {
     };
 
     const onSubmit = () => {
-        const {
-            feeRate,
-            amount,
-            asset,
-            dealId,
-            feeAmount
-        } = stateRef.current;
+        const {feeRate, amount, asset, dealId, feeAmount} = stateRef.current;
         const cAsset = new Asset({
             asset_id: asset.get("id"),
             real: amount,
@@ -425,13 +419,7 @@ function CreditDebtList(props: CreditDebtListProps) {
     };
 
     const renderRepayModal = () => {
-        const {
-            debtAmount,
-            debtAsset,
-            amount,
-            balanceError,
-            asset
-        } = state;
+        const {debtAmount, debtAsset, amount, balanceError, asset} = state;
         // `feeAmount` isn't read here: the original's `onClick` bound two
         // extra args (`feeAmount.getAmount({real: true})`,
         // `feeAmount.asset_id`) that `_setTotal(asset_id, balance_id)`
@@ -458,10 +446,7 @@ function CreditDebtList(props: CreditDebtListProps) {
                                 cursor: "pointer"
                             }}
                             onClick={() =>
-                                setTotal(
-                                    debtAsset,
-                                    account_balances[debtAsset]
-                                )
+                                setTotal(debtAsset, account_balances[debtAsset])
                             }
                         >
                             <BalanceComponent

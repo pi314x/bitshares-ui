@@ -1087,7 +1087,13 @@ describe("CallOrder", function() {
 
     it("Returns margin call status", function() {
         let order = new CallOrder(o, assets, "1.3.113", settlePrice_113, 1750);
-        let order2 = new CallOrder(o2, assets, "1.3.113", settlePrice_113, 1750);
+        let order2 = new CallOrder(
+            o2,
+            assets,
+            "1.3.113",
+            settlePrice_113,
+            1750
+        );
 
         assert.equal(
             order.isMarginCalled(),
@@ -1187,7 +1193,13 @@ describe("CallOrder", function() {
     });
 
     it("Calculates collateral to sell using target_collateral_ratio", function() {
-        let o = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0, 1750);
+        let o = new CallOrder(
+            o3_target_cr,
+            assets,
+            "1.3.0",
+            settlePrice_0,
+            1750
+        );
         let o2 = new CallOrder(
             o3_target_cr,
             assets,
@@ -1245,7 +1257,13 @@ describe("CallOrder", function() {
     });
 
     it("Can be summed using target_cr", function() {
-        let o1 = new CallOrder(o3_target_cr, assets, "1.3.0", settlePrice_0, 1750);
+        let o1 = new CallOrder(
+            o3_target_cr,
+            assets,
+            "1.3.0",
+            settlePrice_0,
+            1750
+        );
         let o2 = new CallOrder(o, assets, "1.3.0", settlePrice_0, 1750);
         const o3 = o1.sum(o2);
 

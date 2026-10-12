@@ -218,14 +218,19 @@ function FeeAssetSelector({
         const feeAssetChanged =
             newFeeAsset &&
             (!oldFeeAsset || newFeeAsset.get("id") !== oldFeeAsset.get("id"));
-        const calculationIsPossible = newAccount && newTransaction && newFeeAsset;
+        const calculationIsPossible =
+            newAccount && newTransaction && newFeeAsset;
         return (
             calculationIsPossible &&
             (accChanged || transactionChanged || feeAssetChanged)
         );
     };
 
-    const prevRef = React.useRef<{account: any; transaction: any; feeAsset: any}>({
+    const prevRef = React.useRef<{
+        account: any;
+        transaction: any;
+        feeAsset: any;
+    }>({
         account: undefined,
         transaction: undefined,
         feeAsset: undefined
@@ -259,7 +264,11 @@ function FeeAssetSelector({
         accountArg: any = account
     ) => {
         if (DEBUG)
-            console.log("FeeAssetSelector.syncAvailableAssets", opened, accountArg);
+            console.log(
+                "FeeAssetSelector.syncAvailableAssets",
+                opened,
+                accountArg
+            );
         if (stateRef.current.assets) {
             return stateRef.current.assets;
         }
@@ -268,7 +277,10 @@ function FeeAssetSelector({
         const accountBalances = accountArg.get("balances").toJS();
         const sortedKeys = Object.keys(accountBalances).sort(utils.sortID);
         for (let i = 0, key; (key = sortedKeys[i]); i++) {
-            const balanceObject = await FetchChain("getObject", accountBalances[key]);
+            const balanceObject = await FetchChain(
+                "getObject",
+                accountBalances[key]
+            );
             try {
                 const requiredForFee = await calculateFee(key);
                 if (DEBUG) {
@@ -281,7 +293,8 @@ function FeeAssetSelector({
                 }
                 if (
                     balanceObject &&
-                    balanceObject.get("balance") >= requiredForFee.fee.getAmount() &&
+                    balanceObject.get("balance") >=
+                        requiredForFee.fee.getAmount() &&
                     !possibleAssets.includes(key)
                 ) {
                     possibleAssets.push(key);
@@ -417,11 +430,13 @@ const WrappedFeeAssetSelector = AssetWrapper(DebouncedFeeAssetSelector, {
 
 function FeeAssetSelectorContainer(props: FeeAssetSelectorProps) {
     const settingsState = useReduxState<any>(selectSettingsState);
-    const defaultFeeAsset =
-        settingsState.settings.get("fee_asset") || "1.3.0";
+    const defaultFeeAsset = settingsState.settings.get("fee_asset") || "1.3.0";
 
     return (
-        <WrappedFeeAssetSelector {...(props as any)} defaultFeeAsset={defaultFeeAsset} />
+        <WrappedFeeAssetSelector
+            {...(props as any)}
+            defaultFeeAsset={defaultFeeAsset}
+        />
     );
 }
 

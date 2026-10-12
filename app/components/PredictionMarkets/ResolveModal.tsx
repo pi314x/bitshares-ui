@@ -144,7 +144,10 @@ export default function ResolveModal({
                         <label className="left-label">
                             <Translate content="prediction.resolve_modal.the_prediction_has" />
                         </label>
-                        <Radio.Group value={result} onChange={handleResultChange}>
+                        <Radio.Group
+                            value={result}
+                            onChange={handleResultChange}
+                        >
                             <Radio value={"yes"}>
                                 {counterpart.translate(
                                     "prediction.resolve_modal.proven_true"

@@ -34,11 +34,7 @@ export default function AccountsSettings() {
     const hiddenAccounts = accountState.myHiddenAccounts;
     const myAccounts = AccountStore.getMyAccounts();
 
-    function onToggleHide(
-        account: string,
-        hide: boolean,
-        e: React.MouseEvent
-    ) {
+    function onToggleHide(account: string, hide: boolean, e: React.MouseEvent) {
         e.preventDefault();
         AccountActions.toggleHideAccount(account, hide);
     }

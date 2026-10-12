@@ -2,7 +2,9 @@ import * as React from "react";
 import {render, fireEvent} from "@testing-library/react";
 import {Topbar} from "../../design-system/Topbar";
 
-function renderTopbar(overrides: Partial<React.ComponentProps<typeof Topbar>> = {}) {
+function renderTopbar(
+    overrides: Partial<React.ComponentProps<typeof Topbar>> = {}
+) {
     return render(
         <Topbar
             crumb="Dashboard"

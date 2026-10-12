@@ -49,7 +49,9 @@ export interface SettingsState {
 // Populated by `SettingsStore.ts`'s facade constructor, which computes
 // these the exact same way the original constructor did (reading
 // localStorage, branding.js, apiConfig.js) - see that file.
-export function buildInitialSettingsState(seed: Partial<SettingsState>): SettingsState {
+export function buildInitialSettingsState(
+    seed: Partial<SettingsState>
+): SettingsState {
     return {
         initDone: false,
         settings: seed.settings,

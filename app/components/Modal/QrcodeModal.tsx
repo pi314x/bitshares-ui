@@ -45,9 +45,7 @@ export default function QrcodeModal({
         keyString: null
     });
 
-    const [state, setState] = React.useState<QrcodeModalState>(
-        getInitialState
-    );
+    const [state, setState] = React.useState<QrcodeModalState>(getInitialState);
 
     const mergeState = (partial: Partial<QrcodeModalState>) => {
         setState(prev => ({...prev, ...partial}));

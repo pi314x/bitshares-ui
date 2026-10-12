@@ -167,7 +167,9 @@ function TabsCore({
     React.useEffect(() => {
         const setDimensions = () => {
             const newWidth = window.innerWidth;
-            setWidth(prevWidth => (newWidth !== prevWidth ? newWidth : prevWidth));
+            setWidth(prevWidth =>
+                newWidth !== prevWidth ? newWidth : prevWidth
+            );
         };
         setDimensions();
         window.addEventListener("resize", setDimensions, {
@@ -201,30 +203,34 @@ function TabsCore({
 
     let activeContent: React.ReactNode = null;
 
-    const tabs = (React.Children.map(children, (child: any, index) => {
-        if (!child) {
-            return null;
-        }
-        if (collapseTabs && child.props.disabled) return null;
-        const isActive = index === activeTab;
-        if (isActive) {
-            activeContent = child.props.children;
-        }
+    const tabs = (
+        React.Children.map(children, (child: any, index) => {
+            if (!child) {
+                return null;
+            }
+            if (collapseTabs && child.props.disabled) return null;
+            const isActive = index === activeTab;
+            if (isActive) {
+                activeContent = child.props.children;
+            }
 
-        return React.cloneElement(child, {
-            collapsed: collapseTabs,
-            isActive,
-            changeTab: changeTab,
-            index: index
-        });
-    }) || []).filter((a: any) => a !== null);
+            return React.cloneElement(child, {
+                collapsed: collapseTabs,
+                isActive,
+                changeTab: changeTab,
+                index: index
+            });
+        }) || []
+    ).filter((a: any) => a !== null);
 
     if (!activeContent) {
         activeContent = tabs[0].props.children;
     }
 
     return (
-        <div className={cnames(!!actionButtons ? "with-buttons" : "", className)}>
+        <div
+            className={cnames(!!actionButtons ? "with-buttons" : "", className)}
+        >
             <div className="service-selector">
                 <ul
                     style={style}
@@ -276,7 +282,12 @@ type TabsProps = Omit<TabsCoreProps, "viewSettings">;
 
 function Tabs(props: TabsProps) {
     const settingsState = useReduxState<any>(selectSettingsState);
-    return <TabsCore {...(props as any)} viewSettings={settingsState.viewSettings} />;
+    return (
+        <TabsCore
+            {...(props as any)}
+            viewSettings={settingsState.viewSettings}
+        />
+    );
 }
 
 export {Tabs, Tab};

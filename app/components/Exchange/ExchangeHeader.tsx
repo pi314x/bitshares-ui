@@ -286,9 +286,7 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                                     className="underline"
                                     style={{
                                         cursor: "pointer",
-                                        color: isQuoteSelected
-                                            ? "#2196f3"
-                                            : ""
+                                        color: isQuoteSelected ? "#2196f3" : ""
                                     }}
                                 >
                                     <AssetName
@@ -364,7 +362,10 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                     </div>
                 </div>
 
-                <div className="grid-block vertical" style={{overflow: "visible"}}>
+                <div
+                    className="grid-block vertical"
+                    style={{overflow: "visible"}}
+                >
                     <div className="grid-block wrap market-stats-container">
                         <ul className="market-stats stats top-stats">
                             {latestPrice ? (
@@ -497,7 +498,10 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                                 style={{padding: "16px 16px 16px 0px"}}
                                 onClick={onTogglePersonalize}
                             >
-                                <AntIcon type="setting" style={{paddingRight: 5}} />
+                                <AntIcon
+                                    type="setting"
+                                    style={{paddingRight: 5}}
+                                />
                                 <Translate
                                     className="hide-order-2"
                                     content="exchange.settings.header.title"

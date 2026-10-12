@@ -43,7 +43,8 @@ const addressIndexSlice = createSlice({
 
 export const {setSaving, setAddresses} = addressIndexSlice.actions;
 
-export const selectAddressIndexState = (state: {addressIndex: AddressIndexState}) =>
-    state.addressIndex;
+export const selectAddressIndexState = (state: {
+    addressIndex: AddressIndexState;
+}) => state.addressIndex;
 
 export default addressIndexSlice.reducer;

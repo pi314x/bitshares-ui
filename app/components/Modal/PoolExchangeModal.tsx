@@ -200,10 +200,14 @@ function PoolExchangeModalCore({
             err: null
         });
         const amountToSellPrecision = new (big as any)(10).toPower(
-            new (big as any)(pool.getIn([`asset_${amountToSellTag}`, "precision"]))
+            new (big as any)(
+                pool.getIn([`asset_${amountToSellTag}`, "precision"])
+            )
         );
         const minToReceivePrecision = new (big as any)(10).toPower(
-            new (big as any)(pool.getIn([`asset_${minToReceiveTag}`, "precision"]))
+            new (big as any)(
+                pool.getIn([`asset_${minToReceiveTag}`, "precision"])
+            )
         );
 
         (ApplicationApi as any)
@@ -298,11 +302,15 @@ function PoolExchangeModalCore({
 
         const poolamounta = Number(pool.get(`balance_${tmp1}`));
         const poolamountap = Number(
-            new (big as any)(10).toPower(pool.get(`asset_${tmp1}`).get("precision"))
+            new (big as any)(10).toPower(
+                pool.get(`asset_${tmp1}`).get("precision")
+            )
         );
         const poolamountb = Number(pool.get(`balance_${tmp2}`));
         const poolamountbp = Number(
-            new (big as any)(10).toPower(pool.get(`asset_${tmp2}`).get("precision"))
+            new (big as any)(10).toPower(
+                pool.get(`asset_${tmp2}`).get("precision")
+            )
         );
 
         const maker_market_fee_percenta = asset_a.getIn([
@@ -473,9 +481,7 @@ function PoolExchangeModalCore({
                                         >
                                             <AccountBalance
                                                 account={account}
-                                                asset={
-                                                    pairs.amountToSell.name
-                                                }
+                                                asset={pairs.amountToSell.name}
                                             />
                                         </a>
                                     </div>
@@ -487,10 +493,7 @@ function PoolExchangeModalCore({
                                 style={{textAlign: "center"}}
                             >
                                 <Button onClick={switchAsset}>
-                                    <Icon
-                                        name="arrow-up-down"
-                                        size="1_5x"
-                                    />
+                                    <Icon name="arrow-up-down" size="1_5x" />
                                 </Button>
                             </Col>
                             <Col span={24}>
@@ -525,9 +528,7 @@ function PoolExchangeModalCore({
                                         >
                                             <AccountBalance
                                                 account={account}
-                                                asset={
-                                                    pairs.minToReceive.name
-                                                }
+                                                asset={pairs.minToReceive.name}
                                             />
                                         </a>
                                     </div>
@@ -550,10 +551,7 @@ function PoolExchangeModalCore({
                             )}
                             {state.err && (
                                 <Col span={24} className="mt-10 mb-10">
-                                    <Alert
-                                        message={state.err}
-                                        type="error"
-                                    />
+                                    <Alert message={state.err} type="error" />
                                 </Col>
                             )}
                         </Row>

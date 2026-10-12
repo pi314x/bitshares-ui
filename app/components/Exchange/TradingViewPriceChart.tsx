@@ -288,7 +288,10 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
             fullscreen: false,
             symbol: np.quoteSymbol + "_" + np.baseSymbol,
             interval: getResolutionsFromBuckets([np.bucketSize])[0],
-            timeframe: getResolutionsFromBuckets([np.bucketSize * 250], true)[0],
+            timeframe: getResolutionsFromBuckets(
+                [np.bucketSize * 250],
+                true
+            )[0],
             time_frames: allTimes,
             library_path: `${
                 __ELECTRON__ ? __BASE_URL__ : ""
@@ -434,7 +437,9 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
     const _error = error ? "has-error" : "";
     const dataSource = charts
         .toArray()
-        .filter((chart: any) => chart.symbol === quoteSymbol + "_" + baseSymbol);
+        .filter(
+            (chart: any) => chart.symbol === quoteSymbol + "_" + baseSymbol
+        );
     const columns = [
         {
             title: counterpart.translate("exchange.layout_name"),
@@ -494,14 +499,22 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
                     </Button>
                 ]}
             >
-                <Table dataSource={dataSource || []} columns={columns} onRow={onRow} />
+                <Table
+                    dataSource={dataSource || []}
+                    columns={columns}
+                    onRow={onRow}
+                />
             </Modal>
             <Modal
                 title={counterpart.translate("exchange.save_new_chart_layout")}
                 closable={false}
                 visible={state.showSaveModal}
                 footer={[
-                    <Button key="submit" variant="accent" onClick={onSubmitConfirmation}>
+                    <Button
+                        key="submit"
+                        variant="accent"
+                        onClick={onSubmitConfirmation}
+                    >
                         {counterpart.translate("modal.save")}
                     </Button>,
                     <Button key="cancel" onClick={hideModal}>
@@ -536,7 +549,9 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
     );
 }
 
-export default function TradingViewPriceChart(props: TradingViewPriceChartProps) {
+export default function TradingViewPriceChart(
+    props: TradingViewPriceChartProps
+) {
     const settingsState = useReduxState<any>(selectSettingsState);
 
     return (

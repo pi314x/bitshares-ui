@@ -91,10 +91,7 @@ function DashboardPageCore({
                                                     marginRight: 5
                                                 }}
                                                 src={`${__BASE_URL__}asset-symbols/${q
-                                                    .replace(
-                                                        /^BTC/,
-                                                        "OPEN.BTC"
-                                                    )
+                                                    .replace(/^BTC/, "OPEN.BTC")
                                                     .toLowerCase()}.png`}
                                             />
                                             &nbsp;

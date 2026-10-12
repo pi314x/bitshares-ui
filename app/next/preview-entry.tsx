@@ -51,7 +51,8 @@ function PreviewContent() {
                 Standalone preview with static fixture data (see
                 preview-entry.tsx) — the real app renders this shell through{" "}
                 <code>NextShellContainer</code> with live store data instead,
-                wrapping every route. See <code>docs/UI_MIGRATION_PLAN.md</code>.
+                wrapping every route. See <code>docs/UI_MIGRATION_PLAN.md</code>
+                .
             </p>
         </>
     );

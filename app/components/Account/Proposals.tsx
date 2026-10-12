@@ -44,7 +44,7 @@ import accountUtils from "common/account_utils";
 import {Tooltip} from "../../design-system/Tooltip";
 import JSONModal from "components/Modal/JSONModal";
 
-const {operations} = (grapheneChainTypes as any);
+const {operations} = grapheneChainTypes as any;
 const ops = Object.keys(operations);
 
 interface ProposalsModalState {
@@ -152,7 +152,11 @@ function canReject(proposal: any) {
     );
 }
 
-function Proposals({account, className, hideFishingProposals}: ProposalsCoreProps) {
+function Proposals({
+    account,
+    className,
+    hideFishingProposals
+}: ProposalsCoreProps) {
     useChainStoreTick();
 
     const [isModalVisible, setIsModalVisible] = React.useState(false);
@@ -216,9 +220,8 @@ function Proposals({account, className, hideFishingProposals}: ProposalsCoreProp
                 );
             });
             proposals.forEach(proposal => {
-                const type = proposal.proposal.get(
-                    "required_active_approvals"
-                ).size
+                const type = proposal.proposal.get("required_active_approvals")
+                    .size
                     ? "active"
                     : "owner";
                 const required = (permission_utils as any).listToIDs(
@@ -258,9 +261,7 @@ function Proposals({account, className, hideFishingProposals}: ProposalsCoreProp
                 proposalOperations.length > 1
                     ? counterpart.translate("transaction.operations")
                     : (trxTypes as any)[
-                          ops[
-                              proposalOperations[0] && proposalOperations[0][0]
-                          ]
+                          ops[proposalOperations[0] && proposalOperations[0][0]]
                       ];
 
             const text = proposal.operations
@@ -292,8 +293,7 @@ function Proposals({account, className, hideFishingProposals}: ProposalsCoreProp
             const proposalCanReject = canReject(proposal.proposal.toJS());
             const proposalId = proposal.proposal.get("id");
 
-            const type = proposal.proposal.get("required_active_approvals")
-                .size
+            const type = proposal.proposal.get("required_active_approvals").size
                 ? "active"
                 : "owner";
             result.push(
@@ -377,17 +377,19 @@ function Proposals({account, className, hideFishingProposals}: ProposalsCoreProp
                 <tr className="top-left-align" key={`${proposalId}_content`}>
                     <td>{text}</td>
                     <td>
-                        {requiredPermissions.map((acc: any, permIndex: number) => (
-                            <div
-                                className="list-item"
-                                key={`${proposalId}_approver_${permIndex}`}
-                            >
-                                <LinkToAccountById
-                                    subpage="permissions"
-                                    account={acc.id}
-                                />
-                            </div>
-                        ))}
+                        {requiredPermissions.map(
+                            (acc: any, permIndex: number) => (
+                                <div
+                                    className="list-item"
+                                    key={`${proposalId}_approver_${permIndex}`}
+                                >
+                                    <LinkToAccountById
+                                        subpage="permissions"
+                                        account={acc.id}
+                                    />
+                                </div>
+                            )
+                        )}
                     </td>
                     <td>
                         <NestedApprovalState

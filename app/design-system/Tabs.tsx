@@ -125,9 +125,7 @@ function TabsBase({
                     ))}
                 </div>
                 {tabBarExtraContent ? (
-                    <div className={styles.barExtra}>
-                        {tabBarExtraContent}
-                    </div>
+                    <div className={styles.barExtra}>{tabBarExtraContent}</div>
                 ) : null}
             </div>
             <div className={styles.content}>{active?.content}</div>

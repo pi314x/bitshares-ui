@@ -107,7 +107,7 @@ interface TransactionLabelProps {
 }
 
 function TransactionLabel({color, type}: TransactionLabelProps) {
-    const trxTypes = (counterpart.translate("transaction.trxTypes") as any);
+    const trxTypes = counterpart.translate("transaction.trxTypes") as any;
     const labelClass = classNames("label", color || "info");
     return <span className={labelClass}>{trxTypes[ops[type]]}</span>;
 }
@@ -216,10 +216,7 @@ interface RowContainerProps extends Omit<RowCoreProps, "dynGlobalObject"> {
     dynGlobalObject?: any;
 }
 
-function RowContainer({
-    dynGlobalObject = "2.1.0",
-    ...rest
-}: RowContainerProps) {
+function RowContainer({dynGlobalObject = "2.1.0", ...rest}: RowContainerProps) {
     useChainStoreTick();
     const resolvedDynGlobalObject = (ChainStore as any).getObject(
         dynGlobalObject,
@@ -231,7 +228,9 @@ function RowContainer({
         return <tr />;
     }
 
-    return <RowCore {...(rest as any)} dynGlobalObject={resolvedDynGlobalObject} />;
+    return (
+        <RowCore {...(rest as any)} dynGlobalObject={resolvedDynGlobalObject} />
+    );
 }
 
 interface OperationCoreProps {
@@ -269,7 +268,9 @@ function OperationCore(props: OperationCoreProps) {
         return utils.is_object_id(name_or_id) ? (
             <LinkToAccountById account={name_or_id} />
         ) : (
-            <LinkComponent to={`/account/${name_or_id}`}>{name_or_id}</LinkComponent>
+            <LinkComponent to={`/account/${name_or_id}`}>
+                {name_or_id}
+            </LinkComponent>
         );
     };
 
@@ -278,7 +279,9 @@ function OperationCore(props: OperationCoreProps) {
         return utils.is_object_id(symbol_or_id) ? (
             <LinkToAssetById asset={symbol_or_id} />
         ) : (
-            <LinkComponent to={`/asset/${symbol_or_id}`}>{symbol_or_id}</LinkComponent>
+            <LinkComponent to={`/asset/${symbol_or_id}`}>
+                {symbol_or_id}
+            </LinkComponent>
         );
     };
 

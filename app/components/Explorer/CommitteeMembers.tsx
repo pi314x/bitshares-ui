@@ -81,7 +81,9 @@ export default function CommitteeMembers() {
         return <span />;
     }
 
-    const memberIds: string[] = globalObject.get("active_committee_members").toJS();
+    const memberIds: string[] = globalObject
+        .get("active_committee_members")
+        .toJS();
     const resolvedMembers = memberIds.map(id => ChainStore.getObject(id));
 
     if (!(resolvedMembers.length > 0 && resolvedMembers[0])) {
@@ -111,7 +113,9 @@ export default function CommitteeMembers() {
                 account.get("id")
             );
             if (!accountData) return false;
-            return account.get("name").indexOf(filterCommitteeMember || "") !== -1;
+            return (
+                account.get("name").indexOf(filterCommitteeMember || "") !== -1
+            );
         })
         .map(a => {
             const account = ChainStore.getObject(

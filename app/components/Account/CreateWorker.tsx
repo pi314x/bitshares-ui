@@ -135,7 +135,10 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
                             />
                         </label>
                     </div>
-                    <Translate content="explorer.workers.date_text" component="p" />
+                    <Translate
+                        content="explorer.workers.date_text"
+                        component="p"
+                    />
 
                     <label>
                         <Translate content="explorer.workers.daily_pay" />
@@ -146,7 +149,10 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
                             type="number"
                         />
                     </label>
-                    <Translate content="explorer.workers.pay_text" component="p" />
+                    <Translate
+                        content="explorer.workers.pay_text"
+                        component="p"
+                    />
 
                     <label>
                         <Translate content="explorer.workers.website" />
@@ -157,7 +163,10 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
                             type="text"
                         />
                     </label>
-                    <Translate content="explorer.workers.url_text" component="p" />
+                    <Translate
+                        content="explorer.workers.url_text"
+                        component="p"
+                    />
 
                     <label>
                         <Translate content="explorer.workers.vesting_pay" />

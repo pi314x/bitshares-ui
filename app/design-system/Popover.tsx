@@ -68,8 +68,7 @@ export function Popover({
     children
 }: PopoverProps): JSX.Element {
     const [internalVisible, setInternalVisible] = React.useState(false);
-    const visible =
-        visibleProp !== undefined ? visibleProp : internalVisible;
+    const visible = visibleProp !== undefined ? visibleProp : internalVisible;
     const showTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
 
     function setVisible(next: boolean) {

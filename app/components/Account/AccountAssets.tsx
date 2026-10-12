@@ -267,7 +267,10 @@ function AccountAssets({
                                     asset.symbol
                                 )}
                             >
-                                <Icon name="cross-circle" className="rotate45" />
+                                <Icon
+                                    name="cross-circle"
+                                    className="rotate45"
+                                />
                             </a>
                         ) : null}
                     </td>
@@ -314,7 +317,9 @@ function AccountAssets({
                                             <Translate
                                                 component="th"
                                                 content="markets.supply"
-                                                style={{textAlign: "right"} as any}
+                                                style={
+                                                    {textAlign: "right"} as any
+                                                }
                                             />
                                             <th style={{textAlign: "right"}}>
                                                 <Translate content="account.user_issued_assets.max_supply" />
@@ -382,7 +387,11 @@ function AccountAssetsContainer(props: AccountAssetsContainerProps) {
     }
 
     return (
-        <WrappedAccountAssets {...props} assets={assets} assetsList={assetsList} />
+        <WrappedAccountAssets
+            {...props}
+            assets={assets}
+            assetsList={assetsList}
+        />
     );
 }
 

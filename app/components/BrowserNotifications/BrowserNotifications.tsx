@@ -167,8 +167,7 @@ function _notifyUserAboutTransferToHisAccount(operation: any) {
 
     const amount = operation.getIn(["op", 1, "amount", "amount"]);
 
-    if (!assetId || !from || !amount)
-        throw Error("Operation has wrong format");
+    if (!assetId || !from || !amount) throw Error("Operation has wrong format");
 
     const title = counterpart.translate(
         "browser_notification_messages.money_received_title",

@@ -329,12 +329,15 @@ const ScaledOrderFormInner = React.forwardRef<
         feeStatuses
             .filter(
                 feeStatus =>
-                    feeStatus && feeStatus.hasPoolBalance && feeStatus.hasBalance
+                    feeStatus &&
+                    feeStatus.hasPoolBalance &&
+                    feeStatus.hasBalance
             )
             .map(feeStatus => ({
                 fee: feeStatus,
                 amount:
-                    feeStatus.fee.getAmount() / Math.pow(10, feeStatus.fee.precision),
+                    feeStatus.fee.getAmount() /
+                    Math.pow(10, feeStatus.fee.precision),
                 asset: ChainStore.getAsset(feeStatus.fee.asset_id)
             }));
 
@@ -970,7 +973,9 @@ const ScaledOrderFormInner = React.forwardRef<
                             onBlur={onExpirationSelectBlur}
                             data-tip={
                                 expirationTip &&
-                                moment(expirationTip).format("Do MMM YYYY hh:mm A")
+                                moment(expirationTip).format(
+                                    "Do MMM YYYY hh:mm A"
+                                )
                             }
                             value={expirationType}
                         >
@@ -987,7 +992,11 @@ const ScaledOrderFormInner = React.forwardRef<
                         }}
                         onClick={handleCurrentPriceClick}
                     >
-                        <PriceText price={currentPrice} quote={quote} base={base} />{" "}
+                        <PriceText
+                            price={currentPrice}
+                            quote={quote}
+                            base={base}
+                        />{" "}
                         <AssetNameWrapper name={base.get("symbol")} noTip />/
                         <AssetNameWrapper name={quote.get("symbol")} noTip />
                     </span>
@@ -1006,7 +1015,11 @@ const ScaledOrderFormInner = React.forwardRef<
                     >
                         {!isBid ? quoteAssetBalance : baseAssetBalance}{" "}
                         <AssetNameWrapper
-                            name={!isBid ? quote.get("symbol") : base.get("symbol")}
+                            name={
+                                !isBid
+                                    ? quote.get("symbol")
+                                    : base.get("symbol")
+                            }
                             noTip
                         />
                     </span>
@@ -1018,7 +1031,9 @@ const ScaledOrderFormInner = React.forwardRef<
                     disabled={!isFormValid()}
                 >
                     {counterpart.translate(
-                        isBid ? "scaled_orders.action.buy" : "scaled_orders.action.sell"
+                        isBid
+                            ? "scaled_orders.action.buy"
+                            : "scaled_orders.action.sell"
                     )}
                 </Button>
             </Form>
@@ -1131,7 +1146,9 @@ export default function ScaledOrderTab(props: ScaledOrderTabProps) {
         )
             return;
 
-        const step = ((priceUpper - priceLower) / (orderCount - 1)).toPrecision(5);
+        const step = ((priceUpper - priceLower) / (orderCount - 1)).toPrecision(
+            5
+        );
 
         const amountPerOrder = amount / orderCount;
 
@@ -1140,10 +1157,13 @@ export default function ScaledOrderTab(props: ScaledOrderTabProps) {
                 ? quoteAsset
                 : baseAsset;
         const buyAsset =
-            values.action === SCALED_ORDER_ACTION_TYPES.BUY ? quoteAsset : baseAsset;
+            values.action === SCALED_ORDER_ACTION_TYPES.BUY
+                ? quoteAsset
+                : baseAsset;
 
         const sellAmount = (i: number) => {
-            const scaledAmount = amountPerOrder * (priceLower + (step as any) * i);
+            const scaledAmount =
+                amountPerOrder * (priceLower + (step as any) * i);
             return values.action === SCALED_ORDER_ACTION_TYPES.BUY
                 ? Number(scaledAmount.toPrecision(5)) *
                       Math.pow(10, sellAsset.get("precision"))
@@ -1152,7 +1172,8 @@ export default function ScaledOrderTab(props: ScaledOrderTabProps) {
         };
 
         const buyAmount = (i: number) => {
-            const scaledAmount = amountPerOrder * (priceLower + (step as any) * i);
+            const scaledAmount =
+                amountPerOrder * (priceLower + (step as any) * i);
             return values.action === SCALED_ORDER_ACTION_TYPES.SELL
                 ? Number(scaledAmount.toPrecision(5)) *
                       Math.pow(10, buyAsset.get("precision"))
@@ -1176,7 +1197,10 @@ export default function ScaledOrderTab(props: ScaledOrderTabProps) {
             });
         }
 
-        createScaledOrder(orders, ChainStore.getAsset(values.feeCurrency).get("id"));
+        createScaledOrder(
+            orders,
+            ChainStore.getAsset(values.feeCurrency).get("id")
+        );
     };
 
     const handleSubmit = () => {

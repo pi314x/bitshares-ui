@@ -95,7 +95,7 @@ function render() {
 }
 
 function dismiss(id: number) {
-    entries = entries.filter((entry) => entry.id !== id);
+    entries = entries.filter(entry => entry.id !== id);
     render();
 }
 
@@ -156,7 +156,7 @@ function NotificationStack({
 
     return (
         <div className={styles.stack} style={{top: config.top}}>
-            {entries.map((entry) => (
+            {entries.map(entry => (
                 <div
                     key={entry.id}
                     className={[styles.entry, styles[entry.kind]]

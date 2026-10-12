@@ -53,9 +53,9 @@ function AssetName({
     noTip,
     dataPlace = "bottom"
 }: AssetNameCoreProps) {
-    const [assetIssuerName, setAssetIssuerName] = React.useState<
-        string | null
-    >(null);
+    const [assetIssuerName, setAssetIssuerName] = React.useState<string | null>(
+        null
+    );
     const assetIssuerNameRef = React.useRef(assetIssuerName);
     assetIssuerNameRef.current = assetIssuerName;
     const mountedRef = React.useRef(false);
@@ -131,7 +131,8 @@ function AssetName({
                     : "";
         } catch (e) {}
         if (isBitAsset && name === "CNY") {
-            optional = optional + " " + counterpart.translate("gateway.assets.bitcny");
+            optional =
+                optional + " " + counterpart.translate("gateway.assets.bitcny");
         }
 
         const upperCasePrefix =

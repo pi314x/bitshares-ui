@@ -196,9 +196,7 @@ function WalletRegistrationForm({
                     mergeState({loading: false});
                     console.log("ERROR AccountActions.createAccount", error);
                     let errorMsg =
-                        error.base &&
-                        error.base.length &&
-                        error.base.length > 0
+                        error.base && error.base.length && error.base.length > 0
                             ? error.base[0]
                             : "unknown error";
                     if (error.remote_ip) [errorMsg] = error.remote_ip;

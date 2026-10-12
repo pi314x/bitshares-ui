@@ -175,9 +175,7 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
         </>
     ),
     plus: <path d="M12 5v14M5 12h14" />,
-    loading: (
-        <path d="M12 3a9 9 0 1 0 9 9" strokeLinecap="round" />
-    ),
+    loading: <path d="M12 3a9 9 0 1 0 9 9" strokeLinecap="round" />,
     link: (
         <path d="M10 14a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 5.5M14 10a5 5 0 0 0-7.07 0L4.1 12.83a5 5 0 0 0 7.07 7.07L12.5 18.5" />
     ),
@@ -272,9 +270,7 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
             <path d="M12 2v10" />
         </>
     ),
-    reload: (
-        <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
-    ),
+    reload: <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />,
     bell: (
         <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
     ),

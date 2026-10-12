@@ -52,8 +52,7 @@ export interface SelectOptionData {
 function collectOptions(children: React.ReactNode): SelectOptionData[] {
     const options: SelectOptionData[] = [];
     React.Children.forEach(children, child => {
-        if (!React.isValidElement(child) || child.type !== SelectOption)
-            return;
+        if (!React.isValidElement(child) || child.type !== SelectOption) return;
         const props = child.props as SelectOptionProps;
         options.push({
             key: String(child.key ?? props.value),
@@ -192,11 +191,7 @@ function SelectBase({
                 aria-expanded={open}
                 onClick={() => !disabled && setOpen(!open)}
             >
-                <span
-                    className={
-                        selected ? styles.value : styles.placeholder
-                    }
-                >
+                <span className={selected ? styles.value : styles.placeholder}>
                     {selected
                         ? optionLabelProp === "value"
                             ? String(selected.value)
@@ -234,9 +229,7 @@ function SelectBase({
                         />
                     ) : null}
                     {visibleOptions.length === 0 ? (
-                        <div className={styles.empty}>
-                            {notFoundContent}
-                        </div>
+                        <div className={styles.empty}>{notFoundContent}</div>
                     ) : (
                         visibleOptions.map(option => (
                             <div

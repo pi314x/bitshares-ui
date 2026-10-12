@@ -28,7 +28,8 @@ const accountRefsSlice = createSlice({
 
 export const {setAccountRefs} = accountRefsSlice.actions;
 
-export const selectAccountRefsState = (state: {accountRefs: AccountRefsState}) =>
-    state.accountRefs;
+export const selectAccountRefsState = (state: {
+    accountRefs: AccountRefsState;
+}) => state.accountRefs;
 
 export default accountRefsSlice.reducer;

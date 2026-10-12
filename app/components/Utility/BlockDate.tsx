@@ -49,12 +49,7 @@ interface BlockDateProps {
     component: string;
 }
 
-function BlockDate({
-    blockHeader,
-    tooltip,
-    component,
-    format
-}: BlockDateProps) {
+function BlockDate({blockHeader, tooltip, component, format}: BlockDateProps) {
     const prevBlockHeaderRef = React.useRef(blockHeader);
     React.useEffect(() => {
         if (blockHeader && !prevBlockHeaderRef.current) {

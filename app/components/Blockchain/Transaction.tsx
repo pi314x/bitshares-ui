@@ -84,7 +84,13 @@ const listings = Object.keys((account_constants as any).account_listing);
 
 const TypedLink = RealLink as React.ComponentType<LinkProps>;
 
-function TranslateBoolean({value, ...otherProps}: {value: boolean; [key: string]: any}) {
+function TranslateBoolean({
+    value,
+    ...otherProps
+}: {
+    value: boolean;
+    [key: string]: any;
+}) {
     return (
         <Translate
             content={`boolean.${value ? "true" : "false"}`}
@@ -302,7 +308,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="transfer.from" />
+                            <Translate
+                                component="span"
+                                content="transfer.from"
+                            />
                         </td>
                         <td>{linkToAccount(op[1].from)}</td>
                     </tr>
@@ -351,7 +360,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="exchange.price" />
+                            <Translate
+                                component="span"
+                                content="exchange.price"
+                            />
                         </td>
                         <td>
                             <FormattedPrice
@@ -368,7 +380,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="exchange.sell" />
+                            <Translate
+                                component="span"
+                                content="exchange.sell"
+                            />
                         </td>
                         <td>
                             <FormattedAsset
@@ -546,7 +561,8 @@ export default function Transaction({
                                 />
                             </td>
                             <td>
-                                {op[1].extensions.target_collateral_ratio / 1000}
+                                {op[1].extensions.target_collateral_ratio /
+                                    1000}
                             </td>
                         </tr>
                     );
@@ -586,7 +602,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="account.name" />
+                            <Translate
+                                component="span"
+                                content="account.name"
+                            />
                         </td>
                         <td>{linkToAccount(op[1].name)}</td>
                     </tr>
@@ -621,7 +640,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="account.name" />
+                            <Translate
+                                component="span"
+                                content="account.name"
+                            />
                         </td>
                         <td>{linkToAccount(op[1].account)}</td>
                     </tr>
@@ -824,7 +846,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="transfer.from" />
+                            <Translate
+                                component="span"
+                                content="transfer.from"
+                            />
                         </td>
                         <td>{linkToAccount(op[1].account_id)}</td>
                     </tr>
@@ -1222,7 +1247,10 @@ export default function Transaction({
                             />
                         </td>
                         <td>
-                            <FormattedAsset amount={op[1].amount} asset="1.3.0" />
+                            <FormattedAsset
+                                amount={op[1].amount}
+                                asset="1.3.0"
+                            />
                         </td>
                     </tr>
                 );
@@ -1330,9 +1358,9 @@ export default function Transaction({
                             />
                         </td>
                         <td>
-                            {(
-                                feed.maintenance_collateral_ratio / 1000
-                            ).toFixed(2)}
+                            {(feed.maintenance_collateral_ratio / 1000).toFixed(
+                                2
+                            )}
                         </td>
                     </tr>
                 );
@@ -1347,11 +1375,15 @@ export default function Transaction({
                         </td>
                         <td>
                             <FormattedPrice
-                                base_asset={feed.core_exchange_rate.base.asset_id}
+                                base_asset={
+                                    feed.core_exchange_rate.base.asset_id
+                                }
                                 quote_asset={
                                     feed.core_exchange_rate.quote.asset_id
                                 }
-                                base_amount={feed.core_exchange_rate.base.amount}
+                                base_amount={
+                                    feed.core_exchange_rate.base.amount
+                                }
                                 quote_amount={
                                     feed.core_exchange_rate.quote.amount
                                 }
@@ -1409,9 +1441,7 @@ export default function Transaction({
                                 content="explorer.committee_member.title"
                             />
                         </td>
-                        <td>
-                            {linkToAccount(op[1].committee_member_account)}
-                        </td>
+                        <td>{linkToAccount(op[1].committee_member_account)}</td>
                     </tr>
                 );
 
@@ -1567,7 +1597,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="transfer.from" />
+                            <Translate
+                                component="span"
+                                content="transfer.from"
+                            />
                         </td>
                         <td>{linkToAccount(op[1].from)}</td>
                     </tr>
@@ -1720,7 +1753,9 @@ export default function Transaction({
                         <td>
                             {has_review_period ? (
                                 <FormattedDate
-                                    value={new Date(review_begin_time as number)}
+                                    value={
+                                        new Date(review_begin_time as number)
+                                    }
                                     format="full"
                                 />
                             ) : (
@@ -1738,7 +1773,10 @@ export default function Transaction({
                             />
                         </td>
                         <td>
-                            <FormattedDate value={expiration_date} format="full" />
+                            <FormattedDate
+                                value={expiration_date}
+                                format="full"
+                            />
                         </td>
                     </tr>
                 );
@@ -2055,7 +2093,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="account.name" />
+                            <Translate
+                                component="span"
+                                content="account.name"
+                            />
                         </td>
                         <td>
                             <LinkToAccountById account={op[1].issuer} />
@@ -2099,7 +2140,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="transfer.from" />
+                            <Translate
+                                component="span"
+                                content="transfer.from"
+                            />
                         </td>
                         <td>
                             <LinkToAccountById account={op[1].issuer} />
@@ -2198,7 +2242,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="transfer.from" />
+                            <Translate
+                                component="span"
+                                content="transfer.from"
+                            />
                         </td>
                         <td>
                             <LinkToAccountById account={op[1].from} />
@@ -2360,7 +2407,10 @@ export default function Transaction({
                 rows.push(
                     <tr key={key++}>
                         <td>
-                            <Translate component="span" content="explorer.block.op" />
+                            <Translate
+                                component="span"
+                                content="explorer.block.op"
+                            />
                         </td>
                         <td>
                             <Inspector data={op} search={false} />

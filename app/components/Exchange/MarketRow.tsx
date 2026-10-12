@@ -207,7 +207,10 @@ function MarketRow({
 
                 case "marketName":
                     return (
-                        <td onClick={() => onClick(marketID)} key={column.index}>
+                        <td
+                            onClick={() => onClick(marketID)}
+                            key={column.index}
+                        >
                             <div className={buttonClass} style={buttonStyle}>
                                 {marketName}
                             </div>
@@ -216,7 +219,10 @@ function MarketRow({
 
                 case "market":
                     return (
-                        <td onClick={() => onClick(marketID)} key={column.index}>
+                        <td
+                            onClick={() => onClick(marketID)}
+                            key={column.index}
+                        >
                             {name}
                         </td>
                     );
@@ -252,7 +258,9 @@ function MarketRow({
                         "SILVER"
                     ];
                     let precision = 6;
-                    if (highPrecisionAssets.indexOf(base.get("symbol")) !== -1) {
+                    if (
+                        highPrecisionAssets.indexOf(base.get("symbol")) !== -1
+                    ) {
                         precision = 8;
                     }
 
@@ -276,7 +284,10 @@ function MarketRow({
 
                 case "quoteSupply":
                     return (
-                        <td onClick={() => onClick(marketID)} key={column.index}>
+                        <td
+                            onClick={() => onClick(marketID)}
+                            key={column.index}
+                        >
                             {dynamic_data ? (
                                 <FormattedAsset
                                     style={{fontWeight: "bold"}}
@@ -292,14 +303,15 @@ function MarketRow({
 
                 case "baseSupply":
                     return (
-                        <td onClick={() => onClick(marketID)} key={column.index}>
+                        <td
+                            onClick={() => onClick(marketID)}
+                            key={column.index}
+                        >
                             {base_dynamic_data ? (
                                 <FormattedAsset
                                     style={{fontWeight: "bold"}}
                                     amount={parseInt(
-                                        base_dynamic_data.get(
-                                            "current_supply"
-                                        ),
+                                        base_dynamic_data.get("current_supply"),
                                         10
                                     )}
                                     asset={base.get("id")}
@@ -310,7 +322,10 @@ function MarketRow({
 
                 case "issuer":
                     return (
-                        <td onClick={() => onClick(marketID)} key={column.index}>
+                        <td
+                            onClick={() => onClick(marketID)}
+                            key={column.index}
+                        >
                             <AccountName account={quote.get("issuer")} />
                         </td>
                     );

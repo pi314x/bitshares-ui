@@ -505,11 +505,9 @@ function WorkerList(props: WorkerListCoreProps) {
 
             const now = new Date();
             const isExpired = new Date(worker.work_end_date + "Z") <= now;
-            const hasStarted =
-                new Date(worker.work_begin_date + "Z") <= now;
+            const hasStarted = new Date(worker.work_begin_date + "Z") <= now;
             const isProposed =
-                (!isExpired && total_votes < voteThresholdArg) ||
-                !hasStarted;
+                (!isExpired && total_votes < voteThresholdArg) || !hasStarted;
             const isPoll = !!item.poll;
             return {
                 key: worker.id,
@@ -654,9 +652,7 @@ function WorkerList(props: WorkerListCoreProps) {
             new Date(filteredWorker.get("work_begin_date") + "Z") <=
             new Date(newDate.setMonth(newDate.getMonth() - 2));
 
-        const manualHidden = hiddenProposals.includes(
-            filteredWorker.get("id")
-        );
+        const manualHidden = hiddenProposals.includes(filteredWorker.get("id"));
 
         const hidden =
             ((!!duplicated || hasStartedOverAMonthAgo) && hasLittleVotes) ||

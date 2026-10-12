@@ -92,7 +92,9 @@ class PrivateKeyStoreFacade {
                     reduxStore.dispatch(setKeys(keys.asImmutable()));
                     return;
                 }
-                const private_key_tcomb = (PrivateKeyTcomb as any)(cursor.value);
+                const private_key_tcomb = (PrivateKeyTcomb as any)(
+                    cursor.value
+                );
                 keys.set(private_key_tcomb.pubkey, private_key_tcomb);
                 (AddressIndex as any).add(private_key_tcomb.pubkey);
                 cursor.continue();
@@ -113,7 +115,9 @@ class PrivateKeyStoreFacade {
     }
 
     getPubkeys() {
-        return this.getState().keys.keySeq().toArray();
+        return this.getState()
+            .keys.keySeq()
+            .toArray();
     }
 
     getPubkeys_having_PrivateKey(pubkeys: any, addys: any = null) {
@@ -163,7 +167,7 @@ class PrivateKeyStoreFacade {
         );
         reduxStore.dispatch(setKeys(keys));
         (AddressIndex as any).add(private_key_object.pubkey);
-        const p = new Promise((resolveInner) => {
+        const p = new Promise(resolveInner => {
             (PrivateKeyTcomb as any)(private_key_object);
             let duplicate = false;
             const p2 = idb_helper.add(
@@ -237,14 +241,18 @@ class PrivateKeyStoreFacade {
 
     private pendingOperation() {
         this.pending_operation_count++;
-        reduxStore.dispatch(setPendingOperationCount(this.pending_operation_count));
+        reduxStore.dispatch(
+            setPendingOperationCount(this.pending_operation_count)
+        );
     }
 
     private pendingOperationDone() {
         if (this.pending_operation_count == 0)
             throw new Error("Pending operation done called too many times");
         this.pending_operation_count--;
-        reduxStore.dispatch(setPendingOperationCount(this.pending_operation_count));
+        reduxStore.dispatch(
+            setPendingOperationCount(this.pending_operation_count)
+        );
     }
 
     private privateKeyStorageError(property: string, error: any) {
@@ -258,12 +266,16 @@ class PrivateKeyStoreFacade {
             isMine = false;
         const from_private_key = this.getState().keys.get(memo.from);
         const to_private_key = this.getState().keys.get(memo.to);
-        let private_key: any = from_private_key ? from_private_key : to_private_key;
+        let private_key: any = from_private_key
+            ? from_private_key
+            : to_private_key;
         let public_key: any = from_private_key ? memo.to : memo.from;
         public_key = (PublicKey as any).fromPublicKeyString(public_key);
 
         try {
-            private_key = (WalletDb as any).decryptTcomb_PrivateKey(private_key);
+            private_key = (WalletDb as any).decryptTcomb_PrivateKey(
+                private_key
+            );
         } catch (e) {
             // Failed because wallet is locked
             private_key = null;

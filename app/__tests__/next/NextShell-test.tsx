@@ -7,7 +7,9 @@ const navGroups = [
     {label: "Account", items: [{label: "Dashboard", to: "/", exact: true}]}
 ];
 
-function renderShell(overrides: Partial<React.ComponentProps<typeof NextShell>> = {}) {
+function renderShell(
+    overrides: Partial<React.ComponentProps<typeof NextShell>> = {}
+) {
     return render(
         <MemoryRouter initialEntries={["/"]}>
             <NextShell

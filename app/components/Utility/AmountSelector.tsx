@@ -73,7 +73,9 @@ function AssetSelectorCore({
 
     return (
         <FloatingDropdown
-            entries={assets.map((a: any) => a && a.get("symbol")).filter((a: any) => !!a)}
+            entries={assets
+                .map((a: any) => a && a.get("symbol"))
+                .filter((a: any) => !!a)}
             values={assets.reduce((map: any, a: any) => {
                 if (a && a.get("symbol")) map[a.get("symbol")] = a;
                 return map;
@@ -197,7 +199,11 @@ function AmountSelector({
     return (
         <div className="amount-selector" style={style}>
             <label className="right-label">{display_balance}</label>
-            <Translate className="left-label" component="label" content={label} />
+            <Translate
+                className="left-label"
+                component="label"
+                content={label}
+            />
             <div className="inline-label input-wrapper">
                 <input
                     disabled={disabled}

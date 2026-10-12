@@ -27,11 +27,19 @@ describe("design-system/TreeSelect", () => {
         const {container, rerender} = render(
             <TreeSelect treeData={data} value={[]} searchPlaceholder="narrow" />
         );
-        expect((container.querySelector("input") as HTMLInputElement).placeholder).toBe("narrow");
+        expect(
+            (container.querySelector("input") as HTMLInputElement).placeholder
+        ).toBe("narrow");
         rerender(
-            <TreeSelect treeData={data} value={["Asia"]} searchPlaceholder="narrow" />
+            <TreeSelect
+                treeData={data}
+                value={["Asia"]}
+                searchPlaceholder="narrow"
+            />
         );
-        expect((container.querySelector("input") as HTMLInputElement).placeholder).toBe("");
+        expect(
+            (container.querySelector("input") as HTMLInputElement).placeholder
+        ).toBe("");
     });
 
     it("treats a parent value as all its children checked and shows one tag (SHOW_PARENT)", () => {
@@ -40,14 +48,20 @@ describe("design-system/TreeSelect", () => {
         );
         expect(getByText(/Europe \(2\)/)).toBeTruthy();
         open(container);
-        const eu1 = container.ownerDocument.querySelector('input[aria-label="wss://eu1"]');
+        const eu1 = container.ownerDocument.querySelector(
+            'input[aria-label="wss://eu1"]'
+        );
         expect(eu1).toBeNull(); // collapsed by default
     });
 
     it("emits the parent alone once every child becomes checked, and children individually otherwise", () => {
         const onChange = jest.fn();
         const {container, getByLabelText} = render(
-            <TreeSelect treeData={data} value={["wss://eu1"]} onChange={onChange} />
+            <TreeSelect
+                treeData={data}
+                value={["wss://eu1"]}
+                onChange={onChange}
+            />
         );
         open(container);
         fireEvent.click(getByLabelText("Expand Europe (2)"));
@@ -67,7 +81,13 @@ describe("design-system/TreeSelect", () => {
         open(container);
         fireEvent.click(getByLabelText("Europe (2)"));
         expect(onChange).toHaveBeenLastCalledWith(["Europe"]);
-        rerender(<TreeSelect treeData={data} value={["Europe"]} onChange={onChange} />);
+        rerender(
+            <TreeSelect
+                treeData={data}
+                value={["Europe"]}
+                onChange={onChange}
+            />
+        );
         fireEvent.click(getByLabelText("Europe (2)"));
         expect(onChange).toHaveBeenLastCalledWith([]);
     });
@@ -77,14 +97,22 @@ describe("design-system/TreeSelect", () => {
             <TreeSelect treeData={data} value={["wss://eu1"]} />
         );
         open(container);
-        expect((getByLabelText("Europe (2)") as HTMLInputElement).indeterminate).toBe(true);
-        expect((getByLabelText("Europe (2)") as HTMLInputElement).checked).toBe(false);
+        expect(
+            (getByLabelText("Europe (2)") as HTMLInputElement).indeterminate
+        ).toBe(true);
+        expect((getByLabelText("Europe (2)") as HTMLInputElement).checked).toBe(
+            false
+        );
     });
 
     it("removes a selection with its tag's remove button", () => {
         const onChange = jest.fn();
         const {getByLabelText} = render(
-            <TreeSelect treeData={data} value={["Europe", "wss://as1"]} onChange={onChange} />
+            <TreeSelect
+                treeData={data}
+                value={["Europe", "wss://as1"]}
+                onChange={onChange}
+            />
         );
         fireEvent.click(getByLabelText("Remove Europe"));
         expect(onChange).toHaveBeenLastCalledWith(["Asia"]);
@@ -106,7 +134,11 @@ describe("design-system/TreeSelect", () => {
     it("keeps unknown persisted values instead of dropping them on the next change", () => {
         const onChange = jest.fn();
         const {container, getByLabelText} = render(
-            <TreeSelect treeData={data} value={["wss://gone"]} onChange={onChange} />
+            <TreeSelect
+                treeData={data}
+                value={["wss://gone"]}
+                onChange={onChange}
+            />
         );
         open(container);
         fireEvent.click(getByLabelText("Asia (1)"));

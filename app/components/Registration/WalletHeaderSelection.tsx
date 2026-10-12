@@ -52,9 +52,7 @@ export default function WalletHeaderSelection({
                 />
                 <Translate
                     content="wallet.wallet_model"
-                    className={`choice-model ${
-                        !active ? "inactive-text" : ""
-                    }`}
+                    className={`choice-model ${!active ? "inactive-text" : ""}`}
                 />
                 {!forSmall ? (
                     <Tooltip

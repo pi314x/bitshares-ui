@@ -51,9 +51,7 @@ describe("components/Transfer/InvoiceRequest", () => {
         ) as HTMLButtonElement;
         expect(submit.disabled).toBe(true);
 
-        const memoInput = container.querySelector(
-            "input"
-        ) as HTMLInputElement;
+        const memoInput = container.querySelector("input") as HTMLInputElement;
         fireEvent.change(memoInput, {target: {value: "memo text"}});
         // Line item still empty - submit stays disabled.
         expect(submit.disabled).toBe(true);
@@ -94,15 +92,15 @@ describe("components/Transfer/InvoiceRequest", () => {
         // With a single row, its only icon button is "add" (it's also
         // the last/only row).
         fireEvent.click(rowButtons(container)[0]);
-        expect(
-            container.querySelectorAll('input[type="number"]').length
-        ).toBe(4);
+        expect(container.querySelectorAll('input[type="number"]').length).toBe(
+            4
+        );
 
         // With 2 rows, the first row's button is now "remove" (no longer
         // the last row) - click it to drop back to 1 row.
         fireEvent.click(rowButtons(container)[0]);
-        expect(
-            container.querySelectorAll('input[type="number"]').length
-        ).toBe(2);
+        expect(container.querySelectorAll('input[type="number"]').length).toBe(
+            2
+        );
     });
 });

@@ -11,9 +11,7 @@ describe("design-system/DatePicker", () => {
     });
 
     it("renders a datetime-local input when showTime is set", () => {
-        const {container} = render(
-            <DatePicker showTime onChange={() => {}} />
-        );
+        const {container} = render(<DatePicker showTime onChange={() => {}} />);
         const input = container.querySelector("input") as HTMLInputElement;
         expect(input.type).toBe("datetime-local");
     });
@@ -62,9 +60,7 @@ describe("design-system/DatePicker", () => {
             <DatePicker
                 showTime
                 onChange={onChange}
-                disabledDate={current =>
-                    current.isBefore(moment("2024-01-01"))
-                }
+                disabledDate={current => current.isBefore(moment("2024-01-01"))}
             />
         );
         const input = container.querySelector("input") as HTMLInputElement;
@@ -73,16 +69,16 @@ describe("design-system/DatePicker", () => {
     });
 
     it("disables the input when disabled is set", () => {
-        const {container} = render(
-            <DatePicker onChange={() => {}} disabled />
-        );
+        const {container} = render(<DatePicker onChange={() => {}} disabled />);
         const input = container.querySelector("input") as HTMLInputElement;
         expect(input.disabled).toBe(true);
     });
 
     it("forwards its ref to the native input element", () => {
         const ref = React.createRef<HTMLInputElement>();
-        const {container} = render(<DatePicker ref={ref} onChange={() => {}} />);
+        const {container} = render(
+            <DatePicker ref={ref} onChange={() => {}} />
+        );
         expect(ref.current).toBe(container.querySelector("input"));
     });
 });

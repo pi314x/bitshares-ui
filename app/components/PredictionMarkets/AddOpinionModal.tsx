@@ -218,7 +218,10 @@ function AddOpinionModal({
                     Math.pow(10, quoteAsset.get("precision"))
             })
         };
-        bid.price = new (Price as any)({base: bid.for_sale, quote: bid.to_receive});
+        bid.price = new (Price as any)({
+            base: bid.for_sale,
+            quote: bid.to_receive
+        });
         const ask: any = {
             for_sale: new (Asset as any)({
                 asset_id: quoteAsset.get("id"),
@@ -236,7 +239,10 @@ function AddOpinionModal({
                     state.newOpinionParameters.probability
             })
         };
-        ask.price = new (Price as any)({base: ask.for_sale, quote: ask.to_receive});
+        ask.price = new (Price as any)({
+            base: ask.for_sale,
+            quote: ask.to_receive
+        });
 
         const current = type === "buy" ? ask : bid;
 
@@ -516,7 +522,9 @@ function AddOpinionModal({
                                 <ExchangeInput
                                     placeholder="0.0"
                                     onChange={handleProbabilityChange}
-                                    value={state.newOpinionParameters.probability}
+                                    value={
+                                        state.newOpinionParameters.probability
+                                    }
                                 />
                             </label>
                         </span>

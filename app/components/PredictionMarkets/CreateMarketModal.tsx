@@ -267,7 +267,9 @@ function CreateMarketModal({
         }
         switch (event.target.name) {
             case "symbol":
-                (marketOptions as any)[event.target.name] = event.target.value.toUpperCase();
+                (marketOptions as any)[
+                    event.target.name
+                ] = event.target.value.toUpperCase();
                 break;
             case "main":
             case "condition":
@@ -308,9 +310,7 @@ function CreateMarketModal({
         console.log(event);
 
         const newMarketOptions = state.marketOptions;
-        newMarketOptions.market_fee_percent = forcePositive(
-            event.target.value
-        );
+        newMarketOptions.market_fee_percent = forcePositive(event.target.value);
 
         mergeState({
             marketOptions: newMarketOptions
@@ -546,7 +546,12 @@ function CreateMarketModal({
                                 />
                             </Tooltip>
                             <AssetSelect
-                                assets={["1.3.0", "1.3.113", "1.3.120", "1.3.121"]}
+                                assets={[
+                                    "1.3.0",
+                                    "1.3.113",
+                                    "1.3.120",
+                                    "1.3.121"
+                                ]}
                                 value={state.bitasset_opts.short_backing_asset}
                                 onChange={handleAssetChange}
                                 tabIndex={5}

@@ -237,7 +237,8 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
             if (flagBooleans["charge_market_fee"]) {
                 fee = Math.min(
                     selectedMarket.options.max_market_fee,
-                    (amount.amount * selectedMarket.options.market_fee_percent) /
+                    (amount.amount *
+                        selectedMarket.options.market_fee_percent) /
                         10000
                 );
             }
@@ -572,7 +573,10 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
                     style={{display: "inline-block", width: "100%"}}
                 >
                     <div className="filter-block">
-                        <SearchInput onChange={onSearch} value={state.searchTerm} />
+                        <SearchInput
+                            onChange={onSearch}
+                            value={state.searchTerm}
+                        />
                         <Radio.Group
                             style={{marginLeft: "20px"}}
                             value={state.predictionMarketAssetFilter}

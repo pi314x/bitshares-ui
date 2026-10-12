@@ -101,9 +101,7 @@ export default function Blocks(props: BlocksProps) {
     const [operationsHeight, setOperationsHeight] = React.useState<
         number | null
     >(null);
-    const [blocksHeight, setBlocksHeight] = React.useState<number | null>(
-        null
-    );
+    const [blocksHeight, setBlocksHeight] = React.useState<number | null>(null);
 
     const globalObject = ChainStore.getObject(globalObjectId);
     const dynGlobalObject = ChainStore.getObject(dynGlobalObjectId);
@@ -120,10 +118,7 @@ export default function Blocks(props: BlocksProps) {
 
     function getInitialBlocks() {
         if (!dynGlobalObject) return;
-        const maxBlock = parseInt(
-            dynGlobalObject.get("head_block_number"),
-            10
-        );
+        const maxBlock = parseInt(dynGlobalObject.get("head_block_number"), 10);
         if (maxBlock) {
             for (let i = 19; i >= 0; i--) {
                 let exists = false;
@@ -248,7 +243,10 @@ export default function Blocks(props: BlocksProps) {
                             </TypedLink>
                         </td>
                         <td>
-                            <FormattedDate value={block.timestamp} format="time" />
+                            <FormattedDate
+                                value={block.timestamp}
+                                format="time"
+                            />
                         </td>
                         <td>
                             <LinkToWitnessById witness={block.witness} />
@@ -294,7 +292,8 @@ export default function Blocks(props: BlocksProps) {
         }, 0);
 
         trxPerSec =
-            trxCount / (((lastBlock as number) - (firstBlock as number)) / 1000);
+            trxCount /
+            (((lastBlock as number) - (firstBlock as number)) / 1000);
     }
 
     return (

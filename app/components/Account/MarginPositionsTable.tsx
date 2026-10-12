@@ -82,7 +82,11 @@ function ListGeneratorCore({
             callOrders.forEach((o: any) => {
                 // sometimes we get undefined resonses on very first api requests
                 if (!!o) {
-                    const assetId = o.getIn(["call_price", "quote", "asset_id"]);
+                    const assetId = o.getIn([
+                        "call_price",
+                        "quote",
+                        "asset_id"
+                    ]);
 
                     if (assetsMap[assetId] == null) {
                         const newAssetInfo = ChainStore.getObject(assetId);
@@ -141,7 +145,11 @@ function ListGeneratorCore({
                 const order = a.order;
 
                 debtAsset = order.getIn(["call_price", "quote", "asset_id"]);
-                collateralAsset = order.getIn(["call_price", "base", "asset_id"]);
+                collateralAsset = order.getIn([
+                    "call_price",
+                    "base",
+                    "asset_id"
+                ]);
 
                 order_id = order.get("id");
             } else {
@@ -247,7 +255,9 @@ const MarginPositionsTable = ({
                             title={counterpart.translate(
                                 "header.collateral_ratio"
                             )}
-                            content={counterpart.translate("tooltip.coll_ratio")}
+                            content={counterpart.translate(
+                                "tooltip.coll_ratio"
+                            )}
                         >
                             <Translate content="borrow.coll_ratio" />
                         </Popover>
@@ -285,7 +295,9 @@ const MarginPositionsTable = ({
                     <th style={alignRight} className="column-hide-small">
                         <Popover
                             placement="top"
-                            content={counterpart.translate("tooltip.call_price")}
+                            content={counterpart.translate(
+                                "tooltip.call_price"
+                            )}
                         >
                             <Translate content="exchange.call" />
                         </Popover>
@@ -293,7 +305,9 @@ const MarginPositionsTable = ({
                     <th style={alignRight} className="column-hide-small">
                         <Popover
                             placement="top"
-                            content={counterpart.translate("tooltip.feed_price")}
+                            content={counterpart.translate(
+                                "tooltip.feed_price"
+                            )}
                         >
                             <Translate content="exchange.feed_price" />
                         </Popover>

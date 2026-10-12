@@ -142,7 +142,9 @@ export default function JoinWitnessesModal({
     };
 
     const onUrlChanged = (e: any) => {
-        mergeState({url: (utils as any).sanitize(e.target.value.toLowerCase())});
+        mergeState({
+            url: (utils as any).sanitize(e.target.value.toLowerCase())
+        });
     };
 
     const isValidPubKey = (value: any) => {

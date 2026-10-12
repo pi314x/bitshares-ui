@@ -68,7 +68,9 @@ interface AccountRegistrationFormProps {
     continue: (result: {accountName: string; password: string}) => void;
 }
 
-function AccountRegistrationForm({continue: onContinue}: AccountRegistrationFormProps) {
+function AccountRegistrationForm({
+    continue: onContinue
+}: AccountRegistrationFormProps) {
     useReduxState<any>(selectAccountState);
 
     const [state, setState] = React.useState<AccountRegistrationFormState>(

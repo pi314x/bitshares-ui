@@ -159,10 +159,7 @@ function AccountSelector({
             return "id";
         if ((ChainValidation as any).is_account_name(value, true))
             return "name";
-        if (
-            props.allowPubKey &&
-            (PublicKey as any).fromPublicKeyString(value)
-        )
+        if (props.allowPubKey && (PublicKey as any).fromPublicKeyString(value))
             return "pubkey";
         return null;
     };
@@ -301,10 +298,7 @@ function AccountSelector({
                     }
                 }
                 search_array.forEach((account_to_find: any) => {
-                    const objectIndex = getIndex(
-                        account_to_find,
-                        accountIndex
-                    );
+                    const objectIndex = getIndex(account_to_find, accountIndex);
                     accountIndex[objectIndex].attempts++;
                 });
                 forceUpdate();
@@ -403,8 +397,7 @@ function AccountSelector({
                 .then((account: any) => {
                     if (
                         !!account &&
-                        ((props.requireActiveSelect &&
-                            inputType == "select") ||
+                        ((props.requireActiveSelect && inputType == "select") ||
                             !props.requireActiveSelect)
                     ) {
                         onAccountChanged(account);
@@ -546,9 +539,7 @@ function AccountSelector({
     const lockedState = state.locked !== null ? state.locked : props.locked;
 
     const error: any = getError();
-    let formContainer,
-        selectedAccount: any,
-        linked_status;
+    let formContainer, selectedAccount: any, linked_status;
 
     const editableInput = !!lockedState
         ? false
@@ -572,9 +563,7 @@ function AccountSelector({
                 : null;
     }
     if (props.allowPubKey) {
-        const objectIndex = accountIndex.findIndex(
-            a => a.name === accountName
-        );
+        const objectIndex = accountIndex.findIndex(a => a.name === accountName);
 
         selectedAccount =
             accountIndex && accountIndex[objectIndex]

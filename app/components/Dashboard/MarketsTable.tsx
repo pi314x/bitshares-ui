@@ -324,9 +324,7 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
                 width: "75px",
                 render: (item: any) => {
                     return (
-                        <span
-                            style={{whiteSpace: "nowrap", cursor: "pointer"}}
-                        >
+                        <span style={{whiteSpace: "nowrap", cursor: "pointer"}}>
                             {item}
                         </span>
                     );
@@ -357,9 +355,7 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
                       align: "right",
                       render: (item: any) => {
                           return (
-                              <span style={{whiteSpace: "nowrap"}}>
-                                  {item}
-                              </span>
+                              <span style={{whiteSpace: "nowrap"}}>{item}</span>
                           );
                       }
                   },
@@ -523,10 +519,7 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
                 </span>
             ),
             price: (
-                <div
-                    className="column-hide-small"
-                    style={{textAlign: "right"}}
-                >
+                <div className="column-hide-small" style={{textAlign: "right"}}>
                     {marketStats && marketStats.price
                         ? utils.price_text(
                               marketStats.price.toReal(true),

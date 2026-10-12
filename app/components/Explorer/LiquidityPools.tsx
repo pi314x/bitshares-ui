@@ -59,8 +59,8 @@ export default function LiquidityPools() {
 
     const defaultAsset = ChainStore.getAsset("1.3.0");
 
-    const [filterAssetA, setFilterAssetA] = React.useState<string | null>(
-        () => (defaultAsset ? defaultAsset.get("symbol") : null)
+    const [filterAssetA, setFilterAssetA] = React.useState<string | null>(() =>
+        defaultAsset ? defaultAsset.get("symbol") : null
     );
     const [filterAssetB, setFilterAssetB] = React.useState<string | null>(null);
     const [filterShareAsset, setFilterShareAsset] = React.useState<
@@ -138,9 +138,7 @@ export default function LiquidityPools() {
     // legacy class had (mount, each filter change, row-limit change,
     // and the pagination effect below all just change one of these
     // dependencies now instead of each separately invoking a fetch).
-    const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(
-        null
-    );
+    const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     React.useEffect(() => {
         if (fetchTimer.current) clearTimeout(fetchTimer.current);
         fetchTimer.current = setTimeout(() => {

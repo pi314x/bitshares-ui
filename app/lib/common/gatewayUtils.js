@@ -123,9 +123,7 @@ export async function updateGatewayBackers(chain = "4018d784") {
             bridgeConfig.enabled = await bridgeConfig.isEnabled();
             if (bridgeConfig.enabled) {
                 GatewayActions.fetchPairs.defer();
-                const isDisabled = await isGatewayTemporarilyDisabled(
-                    bridgeId
-                );
+                const isDisabled = await isGatewayTemporarilyDisabled(bridgeId);
                 if (isDisabled) {
                     GatewayActions.temporarilyDisable(bridgeId);
                 }

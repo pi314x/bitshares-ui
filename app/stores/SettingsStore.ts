@@ -160,7 +160,18 @@ class SettingsStoreFacade {
      */
     private _getDefaultChoices(): any {
         return {
-            locale: ["en", "zh", "fr", "ko", "de", "es", "it", "tr", "ru", "ja"],
+            locale: [
+                "en",
+                "zh",
+                "fr",
+                "ko",
+                "de",
+                "es",
+                "it",
+                "tr",
+                "ru",
+                "ja"
+            ],
             apiServer: (settingsAPIs as any).WS_NODE_LIST.slice(0), // clone all default servers as configured in apiConfig.js
             filteredApiServers: [[]],
             filteredServiceProviders: [[]],
@@ -290,7 +301,9 @@ class SettingsStoreFacade {
             Object.keys(settings).forEach(key => {
                 if (returnSettings[key] == undefined) {
                     // deep copy
-                    returnSettings[key] = JSON.parse(JSON.stringify(settings[key]));
+                    returnSettings[key] = JSON.parse(
+                        JSON.stringify(settings[key])
+                    );
                 }
             });
         }
@@ -377,7 +390,10 @@ class SettingsStoreFacade {
                 mergedChoices[key] = choices[key];
             }
         });
-        mergedChoices.apiServer = this._getApiServerChoices(choices, savedChoices);
+        mergedChoices.apiServer = this._getApiServerChoices(
+            choices,
+            savedChoices
+        );
         return mergedChoices;
     }
 
@@ -523,7 +539,10 @@ class SettingsStoreFacade {
                     return a !== base;
                 })
                 .forEach((market: any) => {
-                    target.push([`${market}_${base}`, {quote: market, base: base}]);
+                    target.push([
+                        `${market}_${base}`,
+                        {quote: market, base: base}
+                    ]);
                 });
         }
 
@@ -601,7 +620,9 @@ class SettingsStoreFacade {
         let hiddenAssets = this.getState().hiddenAssets;
         if (payload.id) {
             if (!payload.status) {
-                hiddenAssets = hiddenAssets.delete(hiddenAssets.indexOf(payload.id));
+                hiddenAssets = hiddenAssets.delete(
+                    hiddenAssets.indexOf(payload.id)
+                );
             } else {
                 hiddenAssets = hiddenAssets.push(payload.id);
             }
@@ -853,7 +874,9 @@ class SettingsStoreFacade {
     onDeleteChartLayout(name: string) {
         if (name) {
             let chartLayouts = this.getState().chartLayouts;
-            const index = chartLayouts.findIndex((item: any) => item.name === name);
+            const index = chartLayouts.findIndex(
+                (item: any) => item.name === name
+            );
             if (index !== -1) {
                 chartLayouts = chartLayouts.delete(index);
             }

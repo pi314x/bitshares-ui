@@ -213,12 +213,14 @@ function CreateLockModal({
                                     0 ? (
                                         <Select.Option
                                             key={
-                                                (ChainTypes as any)
-                                                    .ticket_type[key]
+                                                (ChainTypes as any).ticket_type[
+                                                    key
+                                                ]
                                             }
                                             value={
-                                                (ChainTypes as any)
-                                                    .ticket_type[key]
+                                                (ChainTypes as any).ticket_type[
+                                                    key
+                                                ]
                                             }
                                         >
                                             {(ChainTypes as any).ticket_type[

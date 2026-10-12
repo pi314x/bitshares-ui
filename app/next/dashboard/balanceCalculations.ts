@@ -59,7 +59,11 @@ export function aggregateCollateralAndDebt(
     callOrderIds.forEach(callID => {
         const position = getObject(callID);
         if (!position) return;
-        const collateralAsset = position.getIn(["call_price", "base", "asset_id"]);
+        const collateralAsset = position.getIn([
+            "call_price",
+            "base",
+            "asset_id"
+        ]);
         collateral[collateralAsset] =
             (collateral[collateralAsset] || 0) +
             parseInt(position.get("collateral"), 10);
@@ -247,7 +251,10 @@ export function buildTotalsTooltip(params: {
     let hiPrec = false;
     for (const asset in assetValues) {
         if (assetsById[asset] && assetValues[asset]) {
-            if (Math.abs(utils.get_asset_amount(assetValues[asset], toAsset)) < 100) {
+            if (
+                Math.abs(utils.get_asset_amount(assetValues[asset], toAsset)) <
+                100
+            ) {
                 hiPrec = true;
                 break;
             }
@@ -270,7 +277,8 @@ export function buildTotalsTooltip(params: {
                 missingData = true;
             } else if (hiPrec) {
                 if (amountValue >= 0 && amountValue < 0.01) amount = "<0.01";
-                else if (amountValue < 0 && amountValue > -0.01) amount = "-0.01<";
+                else if (amountValue < 0 && amountValue > -0.01)
+                    amount = "-0.01<";
                 else amount = utils.format_number(amountValue, 2);
             } else {
                 if (amountValue >= 0 && amountValue < 1) amount = "<1";

@@ -28,7 +28,10 @@
 import {reduxStore} from "../store/reduxStore";
 import WalletDb from "stores/WalletDb";
 import ls from "common/localStorage";
-import {setLocalStorageType, isPersistantType} from "../lib/common/localStorage";
+import {
+    setLocalStorageType,
+    isPersistantType
+} from "../lib/common/localStorage";
 import {
     patchState,
     seedWalletUnlockState,
@@ -90,7 +93,13 @@ class WalletUnlockStoreFacade {
         }
     }
 
-    onUnlock({resolve, reject}: {resolve: () => void; reject: (reason?: any) => void}) {
+    onUnlock({
+        resolve,
+        reject
+    }: {
+        resolve: () => void;
+        reject: (reason?: any) => void;
+    }) {
         this._setLockTimeout();
         if (!(WalletDb as any).isLocked()) {
             reduxStore.dispatch(patchState({locked: false}));

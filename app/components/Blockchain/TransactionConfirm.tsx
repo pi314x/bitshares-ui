@@ -196,9 +196,7 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                         </p>
                         <table>
                             <Operation
-                                op={
-                                    props.transaction.serialize().operations[0]
-                                }
+                                op={props.transaction.serialize().operations[0]}
                                 block={1}
                                 current={"1.2.0"}
                                 hideFee
@@ -292,7 +290,11 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
     if (!props.transaction || props.closed) {
         return null;
     }
-    let footer: any, header: any, error_code: any, error_data: any, error_message: any;
+    let footer: any,
+        header: any,
+        error_code: any,
+        error_data: any,
+        error_message: any;
 
     if (props.error || props.included) {
         header = props.error

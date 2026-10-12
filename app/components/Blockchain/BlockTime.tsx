@@ -75,10 +75,7 @@ interface BlockTimeContainerProps {
     fullDate?: boolean;
 }
 
-function BlockTimeContainer({
-    block_number,
-    fullDate
-}: BlockTimeContainerProps) {
+function BlockTimeContainer({block_number, fullDate}: BlockTimeContainerProps) {
     const blockchainState = useReduxState<any>(selectBlockchain);
     const blockHeader = blockchainState.blockHeaders.get(block_number);
 

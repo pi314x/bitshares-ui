@@ -23,7 +23,10 @@ interface StatisticsCoreProps {
     plainText?: boolean;
 }
 
-function Statistics({stat_object: statObjectResolved, plainText}: StatisticsCoreProps) {
+function Statistics({
+    stat_object: statObjectResolved,
+    plainText
+}: StatisticsCoreProps) {
     const stat_object = statObjectResolved.toJS();
 
     return plainText ? (

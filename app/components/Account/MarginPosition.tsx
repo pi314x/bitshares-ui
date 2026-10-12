@@ -83,7 +83,9 @@ function MarginPosition({
                 ? object.getIn(["call_price", "quote", "asset_id"])
                 : debtAsset.get("id"))
     );
-    const [isBorrowModalVisible, setIsBorrowModalVisible] = React.useState(false);
+    const [isBorrowModalVisible, setIsBorrowModalVisible] = React.useState(
+        false
+    );
     const modalRef = React.useRef<any>(null);
 
     const showBorrowModal = () => {
@@ -265,7 +267,11 @@ function MarginPosition({
                 </LinkComponent>
             </td>
             <td style={alignRight}>
-                <FormattedAsset amount={balance} asset={balance_asset} hide_asset />
+                <FormattedAsset
+                    amount={balance}
+                    asset={balance_asset}
+                    hide_asset
+                />
             </td>
             <td style={alignRight}>
                 <FormattedAsset
@@ -349,7 +355,10 @@ function MarginPosition({
                     )
                 ) : null}
             </td>
-            <td className={"center-content column-hide-small"} style={alignLeft}>
+            <td
+                className={"center-content column-hide-small"}
+                style={alignLeft}
+            >
                 {has_order ? (
                     <FormattedPrice
                         base_amount={co.call_price.base.amount}
@@ -378,11 +387,14 @@ function MarginPosition({
                 {hasGlobalSettlement ? (
                     <Tooltip
                         placement={"left"}
-                        title={counterpart.translate("tooltip.borrow_disabled", {
-                            asset: isBitAsset
-                                ? "bit" + `${debtAsset.get("symbol")}`
-                                : `${debtAsset.get("symbol")}`
-                        })}
+                        title={counterpart.translate(
+                            "tooltip.borrow_disabled",
+                            {
+                                asset: isBitAsset
+                                    ? "bit" + `${debtAsset.get("symbol")}`
+                                    : `${debtAsset.get("symbol")}`
+                            }
+                        )}
                     >
                         <div style={{paddingBottom: 5}}>
                             <AntIcon type={"question-circle"} />

@@ -19,7 +19,9 @@ interface TooltipProps {
 export function Tooltip({className, children, dataTip, content}: TooltipProps) {
     return (
         <AntTooltip
-            title={(dataTip && dataTip.trim()) || counterpart.translate(content)}
+            title={
+                (dataTip && dataTip.trim()) || counterpart.translate(content)
+            }
         >
             <span className={"tooltip " + className}>{children}</span>
         </AntTooltip>
@@ -160,7 +162,8 @@ export const isApproved = (
     availableKeys: any
 ): boolean =>
     permission.isNested() || permission.isMultiSig()
-        ? getStatus(permission, available, availableKeys) >= permission.threshold
+        ? getStatus(permission, available, availableKeys) >=
+          permission.threshold
         : permission.isAvailable(available);
 
 export const statusText = (
@@ -178,4 +181,6 @@ export const statusText = (
           }`;
 
 export const notNestdWeight = (weight: any, threshold: any) =>
-    threshold && threshold > 10 ? utils.get_percentage(weight, threshold) : weight;
+    threshold && threshold > 10
+        ? utils.get_percentage(weight, threshold)
+        : weight;

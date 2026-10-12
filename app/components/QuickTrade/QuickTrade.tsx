@@ -188,7 +188,10 @@ import {ChainValidation} from "bitsharesjs";
 import {lookupAssets} from "../Exchange/MarketPickerHelpers";
 import counterpart from "counterpart";
 import LinkToAccountById from "../Utility/LinkToAccountById";
-import {Asset, LimitOrderCreate as LimitOrderCreateUntyped} from "common/MarketClasses";
+import {
+    Asset,
+    LimitOrderCreate as LimitOrderCreateUntyped
+} from "common/MarketClasses";
 import {Notification} from "../../design-system/Notification";
 import FormattedPrice from "../Utility/FormattedPrice";
 import AssetName from "../Utility/AssetName";
@@ -296,7 +299,8 @@ function haveAssetsChanged(
     prevProps: {assetToSell: any; assetToReceive: any}
 ): boolean {
     if (
-        isLoadedAsset(props.assetToSell) !== isLoadedAsset(prevProps.assetToSell)
+        isLoadedAsset(props.assetToSell) !==
+        isLoadedAsset(prevProps.assetToSell)
     ) {
         return true;
     }
@@ -319,7 +323,10 @@ function hasMarketChanged(
     props: {marketData: any},
     prevProps: {marketData: any}
 ): boolean {
-    return JSON.stringify(prevProps.marketData) !== JSON.stringify(props.marketData);
+    return (
+        JSON.stringify(prevProps.marketData) !==
+        JSON.stringify(props.marketData)
+    );
 }
 
 function routeTo(
@@ -337,12 +344,7 @@ function routeTo(
     }
     const pathName = "/instant-trade/" + sellRoute + "_" + receiveRoute;
     if (__DEV__) {
-        console.log(
-            "_routeTo: ",
-            pathName,
-            " old: ",
-            props.location.pathname
-        );
+        console.log("_routeTo: ", pathName, " old: ", props.location.pathname);
     }
     if (props.location.pathname !== pathName) {
         props.history.push(pathName);
@@ -390,13 +392,11 @@ function updateSellAmount(
     mergeState: (patch: Partial<QuickTradeState>) => void
 ) {
     const {orders, receiveAmount} = state;
-    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(
-        state
-    );
+    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(state);
     if (orders.length === 1) {
-        const sellAmount = ((receiveAmount as any) / orders[0].order.getPrice()).toFixed(
-            sellAssetPrecision
-        );
+        const sellAmount = (
+            (receiveAmount as any) / orders[0].order.getPrice()
+        ).toFixed(sellAssetPrecision);
         mergeState({sellAmount});
         return;
     }
@@ -428,9 +428,7 @@ function updateReceiveAmount(
     mergeState: (patch: Partial<QuickTradeState>) => void
 ) {
     const {orders, sellAmount} = state;
-    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(
-        state
-    );
+    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(state);
     if (orders.length === 1) {
         const receiveAmount = (
             orders[0].order.getPrice() * (sellAmount as any)
@@ -474,10 +472,14 @@ function runGetOrders(
         return;
     }
     const {combinedBids} = props.marketData;
-    const {sellAsset, receiveAsset, sellAmount, receiveAmount, activeInput} = state;
-    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(
-        state
-    );
+    const {
+        sellAsset,
+        receiveAsset,
+        sellAmount,
+        receiveAmount,
+        activeInput
+    } = state;
+    const {sellAssetPrecision, receiveAssetPrecision} = getAssetsDetails(state);
     if (__DEV__) {
         console.log("_getOrders", props.marketData);
     }
@@ -498,7 +500,8 @@ function runGetOrders(
                 case "sellAsset":
                     if (receiveAmount) {
                         const orders = getOrders(
-                            (receiveAmount as any) * 10 ** receiveAssetPrecision,
+                            (receiveAmount as any) *
+                                10 ** receiveAssetPrecision,
                             combinedBids,
                             "receive"
                         );
@@ -525,7 +528,8 @@ function runGetOrders(
                 case "receive":
                     if (receiveAmount) {
                         const orders = getOrders(
-                            (receiveAmount as any) * 10 ** receiveAssetPrecision,
+                            (receiveAmount as any) *
+                                10 ** receiveAssetPrecision,
                             combinedBids,
                             "receive"
                         );
@@ -601,7 +605,12 @@ function QuickTradeCore(props: QuickTradeProps) {
                 }
                 await MarketsActions.unSubscribeMarket(qa, ba);
             }
-            await MarketsActions.subscribeMarket(baseAsset, quoteAsset, 3600, 0);
+            await MarketsActions.subscribeMarket(
+                baseAsset,
+                quoteAsset,
+                3600,
+                0
+            );
             mergeState({sub: `${quoteAssetId}_${baseAssetId}`});
             getAllPrices(propsRef.current, mergeState);
             getAllFees(propsRef.current, stateRef.current, mergeState);
@@ -779,7 +788,9 @@ function QuickTradeCore(props: QuickTradeProps) {
     };
 
     const handleSubscriptionToggleChange = () => {
-        mergeState({isSubscribedToMarket: !stateRef.current.isSubscribedToMarket});
+        mergeState({
+            isSubscribedToMarket: !stateRef.current.isSubscribedToMarket
+        });
     };
 
     // Name kept exactly as in the original (a pre-existing, purely
@@ -979,7 +990,10 @@ function QuickTradeCore(props: QuickTradeProps) {
                 !denomindatedAssetId ||
                 denomindatedAssetId === receiveAssetId
             ) {
-                return (fees.marketFee.baseMarketFee * (receiveAmount as any)) / 10000;
+                return (
+                    (fees.marketFee.baseMarketFee * (receiveAmount as any)) /
+                    10000
+                );
             } else {
                 return (
                     (fees.marketFee.baseMarketFee * (receiveAmount as any)) /
@@ -1091,9 +1105,12 @@ function QuickTradeCore(props: QuickTradeProps) {
                         <FormattedPrice
                             base_asset={sellAssetId}
                             quote_asset={receiveAssetId}
-                            base_amount={(sellAmount as any) * 10 ** sellAssetPrecision}
+                            base_amount={
+                                (sellAmount as any) * 10 ** sellAssetPrecision
+                            }
                             quote_amount={
-                                (receiveAmount as any) * 10 ** receiveAssetPrecision
+                                (receiveAmount as any) *
+                                10 ** receiveAssetPrecision
                             }
                             noPopOver
                             force_direction={receiveAssetSymbol}
@@ -1149,12 +1166,17 @@ function QuickTradeCore(props: QuickTradeProps) {
         const transactionFeePercent = (
             getFeePercent(getTransactionFee(undefined), sellAmount) * 100
         ).toFixed(2);
-        const marketFee = getMarketFee(undefined).toFixed(receiveAssetPrecision);
+        const marketFee = getMarketFee(undefined).toFixed(
+            receiveAssetPrecision
+        );
         const marketFeePercent = (
             getFeePercent(getMarketFee(undefined), receiveAmount) * 100
         ).toFixed(2);
 
-        const [liqidityPenaltyMarket, liqidityPenaltyFeed] = getLiquidityPenalty();
+        const [
+            liqidityPenaltyMarket,
+            liqidityPenaltyFeed
+        ] = getLiquidityPenalty();
         let liqidityPenaltyMarketDisplay: string;
         let liqidityPenaltyFeedDisplay: string;
         if (liqidityPenaltyMarket || liqidityPenaltyMarket === 0) {
@@ -1164,7 +1186,8 @@ function QuickTradeCore(props: QuickTradeProps) {
             liqidityPenaltyMarketDisplay = "-";
         }
         if (liqidityPenaltyFeed || liqidityPenaltyFeed === 0) {
-            liqidityPenaltyFeedDisplay = (liqidityPenaltyFeed * 100).toFixed(2) + "%";
+            liqidityPenaltyFeedDisplay =
+                (liqidityPenaltyFeed * 100).toFixed(2) + "%";
         } else {
             liqidityPenaltyFeedDisplay = "-";
         }
@@ -1351,7 +1374,9 @@ function QuickTradeCore(props: QuickTradeProps) {
                     base_asset={sellAssetId}
                     quote_asset={receiveAssetId}
                     base_amount={(sellAmount as any) * 10 ** sellAssetPrecision}
-                    quote_amount={(receiveAmount as any) * 10 ** receiveAssetPrecision}
+                    quote_amount={
+                        (receiveAmount as any) * 10 ** receiveAssetPrecision
+                    }
                     noPopOver
                     force_direction={receiveAssetSymbol}
                     noInvertTip
@@ -1404,12 +1429,7 @@ function QuickTradeCore(props: QuickTradeProps) {
 
     function showDetails() {
         const {sellAsset, receiveAsset, sellAmount, receiveAmount} = state;
-        return !!(
-            sellAsset &&
-            receiveAsset &&
-            +sellAmount &&
-            +receiveAmount
-        );
+        return !!(sellAsset && receiveAsset && +sellAmount && +receiveAmount);
     }
 
     function hasBalance() {
@@ -1521,4 +1541,6 @@ function QuickTradeStoreConnected(props: QuickTradeProps) {
     );
 }
 
-export default bindToCurrentAccount(QuickTradeStoreConnected) as React.ComponentType<any>;
+export default bindToCurrentAccount(
+    QuickTradeStoreConnected
+) as React.ComponentType<any>;

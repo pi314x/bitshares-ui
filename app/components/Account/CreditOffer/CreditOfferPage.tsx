@@ -365,7 +365,8 @@ function CreditOfferPage() {
                 sorter: (a: any, b: any) => a.fee_rate - b.fee_rate,
                 render: (item: any) =>
                     `${utils.format_number(
-                        (parseFloat(item) / parseFloat(String(FEE_RATE_DENOM))) *
+                        (parseFloat(item) /
+                            parseFloat(String(FEE_RATE_DENOM))) *
                             100,
                         2,
                         false
@@ -506,16 +507,12 @@ function CreditOfferPage() {
             const baseAsset = new Asset({
                 asset_id: base.asset_id,
                 amount: base.amount,
-                precision: ChainStore.getAsset(base.asset_id).get(
-                    "precision"
-                )
+                precision: ChainStore.getAsset(base.asset_id).get("precision")
             });
             const quoteAsset = new Asset({
                 asset_id: quote.asset_id,
                 amount: quote.amount,
-                precision: ChainStore.getAsset(quote.asset_id).get(
-                    "precision"
-                )
+                precision: ChainStore.getAsset(quote.asset_id).get("precision")
             });
 
             const price = new Price({base: baseAsset, quote: quoteAsset});
@@ -534,8 +531,7 @@ function CreditOfferPage() {
                 precision: asset.get("precision")
             });
             const rate =
-                parseFloat(String(rateAsset.getAmount())) /
-                info.total_balance;
+                parseFloat(String(rateAsset.getAmount())) / info.total_balance;
             const rateAmount =
                 (parseFloat(info.fee_rate) / FEE_RATE_DENOM) *
                 info.total_balance *
@@ -682,9 +678,7 @@ function CreditOfferPage() {
                 {issuerName}
             </a>,
             <br key="break" />,
-            counterpart.translate(
-                "credit_offer.override_authority_warning_p2"
-            ),
+            counterpart.translate("credit_offer.override_authority_warning_p2"),
             " ",
             <a
                 key="asset-link"
@@ -774,10 +768,7 @@ function CreditOfferPage() {
                                     width: "100%"
                                 }}
                             >
-                                {parsingTime(
-                                    info.max_duration_seconds,
-                                    locale
-                                )}
+                                {parsingTime(info.max_duration_seconds, locale)}
                             </div>
                         </Form.Item>
                         <Form.Item
@@ -872,10 +863,7 @@ function CreditOfferPage() {
     return (
         <div className="grid-content app-tables no-padding">
             <div className="content-block small-12">
-                <div
-                    className="generic-bordered-box"
-                    style={{margin: "20px"}}
-                >
+                <div className="generic-bordered-box" style={{margin: "20px"}}>
                     <div className="header-selector">
                         <div className="filter inline-block">
                             <SearchInput

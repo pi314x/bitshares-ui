@@ -83,12 +83,7 @@ import BlockchainActions from "actions/BlockchainActions";
 import Transaction from "./Transaction";
 import Translate from "react-translate-component";
 import LinkToWitnessById from "../Utility/LinkToWitnessById";
-import {
-    Element,
-    Events,
-    animateScroll as scroll,
-    scroller
-} from "react-scroll";
+import {Element, Events, animateScroll as scroll, scroller} from "react-scroll";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
@@ -105,7 +100,12 @@ function TransactionList({block}: TransactionListProps) {
         block.transactions.forEach((trx: any, index: number) => {
             transactions.push(
                 <Element key={index} id={`tx_${index}`} name={`tx_${index}`}>
-                    <Transaction block={block} key={index} trx={trx} index={index} />
+                    <Transaction
+                        block={block}
+                        key={index}
+                        trx={trx}
+                        index={index}
+                    />
                 </Element>
             );
         });
@@ -232,7 +232,9 @@ function BlockCore({
     }
 
     function onSubmit() {
-        const value = blockInputRef.current ? blockInputRef.current.value : null;
+        const value = blockInputRef.current
+            ? blockInputRef.current.value
+            : null;
         if (value) {
             onKeyDown({keyCode: 13, target: {value}});
         }
@@ -294,7 +296,9 @@ function BlockCore({
                                 />
                                 :{" "}
                                 {block ? (
-                                    <LinkToWitnessById witness={block.witness} />
+                                    <LinkToWitnessById
+                                        witness={block.witness}
+                                    />
                                 ) : null}
                             </li>
                             <li>
@@ -312,7 +316,10 @@ function BlockCore({
                                 : {block ? block.transactions.length : null}
                             </li>
                         </ul>
-                        <div className="clearfix" style={{marginBottom: "1rem"}}>
+                        <div
+                            className="clearfix"
+                            style={{marginBottom: "1rem"}}
+                        >
                             <div
                                 className="button float-left outline"
                                 onClick={previousBlock}
@@ -353,7 +360,9 @@ export default function Block({
     ...rest
 }: BlockProps) {
     useChainStoreTick();
-    const resolvedDynGlobalObject = (ChainStore as any).getObject(dynGlobalObject);
+    const resolvedDynGlobalObject = (ChainStore as any).getObject(
+        dynGlobalObject
+    );
 
     if (resolvedDynGlobalObject === undefined) {
         return <span />;

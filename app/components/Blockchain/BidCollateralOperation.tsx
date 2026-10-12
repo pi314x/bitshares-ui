@@ -68,8 +68,8 @@ function initialState(
 function BidCollateralOperation(props: BidCollateralOperationProps) {
     const {asset, core, onUpdate} = props;
 
-    const [state, setState] = React.useState<BidCollateralOperationState>(
-        () => initialState(props)
+    const [state, setState] = React.useState<BidCollateralOperationState>(() =>
+        initialState(props)
     );
 
     const mergeState = (patch: Partial<BidCollateralOperationState>) => {
@@ -96,7 +96,9 @@ function BidCollateralOperation(props: BidCollateralOperationProps) {
                 ? collateralAmount
                 : collateralAmount.replace(/,/g, "");
         debtAmount =
-            (debtAmount as any) == 0 ? debtAmount : debtAmount.replace(/,/g, "");
+            (debtAmount as any) == 0
+                ? debtAmount
+                : debtAmount.replace(/,/g, "");
 
         (AssetActions as any).bidCollateral(
             state.account ? state.account.get("id") : null,
@@ -195,7 +197,10 @@ function BidCollateralOperation(props: BidCollateralOperationProps) {
     );
 }
 
-export default AssetWrapper(BidCollateralOperation as any, {
-    propNames: ["asset", "core"],
-    withDynamic: true
-} as any);
+export default AssetWrapper(
+    BidCollateralOperation as any,
+    {
+        propNames: ["asset", "core"],
+        withDynamic: true
+    } as any
+);

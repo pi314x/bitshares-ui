@@ -230,9 +230,7 @@ const PasswordInput = React.forwardRef<PasswordInputHandle, PasswordInputProps>(
                         <div className="generated-password-section">
                             <input
                                 style={{
-                                    marginBottom: checkStrength
-                                        ? 0
-                                        : undefined,
+                                    marginBottom: checkStrength ? 0 : undefined,
                                     display: copy ? "inline" : "block"
                                 }}
                                 id="current-password"
@@ -261,8 +259,8 @@ const PasswordInput = React.forwardRef<PasswordInputHandle, PasswordInputProps>(
                                     score === 5
                                         ? "high"
                                         : score === 4
-                                            ? "medium"
-                                            : "low"
+                                        ? "medium"
+                                        : "low"
                                 }
                                 value={score}
                                 max={5}

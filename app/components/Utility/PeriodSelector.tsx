@@ -71,7 +71,11 @@ export default function PeriodSelector({
 
     return (
         <div className="amount-selector" style={style}>
-            <Translate className="left-label" component="label" content={label} />
+            <Translate
+                className="left-label"
+                component="label"
+                content={label}
+            />
             <div className="inline-label input-wrapper">
                 <span className="input-addon-before">Each</span>
                 <input

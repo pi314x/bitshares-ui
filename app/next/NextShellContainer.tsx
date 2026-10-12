@@ -36,10 +36,7 @@ import WalletUnlockActions from "actions/WalletUnlockActions";
 import SettingsActions from "actions/SettingsActions";
 import IntlActions from "actions/IntlActions";
 import WalletDb from "stores/WalletDb";
-import {
-    setLocalStorageType,
-    isPersistantType
-} from "lib/common/localStorage";
+import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import SendModal from "components/Modal/SendModal";

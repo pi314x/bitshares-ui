@@ -48,6 +48,7 @@ const accountSlice = createSlice({
 
 export const {patchState, seedAccountState} = accountSlice.actions;
 
-export const selectAccountState = (state: {account: AccountState}) => state.account;
+export const selectAccountState = (state: {account: AccountState}) =>
+    state.account;
 
 export default accountSlice.reducer;

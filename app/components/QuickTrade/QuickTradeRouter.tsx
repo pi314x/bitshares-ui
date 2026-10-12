@@ -84,11 +84,18 @@ interface QuickTradeAssetsContainerProps {
 
 function QuickTradeAssetsContainer(props: QuickTradeAssetsContainerProps) {
     useChainStoreTick();
-    const {assetToSell: assetToSellSymbol, assetToReceive: assetToReceiveSymbol, ...rest} = props;
+    const {
+        assetToSell: assetToSellSymbol,
+        assetToReceive: assetToReceiveSymbol,
+        ...rest
+    } = props;
     const assetToSell = ChainStore.getAsset(assetToSellSymbol || "CNY");
     const assetToReceive = ChainStore.getAsset(assetToReceiveSymbol || "BTS");
 
-    if (!!(assetToReceive && assetToReceive.get) && !!(assetToSell && assetToSell.get)) {
+    if (
+        !!(assetToReceive && assetToReceive.get) &&
+        !!(assetToSell && assetToSell.get)
+    ) {
         return (
             <QuickTrade
                 {...rest}

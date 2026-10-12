@@ -207,7 +207,7 @@ function InvoicePay({match, currentAccount, validateFormat}: InvoicePayProps) {
             } else {
                 setError(counterpart.translate("invoice.invalid_format"));
             }
-        } catch (error: any) {
+        } catch (error) {
             setError(error.message);
         }
     };
@@ -282,7 +282,7 @@ function InvoicePay({match, currentAccount, validateFormat}: InvoicePayProps) {
                     compressedData
                 );
                 parseInvoiceData(decompressedData);
-            } catch (e: any) {
+            } catch (e) {
                 console.log(e);
                 setError(e.message);
             }
@@ -294,7 +294,7 @@ function InvoicePay({match, currentAccount, validateFormat}: InvoicePayProps) {
             const compressedData = (bs58 as any).decode(address);
             const decompressedData = await decompressRawData(compressedData);
             parseInvoiceData(decompressedData);
-        } catch (e: any) {
+        } catch (e) {
             console.log(e);
             setError(e.message);
         }

@@ -118,7 +118,10 @@ export default function Assets() {
     const [filterSearch, setFilterSearch] = React.useState("");
     const [rowsOnPage, setRowsOnPage] = React.useState("25");
 
-    function checkAssets(currentAssets: Immutable.Map<string, any>, force?: boolean) {
+    function checkAssets(
+        currentAssets: Immutable.Map<string, any>,
+        force?: boolean
+    ) {
         setIsLoading(true);
         const lastAsset = currentAssets
             .sort((a: any, b: any) =>
@@ -216,7 +219,8 @@ export default function Assets() {
             dataIndex: "marketId",
             render: (item: string) => (
                 <TypedLink to={`/market/${item}`}>
-                    <Icon type={"line-chart"} /> <Translate content="header.exchange" />
+                    <Icon type={"line-chart"} />{" "}
+                    <Translate content="header.exchange" />
                 </TypedLink>
             )
         }
@@ -256,8 +260,9 @@ export default function Assets() {
                 return (
                     a.bitasset_data &&
                     a.bitasset_data.is_prediction_market &&
-                    (a.symbol.toLowerCase().indexOf(filterSearch.toLowerCase()) !==
-                        -1 ||
+                    (a.symbol
+                        .toLowerCase()
+                        .indexOf(filterSearch.toLowerCase()) !== -1 ||
                         description.main
                             .toLowerCase()
                             .indexOf(filterSearch.toLowerCase()) !== -1)
@@ -268,7 +273,9 @@ export default function Assets() {
             )
             .map((asset: any) => ({
                 asset,
-                description: assetUtils.parseDescription(asset.options.description),
+                description: assetUtils.parseDescription(
+                    asset.options.description
+                ),
                 marketID: buildMarketId(asset, coreAsset)
             }))
             .valueSeq()
@@ -300,7 +307,10 @@ export default function Assets() {
                             <Radio.Group
                                 value={activeFilter}
                                 onChange={toggleFilter}
-                                style={{marginBottom: "7px", marginLeft: "24px"}}
+                                style={{
+                                    marginBottom: "7px",
+                                    marginLeft: "24px"
+                                }}
                             >
                                 <Radio value={"market"}>
                                     <Translate content="explorer.assets.market" />
@@ -370,14 +380,23 @@ export default function Assets() {
                                                             to={`/asset/${item.asset.symbol}`}
                                                         >
                                                             <AssetName
-                                                                name={item.asset.symbol}
+                                                                name={
+                                                                    item.asset
+                                                                        .symbol
+                                                                }
                                                             />
                                                         </TypedLink>
                                                     </span>
-                                                    {item.description.condition ? (
+                                                    {item.description
+                                                        .condition ? (
                                                         <span>
                                                             {" "}
-                                                            ({item.description.condition})
+                                                            (
+                                                            {
+                                                                item.description
+                                                                    .condition
+                                                            }
+                                                            )
                                                         </span>
                                                     ) : null}
                                                 </div>
@@ -389,36 +408,54 @@ export default function Assets() {
                                                             style={{
                                                                 padding:
                                                                     "10px 20px 5px 0",
-                                                                lineHeight: "18px"
+                                                                lineHeight:
+                                                                    "18px"
                                                             }}
                                                         >
-                                                            {item.description.main}
+                                                            {
+                                                                item.description
+                                                                    .main
+                                                            }
                                                         </div>
                                                     ) : null}
                                                     <span
                                                         style={{
-                                                            padding: "0 20px 5px 0",
+                                                            padding:
+                                                                "0 20px 5px 0",
                                                             lineHeight: "18px"
                                                         }}
                                                     >
                                                         <LinkToAccountById
-                                                            account={item.asset.issuer}
+                                                            account={
+                                                                item.asset
+                                                                    .issuer
+                                                            }
                                                         />
                                                         <span>
                                                             {" "}
                                                             -{" "}
                                                             <FormattedAsset
                                                                 amount={
-                                                                    item.asset.dynamic
+                                                                    item.asset
+                                                                        .dynamic
                                                                         .current_supply
                                                                 }
-                                                                asset={item.asset.id}
+                                                                asset={
+                                                                    item.asset
+                                                                        .id
+                                                                }
                                                             />
                                                         </span>
-                                                        {item.description.expiry ? (
+                                                        {item.description
+                                                            .expiry ? (
                                                             <span>
                                                                 {" "}
-                                                                - {item.description.expiry}
+                                                                -{" "}
+                                                                {
+                                                                    item
+                                                                        .description
+                                                                        .expiry
+                                                                }
                                                             </span>
                                                         ) : null}
                                                     </span>

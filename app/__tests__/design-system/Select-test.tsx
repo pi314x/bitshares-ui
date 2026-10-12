@@ -138,11 +138,7 @@ describe("design-system/Select", () => {
 
     it("shows the option's value, not its children, as the closed label when optionLabelProp is value", () => {
         const {getByText, queryByText} = render(
-            <Select
-                placeholder="Pick"
-                value="rudex"
-                optionLabelProp="value"
-            >
+            <Select placeholder="Pick" value="rudex" optionLabelProp="value">
                 <Select.Option value="rudex">
                     RuDex <span>(balance: 5)</span>
                 </Select.Option>

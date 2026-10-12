@@ -307,11 +307,7 @@ function ExchangeSubscriberCore(props: ExchangeSubscriberProps) {
     const prevPropsRef = React.useRef(props);
     const isMountRef = React.useRef(true);
 
-    const subToMarket = (
-        p: any,
-        newBucketSize?: any,
-        newGroupLimit?: any
-    ) => {
+    const subToMarket = (p: any, newBucketSize?: any, newGroupLimit?: any) => {
         const {quoteAsset, baseAsset} = p;
         let {bucketSize, currentGroupOrderLimit} = p;
         if (newBucketSize) {
@@ -380,7 +376,10 @@ function ExchangeSubscriberCore(props: ExchangeSubscriberProps) {
                     propsRef.current.baseAsset
                 );
 
-                if (isMarketAsset && marketAsset.id === object.balance.asset_id) {
+                if (
+                    isMarketAsset &&
+                    marketAsset.id === object.balance.asset_id
+                ) {
                     MarketsActions.settleOrderUpdate(marketAsset.id);
                 }
             })

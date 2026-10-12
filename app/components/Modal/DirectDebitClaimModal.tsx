@@ -176,8 +176,7 @@ export default function DirectDebitClaimModal({
                 let currentPeriodNum;
                 let currentPeriodExpires: any = "";
 
-                const periodMs =
-                    operation.payload.withdrawal_period_sec * 1000;
+                const periodMs = operation.payload.withdrawal_period_sec * 1000;
                 if (timePassed < 0) {
                     console.log("first period is not started");
                 } else {
@@ -329,9 +328,7 @@ export default function DirectDebitClaimModal({
                 >
                     <LimitToWithdraw
                         amount={maximumToClaim}
-                        assetId={
-                            withdrawal_limit && withdrawal_limit.asset_id
-                        }
+                        assetId={withdrawal_limit && withdrawal_limit.asset_id}
                     />
                 </span>
                 &nbsp;
@@ -378,7 +375,11 @@ export default function DirectDebitClaimModal({
         from_account.get("id") == to_account.get("id");
 
     if (__DEV__) {
-        console.log("DirectDebitClaimModal.render", {isModalVisible, operation}, state);
+        console.log(
+            "DirectDebitClaimModal.render",
+            {isModalVisible, operation},
+            state
+        );
     }
 
     return (
@@ -408,9 +409,7 @@ export default function DirectDebitClaimModal({
                 <Form className="full-width" layout="vertical">
                     <AccountSelector
                         label="showcases.direct_debit.authorizing_account"
-                        accountName={
-                            !!to_account ? to_account.get("name") : ""
-                        }
+                        accountName={!!to_account ? to_account.get("name") : ""}
                         account={to_account}
                         size={60}
                         hideImage
@@ -427,9 +426,7 @@ export default function DirectDebitClaimModal({
                             value={
                                 current_period_expires_date
                                     ? counterpart.localize(
-                                          new Date(
-                                              current_period_expires_date
-                                          ),
+                                          new Date(current_period_expires_date),
                                           {
                                               type: "date",
                                               format: "full"
@@ -450,9 +447,7 @@ export default function DirectDebitClaimModal({
                         amount={amount}
                         onChange={onAmountChanged}
                         asset={withdrawal_limit && withdrawal_limit.asset_id}
-                        assets={
-                            withdrawal_limit && [withdrawal_limit.asset_id]
-                        }
+                        assets={withdrawal_limit && [withdrawal_limit.asset_id]}
                         display_balance={balance}
                         allowNaN={true}
                     />
@@ -463,7 +458,9 @@ export default function DirectDebitClaimModal({
                         label={
                             <Tooltip
                                 placement="top"
-                                title={counterpart.translate("tooltip.memo_tip")}
+                                title={counterpart.translate(
+                                    "tooltip.memo_tip"
+                                )}
                             >
                                 {counterpart.translate("transfer.memo")}
                             </Tooltip>

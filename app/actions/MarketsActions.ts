@@ -126,10 +126,7 @@ function getMarketStats(
     refresh = false,
     errorCallback: any = null
 ) {
-    const {marketName, first, second} = marketUtils.getMarketName(
-        base,
-        quote
-    );
+    const {marketName, first, second} = marketUtils.getMarketName(base, quote);
     if (base === quote) return;
     const now: any = new Date();
 
@@ -330,16 +327,13 @@ function subscribeMarket(
                 let startDate3: any = new Date();
                 const endDate = new Date();
                 startDate = new Date(
-                    startDate.getTime() -
-                        bucketSize * bucketCount * 1000
+                    startDate.getTime() - bucketSize * bucketCount * 1000
                 );
                 startDate2 = new Date(
-                    startDate2.getTime() -
-                        bucketSize * bucketCount * 2000
+                    startDate2.getTime() - bucketSize * bucketCount * 2000
                 );
                 startDate3 = new Date(
-                    startDate3.getTime() -
-                        bucketSize * bucketCount * 3000
+                    startDate3.getTime() - bucketSize * bucketCount * 3000
                 );
                 endDate.setDate(endDate.getDate() + 1);
 
@@ -401,10 +395,7 @@ function subscribeMarket(
                               ]),
                     Apis.instance()
                         .db_api()
-                        .exec("get_ticker", [
-                            base.get("id"),
-                            quote.get("id")
-                        ]),
+                        .exec("get_ticker", [base.get("id"), quote.get("id")]),
                     groupedOrdersBidsPromise,
                     groupedOrdersAsksPromise
                 ])
@@ -559,10 +550,7 @@ function subscribeMarket(
                     ]),
                 Apis.instance()
                     .db_api()
-                    .exec("get_ticker", [
-                        base.get("id"),
-                        quote.get("id")
-                    ]),
+                    .exec("get_ticker", [base.get("id"), quote.get("id")]),
                 groupedOrdersBidsPromise,
                 groupedOrdersAsksPromise
             ])
@@ -608,11 +596,7 @@ function unSubscribeMarket(quote: any, base: any): Promise<any> {
         return new Promise((resolve, reject) => {
             Apis.instance()
                 .db_api()
-                .exec("unsubscribe_from_market", [
-                    subs[subID],
-                    quote,
-                    base
-                ])
+                .exec("unsubscribe_from_market", [subs[subID], quote, base])
                 .then(() => {
                     delete subs[subID];
                     marketsStore.onUnSubscribeMarket({unSub: true, resolve});
@@ -782,11 +766,9 @@ function cancelLimitOrder(accountID: any, orderID: any) {
         fee_paying_account: accountID,
         order: orderID
     });
-    return WalletDb.process_transaction(tr, null, true).catch(
-        (error: any) => {
-            console.log("cancel error:", error);
-        }
-    );
+    return WalletDb.process_transaction(tr, null, true).catch((error: any) => {
+        console.log("cancel error:", error);
+    });
 }
 
 function cancelLimitOrders(
@@ -828,11 +810,9 @@ function cancelLimitOrders(
             order: id
         });
     }
-    return WalletDb.process_transaction(tr, null, true).catch(
-        (error: any) => {
-            console.log("cancel error:", error);
-        }
-    );
+    return WalletDb.process_transaction(tr, null, true).catch((error: any) => {
+        console.log("cancel error:", error);
+    });
 }
 
 function cancelLimitOrderSuccess(ids: any[]) {
@@ -889,9 +869,7 @@ function getTrackedGroupsConfig() {
             );
         })
         .catch(() => {
-            console.log(
-                "current node api does not support grouped orders."
-            );
+            console.log("current node api does not support grouped orders.");
             reduxStore.dispatch(
                 onGetTrackedGroupsConfig({trackedGroupsConfig: []})
             );

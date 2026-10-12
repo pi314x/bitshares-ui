@@ -145,9 +145,7 @@ export default function SettingsEntry({
                                 <Checkbox
                                     id="browser_notifications.additional.transferToMe"
                                     disabled={!value.allow}
-                                    checked={
-                                        !!value.additional.transferToMe
-                                    }
+                                    checked={!!value.additional.transferToMe}
                                     onChange={handleNotificationChange(
                                         "additional.transferToMe"
                                     )}
@@ -159,21 +157,20 @@ export default function SettingsEntry({
                             </div>
                         </div>
                     </div>
-                    {!!value.allow &&
-                        Notify.needsPermission && (
-                            <a
-                                href="https://goo.gl/zZ7NHY"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="external-link"
-                            >
-                                <Translate
-                                    component="div"
-                                    className="settings--notifications--no-browser-support"
-                                    content="settings.browser_notifications_disabled_by_browser_notify"
-                                />
-                            </a>
-                        )}
+                    {!!value.allow && Notify.needsPermission && (
+                        <a
+                            href="https://goo.gl/zZ7NHY"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="external-link"
+                        >
+                            <Translate
+                                component="div"
+                                className="settings--notifications--no-browser-support"
+                                content="settings.browser_notifications_disabled_by_browser_notify"
+                            />
+                        </a>
+                    )}
                 </div>
             );
 
@@ -236,9 +233,7 @@ export default function SettingsEntry({
             if (defaults) {
                 options = defaults.map((entry: any) => {
                     let option: any = entry.translate
-                        ? counterpart.translate(
-                              `settings.${entry.translate}`
-                          )
+                        ? counterpart.translate(`settings.${entry.translate}`)
                         : entry;
                     if (setting === "unit" || setting === "fee_asset") {
                         option = <AssetName name={entry} />;
@@ -246,9 +241,7 @@ export default function SettingsEntry({
                     const key = entry.translate ? entry.translate : entry;
                     return (
                         <Option
-                            value={
-                                entry.translate ? entry.translate : entry
-                            }
+                            value={entry.translate ? entry.translate : entry}
                             key={key}
                         >
                             {option}

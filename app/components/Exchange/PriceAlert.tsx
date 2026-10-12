@@ -206,12 +206,7 @@ function PriceAlert({
         onSave(rules);
     }
 
-    if (
-        !quoteAsset ||
-        !quoteAsset.get ||
-        !baseAsset ||
-        !baseAsset.get
-    )
+    if (!quoteAsset || !quoteAsset.get || !baseAsset || !baseAsset.get)
         return null;
 
     const footer = [
@@ -266,9 +261,7 @@ function PriceAlert({
                             {rules.map((rule, key) => (
                                 <Form.Item
                                     key={key}
-                                    validateStatus={
-                                        rule.validateStatus || null
-                                    }
+                                    validateStatus={rule.validateStatus || null}
                                     help={rule.help || null}
                                 >
                                     <Input.Group

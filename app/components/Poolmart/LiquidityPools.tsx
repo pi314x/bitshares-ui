@@ -139,12 +139,10 @@ function LiquidityPools({
     lastPoolId,
     defaultAsset
 }: LiquidityPoolsCoreProps) {
-    const [filterAssetA, setFilterAssetA] = React.useState<string | null>(
-        () => (defaultAsset ? defaultAsset.get("symbol") : null)
+    const [filterAssetA, setFilterAssetA] = React.useState<string | null>(() =>
+        defaultAsset ? defaultAsset.get("symbol") : null
     );
-    const [filterAssetB, setFilterAssetB] = React.useState<string | null>(
-        null
-    );
+    const [filterAssetB, setFilterAssetB] = React.useState<string | null>(null);
     const [filterShareAsset, setFilterShareAsset] = React.useState<
         string | null
     >(null);
@@ -220,9 +218,7 @@ function LiquidityPools({
     // (called from `componentDidMount`, every filter handler, and
     // `_handleRowsChange`) - each of those just changed one of these
     // dependencies now instead of separately invoking a fetch.
-    const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(
-        null
-    );
+    const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     React.useEffect(() => {
         if (fetchTimer.current) clearTimeout(fetchTimer.current);
         fetchTimer.current = setTimeout(() => {

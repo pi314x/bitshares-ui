@@ -148,7 +148,11 @@ function getHeader() {
                             whiteSpace: "nowrap"
                         }}
                     >
-                        <a href={item} target="_blank" rel="noopener noreferrer">
+                        <a
+                            href={item}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             <Icon name="share" title="icons.share" />
                         </a>
                     </span>
@@ -331,12 +335,8 @@ export default function VotingAccountsList({
         })
         .map((i: any, idx: number) => {
             const action =
-                supported && supported.includes(i.get("id"))
-                    ? "remove"
-                    : "add";
-            const isActive = active.includes(
-                getWitnessOrCommittee(type, i).id
-            );
+                supported && supported.includes(i.get("id")) ? "remove" : "add";
+            const isActive = active.includes(getWitnessOrCommittee(type, i).id);
             return accountItemRow({
                 idx,
                 key: i.get("name"),

@@ -50,9 +50,7 @@ export default function WebsocketAddModal({
     const [wsValue, setWsValue] = React.useState(wss);
     const [name, setName] = React.useState("My node");
     const [addError, setAddError] = React.useState<boolean | null>(null);
-    const [existsError, setExistsError] = React.useState<boolean | null>(
-        null
-    );
+    const [existsError, setExistsError] = React.useState<boolean | null>(null);
 
     function apiExists(url: string) {
         return !!apis.find((a: any) => a.url === url);

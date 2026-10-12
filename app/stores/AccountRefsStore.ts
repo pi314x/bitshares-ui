@@ -30,7 +30,10 @@ import {ChainStore} from "bitsharesjs";
 import {Apis} from "bitsharesjs-ws";
 import PrivateKeyStore from "stores/PrivateKeyStore";
 import chainIds from "chain/chainIds";
-import {setAccountRefs, selectAccountRefsState} from "../store/slices/accountRefsSlice";
+import {
+    setAccountRefs,
+    selectAccountRefsState
+} from "../store/slices/accountRefsSlice";
 
 function loadNoAccountRefs() {
     const chain_id = (Apis as any).instance().chain_id;
@@ -112,7 +115,10 @@ class AccountRefsStoreFacade {
         account_refs = account_refs.set(this._getChainId(), Immutable.Set());
         reduxStore.dispatch(setAccountRefs(account_refs));
         return loadNoAccountRefs()
-            .then((no_account_refs: any) => (this.no_account_refs = no_account_refs))
+            .then(
+                (no_account_refs: any) =>
+                    (this.no_account_refs = no_account_refs)
+            )
             .then(() => this.chainStoreUpdate());
     }
 
@@ -125,9 +131,7 @@ class AccountRefsStoreFacade {
         )
             return;
         this.chainstore_account_ids_by_key = (ChainStore as any).account_ids_by_key;
-        this.chainstore_account_ids_by_account = (
-            ChainStore as any
-        ).account_ids_by_account;
+        this.chainstore_account_ids_by_account = (ChainStore as any).account_ids_by_account;
         this.checkPrivateKeyStore();
     }
 

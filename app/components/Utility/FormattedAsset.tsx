@@ -51,7 +51,11 @@ function SupplyPercentageCore({
     return <span className={colorClass}>{percent}%</span>;
 }
 
-function SupplyPercentage({amount, colorClass, do: doProp}: SupplyPercentageProps) {
+function SupplyPercentage({
+    amount,
+    colorClass,
+    do: doProp
+}: SupplyPercentageProps) {
     useChainStoreTick();
     const dynamicObject = doProp ? ChainStore.getObject(doProp) : doProp;
 
@@ -130,23 +134,22 @@ function FormattedAsset({
 
     const description = assetUtils.parseDescription(asset.options.description);
 
-    const currency_popover_body = !hide_asset &&
-        assetInfo && (
-            <div>
-                <HelpContent
-                    path={"assets/Asset"}
-                    section="summary"
-                    symbol={asset.symbol}
-                    description={
-                        description.short_name
-                            ? description.short_name
-                            : description.main
-                    }
-                    issuer={issuerName}
-                />
-                {assetInfo}
-            </div>
-        );
+    const currency_popover_body = !hide_asset && assetInfo && (
+        <div>
+            <HelpContent
+                path={"assets/Asset"}
+                section="summary"
+                symbol={asset.symbol}
+                description={
+                    description.short_name
+                        ? description.short_name
+                        : description.main
+                }
+                issuer={issuerName}
+            />
+            {assetInfo}
+        </div>
+    );
 
     let formattedValue: React.ReactNode = null;
     if (!hide_amount) {

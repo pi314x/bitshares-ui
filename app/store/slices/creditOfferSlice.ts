@@ -167,11 +167,7 @@ const creditOfferSlice = createSlice({
                         );
                         if (index > -1) {
                             if (result.list[0].enabled) {
-                                state.allList.splice(
-                                    index,
-                                    1,
-                                    result.list[0]
-                                );
+                                state.allList.splice(index, 1, result.list[0]);
                             } else {
                                 state.allList.splice(index, 1);
                             }

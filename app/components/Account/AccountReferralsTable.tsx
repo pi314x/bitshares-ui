@@ -181,7 +181,10 @@ function AccountReferralsTable({account}: AccountReferralsTableProps) {
 
     const accountJs = account.toJS();
 
-    const ltr = (ChainStore as any).getAccount(accountJs.lifetime_referrer, false);
+    const ltr = (ChainStore as any).getAccount(
+        accountJs.lifetime_referrer,
+        false
+    );
     if (ltr) accountJs.lifetime_referrer_name = ltr.get("name");
     const ref = (ChainStore as any).getAccount(accountJs.referrer, false);
     if (ref) accountJs.referrer_name = ref.get("name");
@@ -208,7 +211,9 @@ function AccountReferralsTable({account}: AccountReferralsTableProps) {
             key: "statistics",
             title: <Translate content="account.member.fees_paid" />,
             render: (dataItem: any) => {
-                return <Statistics plainText stat_object={dataItem.statistics} />;
+                return (
+                    <Statistics plainText stat_object={dataItem.statistics} />
+                );
             }
         },
         {
@@ -323,7 +328,12 @@ function AccountReferralsTableChainContainer({
     const resolvedDprops = ChainStore.getObject(dprops);
     const resolvedCoreAsset = ChainStore.getAsset(core_asset);
 
-    if (!resolvedAccount || !resolvedGprops || !resolvedDprops || !resolvedCoreAsset) {
+    if (
+        !resolvedAccount ||
+        !resolvedGprops ||
+        !resolvedDprops ||
+        !resolvedCoreAsset
+    ) {
         return <span />;
     }
 

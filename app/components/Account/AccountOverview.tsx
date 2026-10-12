@@ -357,7 +357,9 @@ function AccountOverview(props: AccountOverviewCoreProps) {
     const hiddenPortfolioList = (
         <AccountPortfolioList
             balanceList={hiddenBalancesList}
-            optionalAssets={!state.filterValue ? (alwaysShowAssets as any) : null}
+            optionalAssets={
+                !state.filterValue ? (alwaysShowAssets as any) : null
+            }
             visible={false}
             preferredUnit={preferredUnit}
             coreSymbol={core_asset.get("symbol")}
@@ -477,9 +479,7 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                                     <span className="text">
                                         {totalValueText}
                                     </span>
-                                    <span className="value">
-                                        {ordersValue}
-                                    </span>
+                                    <span className="value">{ordersValue}</span>
                                 </div>
                             </AccountOrders>
                         </Tab>
@@ -565,7 +565,9 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                                                     checked={
                                                         state.hideFishingProposals
                                                     }
-                                                    onChange={toggleHideProposal}
+                                                    onChange={
+                                                        toggleHideProposal
+                                                    }
                                                 />
                                                 <Translate content="account.deactivate_suspicious_proposals" />
                                             </Tooltip>
@@ -607,12 +609,8 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                                                             state.question2
                                                         }
                                                         onChange={toggleQ2}
-                                                        checkedChildren={
-                                                            "Yes"
-                                                        }
-                                                        unCheckedChildren={
-                                                            "No"
-                                                        }
+                                                        checkedChildren={"Yes"}
+                                                        unCheckedChildren={"No"}
                                                     />
                                                 </div>
                                             )}
@@ -625,12 +623,8 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                                                             state.question3
                                                         }
                                                         onChange={toggleQ3}
-                                                        checkedChildren={
-                                                            "Yes"
-                                                        }
-                                                        unCheckedChildren={
-                                                            "No"
-                                                        }
+                                                        checkedChildren={"Yes"}
+                                                        unCheckedChildren={"No"}
                                                     />
                                                 </div>
                                             )}

@@ -146,7 +146,12 @@ function RadioGroup({
 
     return (
         <RadioGroupContext.Provider
-            value={{name, value: currentValue, onChange: handleChange, disabled}}
+            value={{
+                name,
+                value: currentValue,
+                onChange: handleChange,
+                disabled
+            }}
         >
             <div
                 className={[styles.group, className].filter(Boolean).join(" ")}

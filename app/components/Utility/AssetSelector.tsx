@@ -47,7 +47,9 @@ function AssetDropdown({assets, value, onChange}: AssetDropdownProps) {
     if (!assets || assets.length === 0 || !value) return null;
     return (
         <FloatingDropdown
-            entries={assets.map((a: any) => a && a.get("symbol")).filter((a: any) => !!a)}
+            entries={assets
+                .map((a: any) => a && a.get("symbol"))
+                .filter((a: any) => !!a)}
             values={assets.reduce((map: any, a: any) => {
                 if (a && a.get("symbol")) map[a.get("symbol")] = a;
                 return map;
@@ -123,7 +125,8 @@ function AssetSelectorCore({
     const getNameType = (value?: string) => {
         if (!value) return null;
         // if(value[0] === "#" && utils.is_object_id("1.2." + value.substring(1))) return "id";
-        if (!ChainValidation.is_valid_symbol_error(value, true)) return "symbol";
+        if (!ChainValidation.is_valid_symbol_error(value, true))
+            return "symbol";
         return null;
     };
 
@@ -239,7 +242,10 @@ function AssetSelectorCore({
                         </div>
                         {children}
                         {onAction ? (
-                            <button className={action_class} onClick={onActionClick}>
+                            <button
+                                className={action_class}
+                                onClick={onActionClick}
+                            >
                                 <Translate content={action_label} />
                             </button>
                         ) : null}
@@ -260,7 +266,9 @@ interface AssetSelectorProps extends Omit<AssetSelectorCoreProps, "asset"> {
 
 function AssetSelector({asset: assetProp, ...rest}: AssetSelectorProps) {
     useChainStoreTick();
-    const asset = assetProp ? (ChainStore as any).getAsset(assetProp) : assetProp;
+    const asset = assetProp
+        ? (ChainStore as any).getAsset(assetProp)
+        : assetProp;
 
     return <AssetSelectorCore {...(rest as any)} asset={asset} />;
 }

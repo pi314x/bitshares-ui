@@ -53,7 +53,10 @@ export const bindToCurrentAccount = function bindToCurrentAccount(
 
     function BindToCurrentAccountChainContainer(props: any) {
         useChainStoreTick();
-        const currentAccount = resolveCurrentAccount(props.currentAccount, true);
+        const currentAccount = resolveCurrentAccount(
+            props.currentAccount,
+            true
+        );
 
         return (
             <BindToCurrentAccountCore

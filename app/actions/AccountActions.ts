@@ -140,7 +140,13 @@ class AccountActionsFacade {
         refcode: any
     ) {
         return (WalletActions as any)
-            .createAccount(account_name, registrar, referrer, referrer_percent, refcode)
+            .createAccount(
+                account_name,
+                registrar,
+                referrer,
+                referrer_percent,
+                refcode
+            )
             .then(() => {
                 (accountStore as any).onCreateAccount(account_name);
                 return account_name;
@@ -308,5 +314,7 @@ setCurrentAccountDeferrable.defer = (...args) =>
     setTimeout(() => accountActionsFacade.setCurrentAccount(...args));
 
 export default accountActionsFacade as typeof accountActionsFacade & {
-    setCurrentAccount: Deferrable<typeof accountActionsFacade.setCurrentAccount>;
+    setCurrentAccount: Deferrable<
+        typeof accountActionsFacade.setCurrentAccount
+    >;
 };

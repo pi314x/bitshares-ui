@@ -127,7 +127,9 @@ class MarketsStoreFacade {
         }
 
         const prev = selectMarkets(reduxStore.getState());
-        const newMarket = !!(result.market && result.market !== prev.activeMarket);
+        const newMarket = !!(
+            result.market && result.market !== prev.activeMarket
+        );
         if (newMarket) {
             /*
              * To prevent the callback from DataFeed to be called with new data

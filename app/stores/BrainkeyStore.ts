@@ -137,20 +137,22 @@ class BrainkeyInstanceFacade {
     }
 
     private updateAccountIds() {
-        const new_account_ids = Immutable.Set().withMutations((new_ids: any) => {
-            const updatePubkey = (public_string: string) => {
-                const chain_account_ids = (ChainStore as any).getAccountRefsOfKey(
-                    public_string
+        const new_account_ids = Immutable.Set().withMutations(
+            (new_ids: any) => {
+                const updatePubkey = (public_string: string) => {
+                    const chain_account_ids = (ChainStore as any).getAccountRefsOfKey(
+                        public_string
+                    );
+                    if (chain_account_ids)
+                        chain_account_ids.forEach((chain_account_id: any) => {
+                            new_ids.add(chain_account_id);
+                        });
+                };
+                this.derived_keys.forEach((derived_key: any) =>
+                    updatePubkey(derived_key.public_string)
                 );
-                if (chain_account_ids)
-                    chain_account_ids.forEach((chain_account_id: any) => {
-                        new_ids.add(chain_account_id);
-                    });
-            };
-            this.derived_keys.forEach((derived_key: any) =>
-                updatePubkey(derived_key.public_string)
-            );
-        });
+            }
+        );
         if (!new_account_ids.equals(this.getState().account_ids)) {
             reduxStore.dispatch(
                 setAccountIds({name: this.name, account_ids: new_account_ids})

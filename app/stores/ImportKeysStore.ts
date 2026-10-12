@@ -15,7 +15,10 @@
 // `ImportKeysStore.importing(true/false)` calls keep working completely
 // unchanged.
 import {reduxStore} from "../store/reduxStore";
-import {setImporting, selectImportKeysState} from "../store/slices/importKeysSlice";
+import {
+    setImporting,
+    selectImportKeysState
+} from "../store/slices/importKeysSlice";
 
 class ImportKeysStoreFacade {
     private unsubscribers = new Map<() => void, () => void>();

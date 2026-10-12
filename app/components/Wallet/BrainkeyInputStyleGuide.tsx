@@ -172,9 +172,7 @@ function MisspelledWord({children}: {children?: any}) {
                 margin: "1px"
             }}
         >
-            <span style={{borderBottom: "1px dotted #ff0000"}}>
-                {children}
-            </span>
+            <span style={{borderBottom: "1px dotted #ff0000"}}>{children}</span>
         </span>
     );
 }

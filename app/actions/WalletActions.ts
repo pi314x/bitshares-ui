@@ -85,17 +85,23 @@ class WalletActionsFacade {
         referrer_percent: any,
         refcode: any
     ) {
-        const {privKey: owner_private} = (WalletDb as any).generateKeyFromPassword(
+        const {
+            privKey: owner_private
+        } = (WalletDb as any).generateKeyFromPassword(
             account_name,
             "owner",
             password
         );
-        const {privKey: active_private} = (WalletDb as any).generateKeyFromPassword(
+        const {
+            privKey: active_private
+        } = (WalletDb as any).generateKeyFromPassword(
             account_name,
             "active",
             password
         );
-        const {privKey: memo_private} = (WalletDb as any).generateKeyFromPassword(
+        const {
+            privKey: memo_private
+        } = (WalletDb as any).generateKeyFromPassword(
             account_name,
             "memo",
             password
@@ -145,7 +151,10 @@ class WalletActionsFacade {
                     window.location &&
                     window.location.protocol === "https:"
                 ) {
-                    faucetAddress = faucetAddress.replace(/http:\/\//, "https://");
+                    faucetAddress = faucetAddress.replace(
+                        /http:\/\//,
+                        "https://"
+                    );
                 }
 
                 const create_account_promise = fetch(
@@ -229,7 +238,9 @@ class WalletActionsFacade {
             return (ApplicationApi as any)
                 .create_account(
                     owner_private.private_key.toPublicKey().toPublicKeyString(),
-                    active_private.private_key.toPublicKey().toPublicKeyString(),
+                    active_private.private_key
+                        .toPublicKey()
+                        .toPublicKeyString(),
                     memo_private.private_key.toPublicKey().toPublicKeyString(),
                     account_name,
                     registrar, //registrar_id,
@@ -246,7 +257,9 @@ class WalletActionsFacade {
         } else {
             // using faucet
 
-            let faucetAddress = (SettingsStore as any).getSetting("faucet_address");
+            let faucetAddress = (SettingsStore as any).getSetting(
+                "faucet_address"
+            );
             if (
                 window &&
                 window.location &&
@@ -321,7 +334,9 @@ class WalletActionsFacade {
             // - vesting_seconds is 0
             // - foreAll is set to true
             available_percentage =
-                vb.policy[0] === 2 || vb.policy[1].vesting_seconds === 0 || forceAll
+                vb.policy[0] === 2 ||
+                vb.policy[1].vesting_seconds === 0 ||
+                forceAll
                     ? 1
                     : 0;
 
@@ -364,17 +379,23 @@ class WalletActionsFacade {
                         balance * (now - seconds_last_updated);
                     const seconds_period = vb.policy[1].vesting_seconds;
 
-                    available_percentage = seconds_earned / (seconds_period * balance);
+                    available_percentage =
+                        seconds_earned / (seconds_period * balance);
 
                     // Make sure we don't go over 1
                     available_percentage =
                         available_percentage > 1 ? 1 : available_percentage;
                 }
                 available_amount = Math.floor(balance * available_percentage);
-            } else if (!available_percentage && vb.policy && vb.policy[0] === 0) {
+            } else if (
+                !available_percentage &&
+                vb.policy &&
+                vb.policy[0] === 0
+            ) {
                 // linear_vesting_policy
                 const start = Math.floor(
-                    new Date(vb.policy[1].begin_timestamp + "Z").getTime() / 1000
+                    new Date(vb.policy[1].begin_timestamp + "Z").getTime() /
+                        1000
                 );
                 const now = Math.floor(new Date().getTime() / 1000);
                 const seconds_earned = Math.max(now - start, 0);
@@ -389,7 +410,8 @@ class WalletActionsFacade {
                 const begin_balance = vb.policy[1].begin_balance;
                 const claimed_amount = begin_balance - balance;
                 available_amount = Math.max(
-                    Math.floor(begin_balance * vested_percentage) - claimed_amount,
+                    Math.floor(begin_balance * vested_percentage) -
+                        claimed_amount,
                     0
                 );
             }
@@ -418,7 +440,11 @@ class WalletActionsFacade {
     /** @parm balances is an array of balance objects with two
         additional values: {vested_balance, public_key_string}
     */
-    importBalance(account_name_or_id: any, balances: any[], broadcast: boolean) {
+    importBalance(
+        account_name_or_id: any,
+        balances: any[],
+        broadcast: boolean
+    ) {
         return new Promise(resolve => {
             const account_lookup = FetchChain("getAccount", account_name_or_id);
             const unlock = (WalletUnlockActions as any).unlock();

@@ -187,7 +187,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.chart_type"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                                 &nbsp;
                                 <Tooltip
@@ -263,7 +266,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.chart_tools"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                                 &nbsp;
                                 <Tooltip
@@ -296,7 +302,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.chart_zoom"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                                 &nbsp;
                                 <Tooltip
@@ -360,7 +369,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.order_style"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -399,7 +411,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.position_order_form"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -438,7 +453,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.position_order_orders"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -477,7 +495,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.position_order_asset"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -515,7 +536,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.orderbook_auto_scroll"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -540,7 +564,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.reverse_order_book"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -565,7 +592,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.single_colum_order_form"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -673,7 +703,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.market_location"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>
@@ -708,7 +741,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.reduce_scrollbars"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                                 &nbsp;
                                 <Tooltip
@@ -741,7 +777,10 @@ export default function Personalize(props: PersonalizeProps) {
                                         "exchange.settings.tooltip.hide_function_buttons"
                                     )}
                                 >
-                                    <Icon type="question-circle" theme="filled" />
+                                    <Icon
+                                        type="question-circle"
+                                        theme="filled"
+                                    />
                                 </Tooltip>
                             </h6>
                         </div>

@@ -46,9 +46,9 @@ const withWorthLessSettlementFlag = (
     WrappedComponent: React.ComponentType<any>
 ) =>
     withShortBackingAsset((props: any) => {
-        const [state, setState] = React.useState<WorthLessSettlementFlagState>(
-            {worthLessSettlement: undefined}
-        );
+        const [state, setState] = React.useState<WorthLessSettlementFlagState>({
+            worthLessSettlement: undefined
+        });
 
         React.useEffect(() => {
             const {asset, shortBackingAsset} = props;

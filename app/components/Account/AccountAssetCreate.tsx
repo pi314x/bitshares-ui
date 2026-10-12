@@ -785,22 +785,14 @@ function AccountAssetCreateInner({
     if (symbolLength === 3) {
         createFee = (
             <FormattedAsset
-                amount={estimateFee(
-                    "asset_create",
-                    ["symbol3"],
-                    globalObject
-                )}
+                amount={estimateFee("asset_create", ["symbol3"], globalObject)}
                 asset={"1.3.0"}
             />
         );
     } else if (symbolLength === 4) {
         createFee = (
             <FormattedAsset
-                amount={estimateFee(
-                    "asset_create",
-                    ["symbol4"],
-                    globalObject
-                )}
+                amount={estimateFee("asset_create", ["symbol4"], globalObject)}
                 asset={"1.3.0"}
             />
         );
@@ -1112,8 +1104,8 @@ function AccountAssetCreateInner({
                                                 :{" "}
                                                 {(utils as any).format_number(
                                                     (utils as any).get_asset_price(
-                                                        core_exchange_rate
-                                                            .quote.amount *
+                                                        core_exchange_rate.quote
+                                                            .amount *
                                                             (utils as any).get_asset_precision(
                                                                 update.precision
                                                             ),
@@ -1189,10 +1181,7 @@ function AccountAssetCreateInner({
                                         type="text"
                                         value={update.description.short_name}
                                         onChange={(e: any) =>
-                                            onUpdateDescription(
-                                                "short_name",
-                                                e
-                                            )
+                                            onUpdateDescription("short_name", e)
                                         }
                                     />
                                 </label>
@@ -1223,8 +1212,7 @@ function AccountAssetCreateInner({
                                             <input
                                                 type="text"
                                                 value={
-                                                    update.description
-                                                        .condition
+                                                    update.description.condition
                                                 }
                                                 onChange={(e: any) =>
                                                     onUpdateDescription(

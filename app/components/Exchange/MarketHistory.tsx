@@ -53,10 +53,13 @@ import Immutable from "immutable";
 import Ps from "perfect-scrollbar";
 import SettingsActions from "actions/SettingsActions";
 import {ChainTypes as grapheneChainTypes} from "bitsharesjs";
-const {operations} = (grapheneChainTypes as any);
+const {operations} = grapheneChainTypes as any;
 import ReactTooltip from "react-tooltip";
 import {FillOrder} from "common/MarketClasses";
-import {MarketHistoryView, MarketHistoryViewRow} from "./View/MarketHistoryView";
+import {
+    MarketHistoryView,
+    MarketHistoryViewRow
+} from "./View/MarketHistoryView";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
 

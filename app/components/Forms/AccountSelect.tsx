@@ -101,7 +101,9 @@ export default function AccountSelect({
         <select
             key={selected_account}
             defaultValue={selected_account}
-            className={"form-control account-select bts-select " + (className || "")}
+            className={
+                "form-control account-select bts-select " + (className || "")
+            }
             onChange={onAccountChange}
             style={center ? {margin: "0 auto"} : undefined}
             tabIndex={tabIndex}

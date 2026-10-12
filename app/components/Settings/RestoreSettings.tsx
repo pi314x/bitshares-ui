@@ -30,9 +30,7 @@ interface RestoreSettingsProps {
     passwordLogin?: boolean;
 }
 
-export default function RestoreSettings({
-    passwordLogin
-}: RestoreSettingsProps) {
+export default function RestoreSettings({passwordLogin}: RestoreSettingsProps) {
     const types = ["backup", "key", "legacy", "brainkey", "favorites"];
     const [restoreType, setRestoreType] = React.useState(0);
 
@@ -50,10 +48,7 @@ export default function RestoreSettings({
     if (passwordLogin) {
         return (
             <div>
-                <Translate
-                    content="settings.wallet_required"
-                    component="h4"
-                />
+                <Translate content="settings.wallet_required" component="h4" />
                 <p className="dark-text-color">
                     <Translate content="settings.wallet_required_text" />:
                 </p>

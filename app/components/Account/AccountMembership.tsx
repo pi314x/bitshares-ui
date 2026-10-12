@@ -67,7 +67,10 @@ function AccountMembership({
 
     const account = accountResolved.toJS();
 
-    const ltr = (ChainStore as any).getAccount(account.lifetime_referrer, false);
+    const ltr = (ChainStore as any).getAccount(
+        account.lifetime_referrer,
+        false
+    );
     if (ltr) account.lifetime_referrer_name = ltr.get("name");
     const ref = (ChainStore as any).getAccount(account.referrer, false);
     if (ref) account.referrer_name = ref.get("name");
@@ -109,8 +112,7 @@ function AccountMembership({
         );
     let expiration_date = account.membership_expiration_date;
     if (expiration_date === "1969-12-31T23:59:59") expiration_date = "Never";
-    else if (expiration_date === "1970-01-01T00:00:00")
-        expiration_date = "N/A";
+    else if (expiration_date === "1970-01-01T00:00:00") expiration_date = "N/A";
 
     return (
         <div className="grid-content app-tables no-padding">
@@ -233,7 +235,6 @@ function AccountMembership({
                                                                             {
                                                                                 network_fee
                                                                             }
-
                                                                             %
                                                                         </td>
                                                                     </tr>
@@ -249,14 +250,12 @@ function AccountMembership({
                                                                                     account.lifetime_referrer_name
                                                                                 }
                                                                             </LinkComponent>
-
                                                                             )
                                                                         </td>
                                                                         <td>
                                                                             {
                                                                                 lifetime_fee
                                                                             }
-
                                                                             %
                                                                         </td>
                                                                     </tr>
@@ -272,14 +271,12 @@ function AccountMembership({
                                                                                     account.registrar_name
                                                                                 }
                                                                             </LinkComponent>
-
                                                                             )
                                                                         </td>
                                                                         <td>
                                                                             {
                                                                                 registrar_fee
                                                                             }
-
                                                                             %
                                                                         </td>
                                                                     </tr>
@@ -295,14 +292,12 @@ function AccountMembership({
                                                                                     account.referrer_name
                                                                                 }
                                                                             </LinkComponent>
-
                                                                             )
                                                                         </td>
                                                                         <td>
                                                                             {
                                                                                 referrer_fee
                                                                             }
-
                                                                             %
                                                                         </td>
                                                                     </tr>
@@ -374,10 +369,12 @@ function AccountMembership({
                                                                     account_name
                                                                 }
                                                                 vestingThresholdAmount={
-                                                                    gprops.getIn([
-                                                                        "parameters",
-                                                                        "cashback_vesting_threshold"
-                                                                    ]) /
+                                                                    gprops.getIn(
+                                                                        [
+                                                                            "parameters",
+                                                                            "cashback_vesting_threshold"
+                                                                        ]
+                                                                    ) /
                                                                     Math.pow(
                                                                         10,
                                                                         core_asset.get(
@@ -389,10 +386,12 @@ function AccountMembership({
                                                                     "symbol"
                                                                 )}
                                                                 vestingPeriod={
-                                                                    gprops.getIn([
-                                                                        "parameters",
-                                                                        "cashback_vesting_period_seconds"
-                                                                    ]) /
+                                                                    gprops.getIn(
+                                                                        [
+                                                                            "parameters",
+                                                                            "cashback_vesting_period_seconds"
+                                                                        ]
+                                                                    ) /
                                                                     60 /
                                                                     60 /
                                                                     24
@@ -466,7 +465,9 @@ function AccountMembership({
                                     <div className="card-divider">
                                         <Translate content="account.member.ref_distribution" />
                                     </div>
-                                    <AccountReferralsTable account={account_name} />
+                                    <AccountReferralsTable
+                                        account={account_name}
+                                    />
                                 </div>
                             ) : null}
                         </Tab>

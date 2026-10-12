@@ -139,7 +139,9 @@ function OrderBookRowVerticalInner(props: any) {
         ? "orderHistoryBid"
         : "orderHistoryAsk";
 
-    const price = <PriceText price={order.getPrice()} quote={quote} base={base} />;
+    const price = (
+        <PriceText price={order.getPrice()} quote={quote} base={base} />
+    );
     return (
         <Row
             onClick={props.onClick}
@@ -152,17 +154,17 @@ function OrderBookRowVerticalInner(props: any) {
         >
             <Cell className="cell left">
                 {(utils as any).format_number(
-                    order[isBid ? "amountForSale" : "amountToReceive"]().getAmount(
-                        {real: true}
-                    ),
+                    order[
+                        isBid ? "amountForSale" : "amountToReceive"
+                    ]().getAmount({real: true}),
                     base.get("precision")
                 )}
             </Cell>
             <Cell className="cell">
                 {(utils as any).format_number(
-                    order[isBid ? "amountToReceive" : "amountForSale"]().getAmount(
-                        {real: true}
-                    ),
+                    order[
+                        isBid ? "amountToReceive" : "amountForSale"
+                    ]().getAmount({real: true}),
                     quote.get("precision")
                 )}
             </Cell>
@@ -189,7 +191,8 @@ const OrderBookRowVertical = React.memo(
     orderBookRowVerticalPropsAreEqual
 );
 
-const elemHeight = (elem: any) => (elem ? elem.getBoundingClientRect().height : 0);
+const elemHeight = (elem: any) =>
+    elem ? elem.getBoundingClientRect().height : 0;
 
 function OrderBookRowHorizontalInner(props: any) {
     const {order, quote, base, position, quoteTotal} = props;
@@ -202,7 +205,9 @@ function OrderBookRowHorizontalInner(props: any) {
         ? "orderHistoryBid"
         : "orderHistoryAsk";
 
-    const price = <PriceText price={order.getPrice()} quote={quote} base={base} />;
+    const price = (
+        <PriceText price={order.getPrice()} quote={quote} base={base} />
+    );
     const amount = isBid
         ? (utils as any).format_number(
               order.amountToReceive().getAmount({real: true}),
@@ -221,8 +226,12 @@ function OrderBookRowHorizontalInner(props: any) {
               order.amountToReceive().getAmount({real: true}),
               base.get("precision")
           );
-    const totalValueBids = quoteTotal ? order.totalToReceive() : order.totalForSale();
-    const totalValueAsks = quoteTotal ? order.totalForSale() : order.totalToReceive();
+    const totalValueBids = quoteTotal
+        ? order.totalToReceive()
+        : order.totalForSale();
+    const totalValueAsks = quoteTotal
+        ? order.totalForSale()
+        : order.totalToReceive();
     const totalAsset = quoteTotal ? quote : base;
     const total = isBid
         ? (utils as any).format_number(
@@ -289,7 +298,9 @@ function GroupedOrderBookRowVerticalInner(props: any) {
     const isBid = order.isBid();
     const integerClass = isBid ? "orderHistoryBid" : "orderHistoryAsk";
 
-    const price = <PriceText price={order.getPrice()} quote={quote} base={base} />;
+    const price = (
+        <PriceText price={order.getPrice()} quote={quote} base={base} />
+    );
     return (
         <Row
             onClick={props.onClick}
@@ -301,17 +312,17 @@ function GroupedOrderBookRowVerticalInner(props: any) {
         >
             <Cell className="cell left">
                 {(utils as any).format_number(
-                    order[isBid ? "amountForSale" : "amountToReceive"]().getAmount(
-                        {real: true}
-                    ),
+                    order[
+                        isBid ? "amountForSale" : "amountToReceive"
+                    ]().getAmount({real: true}),
                     base.get("precision")
                 )}
             </Cell>
             <Cell className="cell">
                 {(utils as any).format_number(
-                    order[isBid ? "amountToReceive" : "amountForSale"]().getAmount(
-                        {real: true}
-                    ),
+                    order[
+                        isBid ? "amountToReceive" : "amountForSale"
+                    ]().getAmount({real: true}),
                     quote.get("precision")
                 )}
             </Cell>
@@ -320,7 +331,10 @@ function GroupedOrderBookRowVerticalInner(props: any) {
     );
 }
 
-function groupedOrderBookRowVerticalPropsAreEqual(prevProps: any, nextProps: any) {
+function groupedOrderBookRowVerticalPropsAreEqual(
+    prevProps: any,
+    nextProps: any
+) {
     if (nextProps.order.market_base !== prevProps.order.market_base) {
         return true;
     }
@@ -342,7 +356,9 @@ function GroupedOrderBookRowHorizontalInner(props: any) {
 
     const integerClass = isBid ? "orderHistoryBid" : "orderHistoryAsk";
 
-    const price = <PriceText price={order.getPrice()} quote={quote} base={base} />;
+    const price = (
+        <PriceText price={order.getPrice()} quote={quote} base={base} />
+    );
     const amount = isBid
         ? (utils as any).format_number(
               order.amountToReceive().getAmount({real: true}),
@@ -361,8 +377,12 @@ function GroupedOrderBookRowHorizontalInner(props: any) {
               order.amountToReceive().getAmount({real: true}),
               base.get("precision")
           );
-    const totalValueBids = quoteTotal ? order.totalToReceive() : order.totalForSale();
-    const totalValueAsks = quoteTotal ? order.totalForSale() : order.totalToReceive();
+    const totalValueBids = quoteTotal
+        ? order.totalToReceive()
+        : order.totalForSale();
+    const totalValueAsks = quoteTotal
+        ? order.totalForSale()
+        : order.totalToReceive();
     const totalAsset = quoteTotal ? quote : base;
     const total = isBid
         ? (utils as any).format_number(
@@ -464,7 +484,9 @@ function GroupOrderLimitSelector({
                     value={currentGroupOrderLimit}
                     onChange={handleGroupOrderLimitChange}
                     className="settings-select"
-                    style={noGroupsAvailable ? {cursor: "not-allowed"} : undefined}
+                    style={
+                        noGroupsAvailable ? {cursor: "not-allowed"} : undefined
+                    }
                 >
                     <Translate
                         content="exchange.group_order_limit"
@@ -519,1002 +541,1004 @@ interface OrderBookProps {
     marketReady?: boolean;
 }
 
-const OrderBookInner = React.forwardRef<any, OrderBookProps>(
-    function OrderBook(props, ref) {
-        const {
-            combinedBids,
-            combinedAsks,
-            highestBid,
-            lowestAsk,
-            quote,
-            base,
-            totalAsks,
-            totalBids,
-            quoteSymbol,
-            baseSymbol,
-            horizontal,
-            trackedGroupsConfig,
-            currentGroupOrderLimit,
-            handleGroupOrderLimitChange,
-            orderBookReversed,
-            groupedBids,
-            groupedAsks,
-            flipOrderBook,
-            onClick,
-            currentAccount,
-            hideScrollbars,
-            smallScreen,
-            hideFunctionButtons,
-            wrapperClass,
-            innerClass,
-            onFlipOrderBook,
-            onTogglePosition,
-            moveOrderBook,
-            latest,
-            changeClass
-        } = props;
+const OrderBookInner = React.forwardRef<any, OrderBookProps>(function OrderBook(
+    props,
+    ref
+) {
+    const {
+        combinedBids,
+        combinedAsks,
+        highestBid,
+        lowestAsk,
+        quote,
+        base,
+        totalAsks,
+        totalBids,
+        quoteSymbol,
+        baseSymbol,
+        horizontal,
+        trackedGroupsConfig,
+        currentGroupOrderLimit,
+        handleGroupOrderLimitChange,
+        orderBookReversed,
+        groupedBids,
+        groupedAsks,
+        flipOrderBook,
+        onClick,
+        currentAccount,
+        hideScrollbars,
+        smallScreen,
+        hideFunctionButtons,
+        wrapperClass,
+        innerClass,
+        onFlipOrderBook,
+        onTogglePosition,
+        moveOrderBook,
+        latest,
+        changeClass
+    } = props;
 
-        const [showAllBids, setShowAllBids] = React.useState(false);
-        const [showAllAsks, setShowAllAsks] = React.useState(false);
-        const [displaySpreadAsPercentage, setDisplaySpreadAsPercentage] = React.useState(
-            false
-        );
-        const [autoScroll, setAutoScroll] = React.useState(() => props.autoScroll);
-        const [quoteTotalBids, setQuoteTotalBids] = React.useState(false);
-        const [quoteTotalAsks, setQuoteTotalAsks] = React.useState(false);
-        const rowCount = 20;
+    const [showAllBids, setShowAllBids] = React.useState(false);
+    const [showAllAsks, setShowAllAsks] = React.useState(false);
+    const [
+        displaySpreadAsPercentage,
+        setDisplaySpreadAsPercentage
+    ] = React.useState(false);
+    const [autoScroll, setAutoScroll] = React.useState(() => props.autoScroll);
+    const [quoteTotalBids, setQuoteTotalBids] = React.useState(false);
+    const [quoteTotalAsks, setQuoteTotalAsks] = React.useState(false);
+    const rowCount = 20;
 
-        const verticalStickyTable = React.useRef<any>(null);
-        const centerText = React.useRef<any>(null);
-        const hor_bids = React.useRef<any>(null);
-        const hor_asks = React.useRef<any>(null);
-        const askTransition = React.useRef<any>(null);
-        const bidTransition = React.useRef<any>(null);
+    const verticalStickyTable = React.useRef<any>(null);
+    const centerText = React.useRef<any>(null);
+    const hor_bids = React.useRef<any>(null);
+    const hor_asks = React.useRef<any>(null);
+    const askTransition = React.useRef<any>(null);
+    const bidTransition = React.useRef<any>(null);
 
-        React.useImperativeHandle(ref, () => ({
-            verticalStickyTable
-        }));
+    React.useImperativeHandle(ref, () => ({
+        verticalStickyTable
+    }));
 
-        const queryStickyTable = (query: string | null = null) => {
-            // `StickyTable` (react-sticky-table, untyped/unmodified third-
-            // party class component) exposes no ref-forwarded DOM node of
-            // its own, so `findDOMNode` - deprecated but still functional
-            // outside StrictMode - is the only way to reach its rendered
-            // DOM, same as the original class did.
-            // eslint-disable-next-line react/no-find-dom-node
-            const node = (ReactDOM as any).findDOMNode(
-                verticalStickyTable.current
-            );
-            if (query == null) return node;
-            return node.querySelector(query);
-        };
+    const queryStickyTable = (query: string | null = null) => {
+        // `StickyTable` (react-sticky-table, untyped/unmodified third-
+        // party class component) exposes no ref-forwarded DOM node of
+        // its own, so `findDOMNode` - deprecated but still functional
+        // outside StrictMode - is the only way to reach its rendered
+        // DOM, same as the original class did.
+        // eslint-disable-next-line react/no-find-dom-node
+        const node = (ReactDOM as any).findDOMNode(verticalStickyTable.current);
+        if (query == null) return node;
+        return node.querySelector(query);
+    };
 
-        const verticalScrollBar = () => queryStickyTable();
+    const verticalScrollBar = () => queryStickyTable();
 
-        const psUpdate = () => {
-            if (!horizontal) {
-                Ps.update(verticalScrollBar());
+    const psUpdate = () => {
+        if (!horizontal) {
+            Ps.update(verticalScrollBar());
+        } else {
+            Ps.update(hor_bids.current);
+            Ps.update(hor_asks.current);
+        }
+    };
+
+    const centerVerticalScrollBar = () => {
+        if (!horizontal && autoScroll) {
+            // Center vertical scroll bar
+            const scrollableContainer = queryStickyTable();
+            const header = queryStickyTable(".top-header");
+            const centerTextContainer = centerText.current;
+            const singleRowHeight = elemHeight(queryStickyTable(".order-row"));
+
+            const rows =
+                currentGroupOrderLimit !== 0
+                    ? !orderBookReversed
+                        ? groupedAsks
+                        : groupedBids
+                    : !orderBookReversed
+                    ? combinedAsks
+                    : combinedBids;
+
+            const rowsHeight = rows.length * singleRowHeight;
+
+            const scrollableContainerHeight =
+                elemHeight(scrollableContainer) - elemHeight(header);
+
+            const scrollTo =
+                rowsHeight +
+                elemHeight(centerTextContainer) / 2 -
+                scrollableContainerHeight / 2;
+
+            scrollableContainer.scrollTop = scrollTo;
+        }
+    };
+
+    const isFirstShowAllAsksRender = React.useRef(true);
+    React.useLayoutEffect(() => {
+        if (isFirstShowAllAsksRender.current) {
+            isFirstShowAllAsksRender.current = false;
+            return;
+        }
+        if (horizontal && hideScrollbars) {
+            const asksContainer = hor_asks.current;
+            if (!showAllAsks) {
+                Ps.destroy(asksContainer);
             } else {
-                Ps.update(hor_bids.current);
-                Ps.update(hor_asks.current);
+                Ps.initialize(asksContainer);
+                psUpdate();
             }
-        };
+            if (askTransition.current) askTransition.current.resetAnimation();
+            if (hor_asks.current) hor_asks.current.scrollTop = 0;
+        }
+    }, [showAllAsks]);
 
-        const centerVerticalScrollBar = () => {
-            if (!horizontal && autoScroll) {
-                // Center vertical scroll bar
-                const scrollableContainer = queryStickyTable();
-                const header = queryStickyTable(".top-header");
-                const centerTextContainer = centerText.current;
-                const singleRowHeight = elemHeight(
-                    queryStickyTable(".order-row")
-                );
-
-                const rows =
-                    currentGroupOrderLimit !== 0
-                        ? !orderBookReversed
-                            ? groupedAsks
-                            : groupedBids
-                        : !orderBookReversed
-                        ? combinedAsks
-                        : combinedBids;
-
-                const rowsHeight = rows.length * singleRowHeight;
-
-                const scrollableContainerHeight =
-                    elemHeight(scrollableContainer) - elemHeight(header);
-
-                const scrollTo =
-                    rowsHeight +
-                    elemHeight(centerTextContainer) / 2 -
-                    scrollableContainerHeight / 2;
-
-                scrollableContainer.scrollTop = scrollTo;
-            }
-        };
-
-        const isFirstShowAllAsksRender = React.useRef(true);
-        React.useLayoutEffect(() => {
-            if (isFirstShowAllAsksRender.current) {
-                isFirstShowAllAsksRender.current = false;
-                return;
-            }
-            if (horizontal && hideScrollbars) {
-                const asksContainer = hor_asks.current;
-                if (!showAllAsks) {
-                    Ps.destroy(asksContainer);
-                } else {
-                    Ps.initialize(asksContainer);
-                    psUpdate();
-                }
-                if (askTransition.current) askTransition.current.resetAnimation();
-                if (hor_asks.current) hor_asks.current.scrollTop = 0;
-            }
-        }, [showAllAsks]);
-
-        const isFirstShowAllBidsRender = React.useRef(true);
-        React.useLayoutEffect(() => {
-            if (isFirstShowAllBidsRender.current) {
-                isFirstShowAllBidsRender.current = false;
-                return;
-            }
-            if (horizontal && hideScrollbars) {
-                const bidsContainer = hor_bids.current;
-                if (!showAllBids) {
-                    Ps.destroy(bidsContainer);
-                } else {
-                    Ps.initialize(bidsContainer);
-                    psUpdate();
-                }
-                if (bidTransition.current) bidTransition.current.resetAnimation();
-                if (hor_bids.current) hor_bids.current.scrollTop = 0;
-            }
-        }, [showAllBids]);
-
-        // Mount-only, matching the original componentDidMount exactly.
-        React.useLayoutEffect(() => {
-            if (!horizontal) {
-                Ps.initialize(verticalScrollBar());
+    const isFirstShowAllBidsRender = React.useRef(true);
+    React.useLayoutEffect(() => {
+        if (isFirstShowAllBidsRender.current) {
+            isFirstShowAllBidsRender.current = false;
+            return;
+        }
+        if (horizontal && hideScrollbars) {
+            const bidsContainer = hor_bids.current;
+            if (!showAllBids) {
+                Ps.destroy(bidsContainer);
             } else {
-                if (!hideScrollbars) {
-                    Ps.initialize(hor_bids.current);
-                    Ps.initialize(hor_asks.current);
-                }
+                Ps.initialize(bidsContainer);
+                psUpdate();
             }
-        }, []);
+            if (bidTransition.current) bidTransition.current.resetAnimation();
+            if (hor_bids.current) hor_bids.current.scrollTop = 0;
+        }
+    }, [showAllBids]);
 
-        const [, forceRerender] = React.useReducer(c => c + 1, 0);
-        const prevBaseIdRef = React.useRef(base && base.get && base.get("id"));
-        const prevQuoteIdRef = React.useRef(quote && quote.get && quote.get("id"));
-        const isFirstMarketChangeRender = React.useRef(true);
-        React.useLayoutEffect(() => {
-            const baseId = base && base.get && base.get("id");
-            const quoteId = quote && quote.get && quote.get("id");
-            if (isFirstMarketChangeRender.current) {
-                isFirstMarketChangeRender.current = false;
-                prevBaseIdRef.current = baseId;
-                prevQuoteIdRef.current = quoteId;
-                return;
+    // Mount-only, matching the original componentDidMount exactly.
+    React.useLayoutEffect(() => {
+        if (!horizontal) {
+            Ps.initialize(verticalScrollBar());
+        } else {
+            if (!hideScrollbars) {
+                Ps.initialize(hor_bids.current);
+                Ps.initialize(hor_asks.current);
             }
-            if (baseId !== prevBaseIdRef.current || quoteId !== prevQuoteIdRef.current) {
-                if (askTransition.current) {
-                    askTransition.current.resetAnimation();
-                    if (hor_asks.current) hor_asks.current.scrollTop = 0;
-                    if (hor_bids.current) hor_bids.current.scrollTop = 0;
-                }
+        }
+    }, []);
 
-                if (bidTransition.current) {
-                    bidTransition.current.resetAnimation();
-                }
-
-                if (!horizontal) {
-                    // Forces one extra render + effect pass, so
-                    // `centerVerticalScrollBar()` (below) re-measures
-                    // after the resets above have settled - see the
-                    // file-header note.
-                    forceRerender();
-                }
-            }
+    const [, forceRerender] = React.useReducer(c => c + 1, 0);
+    const prevBaseIdRef = React.useRef(base && base.get && base.get("id"));
+    const prevQuoteIdRef = React.useRef(quote && quote.get && quote.get("id"));
+    const isFirstMarketChangeRender = React.useRef(true);
+    React.useLayoutEffect(() => {
+        const baseId = base && base.get && base.get("id");
+        const quoteId = quote && quote.get && quote.get("id");
+        if (isFirstMarketChangeRender.current) {
+            isFirstMarketChangeRender.current = false;
             prevBaseIdRef.current = baseId;
             prevQuoteIdRef.current = quoteId;
-        });
+            return;
+        }
+        if (
+            baseId !== prevBaseIdRef.current ||
+            quoteId !== prevQuoteIdRef.current
+        ) {
+            if (askTransition.current) {
+                askTransition.current.resetAnimation();
+                if (hor_asks.current) hor_asks.current.scrollTop = 0;
+                if (hor_bids.current) hor_bids.current.scrollTop = 0;
+            }
 
-        const prevHideScrollbarsRef = React.useRef(hideScrollbars);
-        const isFirstHideScrollbarsRender = React.useRef(true);
-        React.useLayoutEffect(() => {
-            if (isFirstHideScrollbarsRender.current) {
-                isFirstHideScrollbarsRender.current = false;
-                prevHideScrollbarsRef.current = hideScrollbars;
-                return;
+            if (bidTransition.current) {
+                bidTransition.current.resetAnimation();
             }
-            const prevHideScrollbars = prevHideScrollbarsRef.current;
-            if (horizontal && hideScrollbars !== prevHideScrollbars) {
-                const bidsContainer = hor_bids.current;
-                const asksContainer = hor_asks.current;
-                if (hideScrollbars) {
-                    Ps.destroy(bidsContainer);
-                    Ps.destroy(asksContainer);
-                } else {
-                    Ps.initialize(bidsContainer);
-                    Ps.initialize(asksContainer);
-                    if (askTransition.current) askTransition.current.resetAnimation();
-                    if (bidTransition.current) bidTransition.current.resetAnimation();
-                    if (asksContainer) asksContainer.scrollTop = 0;
-                    if (bidsContainer) bidsContainer.scrollTop = 0;
-                    psUpdate();
-                }
+
+            if (!horizontal) {
+                // Forces one extra render + effect pass, so
+                // `centerVerticalScrollBar()` (below) re-measures
+                // after the resets above have settled - see the
+                // file-header note.
+                forceRerender();
             }
+        }
+        prevBaseIdRef.current = baseId;
+        prevQuoteIdRef.current = quoteId;
+    });
+
+    const prevHideScrollbarsRef = React.useRef(hideScrollbars);
+    const isFirstHideScrollbarsRender = React.useRef(true);
+    React.useLayoutEffect(() => {
+        if (isFirstHideScrollbarsRender.current) {
+            isFirstHideScrollbarsRender.current = false;
             prevHideScrollbarsRef.current = hideScrollbars;
-        });
-
-        const isFirstCenterScrollRender = React.useRef(true);
-        React.useLayoutEffect(() => {
-            if (isFirstCenterScrollRender.current) {
-                isFirstCenterScrollRender.current = false;
-                return;
-            }
-            centerVerticalScrollBar();
-        });
-
-        const onSetShowAll = (type: string) => {
-            if (type === "asks") {
-                setShowAllAsks(prev => {
-                    if (prev && hor_asks.current) {
-                        hor_asks.current.scrollTop = 0;
-                    }
-                    return !prev;
-                });
-            } else {
-                setShowAllBids(prev => {
-                    if (prev && hor_bids.current) {
-                        hor_bids.current.scrollTop = 0;
-                    }
-                    return !prev;
-                });
-            }
-        };
-
-        const toggleSpreadValue = () => {
-            setDisplaySpreadAsPercentage(prev => !prev);
-        };
-
-        const toggleAutoScroll = () => {
-            setAutoScroll(prev => !prev);
-        };
-
-        const toggleTotalAsset = (isBid?: boolean) => {
-            if (isBid) {
-                setQuoteTotalBids(prev => !prev);
-            } else {
-                setQuoteTotalAsks(prev => !prev);
-            }
-        };
-
-        const noOrders = !lowestAsk.sell_price && !highestBid.sell_price;
-        const hasAskAndBids = !!(lowestAsk.sell_price && highestBid.sell_price);
-        const spread =
-            hasAskAndBids &&
-            (displaySpreadAsPercentage ? (
-                `${(
-                    100 *
-                    (lowestAsk._real_price / highestBid._real_price - 1)
-                ).toFixed(2)}%`
-            ) : (
-                <PriceText
-                    price={lowestAsk._real_price - highestBid._real_price}
-                    base={base}
-                    quote={quote}
-                />
-            ));
-        let bidRows: any[] | null = null,
-            askRows: any[] | null = null;
-
-        /* Sort */
-        const tempAsks = currentGroupOrderLimit !== 0 ? groupedAsks : combinedAsks; // RED
-        const tempBids = currentGroupOrderLimit !== 0 ? groupedBids : combinedBids; // GREEN
-
-        if (!horizontal && !orderBookReversed) {
-            tempBids.sort((a, b) => {
-                return b.getPrice() - a.getPrice();
-            });
-            tempAsks.sort((a, b) => {
-                return b.getPrice() - a.getPrice();
-            });
-        } else if (!horizontal && orderBookReversed) {
-            tempBids.sort((a, b) => {
-                return a.getPrice() - b.getPrice();
-            });
-            tempAsks.sort((a, b) => {
-                return a.getPrice() - b.getPrice();
-            });
+            return;
         }
-
-        if (base && quote) {
-            // limit orders or grouped orders
-            if (currentGroupOrderLimit !== 0) {
-                bidRows = tempBids.map((order, index) => {
-                    return horizontal ? (
-                        <GroupedOrderBookRowHorizontal
-                            index={index}
-                            key={order.getPrice() + (order.isBid() ? "_bid" : "")}
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            position={!flipOrderBook ? "left" : "right"}
-                            currentAccount={currentAccount}
-                            quoteTotal={quoteTotalBids}
-                        />
-                    ) : (
-                        <GroupedOrderBookRowVertical
-                            index={index}
-                            key={order.getPrice() + (order.isBid() ? "_bid" : "")}
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            final={index === 0}
-                            currentAccount={currentAccount}
-                        />
-                    );
-                });
-
-                askRows = tempAsks.map((order, index) => {
-                    return horizontal ? (
-                        <GroupedOrderBookRowHorizontal
-                            index={index}
-                            key={order.getPrice() + (order.isBid() ? "_bid" : "")}
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            type={order.type}
-                            position={!flipOrderBook ? "right" : "left"}
-                            currentAccount={currentAccount}
-                            quoteTotal={quoteTotalAsks}
-                        />
-                    ) : (
-                        <GroupedOrderBookRowVertical
-                            index={index}
-                            key={order.getPrice() + (order.isBid() ? "_bid" : "")}
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            type={order.type}
-                            final={0 === index}
-                            currentAccount={currentAccount}
-                        />
-                    );
-                });
+        const prevHideScrollbars = prevHideScrollbarsRef.current;
+        if (horizontal && hideScrollbars !== prevHideScrollbars) {
+            const bidsContainer = hor_bids.current;
+            const asksContainer = hor_asks.current;
+            if (hideScrollbars) {
+                Ps.destroy(bidsContainer);
+                Ps.destroy(asksContainer);
             } else {
-                const maxBid = tempBids.length
-                    ? tempBids[tempBids.length - 1].totalForSale().getAmount()
-                    : 0;
-
-                bidRows = tempBids.map((order, index) => {
-                    const value = order.totalForSale().getAmount();
-                    const percentage = Math.ceil((value * 100) / maxBid);
-                    return horizontal ? (
-                        <OrderBookRowHorizontal
-                            index={index}
-                            key={
-                                order.getPrice() + (order.isCall() ? "_call" : "")
-                            }
-                            marketDepthPercentage={percentage}
-                            isBid={true}
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            position={!flipOrderBook ? "left" : "right"}
-                            currentAccount={currentAccount}
-                            quoteTotal={quoteTotalBids}
-                        />
-                    ) : (
-                        <OrderBookRowVertical
-                            index={index}
-                            key={
-                                order.getPrice() + (order.isCall() ? "_call" : "")
-                            }
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            final={index === 0}
-                            currentAccount={currentAccount}
-                        />
-                    );
-                });
-
-                const maxAsk = tempAsks.length
-                    ? tempAsks[tempAsks.length - 1].totalForSale().getAmount()
-                    : 0;
-
-                askRows = tempAsks.map((order, index) => {
-                    const value = order.totalForSale().getAmount();
-                    const percentage = Math.ceil((value * 100) / maxAsk);
-                    return horizontal ? (
-                        <OrderBookRowHorizontal
-                            index={index}
-                            marketDepthPercentage={percentage}
-                            isBid={false}
-                            key={
-                                order.getPrice() + (order.isCall() ? "_call" : "")
-                            }
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            type={order.type}
-                            position={!flipOrderBook ? "right" : "left"}
-                            currentAccount={currentAccount}
-                            quoteTotal={quoteTotalAsks}
-                        />
-                    ) : (
-                        <OrderBookRowVertical
-                            index={index}
-                            key={
-                                order.getPrice() + (order.isCall() ? "_call" : "")
-                            }
-                            order={order}
-                            onClick={onClick.bind(null, order)}
-                            base={base}
-                            quote={quote}
-                            type={order.type}
-                            final={0 === index}
-                            currentAccount={currentAccount}
-                        />
-                    );
-                });
+                Ps.initialize(bidsContainer);
+                Ps.initialize(asksContainer);
+                if (askTransition.current)
+                    askTransition.current.resetAnimation();
+                if (bidTransition.current)
+                    bidTransition.current.resetAnimation();
+                if (asksContainer) asksContainer.scrollTop = 0;
+                if (bidsContainer) bidsContainer.scrollTop = 0;
+                psUpdate();
             }
         }
+        prevHideScrollbarsRef.current = hideScrollbars;
+    });
 
-        if (horizontal) {
-            const totalBidsLength = (bidRows as any[]).length;
-            const totalAsksLength = (askRows as any[]).length;
+    const isFirstCenterScrollRender = React.useRef(true);
+    React.useLayoutEffect(() => {
+        if (isFirstCenterScrollRender.current) {
+            isFirstCenterScrollRender.current = false;
+            return;
+        }
+        centerVerticalScrollBar();
+    });
 
-            if (!showAllBids) {
-                (bidRows as any[]).splice(rowCount, (bidRows as any[]).length);
-            }
+    const onSetShowAll = (type: string) => {
+        if (type === "asks") {
+            setShowAllAsks(prev => {
+                if (prev && hor_asks.current) {
+                    hor_asks.current.scrollTop = 0;
+                }
+                return !prev;
+            });
+        } else {
+            setShowAllBids(prev => {
+                if (prev && hor_bids.current) {
+                    hor_bids.current.scrollTop = 0;
+                }
+                return !prev;
+            });
+        }
+    };
 
-            if (!showAllAsks) {
-                (askRows as any[]).splice(rowCount, (askRows as any[]).length);
-            }
+    const toggleSpreadValue = () => {
+        setDisplaySpreadAsPercentage(prev => !prev);
+    };
 
-            const leftHeader = (
-                <thead>
-                    <tr key="top-header" className="top-header">
-                        <th className="column-hide-xs">
-                            <Translate
-                                className="header-sub-title"
-                                content="exchange.total"
-                            />
-                            <a
-                                onClick={() => toggleTotalAsset(true)}
-                                className="header-sub-title underline-title"
-                            >
-                                {" "}
-                                <AssetName
-                                    dataPlace="top"
-                                    name={!quoteTotalBids ? baseSymbol : quoteSymbol}
-                                    noTip
-                                />
-                            </a>
-                        </th>
-                        <th>
-                            <span className="header-sub-title">
-                                <AssetName dataPlace="top" name={baseSymbol} />
-                            </span>
-                        </th>
-                        <th>
-                            <span className="header-sub-title">
-                                <AssetName dataPlace="top" name={quoteSymbol} />
-                            </span>
-                        </th>
-                        <th>
-                            <Translate
-                                className={
-                                    (flipOrderBook ? "ask-total" : "bid-total") +
-                                    " header-sub-title"
+    const toggleAutoScroll = () => {
+        setAutoScroll(prev => !prev);
+    };
+
+    const toggleTotalAsset = (isBid?: boolean) => {
+        if (isBid) {
+            setQuoteTotalBids(prev => !prev);
+        } else {
+            setQuoteTotalAsks(prev => !prev);
+        }
+    };
+
+    const noOrders = !lowestAsk.sell_price && !highestBid.sell_price;
+    const hasAskAndBids = !!(lowestAsk.sell_price && highestBid.sell_price);
+    const spread =
+        hasAskAndBids &&
+        (displaySpreadAsPercentage ? (
+            `${(
+                100 *
+                (lowestAsk._real_price / highestBid._real_price - 1)
+            ).toFixed(2)}%`
+        ) : (
+            <PriceText
+                price={lowestAsk._real_price - highestBid._real_price}
+                base={base}
+                quote={quote}
+            />
+        ));
+    let bidRows: any[] | null = null,
+        askRows: any[] | null = null;
+
+    /* Sort */
+    const tempAsks = currentGroupOrderLimit !== 0 ? groupedAsks : combinedAsks; // RED
+    const tempBids = currentGroupOrderLimit !== 0 ? groupedBids : combinedBids; // GREEN
+
+    if (!horizontal && !orderBookReversed) {
+        tempBids.sort((a, b) => {
+            return b.getPrice() - a.getPrice();
+        });
+        tempAsks.sort((a, b) => {
+            return b.getPrice() - a.getPrice();
+        });
+    } else if (!horizontal && orderBookReversed) {
+        tempBids.sort((a, b) => {
+            return a.getPrice() - b.getPrice();
+        });
+        tempAsks.sort((a, b) => {
+            return a.getPrice() - b.getPrice();
+        });
+    }
+
+    if (base && quote) {
+        // limit orders or grouped orders
+        if (currentGroupOrderLimit !== 0) {
+            bidRows = tempBids.map((order, index) => {
+                return horizontal ? (
+                    <GroupedOrderBookRowHorizontal
+                        index={index}
+                        key={order.getPrice() + (order.isBid() ? "_bid" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        position={!flipOrderBook ? "left" : "right"}
+                        currentAccount={currentAccount}
+                        quoteTotal={quoteTotalBids}
+                    />
+                ) : (
+                    <GroupedOrderBookRowVertical
+                        index={index}
+                        key={order.getPrice() + (order.isBid() ? "_bid" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        final={index === 0}
+                        currentAccount={currentAccount}
+                    />
+                );
+            });
+
+            askRows = tempAsks.map((order, index) => {
+                return horizontal ? (
+                    <GroupedOrderBookRowHorizontal
+                        index={index}
+                        key={order.getPrice() + (order.isBid() ? "_bid" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        type={order.type}
+                        position={!flipOrderBook ? "right" : "left"}
+                        currentAccount={currentAccount}
+                        quoteTotal={quoteTotalAsks}
+                    />
+                ) : (
+                    <GroupedOrderBookRowVertical
+                        index={index}
+                        key={order.getPrice() + (order.isBid() ? "_bid" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        type={order.type}
+                        final={0 === index}
+                        currentAccount={currentAccount}
+                    />
+                );
+            });
+        } else {
+            const maxBid = tempBids.length
+                ? tempBids[tempBids.length - 1].totalForSale().getAmount()
+                : 0;
+
+            bidRows = tempBids.map((order, index) => {
+                const value = order.totalForSale().getAmount();
+                const percentage = Math.ceil((value * 100) / maxBid);
+                return horizontal ? (
+                    <OrderBookRowHorizontal
+                        index={index}
+                        key={order.getPrice() + (order.isCall() ? "_call" : "")}
+                        marketDepthPercentage={percentage}
+                        isBid={true}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        position={!flipOrderBook ? "left" : "right"}
+                        currentAccount={currentAccount}
+                        quoteTotal={quoteTotalBids}
+                    />
+                ) : (
+                    <OrderBookRowVertical
+                        index={index}
+                        key={order.getPrice() + (order.isCall() ? "_call" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        final={index === 0}
+                        currentAccount={currentAccount}
+                    />
+                );
+            });
+
+            const maxAsk = tempAsks.length
+                ? tempAsks[tempAsks.length - 1].totalForSale().getAmount()
+                : 0;
+
+            askRows = tempAsks.map((order, index) => {
+                const value = order.totalForSale().getAmount();
+                const percentage = Math.ceil((value * 100) / maxAsk);
+                return horizontal ? (
+                    <OrderBookRowHorizontal
+                        index={index}
+                        marketDepthPercentage={percentage}
+                        isBid={false}
+                        key={order.getPrice() + (order.isCall() ? "_call" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        type={order.type}
+                        position={!flipOrderBook ? "right" : "left"}
+                        currentAccount={currentAccount}
+                        quoteTotal={quoteTotalAsks}
+                    />
+                ) : (
+                    <OrderBookRowVertical
+                        index={index}
+                        key={order.getPrice() + (order.isCall() ? "_call" : "")}
+                        order={order}
+                        onClick={onClick.bind(null, order)}
+                        base={base}
+                        quote={quote}
+                        type={order.type}
+                        final={0 === index}
+                        currentAccount={currentAccount}
+                    />
+                );
+            });
+        }
+    }
+
+    if (horizontal) {
+        const totalBidsLength = (bidRows as any[]).length;
+        const totalAsksLength = (askRows as any[]).length;
+
+        if (!showAllBids) {
+            (bidRows as any[]).splice(rowCount, (bidRows as any[]).length);
+        }
+
+        if (!showAllAsks) {
+            (askRows as any[]).splice(rowCount, (askRows as any[]).length);
+        }
+
+        const leftHeader = (
+            <thead>
+                <tr key="top-header" className="top-header">
+                    <th className="column-hide-xs">
+                        <Translate
+                            className="header-sub-title"
+                            content="exchange.total"
+                        />
+                        <a
+                            onClick={() => toggleTotalAsset(true)}
+                            className="header-sub-title underline-title"
+                        >
+                            {" "}
+                            <AssetName
+                                dataPlace="top"
+                                name={
+                                    !quoteTotalBids ? baseSymbol : quoteSymbol
                                 }
-                                content="exchange.price"
+                                noTip
                             />
-                        </th>
-                    </tr>
-                </thead>
-            );
+                        </a>
+                    </th>
+                    <th>
+                        <span className="header-sub-title">
+                            <AssetName dataPlace="top" name={baseSymbol} />
+                        </span>
+                    </th>
+                    <th>
+                        <span className="header-sub-title">
+                            <AssetName dataPlace="top" name={quoteSymbol} />
+                        </span>
+                    </th>
+                    <th>
+                        <Translate
+                            className={
+                                (flipOrderBook ? "ask-total" : "bid-total") +
+                                " header-sub-title"
+                            }
+                            content="exchange.price"
+                        />
+                    </th>
+                </tr>
+            </thead>
+        );
 
-            const rightHeader = (
-                <thead>
-                    <tr key="top-header" className="top-header">
-                        <th>
-                            <Translate
-                                className={
-                                    (!flipOrderBook ? "ask-total" : "bid-total") +
-                                    " header-sub-title"
+        const rightHeader = (
+            <thead>
+                <tr key="top-header" className="top-header">
+                    <th>
+                        <Translate
+                            className={
+                                (!flipOrderBook ? "ask-total" : "bid-total") +
+                                " header-sub-title"
+                            }
+                            content="exchange.price"
+                        />
+                    </th>
+                    <th>
+                        <span className="header-sub-title">
+                            <AssetName dataPlace="top" name={quoteSymbol} />
+                        </span>
+                    </th>
+                    <th>
+                        <span className="header-sub-title">
+                            <AssetName dataPlace="top" name={baseSymbol} />
+                        </span>
+                    </th>
+                    <th className="column-hide-xs">
+                        <Translate
+                            className="header-sub-title"
+                            content="exchange.total"
+                        />
+                        <a
+                            onClick={() => toggleTotalAsset()}
+                            className="header-sub-title underline-title"
+                        >
+                            {" "}
+                            <AssetName
+                                dataPlace="top"
+                                name={
+                                    !quoteTotalAsks ? baseSymbol : quoteSymbol
                                 }
-                                content="exchange.price"
+                                noTip
                             />
-                        </th>
-                        <th>
-                            <span className="header-sub-title">
-                                <AssetName dataPlace="top" name={quoteSymbol} />
-                            </span>
-                        </th>
-                        <th>
-                            <span className="header-sub-title">
-                                <AssetName dataPlace="top" name={baseSymbol} />
-                            </span>
-                        </th>
-                        <th className="column-hide-xs">
-                            <Translate
-                                className="header-sub-title"
-                                content="exchange.total"
-                            />
-                            <a
-                                onClick={() => toggleTotalAsset()}
-                                className="header-sub-title underline-title"
-                            >
-                                {" "}
-                                <AssetName
-                                    dataPlace="top"
-                                    name={!quoteTotalAsks ? baseSymbol : quoteSymbol}
-                                    noTip
-                                />
-                            </a>
-                        </th>
-                    </tr>
-                </thead>
-            );
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        );
 
-            return (
+        return (
+            <div
+                style={{marginRight: smallScreen ? 10 : 0}}
+                className={cnames(wrapperClass)}
+            >
                 <div
-                    style={{marginRight: smallScreen ? 10 : 0}}
-                    className={cnames(wrapperClass)}
+                    className={cnames(
+                        innerClass,
+                        flipOrderBook ? "order-1" : "order-2"
+                    )}
                 >
-                    <div
-                        className={cnames(
-                            innerClass,
-                            flipOrderBook ? "order-1" : "order-2"
-                        )}
-                    >
-                        <div>
-                            <div className="exchange-content-header ask">
-                                <Translate content="exchange.asks" />
-                                {flipOrderBook && !hideFunctionButtons ? (
-                                    <div style={{display: "inline-block"}}>
-                                        <span
-                                            onClick={onFlipOrderBook}
-                                            style={{
-                                                cursor: "pointer",
-                                                fontSize: "1rem",
-                                                marginLeft: "4px",
-                                                position: "relative",
-                                                top: "-2px"
-                                            }}
-                                            className="flip-arrow"
-                                        >
-                                            {" "}
-                                            &#8646;
-                                        </span>
-                                    </div>
-                                ) : null}
-                                {flipOrderBook && !hideFunctionButtons ? (
-                                    <div className="float-right header-sub-title grouped_order">
-                                        {trackedGroupsConfig ? (
-                                            <GroupOrderLimitSelector
-                                                trackedGroupsConfig={
-                                                    trackedGroupsConfig
-                                                }
-                                                handleGroupOrderLimitChange={
-                                                    handleGroupOrderLimitChange
-                                                }
-                                                currentGroupOrderLimit={
-                                                    currentGroupOrderLimit
-                                                }
-                                            />
-                                        ) : null}
-                                    </div>
-                                ) : null}
-                                {onTogglePosition && !hideFunctionButtons ? (
+                    <div>
+                        <div className="exchange-content-header ask">
+                            <Translate content="exchange.asks" />
+                            {flipOrderBook && !hideFunctionButtons ? (
+                                <div style={{display: "inline-block"}}>
                                     <span
-                                        onClick={onTogglePosition}
+                                        onClick={onFlipOrderBook}
                                         style={{
                                             cursor: "pointer",
-                                            fontSize: "1rem"
+                                            fontSize: "1rem",
+                                            marginLeft: "4px",
+                                            position: "relative",
+                                            top: "-2px"
                                         }}
                                         className="flip-arrow"
                                     >
                                         {" "}
-                                        &#8645;
+                                        &#8646;
                                     </span>
-                                ) : null}
-                                {flipOrderBook && !hideFunctionButtons ? (
-                                    <span
-                                        className="order-book-button-v"
-                                        onClick={moveOrderBook}
-                                    >
-                                        <Icon
-                                            name="thumb-tack"
-                                            className="icon-14px icon-fill"
-                                        />
-                                    </span>
-                                ) : null}
-                                <div
-                                    style={{lineHeight: "16px"}}
-                                    className="header-sub-title float-right"
-                                >
-                                    <Translate content="exchange.market_depth" />
-                                    <span>: </span>
-                                    {(utils as any).format_number(
-                                        totalAsks,
-                                        quote.get("precision")
-                                    )}
-                                    <span>
-                                        {" "}
-                                        (<AssetName name={quoteSymbol} />)
-                                    </span>
-                                </div>
-                            </div>
-                            <div
-                                className="market-right-padding-only"
-                                style={{paddingRight: "0.6rem"}}
-                            >
-                                <table className="table order-table table-hover fixed-table text-right">
-                                    {!flipOrderBook ? rightHeader : leftHeader}
-                                </table>
-                            </div>
-                            <div
-                                className="grid-block"
-                                ref={hor_asks}
-                                style={{
-                                    paddingRight: "0.6rem",
-                                    overflow: "hidden",
-                                    maxHeight: 260,
-                                    lineHeight: "13px"
-                                }}
-                            >
-                                <table
-                                    style={{paddingBottom: 5}}
-                                    className="table order-table no-stripes table-hover fixed-table text-right no-overflow"
-                                >
-                                    <TransitionWrapper
-                                        ref={askTransition}
-                                        className="orderbook clickable"
-                                        component="tbody"
-                                        transitionName="newrow"
-                                        id="top-order-rows"
-                                    >
-                                        {askRows}
-                                    </TransitionWrapper>
-                                </table>
-                            </div>
-                            {totalAsksLength > 11 ? (
-                                <div className="orderbook-showall">
-                                    <a onClick={() => onSetShowAll("asks")}>
-                                        <Translate
-                                            content={
-                                                showAllAsks
-                                                    ? "exchange.hide"
-                                                    : "exchange.show_asks"
-                                            }
-                                            ordercount={totalAsksLength}
-                                        />
-                                    </a>
                                 </div>
                             ) : null}
+                            {flipOrderBook && !hideFunctionButtons ? (
+                                <div className="float-right header-sub-title grouped_order">
+                                    {trackedGroupsConfig ? (
+                                        <GroupOrderLimitSelector
+                                            trackedGroupsConfig={
+                                                trackedGroupsConfig
+                                            }
+                                            handleGroupOrderLimitChange={
+                                                handleGroupOrderLimitChange
+                                            }
+                                            currentGroupOrderLimit={
+                                                currentGroupOrderLimit
+                                            }
+                                        />
+                                    ) : null}
+                                </div>
+                            ) : null}
+                            {onTogglePosition && !hideFunctionButtons ? (
+                                <span
+                                    onClick={onTogglePosition}
+                                    style={{
+                                        cursor: "pointer",
+                                        fontSize: "1rem"
+                                    }}
+                                    className="flip-arrow"
+                                >
+                                    {" "}
+                                    &#8645;
+                                </span>
+                            ) : null}
+                            {flipOrderBook && !hideFunctionButtons ? (
+                                <span
+                                    className="order-book-button-v"
+                                    onClick={moveOrderBook}
+                                >
+                                    <Icon
+                                        name="thumb-tack"
+                                        className="icon-14px icon-fill"
+                                    />
+                                </span>
+                            ) : null}
+                            <div
+                                style={{lineHeight: "16px"}}
+                                className="header-sub-title float-right"
+                            >
+                                <Translate content="exchange.market_depth" />
+                                <span>: </span>
+                                {(utils as any).format_number(
+                                    totalAsks,
+                                    quote.get("precision")
+                                )}
+                                <span>
+                                    {" "}
+                                    (<AssetName name={quoteSymbol} />)
+                                </span>
+                            </div>
                         </div>
+                        <div
+                            className="market-right-padding-only"
+                            style={{paddingRight: "0.6rem"}}
+                        >
+                            <table className="table order-table table-hover fixed-table text-right">
+                                {!flipOrderBook ? rightHeader : leftHeader}
+                            </table>
+                        </div>
+                        <div
+                            className="grid-block"
+                            ref={hor_asks}
+                            style={{
+                                paddingRight: "0.6rem",
+                                overflow: "hidden",
+                                maxHeight: 260,
+                                lineHeight: "13px"
+                            }}
+                        >
+                            <table
+                                style={{paddingBottom: 5}}
+                                className="table order-table no-stripes table-hover fixed-table text-right no-overflow"
+                            >
+                                <TransitionWrapper
+                                    ref={askTransition}
+                                    className="orderbook clickable"
+                                    component="tbody"
+                                    transitionName="newrow"
+                                    id="top-order-rows"
+                                >
+                                    {askRows}
+                                </TransitionWrapper>
+                            </table>
+                        </div>
+                        {totalAsksLength > 11 ? (
+                            <div className="orderbook-showall">
+                                <a onClick={() => onSetShowAll("asks")}>
+                                    <Translate
+                                        content={
+                                            showAllAsks
+                                                ? "exchange.hide"
+                                                : "exchange.show_asks"
+                                        }
+                                        ordercount={totalAsksLength}
+                                    />
+                                </a>
+                            </div>
+                        ) : null}
                     </div>
+                </div>
 
-                    <div
-                        className={cnames(
-                            innerClass,
-                            flipOrderBook ? "order-2" : "order-1"
-                        )}
-                    >
-                        <div>
-                            <div className="exchange-content-header bid">
-                                <Translate content="exchange.bids" />
-                                {!flipOrderBook && !hideFunctionButtons ? (
-                                    <div style={{display: "inline-block"}}>
-                                        <span
-                                            onClick={onFlipOrderBook}
+                <div
+                    className={cnames(
+                        innerClass,
+                        flipOrderBook ? "order-2" : "order-1"
+                    )}
+                >
+                    <div>
+                        <div className="exchange-content-header bid">
+                            <Translate content="exchange.bids" />
+                            {!flipOrderBook && !hideFunctionButtons ? (
+                                <div style={{display: "inline-block"}}>
+                                    <span
+                                        onClick={onFlipOrderBook}
+                                        style={{
+                                            cursor: "pointer",
+                                            fontSize: "1rem",
+                                            marginLeft: "4px",
+                                            position: "relative",
+                                            top: "-2px"
+                                        }}
+                                        className="flip-arrow"
+                                    >
+                                        {" "}
+                                        &#8646;
+                                    </span>
+                                </div>
+                            ) : null}
+                            {!flipOrderBook && !hideFunctionButtons ? (
+                                <div className="float-right header-sub-title grouped_order">
+                                    {trackedGroupsConfig ? (
+                                        <GroupOrderLimitSelector
+                                            trackedGroupsConfig={
+                                                trackedGroupsConfig
+                                            }
+                                            handleGroupOrderLimitChange={
+                                                handleGroupOrderLimitChange
+                                            }
+                                            currentGroupOrderLimit={
+                                                currentGroupOrderLimit
+                                            }
+                                        />
+                                    ) : null}
+                                </div>
+                            ) : null}
+                            {currentGroupOrderLimit !== 0 &&
+                                hideFunctionButtons && (
+                                    <Icon
+                                        name="grouping"
+                                        className="float-right icon-14px"
+                                        title={(translator as any).translate(
+                                            "icons.order_grouping"
+                                        )}
+                                        style={{
+                                            marginLeft: "0.5rem"
+                                        }}
+                                    />
+                                )}
+                            {onTogglePosition && !hideFunctionButtons ? (
+                                <span
+                                    onClick={onTogglePosition}
+                                    style={{
+                                        cursor: "pointer",
+                                        fontSize: "1rem"
+                                    }}
+                                    className="flip-arrow"
+                                >
+                                    {" "}
+                                    &#8645;
+                                </span>
+                            ) : null}
+                            {!flipOrderBook && !hideFunctionButtons ? (
+                                <span
+                                    className="order-book-button-v"
+                                    onClick={moveOrderBook}
+                                >
+                                    <Icon
+                                        name="thumb-tack"
+                                        className="icon-14px"
+                                    />
+                                </span>
+                            ) : null}
+                            <div
+                                style={{lineHeight: "16px"}}
+                                className="float-right header-sub-title"
+                            >
+                                <Translate content="exchange.market_depth" />
+                                <span>: </span>
+                                {(utils as any).format_number(
+                                    totalBids,
+                                    base.get("precision")
+                                )}
+                                <span>
+                                    {" "}
+                                    (<AssetName name={baseSymbol} />)
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            className="market-right-padding-only"
+                            style={{paddingRight: "0.6rem"}}
+                        >
+                            <table className="table order-table table-hover fixed-table text-right">
+                                {flipOrderBook ? rightHeader : leftHeader}
+                            </table>
+                        </div>
+                        <div
+                            className="grid-block"
+                            ref={hor_bids}
+                            style={{
+                                paddingRight: "0.6rem",
+                                overflow: "hidden",
+                                maxHeight: 260,
+                                lineHeight: "13px"
+                            }}
+                        >
+                            <table
+                                style={{paddingBottom: 5}}
+                                className="table order-table no-stripes table-hover fixed-table text-right no-overflow"
+                            >
+                                <TransitionWrapper
+                                    ref={bidTransition}
+                                    className="orderbook clickable"
+                                    component="tbody"
+                                    transitionName="newrow"
+                                >
+                                    {bidRows}
+                                </TransitionWrapper>
+                            </table>
+                        </div>
+                        {totalBidsLength > rowCount ? (
+                            <div className="orderbook-showall">
+                                <a onClick={() => onSetShowAll("bids")}>
+                                    <Translate
+                                        content={
+                                            showAllBids
+                                                ? "exchange.hide"
+                                                : "exchange.show_bids"
+                                        }
+                                        ordercount={totalBidsLength}
+                                    />
+                                </a>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            </div>
+        );
+    } else {
+        // Vertical orderbook
+        return (
+            <div className="order-table-container">
+                <StickyTable
+                    borderWidth="0px"
+                    borderColor="grey"
+                    leftStickyColumnCount={0}
+                    className="order-table table"
+                    ref={verticalStickyTable}
+                >
+                    <Row className="top-header sticky-table-header">
+                        <Cell className="cell header-cell left">
+                            <span className="header-sub-title">
+                                <AssetName name={baseSymbol} />
+                            </span>
+                        </Cell>
+                        <Cell className="cell header-cell">
+                            <span className="header-sub-title">
+                                <AssetName name={quoteSymbol} />
+                            </span>
+                        </Cell>
+                        <Cell className="cell header-cell right">
+                            <Translate
+                                className="header-sub-title"
+                                content="exchange.price"
+                            />
+                        </Cell>
+                    </Row>
+                    {orderBookReversed ? (
+                        <OrderRows
+                            id="top-order-rows"
+                            noOrders={noOrders}
+                            orderRows={bidRows as any[]}
+                            isBid={true}
+                        />
+                    ) : (
+                        <OrderRows
+                            id="top-order-rows"
+                            noOrders={noOrders}
+                            orderRows={askRows as any[]}
+                            isBid={false}
+                        />
+                    )}
+
+                    {noOrders ? (
+                        <Row className="sticky-table-row" ref={centerText}>
+                            <Cell className="cell" />
+                            <Cell className="cell no-orders padtop">
+                                <Translate content="exchange.no_orders" />
+                            </Cell>
+                        </Row>
+                    ) : (
+                        <Row
+                            className="sticky-table-row orderbook-latest-price"
+                            ref={centerText}
+                            style={{padding: 0}}
+                        >
+                            <Cell className="cell right">
+                                <span
+                                    className="clickable left"
+                                    onClick={toggleSpreadValue}
+                                >
+                                    <Translate
+                                        className="orderbook-center-title"
+                                        content="exchange.spread"
+                                    />{" "}
+                                    <span className="spread-value">
+                                        {!!spread ? spread : "0"}
+                                    </span>
+                                </span>
+                            </Cell>
+                            <Cell className="cell cell-center">
+                                <span style={{width: 75}}>
+                                    {!hideFunctionButtons ? (
+                                        <Icon
+                                            className="lock-unlock clickable icon-fill"
+                                            onClick={toggleAutoScroll}
+                                            name={
+                                                autoScroll
+                                                    ? "locked"
+                                                    : "unlocked"
+                                            }
+                                            title={
+                                                autoScroll
+                                                    ? "icons.unlocked.disable_auto_scroll"
+                                                    : "icons.locked.enable_auto_scroll"
+                                            }
+                                        />
+                                    ) : null}
+                                    &nbsp;
+                                    {!hideFunctionButtons ? (
+                                        <Icon
+                                            onClick={moveOrderBook}
+                                            name="thumb-tack"
+                                            className="icon-14px icon-fill order-book-button-v clickable"
+                                            title={
+                                                horizontal
+                                                    ? "icons.thumb_tack"
+                                                    : "icons.thumb_untack"
+                                            }
                                             style={{
-                                                cursor: "pointer",
-                                                fontSize: "1rem",
-                                                marginLeft: "4px",
-                                                position: "relative",
-                                                top: "-2px"
+                                                marginLeft: 0
                                             }}
-                                            className="flip-arrow"
-                                        >
-                                            {" "}
-                                            &#8646;
-                                        </span>
-                                    </div>
-                                ) : null}
-                                {!flipOrderBook && !hideFunctionButtons ? (
-                                    <div className="float-right header-sub-title grouped_order">
-                                        {trackedGroupsConfig ? (
-                                            <GroupOrderLimitSelector
-                                                trackedGroupsConfig={
-                                                    trackedGroupsConfig
-                                                }
-                                                handleGroupOrderLimitChange={
-                                                    handleGroupOrderLimitChange
-                                                }
-                                                currentGroupOrderLimit={
-                                                    currentGroupOrderLimit
-                                                }
-                                            />
-                                        ) : null}
-                                    </div>
-                                ) : null}
-                                {currentGroupOrderLimit !== 0 &&
-                                    hideFunctionButtons && (
+                                        />
+                                    ) : null}
+                                    &nbsp;
+                                    {currentGroupOrderLimit == 0 ? null : (
                                         <Icon
                                             name="grouping"
-                                            className="float-right icon-14px"
+                                            className="icon-14px"
                                             title={(translator as any).translate(
                                                 "icons.order_grouping"
                                             )}
                                             style={{
-                                                marginLeft: "0.5rem"
+                                                marginLeft: 0
                                             }}
                                         />
                                     )}
-                                {onTogglePosition && !hideFunctionButtons ? (
-                                    <span
-                                        onClick={onTogglePosition}
-                                        style={{
-                                            cursor: "pointer",
-                                            fontSize: "1rem"
-                                        }}
-                                        className="flip-arrow"
-                                    >
-                                        {" "}
-                                        &#8645;
-                                    </span>
-                                ) : null}
-                                {!flipOrderBook && !hideFunctionButtons ? (
-                                    <span
-                                        className="order-book-button-v"
-                                        onClick={moveOrderBook}
-                                    >
-                                        <Icon
-                                            name="thumb-tack"
-                                            className="icon-14px"
-                                        />
-                                    </span>
-                                ) : null}
-                                <div
-                                    style={{lineHeight: "16px"}}
-                                    className="float-right header-sub-title"
-                                >
-                                    <Translate content="exchange.market_depth" />
-                                    <span>: </span>
-                                    {(utils as any).format_number(
-                                        totalBids,
-                                        base.get("precision")
-                                    )}
-                                    <span>
-                                        {" "}
-                                        (<AssetName name={baseSymbol} />)
-                                    </span>
-                                </div>
-                            </div>
-                            <div
-                                className="market-right-padding-only"
-                                style={{paddingRight: "0.6rem"}}
+                                </span>
+                            </Cell>
+                            <Cell
+                                className="cell"
+                                style={{textAlign: "center"}}
                             >
-                                <table className="table order-table table-hover fixed-table text-right">
-                                    {flipOrderBook ? rightHeader : leftHeader}
-                                </table>
-                            </div>
-                            <div
-                                className="grid-block"
-                                ref={hor_bids}
-                                style={{
-                                    paddingRight: "0.6rem",
-                                    overflow: "hidden",
-                                    maxHeight: 260,
-                                    lineHeight: "13px"
-                                }}
-                            >
-                                <table
-                                    style={{paddingBottom: 5}}
-                                    className="table order-table no-stripes table-hover fixed-table text-right no-overflow"
-                                >
-                                    <TransitionWrapper
-                                        ref={bidTransition}
-                                        className="orderbook clickable"
-                                        component="tbody"
-                                        transitionName="newrow"
-                                    >
-                                        {bidRows}
-                                    </TransitionWrapper>
-                                </table>
-                            </div>
-                            {totalBidsLength > rowCount ? (
-                                <div className="orderbook-showall">
-                                    <a onClick={() => onSetShowAll("bids")}>
-                                        <Translate
-                                            content={
-                                                showAllBids
-                                                    ? "exchange.hide"
-                                                    : "exchange.show_bids"
+                                {!!latest && (
+                                    <span className="right">
+                                        <span
+                                            className={
+                                                !changeClass
+                                                    ? "spread-value"
+                                                    : changeClass
                                             }
-                                            ordercount={totalBidsLength}
-                                        />
-                                    </a>
-                                </div>
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
-            );
-        } else {
-            // Vertical orderbook
-            return (
-                <div className="order-table-container">
-                    <StickyTable
-                        borderWidth="0px"
-                        borderColor="grey"
-                        leftStickyColumnCount={0}
-                        className="order-table table"
-                        ref={verticalStickyTable}
-                    >
-                        <Row className="top-header sticky-table-header">
-                            <Cell className="cell header-cell left">
-                                <span className="header-sub-title">
-                                    <AssetName name={baseSymbol} />
-                                </span>
-                            </Cell>
-                            <Cell className="cell header-cell">
-                                <span className="header-sub-title">
-                                    <AssetName name={quoteSymbol} />
-                                </span>
-                            </Cell>
-                            <Cell className="cell header-cell right">
-                                <Translate
-                                    className="header-sub-title"
-                                    content="exchange.price"
-                                />
+                                        >
+                                            <PriceText
+                                                price={latest}
+                                                base={base}
+                                                quote={quote}
+                                            />
+                                        </span>
+                                    </span>
+                                )}
                             </Cell>
                         </Row>
-                        {orderBookReversed ? (
-                            <OrderRows
-                                id="top-order-rows"
-                                noOrders={noOrders}
-                                orderRows={bidRows as any[]}
-                                isBid={true}
-                            />
-                        ) : (
-                            <OrderRows
-                                id="top-order-rows"
-                                noOrders={noOrders}
-                                orderRows={askRows as any[]}
-                                isBid={false}
-                            />
-                        )}
+                    )}
 
-                        {noOrders ? (
-                            <Row className="sticky-table-row" ref={centerText}>
-                                <Cell className="cell" />
-                                <Cell className="cell no-orders padtop">
-                                    <Translate content="exchange.no_orders" />
-                                </Cell>
-                            </Row>
-                        ) : (
-                            <Row
-                                className="sticky-table-row orderbook-latest-price"
-                                ref={centerText}
-                                style={{padding: 0}}
-                            >
-                                <Cell className="cell right">
-                                    <span
-                                        className="clickable left"
-                                        onClick={toggleSpreadValue}
-                                    >
-                                        <Translate
-                                            className="orderbook-center-title"
-                                            content="exchange.spread"
-                                        />{" "}
-                                        <span className="spread-value">
-                                            {!!spread ? spread : "0"}
-                                        </span>
-                                    </span>
-                                </Cell>
-                                <Cell className="cell cell-center">
-                                    <span style={{width: 75}}>
-                                        {!hideFunctionButtons ? (
-                                            <Icon
-                                                className="lock-unlock clickable icon-fill"
-                                                onClick={toggleAutoScroll}
-                                                name={
-                                                    autoScroll
-                                                        ? "locked"
-                                                        : "unlocked"
-                                                }
-                                                title={
-                                                    autoScroll
-                                                        ? "icons.unlocked.disable_auto_scroll"
-                                                        : "icons.locked.enable_auto_scroll"
-                                                }
-                                            />
-                                        ) : null}
-                                        &nbsp;
-                                        {!hideFunctionButtons ? (
-                                            <Icon
-                                                onClick={moveOrderBook}
-                                                name="thumb-tack"
-                                                className="icon-14px icon-fill order-book-button-v clickable"
-                                                title={
-                                                    horizontal
-                                                        ? "icons.thumb_tack"
-                                                        : "icons.thumb_untack"
-                                                }
-                                                style={{
-                                                    marginLeft: 0
-                                                }}
-                                            />
-                                        ) : null}
-                                        &nbsp;
-                                        {currentGroupOrderLimit == 0 ? null : (
-                                            <Icon
-                                                name="grouping"
-                                                className="icon-14px"
-                                                title={(translator as any).translate(
-                                                    "icons.order_grouping"
-                                                )}
-                                                style={{
-                                                    marginLeft: 0
-                                                }}
-                                            />
-                                        )}
-                                    </span>
-                                </Cell>
-                                <Cell className="cell" style={{textAlign: "center"}}>
-                                    {!!latest && (
-                                        <span className="right">
-                                            <span
-                                                className={
-                                                    !changeClass
-                                                        ? "spread-value"
-                                                        : changeClass
-                                                }
-                                            >
-                                                <PriceText
-                                                    price={latest}
-                                                    base={base}
-                                                    quote={quote}
-                                                />
-                                            </span>
-                                        </span>
-                                    )}
-                                </Cell>
-                            </Row>
-                        )}
-
-                        {orderBookReversed ? (
-                            <OrderRows
-                                noOrders={noOrders}
-                                orderRows={askRows as any[]}
-                                isBid={false}
-                            />
-                        ) : (
-                            <OrderRows
-                                noOrders={noOrders}
-                                orderRows={bidRows as any[]}
-                                isBid={true}
-                            />
-                        )}
-                    </StickyTable>
-                </div>
-            );
-        }
+                    {orderBookReversed ? (
+                        <OrderRows
+                            noOrders={noOrders}
+                            orderRows={askRows as any[]}
+                            isBid={false}
+                        />
+                    ) : (
+                        <OrderRows
+                            noOrders={noOrders}
+                            orderRows={bidRows as any[]}
+                            isBid={true}
+                        />
+                    )}
+                </StickyTable>
+            </div>
+        );
     }
-);
+});
 
 export {OrderBookInner as OrderBook, GroupOrderLimitSelector};

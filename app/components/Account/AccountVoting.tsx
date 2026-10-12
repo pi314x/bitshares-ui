@@ -292,9 +292,7 @@ function AccountVoting({
                 return {witnesses, committee, workers};
             }
 
-            const {witnesses, committee, workers} = sortVoteObjects(
-                vote_objs
-            );
+            const {witnesses, committee, workers} = sortVoteObjects(vote_objs);
             const {
                 witnesses: proxy_witnesses,
                 committee: proxy_committee,
@@ -549,9 +547,7 @@ function AccountVoting({
 
     function onRemoveItem(collection: string, item_id: any) {
         mergeState({
-            [collection]: state[collection].filter(
-                (i: any) => i !== item_id
-            )
+            [collection]: state[collection].filter((i: any) => i !== item_id)
         });
     }
 
@@ -577,8 +573,7 @@ function AccountVoting({
         );
         if (
             !proxyAccount ||
-            (proxyAccount &&
-                proxyAccount.get("id") !== state.proxy_account_id)
+            (proxyAccount && proxyAccount.get("id") !== state.proxy_account_id)
         ) {
             mergeState({
                 proxy_account_id: "",

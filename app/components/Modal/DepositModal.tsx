@@ -230,9 +230,7 @@ function DepositModalContent({
             });
 
         if (!backingAsset) {
-            console.log(
-                selectedGateway + " does not support " + selectedAsset
-            );
+            console.log(selectedGateway + " does not support " + selectedAsset);
             mergeState({
                 depositAddress: null,
                 selectedAsset,
