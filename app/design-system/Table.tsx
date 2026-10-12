@@ -137,6 +137,23 @@ function getRowKeyValue<T>(record: T, rowKey: string, index: number) {
     return value !== undefined ? value : index;
 }
 
+// antd's own rule for a cell without a `render`: a plain object (typically the
+// whole record, which is what `value` is for a column with no `dataIndex`)
+// renders nothing instead of throwing "Objects are not valid as a React
+// child". Callers rely on it for placeholder columns such as `{}` produced by
+// `showFlip ? {...} : {}` (Dashboard/MarketsTable.tsx), which crashed the
+// whole app as soon as the table had rows.
+function renderableCell(value: any): React.ReactNode {
+    if (
+        value &&
+        !React.isValidElement(value) &&
+        Object.prototype.toString.call(value) === "[object Object]"
+    ) {
+        return null;
+    }
+    return value;
+}
+
 export function Table<T = any>({
     columns,
     dataSource: dataSourceProp,
@@ -349,7 +366,7 @@ export function Table<T = any>({
                                     ) : null}
                                 </th>
                             ) : null}
-                            {columns.map(column => {
+                            {columns.map((column, columnIndex) => {
                                 const order =
                                     column.sortOrder !== undefined
                                         ? column.sortOrder
@@ -359,7 +376,7 @@ export function Table<T = any>({
                                         : undefined;
                                 return (
                                     <th
-                                        key={column.key}
+                                        key={column.key ?? columnIndex}
                                         className={[
                                             styles.th,
                                             column.sorter
@@ -481,7 +498,7 @@ export function Table<T = any>({
                                                 />
                                             </td>
                                         ) : null}
-                                        {columns.map(column => {
+                                        {columns.map((column, columnIndex) => {
                                             const value = column.dataIndex
                                                 ? (record as any)[
                                                       column.dataIndex
@@ -489,7 +506,7 @@ export function Table<T = any>({
                                                 : record;
                                             return (
                                                 <td
-                                                    key={column.key}
+                                                    key={column.key ?? columnIndex}
                                                     className={[
                                                         styles.td,
                                                         column.className || ""
@@ -507,7 +524,7 @@ export function Table<T = any>({
                                                               record,
                                                               absoluteIndex
                                                           )
-                                                        : value}
+                                                        : renderableCell(value)}
                                                 </td>
                                             );
                                         })}

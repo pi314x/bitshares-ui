@@ -54,6 +54,19 @@ describe("design-system/Table", () => {
         ).not.toThrow();
     });
 
+    it("renders nothing for a placeholder `{}` column instead of throwing on the record object", () => {
+        // Dashboard/MarketsTable builds `showFlip ? {...} : {}`; antd rendered an
+        // empty cell, the first version here tried to render the whole record
+        // as a React child and unmounted the app once the table had rows.
+        const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+        const cols = [...columns, {} as any];
+        const {container} = render(
+            <Table columns={cols} dataSource={rows} pagination={false} />
+        );
+        expect(container.querySelectorAll("tbody tr").length).toBe(rows.length);
+        spy.mockRestore();
+    });
+
     it("shows locale.emptyText when dataSource is empty", () => {
         const {getByText} = render(
             <Table
