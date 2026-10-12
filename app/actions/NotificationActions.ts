@@ -8,6 +8,7 @@
 // completely unchanged.
 import {reduxStore} from "../store/reduxStore";
 import {setNotification} from "../store/slices/notificationSlice";
+import {addDefer} from "./addDefer";
 
 const normalize = (notification: any, level?: string) => {
     if (typeof notification == "string") notification = {message: notification};
@@ -52,4 +53,4 @@ class NotificationActionsFacade {
     }
 }
 
-export default new NotificationActionsFacade();
+export default addDefer(new NotificationActionsFacade());

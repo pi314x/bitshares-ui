@@ -10,6 +10,7 @@ import settingsStore from "../stores/SettingsStore";
 import walletUnlockStore from "../stores/WalletUnlockStore";
 import accountStore from "../stores/AccountStore";
 import intlStore from "../stores/IntlStore";
+import {addDefer} from "./addDefer";
 
 class SettingsActionsFacade {
     changeSetting(value: any) {
@@ -133,4 +134,4 @@ class SettingsActionsFacade {
     }
 }
 
-export default new SettingsActionsFacade();
+export default addDefer(new SettingsActionsFacade());
