@@ -26,7 +26,6 @@
         "profile-build": "cross-env NODE_ENV=production webpack --env prod --env profile --env hash --env baseUrl=false --profile --json > stats-prod.json",
         "profile-nougly": "cross-env NODE_ENV=production webpack --env prod --env profile --env hash --env noUgly --profile --json > stats-prod-nougly.json",
         "start": "cross-env NODE_ENV=development webpack serve",
-        "start-perf": "cross-env NODE_ENV=development webpack serve perf-dev",
         "prestart-electron": "cross-env NODE_ENV=production webpack --env hash --env noUgly --env electron --env prod && yarn run prepare-electron",
         "start-electron": "electron build/electron/index.js",
         "fix-locale-files": "node ./app/assets/locales-fixup.js",
@@ -83,7 +82,6 @@
             "__DEPRECATED__": false,
             "DEFAULT_SYMBOL": "BTS",
             "__GIT_BRANCH__": "test",
-            "__PERFORMANCE_DEVTOOL__": false,
             "__DEV__": true
         },
         "transform": {
@@ -211,7 +209,6 @@
         "qrcode": "^1.4.4",
         "qrcode.react": "^0.7.1",
         "react": "18.3.1",
-        "react-autocomplete": "^1.8.1",
         "react-clipboard.js": "^1.0.1",
         "react-copy-to-clipboard": "^5.0.2",
         "react-debounce-render": "^7.0.0",
@@ -294,7 +291,6 @@
         "postcss-loader": "^6.2.1",
         "prettier": "^1.10.2",
         "pretty-quick": "^1.4.1",
-        "react-perf-devtool": "^3.1.8",
         "sass": "^1.45.1",
         "sass-loader": "^12.4.0",
         "style-loader": "^3.3.1",
