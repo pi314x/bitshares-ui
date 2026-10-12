@@ -11900,7 +11900,25 @@ with real data):
    (`getFinalFeeAsset`) also throws on a cold `ChainStore` (default fee
    asset not fetched yet) and is now guarded. This screen publishes
    `account_update`; the publish path is untouched.
-8. A pattern worth knowing about: a lost `defaultProps` or a state seed
+8. **`/accounts` crashed for anyone with a selected account.**
+   `DashboardList.resolveAccounts` did `ids.map(...).toArray()`, which only
+   exists on an Immutable `List`, but the contacts tab passes a plain array
+   (`Set.toArray()`). A known quirk of the port that had been left in place;
+   it takes the app down, so it is fixed (array-or-List accepted) with a
+   test.
+9. **Opening any Exchange market crashed the app.** The Redux-backed action
+   facades only have `.defer(...)` (which Alt gave every action for free)
+   where someone added it. `SettingsActions.changeViewSetting`/
+   `changeSetting`/`setExchangeTutorialShown` and
+   `NotificationActions.addNotification` had none, so
+   `SettingsActions.changeViewSetting.defer is not a function` threw in the
+   Exchange; the same gap would have hit adding a node, the login selector
+   and the notification shown after every transaction. `actions/addDefer.ts`
+   adds it, and `__tests__/actions/defer-test.ts` lists every `.defer(` call
+   site and asserts the facade has it (it failed for exactly these four).
+   The Exchange then rendered with real order-book/ticker data, the
+   personalize modal and tab/form interactions without errors.
+10. A pattern worth knowing about: a lost `defaultProps` or a state seed
    moved from before the first render into an effect fails **only against
    real data and only on the first render**, which is why unit tests with
    hand-built props never saw it. A scan of the original sources'
@@ -11927,6 +11945,15 @@ date` on `null` (the original does too; the menu never links there without a
 wallet), and the voting page logs two large id arrays through
 `console.error` because the bridge cannot relay a `get_objects` batch of
 thousands of ids.
+
+The Exchange can only be built here with a local no-op stand-in for the
+licensed TradingView `charting_library` (gitignored, never committed; the
+real build error for the missing library is the known one), so the chart
+canvas itself is unverified; everything around it was checked. A
+smartcoin quote whose price feed the library reports as not-yet-available
+(`CNY` at the time) keeps `/market/CNY_BTS` on "Loading ..." - that is the
+library's own `getAsset` gate, not an app defect (the original has it
+too); use a gateway-asset market such as `XBTSX.USDT_BTS` for smoke runs.
 
 Still not verifiable here: screens that need a logged-in account with
 balances/orders (no account can be unlocked), live updates (subscriptions),

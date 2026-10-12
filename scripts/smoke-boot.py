@@ -35,7 +35,8 @@ that need real accounts, assets or blocks can legitimately throw on `null`
 chain", not as regressions. A blank tree after a route is reported and the
 app is reloaded so later routes still run.
 
-Requires: python3, `pip install playwright`, and a Chromium (the sandbox
+Requires: python3 (run it without `-I`: `requests` lives in the user site),
+`pip install playwright requests`, and a Chromium (the sandbox
 image ships one at /opt/pw-browsers/chromium; override with
 --chromium-path).
 """
