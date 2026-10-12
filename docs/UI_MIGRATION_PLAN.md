@@ -11354,10 +11354,12 @@ Two real, narrow behavior changes surfaced and fixed, both a direct
 consequence of antd's `Button`/`DatePicker` defaulting certain
 behavior that this design system's thinner wrappers don't:
 
-- The submit `Button` gained an explicit `type="button"`: antd's own
-  `Button` defaults its internal `htmlType` to `"button"` (unlike a
-  native `<button>`, which defaults to `"submit"` inside a `<form>`),
-  but the design-system `Button` has no such default. Without this fix,
+- The submit `Button`: antd's own `Button` defaults its internal
+  `htmlType` to `"button"` (unlike a native `<button>`, which defaults
+  to `"submit"` inside a `<form>`), but the design-system `Button` had
+  no such default (originally patched here with a per-call-site
+  `type="button"`, since replaced by one systemic fix in `Button.tsx`
+  itself - see §7.2's fourth wallet-batch sweep). Without this fix,
   clicking submit would *also* fire a real (if inert, since `<Form>`
   has no `onSubmit`/`action`) native form submission alongside
   `handleSubmit` - caught by a jsdom test error ("HTMLFormElement
@@ -11540,6 +11542,47 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 5,556/5,556 (unchanged), including a dedicated re-run of
 `walletDbCrypto-test.js` (8/8), `yarn build` showing only the 2 known
 pre-existing `charting_library.esm` errors.
+
+**Fourth wallet-batch sweep** - plus a systemic fix this batch surfaced.
+`Wallet/BalanceClaimActive.tsx` (`Notification`) - flagged security-
+sensitive in its own header, but, re-read in full, it only calls the
+real `WalletActions.importBalance(..., true /*broadcast*/)` through the
+already-unlocked wallet (the same "submits an operation, never reads a
+password/key" category as `TransactionConfirm.tsx`/`HtlcModal.tsx`
+migrated in earlier batches, which is why its sibling
+`BalanceClaimByAsset.tsx` moved in the twentieth batch while this one
+waited for the careful pass). `Wallet/WalletChangePassword.tsx`
+(`Button`/`Form`/`Input`/`Notification`) calls the real `WalletDb
+.changePassword`/`.validatePassword` with passwords held only in local
+state - only UI-primitive imports swapped, those calls untouched.
+
+**Systemic fix, found while migrating `WalletChangePassword.tsx` and
+re-checking `BackupBrainkey.tsx` from the previous sweep:** antd's
+`Button` defaults its internal `htmlType` to `"button"`; a native
+`<button>` (which the design-system `Button` is a thin wrapper over)
+defaults to `"submit"` inside a `<form>`. Any migrated
+`<Button onClick={handleSubmit}>` placed inside a `<form onSubmit=...>`
+or the design-system `<Form>` therefore started firing *both* its click
+handler and the form's native submit - for password/brainkey screens,
+running `WalletDb.validatePassword` twice per click; for `ScaledOrderTab`,
+a native submit (caught there first by a jsdom "not implemented" error).
+`BackupBrainkey.tsx` (migrated one sweep earlier) had exactly this
+regression, found by re-auditing each wallet-batch file's Buttons. Fixed
+once, at the source, rather than per call site: `Button.tsx` now
+defaults `type` to `"button"`, matching antd exactly - callers that
+really want a submit button already pass `type="submit"` explicitly
+(`InvoiceRequest.tsx`, `WalletChangePassword.tsx`'s accept button, the
+registration forms). The per-call-site `type="button"` workarounds added
+to `ScaledOrderTab.tsx` and in-progress edits here were removed, and
+`Button-test.tsx` gained 2 tests (defaults to `type="button"` and never
+submits an enclosing form; still submits when `type="submit"` is
+passed). No new-shell (`app/next`/design-system) code places a `Button`
+inside a form, so nothing relied on the old native default.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only) on every changed file, `yarn test`
+5,558/5,558 (up from 5,556 - the 2 new `Button` tests), `yarn build`
+showing only the 2 known pre-existing `charting_library.esm` errors.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

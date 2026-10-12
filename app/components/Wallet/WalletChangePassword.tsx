@@ -14,13 +14,24 @@
 // `WalletChangePassword` passed down to `PasswordConfirm` (that component
 // never reads an `onSubmit` prop - grepped its original source - so it was
 // already a no-op in the original).
+//
+// UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.2):
+// `WalletPassword`'s own submit `Button` sits inside a `<Form onSubmit=
+// {onPassword}>` and already calls `onPassword` via its own `onClick`.
+// That relies on antd's `Button` defaulting `htmlType` to `"button"` -
+// the design-system `Button` now has the same `type="button"` default
+// (see `Button.tsx`), so the form's native `onSubmit` does not also
+// fire and `onPassword` runs once per click, as before.
 import * as React from "react";
 import {Link, LinkProps} from "react-router-dom";
 import Translate from "react-translate-component";
 import WalletDb from "stores/WalletDb";
 import PasswordConfirm from "./PasswordConfirm";
 import counterpart from "counterpart";
-import {Button, Form, Input, Notification} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Notification} from "../../design-system/Notification";
 
 const FormItem = Form.Item;
 
@@ -83,7 +94,7 @@ const WalletPassword = React.forwardRef<
                     />
                 </section>
                 <Button
-                    type="primary"
+                    variant="accent"
                     onClick={onPassword}
                     style={{marginTop: 10}}
                 >
@@ -163,9 +174,9 @@ export default function WalletChangePassword() {
             <WalletPassword ref={pwdRef} onValid={onOldPassword}>
                 <PasswordConfirm newPassword={true} onValid={onNewPassword}>
                     <Button
-                        type="primary"
+                        variant="accent"
                         disabled={!ready}
-                        htmlType="submit"
+                        type="submit"
                         style={{marginRight: "16px"}}
                         onClick={onAccept}
                     >

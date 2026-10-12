@@ -21,9 +21,26 @@ export interface ButtonProps
     size?: ButtonSize;
 }
 
+// `type` defaults to `"button"`, matching antd's own `Button` (whose
+// internal `htmlType` defaults to `"button"`) rather than the native
+// `<button>` default of `"submit"` inside a `<form>`. Found during the
+// wallet-sensitive final batch of the call-site migration
+// (docs/UI_MIGRATION_PLAN.md §7.2): migrated call sites that put a
+// `<Button onClick={handleSubmit}>` inside a `<form onSubmit=...>` (or the
+// design-system `<Form>`) silently started firing both the click handler
+// and the form's native submit - double-running the handler. Callers that
+// really want a submit button already pass `type="submit"` explicitly.
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     function Button(
-        {variant = "default", size = "default", className, icon, children, ...rest},
+        {
+            variant = "default",
+            size = "default",
+            type = "button",
+            className,
+            icon,
+            children,
+            ...rest
+        },
         ref
     ) {
         const classes = [
@@ -36,7 +53,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             .join(" ");
 
         return (
-            <button ref={ref} className={classes} {...rest}>
+            <button ref={ref} type={type} className={classes} {...rest}>
                 {icon ? (
                     <Icon type={icon} className={styles.icon} />
                 ) : null}

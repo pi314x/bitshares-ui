@@ -58,4 +58,29 @@ describe("design-system/Button", () => {
         const button = getByText("Sign");
         expect(button.className).toContain("extra");
     });
+
+    it("defaults to type=button so it never natively submits an enclosing form", () => {
+        const onSubmit = jest.fn(e => e.preventDefault());
+        const onClick = jest.fn();
+        const {getByText} = render(
+            <form onSubmit={onSubmit}>
+                <Button onClick={onClick}>Go</Button>
+            </form>
+        );
+        expect((getByText("Go") as HTMLButtonElement).type).toBe("button");
+        fireEvent.click(getByText("Go"));
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("still submits an enclosing form when type=submit is passed explicitly", () => {
+        const onSubmit = jest.fn(e => e.preventDefault());
+        const {getByText} = render(
+            <form onSubmit={onSubmit}>
+                <Button type="submit">Go</Button>
+            </form>
+        );
+        fireEvent.click(getByText("Go"));
+        expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
 });

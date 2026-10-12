@@ -22,7 +22,7 @@ import BalanceClaimSelector from "components/Wallet/BalanceClaimSelector";
 import WalletActions from "actions/WalletActions";
 import MyAccounts from "components/Forms/MyAccounts";
 import Translate from "react-translate-component";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 export default function BalanceClaimActive() {

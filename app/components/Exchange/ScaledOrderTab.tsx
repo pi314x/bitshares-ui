@@ -90,15 +90,12 @@
 // system `Form.Item` never renders antd's little red required-asterisk
 // in the first place, so there's nothing for this flag to suppress.
 // `Button`'s antd-only `type="primary"` becomes `variant="accent"`,
-// matching every other call site in this migration. Its submit button
-// also gains an explicit `type="button"`: antd's own `Button` defaults
-// its internal `htmlType` to `"button"` (unlike a native `<button>`,
-// which defaults to `"submit"` inside a `<form>`), but the design-
-// system `Button` has no such default - without it, clicking submit
-// inside this file's `<Form>` would also fire a real (if inert, since
-// `<Form>` has no `onSubmit`/`action`) native form submission alongside
-// `handleSubmit`. Spelling out explicitly what antd already did
-// silently, not a behavior change.
+// matching every other call site in this migration. (Its submit button
+// sits inside this file's `<Form>` with no `type`: the design-system
+// `Button` now defaults `type` to `"button"` like antd's did - found
+// here first, via a jsdom "HTMLFormElement.prototype.submit not
+// implemented" error during this file's test development, then fixed
+// once in `Button.tsx` itself rather than per call site.)
 //
 // `datePickerRef.current.picker.handleOpenChange(true/false)` (antd's
 // own imperative open/close API for its calendar popup, triggered here
@@ -1016,18 +1013,6 @@ const ScaledOrderFormInner = React.forwardRef<
                 </Form.Item>
 
                 <Button
-                    // Explicit `type="button"`: unlike antd's `Button`
-                    // (which defaults its internal `htmlType` to
-                    // `"button"`), the design-system `Button` is a thin
-                    // wrapper with no such default, so inside a `<Form>`
-                    // it would otherwise fall back to the native
-                    // `<button>` default of `"submit"` - triggering a
-                    // real (no-op, since `<Form>` has no `onSubmit`/
-                    // `action`) native form submission on click, on top
-                    // of `handleSubmit` below. Not a behavior change
-                    // from the original, just naming explicitly what
-                    // antd silently already did.
-                    type="button"
                     onClick={handleSubmit}
                     variant="accent"
                     disabled={!isFormValid()}
