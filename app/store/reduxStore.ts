@@ -22,6 +22,7 @@
 // one at a time with extra scrutiny (byte-for-byte comparison against
 // the original, no behavior/shape "improvements" bundled in) - see each
 // slice's own header for its specific verification notes.
+import "./immerConfig";
 import {configureStore, combineReducers} from "@reduxjs/toolkit";
 import notificationReducer from "./slices/notificationSlice";
 import transactionConfirmReducer from "./slices/transactionConfirmSlice";
