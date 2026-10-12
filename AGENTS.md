@@ -84,9 +84,13 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   add `--live-node https://node.xbts.io/ws` to relay to a real node over
   HTTPS for real accounts/markets - this is what finds first-render bugs
   that unit tests with hand-built props cannot).
-  See `docs/UI_MIGRATION_PLAN.md` §7.4. A `yarn build-preview` screenshot
-  does not load the legacy global CSS, so check new screens in the real app
-  too.
+  Add `--fonts` to also fail on any visible text that is not IBM Plex
+  (see Conventions). A custom `--output-path` build lacks the CopyPlugin
+  files (`dictionary.json`, locale files); the script serves them from the
+  sources, so wallet creation works in the harness.
+  See `docs/UI_MIGRATION_PLAN.md` §7.4 and §7.6. A `yarn build-preview`
+  screenshot does not load the legacy global CSS, so check new screens in the
+  real app too.
 - Format check (pre-commit hook): `pretty-quick --staged` (via husky)
 
 `.github/workflows/ci.yml` runs lint:changed + typecheck + test on every
@@ -104,6 +108,19 @@ lint/test CI gate at all.
   one component uses it and no other stylesheet mentions it
   (`python3 scripts/scss-isolation-inventory.py`); verify with a before/
   after computed-style diff of the affected routes (see plan §7.5).
+- Typography: IBM Plex Sans (all text) and IBM Plex Mono (code) are the only
+  families, self-hosted via `app/design-system/fonts.ts`. Use the
+  `--font-sans`/`--font-mono` tokens (or the `Plex*` SCSS mixins in
+  `base/_fonts.scss`); never hardcode another family, not even in an inline
+  style. `python3 scripts/smoke-boot.py <dist> --fonts --routes ...` checks it
+  against the real bundle.
+- Form controls: use the design-system `Button`/`Input`/`Select`/... Legacy
+  `.button` and native `input`/`textarea`/`select` are styled by
+  `app/design-system/legacy-controls.scss` from the same `--control-h`,
+  `--radius`, `--field-*` tokens (see `docs/UI_MIGRATION_PLAN.md` §7.6). Give
+  fields `min-height`, not `height`; an input that must be invisible
+  (e.g. an autofill trap) needs inline `minHeight: 0`. Sibling buttons are
+  spaced at the call site (16px inline margin is the convention).
 - Prefer editing existing components/stores over introducing a second,
   parallel implementation unless working from `docs/UI_MIGRATION_PLAN.md`'s
   explicit strangler-fig pattern.

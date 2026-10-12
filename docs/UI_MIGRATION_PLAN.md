@@ -11957,7 +11957,8 @@ too); use a gateway-asset market such as `XBTSX.USDT_BTS` for smoke runs.
 
 Still not verifiable here: screens that need a logged-in account with
 balances/orders (no account can be unlocked), live updates (subscriptions),
-wallet unlock/signing flows end to end, and Electron.
+signing flows end to end, and Electron. (Local-wallet create/unlock/backup/
+restore were verified later; see §7.6.)
 
 ### 7.5 Legacy SCSS -> CSS Modules (partial, by design)
 
@@ -12020,6 +12021,109 @@ verified step.
 **Convention going forward:** new component styles are `*.module.scss`
 next to the component (AGENTS.md); do not add classes to the global
 partials.
+
+### 7.6 One typeface, modern controls, and the wallet lifecycle (complete)
+
+**IBM Plex is the only font family.** The legacy screens still set Roboto
+(and the shell's display face was Archivo), so measured text was only about
+83% Plex. Now:
+- `app/design-system/fonts.ts` imports self-hosted `@fontsource/ibm-plex-sans`
+  (300/400/500/600/700 and 400 italic) and `@fontsource/ibm-plex-mono`
+  (400/500/600) once from `app/index.js` (and `NextShell.tsx` for the
+  standalone preview). Self-hosted on purpose: the Electron build must not
+  need the network to draw its own UI. `@fontsource/archivo` and the Roboto
+  `.woff` files are gone.
+- `--font-sans`, `--font-display` and `--font-mono` in `theme.scss` are the
+  only place a stack is defined; `app/design-system/tokens.ts` mirrors them.
+  Stacks end in `system-ui` because Plex has no CJK glyphs.
+- The legacy SCSS font mixins were renamed (`PlexLight/PlexRegular/
+  PlexMedium/PlexCondensed`, `$font-sans`, `$font-mono`); Foundation's body
+  and code fonts and `vendors/legacy-base.css` (`html`, `code`, `pre`) point at
+  Plex; the few inline `fontFamily` styles (account creation, reset settings,
+  identicon, JSON inspector) were switched too.
+- **Verification:** `python3 scripts/smoke-boot.py <dist> --fonts --routes ...`
+  walks every visible text-bearing element (plus inputs/buttons/selects) and
+  fails on any first font family that is not IBM Plex Sans/Mono. Against the
+  real bundle with live chain data, over `/`, the market page, general and
+  access settings, wallet creation, account creation, permissions and the
+  assets/blocks explorers: every element (about 1,350) passes. An earlier
+  version of the check also counted unrendered nodes (`<script>`,
+  `display: none`) and reported a few Arial/`sans-serif` hits; those are not
+  text anyone sees, which is why the census skips them.
+
+**Buttons and input fields.** One set of tokens (`theme.scss`:
+`--control-h` 38px / `--control-h-sm` 30px, `--radius-sm/--radius/--radius-lg`,
+`--field-bg`, `--field-border` and their hover values, `--focus-ring`,
+`--shadow-sm/-md`, `--ease`) drives the design-system `Button`, `Input`,
+`InputNumber`, `Select`, `DatePicker` and `TreeSelect` modules and, through
+`app/design-system/legacy-controls.scss`, the legacy `.button` elements and
+native `input`/`textarea`/`select`.
+- The field fill and border are `color-mix(in srgb, var(--ink) N%,
+  transparent)` (with `rgba` fallbacks before them), so a single definition
+  works on the shell's navy and on the legacy gray panels, in dark and light.
+- `legacy-controls.scss` is global on purpose and wins by specificity, not by
+  order: `body[class][class] ...` is (0,3,1) and beats the per-theme
+  `body.<theme> .button` (0,2,1) from `themes/_theme-template.scss`, whose
+  hover rules additionally use `!important`, so the hover rules here do too.
+  Checkboxes, radios, range and file inputs are left alone (only tinted with
+  `accent-color`); buttons that are not `.button` keep their own module styles.
+- Fields use `min-height`, not `height`: several call sites pass an inline
+  `height: inherit`, which collapsed the first version of the rule to 19px.
+- **Defect found by looking at the result and fixed:** the unlock dialog's
+  hidden autofill-trap `<input style="visibility:hidden; height:0">`
+  (`DisableChromeAutocomplete`) inherited the new minimum height and became a
+  38px blank gap. It now sets `minHeight: 0`; the Jest case fails without it.
+  Any future global rule on `input` must be checked against zero-size
+  inputs the same way.
+- Spacing between sibling buttons is per call site, not part of the `Button`
+  component. A source search finds ten files where one `<Button>` directly
+  follows another (`SendModal`, `SetDefaultFeeAssetModal`,
+  `GatewaySelectorModal`, `RecentTransactions`, `DirectDebit`, `WalletManager`,
+  `WalletChangePassword`, `WalletCreate`, `BackupBrainkey`, `Topbar`).
+  `WalletCreate` and `BackupBrainkey` rendered touching (as they did before
+  this work) and now carry the same 16px gap `WalletChangePassword` already
+  had. The Send dialog and the topbar space their buttons already; the rest
+  were not checked one by one. A global sibling margin on `Button` was rejected
+  because it would double the gap where a flex `gap` or an inline margin is
+  already in place.
+
+**Wallet lifecycle, driven in a browser** (production bundle, `--live-node`,
+a throwaway local wallet; backup bytes are never read, only their size, and no
+key, password or brainkey is printed):
+1. create a local wallet, reload, the wallet is still there (and locked);
+2. unlock it; a wrong password shows "Incorrect password", the right one
+   unlocks;
+3. change the wallet password; the old password is then rejected and the new
+   one unlocks;
+4. create a backup and download it (`bts_default_<date>.bin`);
+5. delete the wallet (select it, then the two-step "Are you ABSOLUTELY sure?"
+   confirmation) - the console then offers only "Restore Backup" and "New Local
+   Wallet";
+6. restore the downloaded file; reload the page; unlock with the original
+   password.
+No console or page error occurred in any step. The pages for the brainkey
+backup, the existing-account options and key import render and validate
+(buttons stay disabled until input is present). Not exercised: anything that
+signs or broadcasts a transaction, and importing real keys.
+
+**Other defects this round found (all fixed, each with a regression test):**
+- Opening the unlock dialog threw `Cannot read properties of undefined
+  (reading 'focus')` and unmounted the whole app - the port still treated its
+  refs as antd instances while the design-system `Input` forwards the native
+  `<input>`. `WalletUnlockModal-test.tsx` opens the real dialog in the three
+  login configurations.
+- The dashboard markets table crashed with React error #31 as soon as real
+  rows existed: a placeholder `{}` cell value was rendered as a child.
+  `Table` now renders plain-object cells as empty (`renderableCell`).
+- The Exchange's first-run tutorial (intro.js) was unstyled after the vendored
+  stylesheet was trimmed; `Exchange.tsx` imports `intro.js/introjs.css`.
+
+**Harness note:** a `webpack --output-path <dir>` build misses the files the
+CopyPlugin writes next to the real output, notably `dictionary.json`, which
+`WalletDb.onCreateWallet` fetches. Without it wallet creation silently logs
+"unable to fetch dictionary.json" and creates nothing, which looked like a
+persistence bug at first. `scripts/smoke-boot.py` now serves it (and the
+locale files) from the sources when the dist folder lacks them.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
@@ -12116,7 +12220,7 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 ## 12. Where this stands (end of the incremental migration)
 
 **Done and verified by automated gates** (tsc, eslint on changed files, Jest
-5,604 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
+5,609 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
 build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
@@ -12130,8 +12234,10 @@ every route and the account/wallet sub-routes against a stub chain and,
 with `--live-node`, against real mainnet data - dashboard and accounts with
 a selected account, voting, permissions, explorer, the Exchange with real
 ticker/order-book data, the top-bar modals and the Personalize modal. That
-pass found and fixed ten defects the unit tests could not see (all listed in
-§7.4); each has a regression test.
+pass found and fixed ten defects the unit tests could not see (§7.4), and a
+later round another four (§7.6: the unlock-dialog crash, the dashboard table
+crash, the unstyled Exchange tutorial, and a gap my own control restyle
+introduced); each has a regression test or a measurable check.
 
 **Not done, and why:**
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
@@ -12151,17 +12257,19 @@ pass found and fixed ten defects the unit tests could not see (all listed in
   `WalletDb`, backup/restore, key import/export, transaction confirmation).
   Their password/key code paths are unchanged apart from imports and the
   `AccountPermissions` state seed, but a person has to read them.
-- A pass with an **unlocked wallet**: send/withdraw/limit-order/update-
-  account end to end against a testnet or a throwaway account. The smoke runs
-  are read-only (wallet locked, no keys), so no signing flow has been
-  exercised.
+- A pass with an **unlocked wallet that signs**: send/withdraw/limit-order/
+  update-account end to end against a testnet or a throwaway account. The
+  local-wallet lifecycle (create, unlock, change password, backup, delete,
+  restore) was driven in a browser (§7.6), but the main smoke runs are
+  read-only (wallet locked, no keys), so no signing flow has been exercised.
 - **Live updates**: the bridge answers each call once and never pushes
   subscription updates, so order-book/balance refreshes over a WebSocket are
   untested.
 - The **TradingView chart** (licensed library not in the repo) and **Electron**
   packaging.
-- Visual review in light/midnight themes and at phone widths for the screens
-  that were only checked in the dark theme.
+- Visual review in the midnight theme and at phone widths. Dark and light
+  were reviewed on nine real-data screens in §7.6; midnight and narrow
+  viewports were not.
 - Re-enable immer's auto-freeze (`store/immerConfig.ts`) after auditing the
   `getState()` consumers; and decide whether to extract CSS Modules in the
   production build (§7.5).
