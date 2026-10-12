@@ -10,6 +10,7 @@ import {render, act, screen} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
 import {IntlProvider} from "react-intl";
 import WalletUnlockModal from "../../../components/Wallet/WalletUnlockModal";
+import {DisableChromeAutocomplete} from "../../../components/Wallet/WalletUnlockModalLib";
 import WalletUnlockActions from "../../../actions/WalletUnlockActions";
 import WalletUnlockStore from "../../../stores/WalletUnlockStore";
 import {reduxStore} from "../../../store/reduxStore";
@@ -73,5 +74,18 @@ describe("WalletUnlockModal", () => {
             expect(screen).toBeDefined();
             expect((WalletUnlockStore.getState() as any).resolve).toBeTruthy();
         });
+    });
+});
+
+describe("DisableChromeAutocomplete", () => {
+    // The global text-field styling gives every text input a minimum control
+    // height; this autofill-trap input must stay a zero-height invisible
+    // element, otherwise it shows up as a blank gap in the unlock dialog.
+    it("overrides the global minimum field height", () => {
+        const {container} = render(<DisableChromeAutocomplete />);
+        const input = container.querySelector("input") as HTMLInputElement;
+        expect(input.style.visibility).toBe("hidden");
+        expect(input.style.height).toMatch(/^0(px)?$/);
+        expect(input.style.minHeight).toMatch(/^0(px)?$/);
     });
 });

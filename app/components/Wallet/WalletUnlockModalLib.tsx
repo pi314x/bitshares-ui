@@ -21,12 +21,15 @@ import {Alert} from "../../design-system/Alert";
 import {Checkbox} from "../../design-system/Checkbox";
 import {Tooltip} from "../../design-system/Tooltip";
 
-/* Dummy input to trick Chrome into disabling auto-complete */
+/* Dummy input to trick Chrome into disabling auto-complete. `minHeight: 0`
+ * because the global text-field styling (design-system/legacy-controls.scss)
+ * gives every text input a minimum control height, which would otherwise turn
+ * this invisible element into a visible 38px gap in the dialog. */
 export const DisableChromeAutocomplete = () => (
     <input
         type="text"
         className="no-padding no-margin"
-        style={{visibility: "hidden", height: 0}}
+        style={{visibility: "hidden", height: 0, minHeight: 0}}
     />
 );
 
