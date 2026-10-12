@@ -49,27 +49,32 @@
     display: block;
 }
 
-.navItem {
+// `.rail a.navItem` rather than a bare `.navItem`: the legacy global sheet
+// colours every `a` per theme (`body.darkTheme a`, plus `a:hover`), which beats
+// a single-class rule and used to turn the whole rail link-blue with no visible
+// active state.
+.rail a.navItem {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--ink-2);
     font: inherit;
     font-weight: 500;
     text-decoration: none;
     white-space: nowrap;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
 }
 
-.navItem:hover {
-    background: var(--line-soft);
+.rail a.navItem:hover {
+    background: var(--hover);
     color: var(--ink);
 }
 
-.navItemActive {
+.rail a.navItem.navItemActive {
     background: var(--accent-wash);
     color: var(--accent);
     font-weight: 600;
@@ -106,7 +111,7 @@
         margin-top: 0;
     }
 
-    .navItem {
+    .rail a.navItem {
         width: auto;
     }
 }
