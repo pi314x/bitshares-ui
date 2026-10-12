@@ -530,7 +530,11 @@ function WalletUnlockModal({
                     onClick={handleRememberMe}
                 >
                     <Translate content="wallet.remember_me" />
-                    <Switch checked={rememberMe} onChange={handleRememberMe} />
+                    <Switch
+                        checked={rememberMe}
+                        onChange={handleRememberMe}
+                        style={{marginLeft: 8}}
+                    />
                 </div>
             </Tooltip>
         );

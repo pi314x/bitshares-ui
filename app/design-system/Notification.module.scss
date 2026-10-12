@@ -18,7 +18,7 @@
     border-radius: 8px;
     background: var(--raised);
     border: 1px solid var(--line);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
     pointer-events: auto;
 }
 
