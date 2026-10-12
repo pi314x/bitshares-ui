@@ -1,4 +1,7 @@
-.rail {
+// `.rail.rail`: same specificity workaround as `.topbar.topbar` in
+// Topbar.module.scss - the legacy `body.<theme> nav { display: block }`
+// rule would otherwise override this flex column.
+.rail.rail {
     background: var(--surface);
     border-right: 1px solid var(--line);
     display: flex;

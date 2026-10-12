@@ -1,4 +1,9 @@
-.topbar {
+// `.topbar.topbar` (specificity 0,2,0) on purpose: the legacy global base
+// stylesheet carries an old HTML5-normalize rule, `body.<theme> header {
+// display: block }` (0,1,2), which beats a single class and collapsed this
+// flex row into a vertical stack in the real app (the standalone preview
+// never loads that sheet, so it could not show it).
+.topbar.topbar {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
