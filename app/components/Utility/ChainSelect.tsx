@@ -1,6 +1,8 @@
 // TypeScript/functional-component port of the legacy ChainSelect.jsx
 // (default-exported as `ChainSelectView`) (Phase 8,
 // docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+// (`{chain as any}` only satisfies @types/react 18, which rejects an
+// Immutable `Map` as a child type; the rendered value is unchanged.)
 import * as React from "react";
 import Translate from "react-translate-component";
 import {Select} from "../../design-system/Select";
@@ -58,7 +60,7 @@ function ChainSelectView({
                         key={chain as any}
                         value={chain as any}
                     >
-                        {chain}
+                        {chain as any}
                     </Select.Option>
                 );
             })}

@@ -19,6 +19,9 @@
 // `.focus()` call would throw if `focus` is ever `true` with no `label`
 // given - replicated by calling `.focus()` without a null-check, exactly
 // like the original's unguarded `this.refs.input.focus()`.
+// (The `as any` on `simpleComponent()` below only satisfies @types/react 18,
+// which no longer lets a `void` result stand as a child; at runtime it is
+// still `undefined`, which renders nothing, as before.)
 import * as React from "react";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
@@ -183,7 +186,7 @@ function AccountInputStyleGuide({
 
     return (
         <div className="account-input-style-guide">
-            {label ? labelComponent() : simpleComponent()}
+            {label ? labelComponent() : (simpleComponent() as any)}
         </div>
     );
 }

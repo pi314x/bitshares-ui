@@ -1,5 +1,5 @@
 import * as React from "react";
-import ReactDOM from "react-dom";
+import {createRoot, Root} from "react-dom/client";
 import {Icon} from "./Icon";
 import styles from "./Notification.module.scss";
 
@@ -39,7 +39,7 @@ import styles from "./Notification.module.scss";
 // React (store code, submit handlers), not as JSX, there's no `<Notification>`
 // element for a caller to render. Instead this module owns a single
 // lazily-created container appended to `document.body` on first use, and
-// re-renders it directly (a plain `ReactDOM.render` call passing the
+// re-renders it directly (a plain `root.render` call passing the
 // current entries as props) every time an entry is pushed or dismissed -
 // not a subscribed-to pub/sub store, since `useEffect`-based subscription
 // introduced a real timing bug here: the subscribing effect from the
@@ -87,11 +87,11 @@ const config: Required<NotificationConfigArgs> = {
 
 let entries: NotificationEntry[] = [];
 let nextId = 1;
-let containerNode: HTMLDivElement | null = null;
+let root: Root | null = null;
 
 function render() {
-    if (!containerNode) return;
-    ReactDOM.render(<NotificationStack entries={entries} />, containerNode);
+    if (!root) return;
+    root.render(<NotificationStack entries={entries} />);
 }
 
 function dismiss(id: number) {
@@ -100,9 +100,10 @@ function dismiss(id: number) {
 }
 
 function ensureContainer() {
-    if (containerNode) return;
-    containerNode = document.createElement("div");
+    if (root) return;
+    const containerNode = document.createElement("div");
     document.body.appendChild(containerNode);
+    root = createRoot(containerNode);
 }
 
 function push(kind: NotificationKind, args: NotificationArgs) {

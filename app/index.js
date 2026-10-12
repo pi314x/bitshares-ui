@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import {createRoot} from "react-dom/client";
 import AppInit from "./AppInit";
 if (__PERFORMANCE_DEVTOOL__) {
     const {registerObserver} = require("react-perf-devtool");
@@ -8,6 +8,6 @@ if (__PERFORMANCE_DEVTOOL__) {
 
 const rootEl = document.getElementById("content");
 const render = () => {
-    ReactDOM.render(<AppInit />, rootEl);
+    createRoot(rootEl).render(<AppInit />);
 };
 render();

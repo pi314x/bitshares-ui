@@ -11,19 +11,24 @@ transaction signing/serialization as security-sensitive: prefer minimal,
 well-tested diffs over refactors, and never log or persist private keys,
 passwords, or brainkeys.
 
-## Current stack (pre-migration)
+## Current stack
 
-- React 16 (class components), Alt.js flux (`app/actions`, `app/stores`),
-  react-router-dom v5, SCSS, no TypeScript.
+- React 18 (`createRoot` in `app/index.js`), TypeScript for new and migrated
+  code (about 470 `.ts`/`.tsx` files vs. about 95 remaining `.js`/`.jsx`,
+  mostly `app/lib` services and a few legacy entry points; 17 files still
+  contain class components), react-router-dom v6, SCSS.
+- State: the Alt.js store/action API (`app/stores`, `app/actions`) is kept
+  as a facade over Redux Toolkit slices (`app/store`); components read it
+  through `useAltStore` (`app/next/hooks`), so legacy and migrated call
+  sites coexist. Don't add new Alt.js stores - add a slice.
 - Chain logic (tx building, serialization, keys) lives in the `bitsharesjs`
-  npm package; UI-side wallet state, gateway bridges (BlockTrades, Citadel,
-  RuDex, Gdex, Xbtsx, Bitspark, Piratecash) live under `app/stores` and
-  `app/lib`.
+  npm package; UI-side wallet state and the Xbtsx/Piratecash gateway
+  bridges live under `app/stores` and `app/lib`.
 - Ships as both a static web build and an Electron desktop app
   (`resources/`, `electron-builder`).
 
-A migration to a modern stack (React 18+, TypeScript, Redux Toolkit, CSS
-Modules) is planned incrementally — see `docs/UI_MIGRATION_PLAN.md` before
+The migration to a modern stack (React 18+, TypeScript, Redux Toolkit, CSS
+Modules) is nearly complete — see `docs/UI_MIGRATION_PLAN.md` before
 starting any large refactor or new-screen work, and follow its
 screen-by-screen strangler-fig approach rather than large rewrites in a
 single PR.

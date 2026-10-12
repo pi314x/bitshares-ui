@@ -4,7 +4,7 @@
 // Not part of the real app bundle — built separately via
 // `yarn build-preview` / webpack.preview.config.js.
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import {createRoot} from "react-dom/client";
 import {MemoryRouter} from "react-router-dom";
 import NextShell from "./NextShell";
 import {Button} from "../design-system/Button";
@@ -60,8 +60,8 @@ function PreviewContent() {
 // MemoryRouter, not BrowserRouter: this preview never navigates for real
 // (no legacy route components are mounted here), it just needs a Router
 // ancestor for Rail's <NavLink> to read the current location from.
-const mountNode = document.getElementById("preview-root");
-ReactDOM.render(
+const mountNode = document.getElementById("preview-root") as HTMLElement;
+createRoot(mountNode).render(
     <MemoryRouter initialEntries={["/"]}>
         <NextShell
             navGroups={PREVIEW_NAV_GROUPS}
@@ -88,6 +88,5 @@ ReactDOM.render(
             onShowWithdraw={() => {}}
             content={<PreviewContent />}
         />
-    </MemoryRouter>,
-    mountNode
+    </MemoryRouter>
 );
