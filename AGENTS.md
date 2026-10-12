@@ -75,6 +75,15 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   legacy app shell (which blocks on a live blockchain connection): `yarn
   build-preview`, then serve `build/preview/`. Use this to screenshot new
   screens for phase sign-off (see `docs/UI_MIGRATION_PLAN.md` §6.5).
+- Boot-test a built bundle (catches what Jest/tsc cannot - frozen-state
+  mutations, missing router props, broken assets, CSS specificity clashes):
+  `npx webpack --env prod --optimization-emit-on-errors --output-path
+  build/dist_smoke`, then `python3 scripts/smoke-boot.py build/dist_smoke
+  --routes /,/settings/access --shots build/smoke-shots` (needs the
+  `playwright` Python package and Chromium; it stubs the chain connection).
+  See `docs/UI_MIGRATION_PLAN.md` §7.4. A `yarn build-preview` screenshot
+  does not load the legacy global CSS, so check new screens in the real app
+  too.
 - Format check (pre-commit hook): `pretty-quick --staged` (via husky)
 
 `.github/workflows/ci.yml` runs lint:changed + typecheck + test on every

@@ -11817,6 +11817,85 @@ comes from it:
 Still not verifiable from this environment: a visual pass of the legacy
 screens against a live chain.
 
+### 7.4 React 18, and the first boot of the built bundle (complete)
+
+**React 16.14 -> 18.3.1.** `react`/`react-dom` 18.3.1, `@types/react(-dom)`
+18, `@testing-library/react` 14.3 (React.act, `@testing-library/dom` 9).
+`react-redux` 8.1 and `react-router-dom` 6.30 already supported 18, so
+neither moved. `app/index.js`, the design-system `Notification` stack and
+the standalone preview mount through `createRoot`. Only two type errors
+surfaced (both pre-existing quirks that @types/react 18 no longer lets
+through; each is cast with a comment, runtime behavior unchanged). Jest now
+runs every component test under a concurrent root, which is the best
+available signal for the 18-only behavior changes (automatic batching,
+effect timing): 5,578/5,578 pass. Deprecated APIs that remain
+(`findDOMNode` in `Borrow`, `OrderBook` and `DisableCopyText`, plus inside a
+few libraries; `unstable_renderSubtreeIntoContainer` inside `react-popover`)
+still exist in 18 and are what a later move to 19 would have to remove. Twelve libraries still declare React <=17 peers
+(`react-intl` 2, `react-highcharts`, `react-qr-reader`, `qrcode.react`,
+`react-translate-component`, ...); none uses an API removed in 18 and the
+app boots and renders with them, but they are unmaintained and are the next
+dependency-cleanup candidates.
+
+**The Jest suite could not see most of what was wrong, so the bundle was
+booted.** `scripts/smoke-boot.py` serves a built dist folder, stubs
+`window.WebSocket` with a minimal Graphene RPC answerer (login/api ids,
+chain id, a valid `2.1.0` object so ChainStore reports "synced"), loads the
+app in headless Chromium and visits routes by client-side navigation,
+reporting console and uncaught page errors per route (see its docstring for
+usage and limits). It found four real defects that every earlier gate had
+passed:
+
+1. **The app could not connect at all.** `SettingsStore` has been Redux
+   Toolkit-backed since Phase 9, so `getState()` returns immer-frozen
+   objects, and `routerTransition.js` mutates them in place
+   (`node.hidden = ...`, the `apiLatencies` map). In strict mode that is a
+   TypeError which aborted `willTransitionTo` and left the app on
+   "Application initialization issues" forever. Fixed in
+   `routerTransition.js` (copy before writing, four sites) and, for
+   call sites nobody has found yet, `store/immerConfig.ts` turns immer's
+   auto-freeze off to restore the Alt.js-era mutable-state semantics (must
+   be imported before any slice; it is first in `index.js` and
+   `reduxStore.ts`). Regression tests cover both. Re-enable the freeze once
+   the `getState()` consumers are audited.
+2. **Routes crashed on missing router props.** The v5 -> v6 migration left
+   `/help`, `/block/:height` and `/instant-trade` reading
+   `props.match.params` (a blank screen; React unmounts the whole tree on an
+   uncaught render error) and login/registration/invoice/exchange calling
+   `props.history.push`. `components/Utility/withLegacyRouterProps.tsx`
+   re-supplies `match`/`history`/`location` to exactly those nine route
+   components; new code should use the router hooks.
+3. **Every font and CSS PNG was broken in the production build.** css-loader
+   6 turns `url()` into `new URL()`, which webpack 5 emits as an asset after
+   the rule's loaders ran, so the emitted `.woff`/`.woff2`/`.png` files held
+   url-loader's JS output (`export default "data:..."`) - 88 fonts
+   undecodable. Now asset modules: PNG inlined under 100 kB as before,
+   fonts always emitted as files so the `@fontsource` unicode-range subsets
+   stay lazy.
+4. **The shell's top bar and nav rail collapsed in the real app.** The
+   legacy base stylesheet still carries `body.<theme> header, nav, ... {
+   display: block }` (specificity 0,1,2), which beats the single-class flex
+   rules of the new shell. The standalone preview never loads that sheet,
+   which is why every earlier visual check missed it. Fixed with a doubled
+   class in `Topbar.module.scss`/`Rail.module.scss`. **Lesson for new
+   screens:** a screenshot from `yarn build-preview` does not exercise the
+   legacy global CSS; check new screens in the real app as well.
+
+Also checked with a stub chain, no errors (apart from external requests the
+sandbox blocks, e.g. the news feed and gateway lookups): `/`, `/accounts`, `/settings` and
+its tabs (the new `TreeSelect` in the nodes tab renders), `/explorer/*`
+tabs, `/market/*`, `/pools`, `/news`, `/voting`, `/help`, `/borrow`,
+`/htlc`, `/prediction`, `/instant-trade`, `/credit-offer`,
+`/deposit-withdraw`, `/login`, `/registration*`, `/create-account/*`,
+`/spotlight`, `/wallet`, `/existing-account`, `/direct-debit`,
+`/account/:name`, `/asset/:symbol`, `/create-worker`, and the 404 page.
+Three routes throw `null` dereferences that come from the stub returning
+`null` for every object (`/explorer/fees` reads the global fee schedule,
+`/barter` an account, `/block/1` a block): they need a real chain to judge.
+
+Still not verifiable here: any screen that needs real chain data (balances,
+orders, history), wallet unlock/signing flows end to end, and Electron.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
