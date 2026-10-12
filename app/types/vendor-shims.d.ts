@@ -36,3 +36,4 @@ declare module "@hiveio/hive-js";
 declare module "react-qr-reader";
 declare module "zxcvbn-async";
 declare module "humanize-duration";
+declare module "react-loadable";
