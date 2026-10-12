@@ -12139,7 +12139,7 @@ pass found and fixed ten defects the unit tests could not see (all listed in
   fixture-rich environment to verify.
 - **~95 `.js`/`.jsx` files remain**, mostly `app/lib` services and API
   helpers (AGENTS.md: reuse, don't rewrite), plus 17 files with class
-  components. 127 `useAltStore` call sites could move to `useSelector`;
+  components. 127 files use `useAltStore` and could move to `useSelector`;
   optional cleanup, no behavior gain.
 - **Twelve dependencies declare React <=17 peers** (§7.4); none breaks on 18
   today, all are unmaintained.
