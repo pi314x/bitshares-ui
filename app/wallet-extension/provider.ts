@@ -66,13 +66,13 @@ export function waitForProvider(
         return Promise.resolve(now);
     }
     return new Promise(resolve => {
-        let timer: any;
+        // `done` only runs later (event or timeout), after `timer` exists
         const done = () => {
             clearTimeout(timer);
             target.removeEventListener("bitsharesWalletReady", done);
             resolve(findProvider(target));
         };
         target.addEventListener("bitsharesWalletReady", done);
-        timer = setTimeout(done, timeoutMs);
+        const timer = setTimeout(done, timeoutMs);
     });
 }

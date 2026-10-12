@@ -10,6 +10,7 @@ jest.mock("idb-instance", () => ({
 }));
 
 import counterpart from "counterpart";
+import Immutable from "immutable";
 import {Apis} from "bitsharesjs-ws";
 import {PrivateKey, TransactionBuilder} from "bitsharesjs";
 import localeEn from "../../assets/locales/locale-en.json";
@@ -172,7 +173,7 @@ describe("WalletDb.process_transaction", () => {
         ],
         [
             "a memo",
-            (_tr: any) => {
+            () => {
                 const key = (PrivateKey as any)
                     .fromSeed("m")
                     .toPublicKey()
@@ -189,7 +190,7 @@ describe("WalletDb.process_transaction", () => {
         ],
         [
             "a fee in another asset",
-            (_tr: any) => [
+            () => [
                 transferTx({fee: {amount: 0, asset_id: "1.3.5"}}),
                 null,
                 true
@@ -198,7 +199,7 @@ describe("WalletDb.process_transaction", () => {
         ],
         [
             "an operation for another account",
-            (_tr: any) => [transferTx({from: "1.2.999"}), null, true],
+            () => [transferTx({from: "1.2.999"}), null, true],
             /connected as/i
         ]
     ])("refuses %s and tells the user", async (_label, args, message) => {
@@ -241,7 +242,7 @@ describe("WalletDb.process_transaction", () => {
 
 describe("the connected account in the UI", () => {
     const chainAccount = (id: string) =>
-        (require("immutable") as any).fromJS({
+        (Immutable as any).fromJS({
             id,
             owner: {
                 weight_threshold: 1,
