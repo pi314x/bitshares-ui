@@ -153,6 +153,10 @@ import {Collapse} from "../../design-system/Collapse";
 import cnames from "classnames";
 import translator from "counterpart";
 import guide from "intro.js";
+// Base positioning/arrow styles of the first-run tutorial. Upstream loaded this
+// from Layout/Footer.jsx, which the shell migration deleted - without it the
+// tooltip rendered unstyled in the bottom-left corner of the page.
+import "intro.js/introjs.css";
 import moment from "moment";
 import Ps from "perfect-scrollbar";
 import SettingsActions from "actions/SettingsActions";
