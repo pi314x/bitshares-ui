@@ -2425,6 +2425,7 @@
             "title": "Обеспеченная долговая позиция",
             "title_long": " Создать обеспеченную долговую позицию"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "Сумма к сбору",
             "authorized_account": "Получатель",
@@ -2455,6 +2456,9 @@
             "update": "Обновить",
             "update_mandate": "Обновить существующую авторизацию"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "Действия",
             "amount": "Сумма",
@@ -2500,6 +2504,9 @@
             "description": "Мгновенное выполнение рыночных ордеров в упрощенном интерфейсе.",
             "title": "Мгновенная сделка"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "Создание, просмотр и оплата запросов на переводы или инвойсов",
             "title": "Торговый протокол"

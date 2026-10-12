@@ -2425,6 +2425,7 @@
             "title": "Posición de la deuda colateralizada",
             "title_long": "Crear una posición de deuda garantizada"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "Cantidad a cobrar",
             "authorized_account": "Tenedor",
@@ -2455,6 +2456,9 @@
             "update": " Actualizar",
             "update_mandate": "Actualizar la autorización existente"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "Actions",
             "amount": "Amount",
@@ -2500,6 +2504,9 @@
             "description": "Instantly execute market orders in a simplified interface.",
             "title": "Instant trade"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "Create, view and pay remittance requests or invoices",
             "title": "Merchant Protocol"

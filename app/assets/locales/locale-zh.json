@@ -2425,6 +2425,7 @@
             "title": "抵押借款",
             "title_long": "创建抵押借款"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "应收数量",
             "authorized_account": "收款方",
@@ -2455,6 +2456,9 @@
             "update": "更新",
             "update_mandate": "更新存在的权限"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "操作",
             "amount": "数量",
@@ -2500,6 +2504,9 @@
             "description": "在一个简化界面快速执行市场订单。",
             "title": "快速交易"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "创建、查看及支付付款申请或发票。",
             "title": "支付协议"

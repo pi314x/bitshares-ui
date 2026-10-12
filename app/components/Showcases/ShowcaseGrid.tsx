@@ -1,261 +1,238 @@
-// TypeScript/functional-component port of the legacy ShowcaseGrid.jsx
-// (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
-// The final file of `Showcases/` (6/6) - ported directly by the
-// orchestrating session (not delegated), since it imports `Showcase.jsx`
-// (ported in an earlier batch in this directory).
+// Spotlight: the hub for the features that have no menu entry of their own
+// (docs/UI_MIGRATION_PLAN.md §7.13/§7.14). Each tile is a real link or button,
+// grouped by purpose, with the reason spelled out when it is not available
+// ("Log in to use this", "Coming soon") instead of a hover-only tooltip.
 //
-// Not security-sensitive per AGENTS.md: this component only lays out a
-// grid of navigation tiles (most just call `history.push(...)` to the
-// already-ported destination routes); the one tile with real client-side
-// logic, "paper wallet", calls `createPaperWalletAsPDF(account)`
-// (`common/paperWallet`, an existing, separately-owned utility this file
-// doesn't modify) - grepped this file for `WalletDb`/`WalletApi`/
-// `.add_type_operation`/`process_transaction`, none appear.
+// What changed against the class-era grid it replaces: tiles are `<a>`/
+// `<button>` (keyboard, middle-click and "open in new tab" work), the layout is
+// a responsive CSS grid in a CSS Module instead of fixed-height tiles in the
+// global theme sheet, strings come from the locale files, and the account is
+// read on every chain update (`useChainStoreTick`) so the tiles enable as soon
+// as it has loaded. The old code looked it up once and tested `!== null`, which
+// is also true for `undefined` ("not loaded yet"), so a tile could be live
+// before its account existed.
 //
-// `connect(ShowcaseGrid, {listenTo: [AccountStore], getProps() {...}})`
-// is replaced by `useReduxState(selectAccountState)` in an outer `ShowcaseGrid`
-// wrapper, passed down to a `ShowcaseGridCore` function - this
-// migration's established Container+Core split.
-//
-// `UNSAFE_componentWillMount` (resolves `ChainStore.getAccount(this.props
-// .currentAccount)` once, synchronously, before the first paint) and
-// `UNSAFE_componentWillReceiveProps(np)` (re-resolves only when `np
-// .currentAccount !== this.props.currentAccount`, a guarded comparison -
-// not unconditional) do the exact same resolution work, differing only in
-// when they run - both collapse into a single `useEffect(() => {...},
-// [currentAccount])`: it naturally fires once on mount (replicating the
-// `UNSAFE_componentWillMount` call) and again only when `currentAccount`
-// changes (replicating the guarded `UNSAFE_componentWillReceiveProps`
-// call), with no extra guard logic needed. Not preserved (a mechanical,
-// unavoidable consequence of the class-to-hooks translation, not an
-// application-level bug): the original's resolution ran synchronously
-// before the component's first paint, so `render()` never observed a
-// not-yet-resolved account; a `useEffect` runs after the first paint, so
-// this port's first render briefly observes `resolvedAccount === null`
-// (all tiles show their "please login" disabled state for one frame even
-// when an account is already available) before the effect resolves it -
-// the same one-tick-later timing difference implicit in every other
-// `UNSAFE_componentWillMount` → mount-only-`useEffect` translation
-// throughout this migration.
-//
-// No `BindToChainState`/ChainStore subscription exists in the original
-// (verified: no `ChainStore.subscribe`/`useChainStoreTick`-equivalent
-// anywhere in this file) - it only re-resolves `ChainStore.getAccount`
-// when the identifying `currentAccount` *name* prop itself changes, never
-// in response to a live chain-data tick. `useChainStoreTick()` is
-// therefore deliberately NOT added here, to avoid introducing a
-// re-render-on-every-chain-tick behavior the original never had.
-//
-// `thiz.props.history.push(...)` (the class's `let thiz = this;` closure
-// workaround, used inside several tile `target` callbacks defined as
-// plain functions rather than arrow functions) becomes `useNavigate()`
-// (`react-router-dom`), this migration's established replacement for
-// `withRouter`/`this.props.history` (see e.g. `Dashboard/AccountCard
-// .tsx`'s header comment) - `ShowcaseGrid` is rendered directly as a
-// route (`app/App.jsx`'s `element={<ShowcaseGrid />}`), so `history` was
-// originally always implicitly injected by react-router under v5; v6
-// dropped that injection entirely (Phase 9, react-router v6 migration),
-// so `useNavigate()` is read directly here instead.
-//
-// TS-forced adjustment: the outer `<div style={{align: "center"}}>` uses
-// `align`, not a real CSS property (browsers silently ignore it - no
-// property named `align` exists for inline styles; the original likely
-// meant `textAlign`, but this was never "fixed" at runtime either) -
-// TypeScript's `CSSProperties` typing rejects it outright, cast with `as
-// React.CSSProperties` to preserve the original's inert markup exactly.
+// Not security-sensitive: this only navigates. The one action, the paper
+// wallet, calls the unchanged `createPaperWalletAsPDF(account)` (it prints the
+// account's keys only if the wallet is already unlocked) and nothing here reads
+// or stores a key.
 import * as React from "react";
-import {useNavigate} from "react-router-dom";
-import Showcase from "./Showcase";
+import {Link} from "react-router-dom";
+import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import {createPaperWalletAsPDF} from "common/paperWallet";
+import Icon from "../Icon/Icon";
+import {Alert} from "../../design-system/Alert";
+import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
+import styles from "./ShowcaseGrid.module.scss";
 
-interface ShowcaseGridCoreProps {
-    currentAccount: any;
+type GroupId = "trade" | "payments" | "account";
+
+interface Tile {
+    id: string;
+    /** key under `showcases.` in the locale files (`.title`, `.description`) */
+    locale: string;
+    icon: string;
+    group: GroupId;
+    /** route, or a function of the account's name for account-specific routes */
+    to?: string | ((accountName: string) => string);
+    /** an action instead of a route */
+    onSelect?: (account: any) => void;
+    comingSoon?: boolean;
 }
 
-function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
-    const [resolvedAccount, setResolvedAccount] = React.useState<any>(null);
-    const navigate = useNavigate();
+export const TILES: Tile[] = [
+    {
+        id: "instant_trade",
+        locale: "instant_trade",
+        icon: "instant-trade",
+        group: "trade",
+        to: "/instant-trade"
+    },
+    {
+        id: "prediction_market",
+        locale: "prediction_market",
+        icon: "prediction",
+        group: "trade",
+        to: "/prediction"
+    },
+    {
+        id: "borrow",
+        locale: "borrow",
+        icon: "borrow",
+        group: "trade",
+        to: "/borrow"
+    },
+    {
+        id: "barter",
+        locale: "barter",
+        icon: "barter",
+        group: "trade",
+        to: "/barter"
+    },
+    {
+        id: "merchant_protocol",
+        locale: "merchant_protocol",
+        icon: "merchant",
+        group: "payments",
+        to: "/invoice/request"
+    },
+    {
+        id: "direct_debit",
+        locale: "direct_debit",
+        icon: "direct_debit",
+        group: "payments",
+        to: "/direct-debit"
+    },
+    {
+        id: "htlc",
+        locale: "htlc",
+        icon: "htlc",
+        group: "payments",
+        to: "/htlc"
+    },
+    {
+        id: "timed_transfer",
+        locale: "timed_transfer",
+        icon: "alarm",
+        group: "payments",
+        comingSoon: true
+    },
+    {
+        id: "voting",
+        locale: "voting",
+        icon: "voting",
+        group: "account",
+        to: name => `/account/${name}/voting`
+    },
+    {
+        id: "paper_wallet",
+        locale: "paper_wallet",
+        icon: "wallet",
+        group: "account",
+        onSelect: account => (createPaperWalletAsPDF as any)(account)
+    }
+];
 
-    React.useEffect(() => {
-        setResolvedAccount((ChainStore as any).getAccount(currentAccount));
-        // eslint-disable-next-line
-    }, [currentAccount]);
+const GROUPS: GroupId[] = ["trade", "payments", "account"];
 
-    const hasAccount = resolvedAccount !== null;
+const t = (key: string) => counterpart.translate(key) as string;
 
-    const tiles: any[] = [
-        {
-            title: "showcases.paper_wallet.title",
-            target: () => {
-                if (hasAccount) {
-                    (createPaperWalletAsPDF as any)(resolvedAccount);
-                }
-            },
-            description: "showcases.paper_wallet.description",
-            icon: "wallet", // see Icons app/compoentns/Icon/Icon
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.voting.title",
-            target: () => {
-                if (hasAccount) {
-                    navigate(
-                        "/account/" + resolvedAccount.get("name") + "/voting"
-                    );
-                }
-            },
-            description: "showcases.voting.description",
-            icon: "voting",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.barter.title",
-            target: () => {
-                navigate("/barter");
-            },
-            description: "showcases.barter.description",
-            icon: "barter",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.borrow.title",
-            target: () => {
-                if (hasAccount) {
-                    navigate("/borrow");
-                }
-            },
-            description: "showcases.borrow.description",
-            icon: "borrow",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.direct_debit.title",
-            target: () => {
-                navigate("/direct-debit");
-            },
-            description: "showcases.direct_debit.description",
-            icon: "direct_debit",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.htlc.title",
-            target: () => {
-                navigate("/htlc");
-            },
-            description: "showcases.htlc.description",
-            icon: "htlc",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.prediction_market.title",
-            target: () => {
-                navigate("/prediction");
-            },
-            description: "showcases.prediction_market.description",
-            icon: "prediction",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.merchant_protocol.title",
-            target: () => {
-                navigate("/invoice/request");
-            },
-            description: "showcases.merchant_protocol.description",
-            icon: "merchant",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        },
-        {
-            title: "showcases.timed_transfer.title",
-            target: () => {},
-            description: "showcases.timed_transfer.description",
-            icon: "alarm",
-            disabled: true,
-            comingSoon: true
-        },
-        {
-            title: "showcases.instant_trade.title",
-            target: () => {
-                navigate("/instant-trade");
-            },
-            description: "showcases.instant_trade.description",
-            icon: "instant-trade",
-            disabled: hasAccount
-                ? false
-                : "Please login to use this functionality"
-        }
-        // .... even more tiles in this list
-    ];
+function TileBody({tile, badge}: {tile: Tile; badge?: string}) {
+    return (
+        <>
+            <span className={styles.chip} aria-hidden="true">
+                <Icon name={tile.icon} size="2x" />
+            </span>
+            <span className={styles.text}>
+                <span className={styles.titleRow}>
+                    <span className={styles.name}>
+                        {t(`showcases.${tile.locale}.title`)}
+                    </span>
+                    {badge && <span className={styles.badge}>{badge}</span>}
+                </span>
+                <span className={styles.description}>
+                    {t(`showcases.${tile.locale}.description`)}
+                </span>
+            </span>
+        </>
+    );
+}
+
+function SpotlightTile({tile, account}: {tile: Tile; account: any}) {
+    if (tile.comingSoon) {
+        return (
+            <div
+                className={`${styles.card} ${styles.disabled}`}
+                aria-disabled="true"
+                data-testid={`tile-${tile.id}`}
+            >
+                <TileBody tile={tile} badge={t("showcases.coming_soon")} />
+            </div>
+        );
+    }
+    if (!account) {
+        return (
+            <div
+                className={`${styles.card} ${styles.disabled}`}
+                aria-disabled="true"
+                data-testid={`tile-${tile.id}`}
+            >
+                <TileBody tile={tile} badge={t("showcases.login_badge")} />
+            </div>
+        );
+    }
+    if (tile.onSelect) {
+        const onSelect = tile.onSelect;
+        return (
+            <button
+                type="button"
+                className={styles.card}
+                onClick={() => onSelect(account)}
+                data-testid={`tile-${tile.id}`}
+            >
+                <TileBody tile={tile} />
+            </button>
+        );
+    }
+    const to =
+        typeof tile.to === "function"
+            ? tile.to(account.get("name"))
+            : (tile.to as string);
+    return (
+        <Link className={styles.card} to={to} data-testid={`tile-${tile.id}`}>
+            <TileBody tile={tile} />
+        </Link>
+    );
+}
+
+export default function ShowcaseGrid() {
+    const accountState = useReduxState<any>(selectAccountState);
+    const currentAccount =
+        accountState.currentAccount || accountState.passwordAccount;
+    useChainStoreTick(); // re-read the account once the chain has delivered it
+    // `undefined` = not loaded yet, `null` = does not exist; either way: no account
+    const account = currentAccount
+        ? (ChainStore as any).getAccount(currentAccount) || null
+        : null;
 
     return (
-        <div
-            className="overflow-visible showcases-grid"
-            style={
-                {
-                    align: "center"
-                } as React.CSSProperties
-            }
-        >
-            <div className="showcases-grid--wrapper">
-                {tiles.map(tile => {
-                    return (
-                        <div
-                            key={tile.title}
-                            className="showcases-grid--wrapper--item"
-                        >
-                            {!!tile.disabled ? (
-                                <Showcase
-                                    target={tile.target}
-                                    title={tile.title}
-                                    description={tile.description}
-                                    icon={tile.icon}
-                                    disabled={tile.disabled}
-                                    comingSoon={tile.comingSoon || false}
+        <div className={styles.page}>
+            <header className={styles.head}>
+                <h1 className={styles.heading}>{t("header.showcases")}</h1>
+                <p className={styles.intro}>{t("showcases.intro")}</p>
+            </header>
+
+            {!account && (
+                <div className={styles.notice} role="status">
+                    <Alert
+                        type="info"
+                        showIcon
+                        message={t("showcases.login_required")}
+                    />
+                </div>
+            )}
+
+            {GROUPS.map(group => (
+                <section className={styles.group} key={group}>
+                    <h2 className={styles.groupTitle}>
+                        {t(`showcases.group_${group}`)}
+                    </h2>
+                    <div className={styles.grid}>
+                        {TILES.filter(tile => tile.group === group).map(
+                            tile => (
+                                <SpotlightTile
+                                    key={tile.id}
+                                    tile={tile}
+                                    account={account}
                                 />
-                            ) : (
-                                <Showcase
-                                    target={tile.target}
-                                    title={tile.title}
-                                    description={tile.description}
-                                    icon={tile.icon}
-                                />
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+                            )
+                        )}
+                    </div>
+                </section>
+            ))}
         </div>
     );
 }
-
-function ShowcaseGrid() {
-    const accountState = useReduxState<any>(selectAccountState);
-
-    return (
-        <ShowcaseGridCore
-            currentAccount={
-                accountState.currentAccount || accountState.passwordAccount
-            }
-        />
-    );
-}
-
-export default ShowcaseGrid;

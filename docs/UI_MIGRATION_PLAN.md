@@ -12481,11 +12481,40 @@ on `/voting` and on `/account/<name>/voting/...`, and not on other account tabs
 
 Making Spotlight reachable again exposed a layout defect nobody had seen: the
 tiles had a fixed height, so a long description (Direct debit, HTLC, Voting)
-overflowed upward over its title. Tiles now grow with their text and stay equal
-in height within a row (`min-height` and flex in `themes/_theme-template.scss`;
-only `/spotlight` uses these classes). Measured before/after at 1400 and 1000
-px: the title-to-description gap went from -37/-37/-1 px on those three tiles to
-at least 16 px everywhere. Screenshot: `docs/screenshots/left-menu-spotlight.png`.
+overflowed upward over its title (a gap of -37/-37/-1 px on those three tiles).
+That was first patched with `min-height`, then the whole page was rebuilt in
+§7.14. Screenshot of the menu: `docs/screenshots/left-menu-spotlight.png`.
+
+### 7.14 Spotlight, modernized (complete)
+
+`components/Showcases/ShowcaseGrid.tsx` (the page behind the **Spotlight** menu
+entry) is rebuilt on the design tokens in a CSS Module; `Showcase.tsx` and the
+global `.showcases-grid*` rules in `themes/_theme-template.scss` are gone.
+
+- **Layout:** a page header, then three groups (Trade and borrow, Payments, Your
+  account) in a two-column grid (one column on a phone) instead of fixed-height
+  tiles; icons sit on an accent-wash chip, text is the design-system ink/muted
+  pair. Dark, light and midnight inherit from the tokens (no raw colours; the
+  `--colors` check reads 0.0% neutral gray).
+- **Semantics:** a tile is a real `<a>` (react-router `Link`) or, for the paper
+  wallet, a `<button>`, so keyboard focus, Enter, middle-click and "open in new
+  tab" work. A tile that is not available is an `aria-disabled` box that says
+  why: a short "Log in" or "Coming soon" badge on the tile and, when there is no
+  account, one notice at the top. The old hover-only tooltip and its hard-coded
+  English are gone; all new strings are in the 10 locale files.
+- **A bug fixed on the way:** the account was looked up once and tested with
+  `!== null`, which is also true for `undefined` ("the chain has not delivered it
+  yet"), so a tile could be live before its account existed, and it never
+  re-checked. It now reads the account on every chain update
+  (`useChainStoreTick`) and treats "not loaded" as "no account", so the tiles
+  enable the moment the account arrives (pinned by a test).
+- **Unchanged on purpose:** every route target, and the paper wallet's
+  `createPaperWalletAsPDF(account)` (it only prints keys when the wallet is
+  already unlocked); nothing here reads or stores a key.
+- **Verified:** 6 new tests; in a real browser against the live node as a real
+  account (10 tiles: 7 links, the voting link `/account/abit/voting`, 1 button,
+  1 coming-soon box; Enter on a tile navigates) and logged out (all 10 boxes
+  disabled); fonts 64/64 IBM Plex. Screenshots: `docs/screenshots/spotlight-*.png`.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

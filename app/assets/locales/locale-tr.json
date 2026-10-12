@@ -2419,6 +2419,7 @@
             "title": "Teminatlı Borç Pozisyonu",
             "title_long": "Teminatlı Borç Pozisyonu Oluşturun"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "Toplanacak miktar",
             "authorized_account": "Alacaklı",
@@ -2449,6 +2450,9 @@
             "update": "Güncelleme",
             "update_mandate": "Mevcut yetkilendirmeyi güncelle"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "Hareketler",
             "amount": "Miktar",
@@ -2494,6 +2498,9 @@
             "description": "Basitleştirilmiş bir arayüzde piyasa emirlerini anında gerçekleştirin.",
             "title": "Anında ticaret"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "Havale talepleri veya faturaları oluşturun, görüntüleyin ve ödeyin",
             "title": "Tüccar Protokolü"
