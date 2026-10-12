@@ -55,7 +55,10 @@ only its README) before changing any of it; keep `isActive()` false by default.
 
 The left rail's entries live in `app/next/navigation.ts` (a test checks every
 entry points at a route registered in `App.jsx`); add a screen to the menu
-there. The **Lending** group holds Credit offers and the SameT funds page
+there (an entry whose route redirects needs `match` so the rail still
+highlights it, see `docs/UI_MIGRATION_PLAN.md` §7.13; the **More** group holds
+Spotlight, the hub for features that nothing else links to). The **Lending**
+group holds Credit offers and the SameT funds page
 (`app/components/Account/SametFund/`, pure money/operation logic in
 `app/lib/common/sametFunds.ts`); see `docs/UI_MIGRATION_PLAN.md` §7.8.
 

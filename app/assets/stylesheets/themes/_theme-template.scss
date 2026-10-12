@@ -142,7 +142,13 @@
         padding: 1rem;
         min-width: 380px;
         width: 33.3%;
-        height: 320px;
+        // Grow with the text (a long description used to overflow upward over
+        // the title) and keep the tiles of one row the same height.
+        min-height: 320px;
+        display: flex;
+        > * {
+            flex: 1 1 auto;
+        }
         h2.no-margin {
             margin: 0;
         }
@@ -155,7 +161,9 @@
     }
     .showcases-grid--wrapper--item--wrapper {
         padding: 1rem;
-        height: calc(320px - 2rem);
+        min-height: calc(320px - 2rem);
+        display: flex;
+        flex-direction: column;
         transition: 0.3s;
         border-radius: 10px;
         cursor: pointer;
@@ -173,7 +181,9 @@
     }
     .showcases-grid--wrapper--item--wrapper--disabled {
         padding: 1rem;
-        height: calc(320px - 2rem);
+        min-height: calc(320px - 2rem);
+        display: flex;
+        flex-direction: column;
         transition: 0.3s;
         border-radius: 10px;
         background-color: $header-color;
@@ -182,7 +192,7 @@
     .showcases-grid--wrapper--item--wrapper--content {
         padding: 1rem;
         display: flex;
-        height: calc(100% - 32px);
+        flex: 1 1 auto;
         align-items: center;
     }
     .showcases-grid--wrapper--item--wrapper--content--description {

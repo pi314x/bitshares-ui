@@ -1,5 +1,5 @@
 import * as React from "react";
-import {NavLink, NavLinkProps} from "react-router-dom";
+import {NavLink, NavLinkProps, useLocation} from "react-router-dom";
 import styles from "./Rail.module.scss";
 // The real BitShares brand mark (also used by the legacy Header via
 // branding.js's getLogo()), not a placeholder letter.
@@ -11,6 +11,12 @@ export interface RailNavItem {
     label: string;
     to: string;
     exact?: boolean;
+    /**
+     * For an entry whose `to` redirects somewhere else (e.g. `/voting` ->
+     * `/account/<name>/voting`): the current path counts as this entry when it
+     * matches, instead of only when it equals `to`.
+     */
+    match?: RegExp;
 }
 
 export interface RailNavGroup {
@@ -27,6 +33,7 @@ export interface RailProps {
 // mockup's static prototype, `to` is a real react-router path — this is
 // meant to actually navigate the app, not toggle a fake in-page view.
 export function Rail({groups, footer}: RailProps): JSX.Element {
+    const {pathname} = useLocation();
     return (
         <nav className={styles.rail} aria-label="Main">
             <div className={styles.brand}>
@@ -43,7 +50,9 @@ export function Rail({groups, footer}: RailProps): JSX.Element {
                             to={item.to}
                             end={item.exact}
                             className={({isActive}: {isActive: boolean}) =>
-                                isActive
+                                (item.match
+                                  ? item.match.test(pathname)
+                                  : isActive)
                                     ? `${styles.navItem} ${styles.navItemActive}`
                                     : styles.navItem
                             }

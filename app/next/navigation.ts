@@ -10,6 +10,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
         items: [
             {label: "Dashboard", to: "/", exact: true},
             {label: "Accounts", to: "/accounts"},
+            // `/voting` redirects to the current account's voting tab
+            {
+                label: "Voting",
+                to: "/voting",
+                match: /^\/(voting|account\/[^/]+\/voting)(\/|$)/
+            },
             {label: "Settings", to: "/settings"}
         ]
     },
@@ -17,7 +23,9 @@ export const NAV_GROUPS: RailNavGroup[] = [
         label: "Markets",
         items: [
             {label: "Trade", to: `/market/${getDefaultMarket()}`},
+            {label: "Instant trade", to: "/instant-trade"},
             {label: "Liquidity pools", to: "/pools"},
+            {label: "Prediction markets", to: "/prediction"},
             {label: "Explorer", to: "/explorer"}
         ]
     },
@@ -27,6 +35,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
             {label: "Credit offers", to: "/credit-offer"},
             {label: "SameT funds", to: "/samet-funds"}
         ]
+    },
+    {
+        // The old header's "Spotlight": a grid of the rarer features (barter,
+        // HTLC, direct debit, paper wallet, ...). Nothing else links to them.
+        label: "More",
+        items: [{label: "Spotlight", to: "/spotlight"}]
     }
 ];
 
@@ -38,7 +52,9 @@ export const NAV_GROUPS: RailNavGroup[] = [
 // capitalized form would read badly ("Credit-offer") get an explicit title.
 const CRUMB_TITLES: Record<string, string> = {
     "credit-offer": "Credit offers",
-    "samet-funds": "SameT funds"
+    "samet-funds": "SameT funds",
+    "instant-trade": "Instant trade",
+    prediction: "Prediction markets"
 };
 
 export function crumbFromPath(pathname: string): string {

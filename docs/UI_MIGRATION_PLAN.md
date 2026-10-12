@@ -12457,6 +12457,36 @@ says the approval window is 2 minutes where the code uses 60 s;
   14 class-component files and the remaining `.js`/`.jsx` (§7.9), and
   Prettier's version.
 
+### 7.13 The left menu gets its missing entries (complete)
+
+The cutover to the new shell (`b6734d3`) replaced the old header's menu
+(`MenuDataStructure.js`) with a rail of three groups and dropped everything
+else. The old **Spotlight** entry (a grid of the rarer features) went with it, and
+nothing in the app links to `/spotlight` any more, so the pages that were only
+reachable through it (prediction markets, barter, HTLC, direct debit, paper
+wallet, merchant protocol) were reachable only by typing the URL. The rail now
+has (`app/next/navigation.ts`):
+
+- **Account:** Dashboard, Accounts, **Voting**, Settings
+- **Markets:** Trade, **Instant trade**, Liquidity pools, **Prediction markets**, Explorer
+- **Lending:** Credit offers, SameT funds
+- **More:** **Spotlight**
+
+`/voting` redirects to the current account's voting tab, so a plain `NavLink`
+would never show Voting as the current entry. `RailNavItem.match` (an optional
+`RegExp` tested against the path) fixes that: the Voting entry stays highlighted
+on `/voting` and on `/account/<name>/voting/...`, and not on other account tabs
+(pinned by tests). The topbar names the new routes ("Instant trade",
+"Prediction markets").
+
+Making Spotlight reachable again exposed a layout defect nobody had seen: the
+tiles had a fixed height, so a long description (Direct debit, HTLC, Voting)
+overflowed upward over its title. Tiles now grow with their text and stay equal
+in height within a row (`min-height` and flex in `themes/_theme-template.scss`;
+only `/spotlight` uses these classes). Measured before/after at 1400 and 1000
+px: the title-to-description gap went from -37/-37/-1 px on those three tiles to
+at least 16 px everywhere. Screenshot: `docs/screenshots/left-menu-spotlight.png`.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

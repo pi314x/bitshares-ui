@@ -57,4 +57,48 @@ describe("design-system/Rail", () => {
         expect(getByAltText("BitShares").tagName).toBe("IMG");
         expect(queryByText("B")).toBeNull();
     });
+
+    it("can mark an entry active by pattern when its target redirects", () => {
+        const withMatch = [
+            {
+                label: "Account",
+                items: [
+                    {label: "Accounts", to: "/accounts"},
+                    {
+                        label: "Voting",
+                        to: "/voting",
+                        match: /^\/(voting|account\/[^/]+\/voting)(\/|$)/
+                    }
+                ]
+            }
+        ];
+        const {getByText} = render(
+            <MemoryRouter initialEntries={["/account/abit/voting/witnesses"]}>
+                <Rail groups={withMatch} />
+            </MemoryRouter>
+        );
+        expect(getByText("Voting").className).toContain("navItemActive");
+        expect(getByText("Accounts").className).not.toContain("navItemActive");
+    });
+
+    it("does not mark a pattern entry active elsewhere", () => {
+        const withMatch = [
+            {
+                label: "Account",
+                items: [
+                    {
+                        label: "Voting",
+                        to: "/voting",
+                        match: /^\/(voting|account\/[^/]+\/voting)(\/|$)/
+                    }
+                ]
+            }
+        ];
+        const {getByText} = render(
+            <MemoryRouter initialEntries={["/account/abit/overview"]}>
+                <Rail groups={withMatch} />
+            </MemoryRouter>
+        );
+        expect(getByText("Voting").className).not.toContain("navItemActive");
+    });
 });

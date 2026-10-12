@@ -18,6 +18,28 @@ describe("left navigation rail", () => {
         ]);
     });
 
+    it("lists the features that nothing else links to", () => {
+        const labels = (group: string) =>
+            NAV_GROUPS.find(g => g.label === group)!.items.map(i => i.label);
+        expect(labels("Account")).toContain("Voting");
+        expect(labels("Markets")).toEqual(
+            expect.arrayContaining(["Instant trade", "Prediction markets"])
+        );
+        // the old header's Spotlight hub: barter, HTLC, direct debit, ...
+        expect(labels("More")).toEqual(["Spotlight"]);
+    });
+
+    it("recognises the account voting tab as the Voting entry", () => {
+        const voting = NAV_GROUPS.flatMap(g => g.items).find(
+            i => i.label === "Voting"
+        )!;
+        expect(voting.match!.test("/voting")).toBe(true);
+        expect(voting.match!.test("/account/abit/voting")).toBe(true);
+        expect(voting.match!.test("/account/abit/voting/witnesses")).toBe(true);
+        expect(voting.match!.test("/account/abit/overview")).toBe(false);
+        expect(voting.match!.test("/account/voting-bot/overview")).toBe(false);
+    });
+
     it("only links to routes App.jsx registers", () => {
         NAV_GROUPS.forEach(group =>
             group.items.forEach(item => {
@@ -40,6 +62,14 @@ describe("topbar title", () => {
     it("reads naturally for the lending screens", () => {
         expect(crumbFromPath("/credit-offer")).toBe("Credit offers");
         expect(crumbFromPath("/samet-funds")).toBe("SameT funds");
+    });
+
+    it("names the restored entries", () => {
+        expect(crumbFromPath("/instant-trade")).toBe("Instant trade");
+        expect(crumbFromPath("/instant-trade/BTS_USD")).toBe("Instant trade");
+        expect(crumbFromPath("/prediction")).toBe("Prediction markets");
+        expect(crumbFromPath("/spotlight")).toBe("Spotlight");
+        expect(crumbFromPath("/voting")).toBe("Voting");
     });
 
     it("keeps the capitalized-segment fallback", () => {
