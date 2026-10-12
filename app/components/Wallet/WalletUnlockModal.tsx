@@ -420,8 +420,13 @@ function WalletUnlockModal({
         }
         if (!isOpen) return;
         if (!passwordLogin) {
+            // The ref is the native <input> of the design-system Input, not
+            // an antd instance: there is no `.clear()` (the controlled
+            // `password` state is already reset whenever the modal hides)
+            // and no `.input`. The original's `this.refs.password_input`
+            // here never existed, so this block was a no-op; focusing the
+            // field is what it was meant to do.
             if (passwordInput2Ref.current) {
-                passwordInput2Ref.current.clear();
                 passwordInput2Ref.current.focus();
             }
 
@@ -462,12 +467,15 @@ function WalletUnlockModal({
             if (!account_input || !password_input) {
                 forceRenderTick(n => n + 1);
             }
+            // Both refs are native <input> elements (design-system Input),
+            // so focus them directly; antd's `.input` instance property
+            // does not exist and `undefined.focus()` crashed the whole app
+            // the moment the unlock modal opened.
             if (accountName && password_input) {
-                password_input.input.focus();
+                password_input.focus();
                 setFocusedOnce(true);
             } else if (
                 account_input &&
-                account_input.input &&
                 typeof account_input.focus === "function"
             ) {
                 account_input.focus();
@@ -479,7 +487,7 @@ function WalletUnlockModal({
                 forceRenderTick(n => n + 1);
             }
             if (password_input) {
-                password_input.input.focus();
+                password_input.focus();
                 setFocusedOnce(true);
             }
         }
