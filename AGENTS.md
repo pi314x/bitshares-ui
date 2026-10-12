@@ -40,6 +40,12 @@ theme, wallet lock) is already migrated** — `app/next/NextShellContainer`
 (Dashboard, Exchange, Account, Settings, etc.) still render their original
 class-component/Alt.js internals inside that new shell — that's Phases 2+.
 
+The left rail's entries live in `app/next/navigation.ts` (a test checks every
+entry points at a route registered in `App.jsx`); add a screen to the menu
+there. The **Lending** group holds Credit offers and the SameT funds page
+(`app/components/Account/SametFund/`, pure money/operation logic in
+`app/lib/common/sametFunds.ts`); see `docs/UI_MIGRATION_PLAN.md` §7.8.
+
 The `bitshares-ui-style-guide` npm package (an antd v3 wrapper) and `antd`
 itself have both been **removed** - nothing under `app/` imports either;
 use `app/design-system/*` (Button, Modal, Form, Input, Select, Table,

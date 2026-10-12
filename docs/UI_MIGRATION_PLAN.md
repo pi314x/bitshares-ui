@@ -12183,6 +12183,81 @@ Foundation partials still carry gray literals, but every themed rule overrides
 them (the census sees none); `activeMarket` keeps its `#4c85d8` blue and a
 few asset-name colours are brand-style and were left as is.
 
+### 7.8 Lending menu and SameT funds (complete, signing unverified)
+
+**Menu.** The left rail (`app/next/navigation.ts`, extracted from
+`NextShellContainer.tsx` so it can be tested without pulling in every store)
+has a third group, **Lending**: *Credit offers* (`/credit-offer`, an existing
+page that nothing in the new shell linked to) and *SameT funds*
+(`/samet-funds`). The topbar names both routes properly ("Credit offers",
+"SameT funds" instead of "Credit-offer"). `navigation-test.ts` pins that every
+rail entry points at a route `App.jsx` registers.
+
+**SameT funds page** (`components/Account/SametFund/`). A SameT fund is a
+single-asset pool that anyone can borrow from inside one transaction as long as
+the loan plus the fund's fee is repaid in that same transaction (the UI's own
+locale strings call it a "flash loan"). Before this, the repo only *displayed*
+the five SameT operations in the account history. Now:
+- **All funds**: every fund on the chain (`list_samet_funds`, paged 100 at a
+  time with "Load more"), with owner, asset, balance, fee rate and unpaid fees;
+  sortable; names and symbols resolved in batches.
+- **My funds** (needs a selected account): the account's funds
+  (`get_samet_funds_by_owner`) with **Update** (add funds, withdraw funds,
+  change the fee rate) and **Delete**, plus **Create fund** in the header.
+- **Not offered:** borrow and repay. A flash loan is borrowed and repaid inside
+  one transaction, which only makes sense when a program composes it; the page
+  says so. The operations remain in the serializers.
+
+**How money is kept safe** (security-sensitive per AGENTS.md; the diff touches
+no existing wallet, key or signing code):
+- `lib/common/sametFunds.ts` is pure: amounts are integer strings / BigInt end
+  to end (no floating point anywhere), parsing refuses anything that would need
+  rounding, fee rates are validated against the chain's 1/1,000,000 resolution
+  and the 0-100% range, and the operation builders refuse malformed ids,
+  non-positive balances, zero deltas and empty updates.
+  `__tests__/lib/sametFunds-test.ts` (18 tests) round-trips every operation
+  through the real bitsharesjs serializers, including an int64 a JS number
+  cannot hold and a negative withdrawal delta.
+- Writes reuse the existing path (`WalletApi.new_transaction()` ->
+  `WalletDb.process_transaction`, which prompts for the unlock and signs
+  locally). Unlike the credit-offer actions the promise rejects on failure, so
+  the dialog shows the node's reason instead of closing silently.
+- The dialogs only enable "submit" for input that builds a valid operation,
+  never above the account's balance (deposit) or the fund's balance
+  (withdrawal). `SametFundsPage-test.tsx` (15 tests) checks what the page shows,
+  that the exact arguments reach the transaction layer, that a form that
+  changes nothing submits nothing, that failures keep the dialog open with the
+  reason, and that every `samet.*` locale string survives counterpart's sprintf
+  (which found a real bug: a `%` in "Fee rate (%)" threw and took the page
+  down).
+- All 10 locale files carry the new `samet.*` keys (English text, which is also
+  the fallback locale).
+
+**Found on the way, fixed at the root:** the trimmed legacy stylesheet's form
+reset (`body.<theme> button, input, ... { font-size/line-height/color:
+inherit }`, specificity (0,1,2)) beat every single-class rule of the design
+system. Design-system buttons therefore never got their own font size or text
+colour - accent buttons rendered page-ink text instead of `--on-accent`
+(light-on-cyan in dark, dark-on-blue in light) - and the left rail's links were
+all link-blue with no visible active item. The three reset rules are now
+wrapped in `:where()` (specificity 0; still beats the browser default, never a
+component class), `Rail.module.scss` uses `.rail a.navItem` to win over the
+legacy `a` colours, and `legacyBase-test.ts` pins it. A computed-style diff of
+seven routes (before/after) shows exactly the intended changes: topbar and rail
+buttons 16px -> 14px, status pills 16px -> 12.5px, tab and rail text in their
+designed muted colours; nothing else moved.
+
+**Verified in a browser** against the live node (read-only, wallet locked):
+13 real funds list with resolved owners, assets, balances and rates; as an
+account that owns a fund (`abit`) the My funds tab shows Update/Delete, Create
+lists the account's real balances, an over-balance amount keeps the button
+disabled with the error shown, a valid one enables it, and the update and
+delete dialogs show the fund's real balance. Fonts and colours pass the
+`--fonts`/`--colors` checks on both new routes. **Not verified:** that a
+create/update/delete transaction signs and is accepted by the chain - no
+unlocked account or testnet was available. Try it on the testnet first
+(README, "Testnet").
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12298,6 +12373,8 @@ crash, the unstyled Exchange tutorial, and a gap my own control restyle
 introduced); each has a regression test or a measurable check.
 
 **Not done, and why:**
+- **SameT fund create/update/delete are untested on a chain** (§7.8): the
+  serialization and the page logic are tested, the broadcast is not.
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
   shared class names make scoping a class a multi-screen change that needs a
   fixture-rich environment to verify.
