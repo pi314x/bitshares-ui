@@ -432,41 +432,31 @@ module.exports = function(env) {
                             "app/assets/language-dropdown/img"
                         )
                     ],
-                    use: [
-                        {
-                            loader: "url-loader",
-                            options: {
-                                limit: 100000
-                            }
-                        }
-                    ]
+                    // Asset module instead of url-loader: css-loader 6 turns
+                    // `url(...)` into `new URL(...)`, which webpack 5 emits
+                    // as an asset *after* running these loaders - so with
+                    // url-loader the emitted file was its JS output
+                    // (`export default "data:..."`), not the image. Same
+                    // inline-below-100 kB rule as before.
+                    type: "asset",
+                    parser: {dataUrlCondition: {maxSize: 100000}}
                 },
 
                 {
+                    // Asset module for the same reason as .png above. Fonts are
+                    // always emitted as files (never inlined): the
+                    // @fontsource stylesheets declare dozens of unicode-range
+                    // subsets, and inlining them all would turn the CSS into
+                    // a multi-megabyte blocking download instead of letting
+                    // the browser fetch only the subsets a page uses.
                     test: /\.woff$/,
-                    use: [
-                        {
-                            loader: "url-loader",
-                            options: {
-                                limit: 100000,
-                                mimetype: "application/font-woff"
-                            }
-                        }
-                    ]
+                    type: "asset/resource"
                 },
                 {
                     // @fontsource/ibm-plex-sans and @fontsource/ibm-plex-mono
                     // (docs/UI_MIGRATION_PLAN.md Phase 0) ship .woff2.
                     test: /\.woff2$/,
-                    use: [
-                        {
-                            loader: "url-loader",
-                            options: {
-                                limit: 100000,
-                                mimetype: "application/font-woff2"
-                            }
-                        }
-                    ]
+                    type: "asset/resource"
                 },
                 {
                     test: /.*\.svg$/,
