@@ -10040,7 +10040,7 @@ the `bitshares-ui-style-guide` npm dependency entirely (mirroring how
 `alt`/`foundation-apps`/`react-hot-loader` were removed earlier in this
 migration).
 
-### 7.1 Call-site migration (in progress)
+### 7.1 Call-site migration (complete)
 
 Migrating real `bitshares-ui-style-guide` call sites file by file to the
 twenty design-system components above. User direction: start with
@@ -11412,7 +11412,7 @@ component or a managed-form-API blocker is done. What remains is the
 wallet-sensitive final batch (handled last, with extra care, per
 AGENTS.md) - see this section's running list for exactly which files.
 
-### 7.2 Wallet-sensitive final batch (in progress)
+### 7.2 Wallet-sensitive final batch (complete)
 
 A fresh sweep (`grep` for actual `import ... from "bitshares-ui-style-
 guide"` statements, not just the string appearing anywhere - several
@@ -11652,6 +11652,80 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 5,558 - `Button.loading` and `Modal.zIndex` tests), `walletDbCrypto-
 test.js` 8/8, `yarn build` showing only the 2 known pre-existing
 `charting_library.esm` errors.
+
+### 7.3 Removing the `bitshares-ui-style-guide` dependency (complete)
+
+With every `import` gone (§7.2), the package itself was still wired in
+through four non-import channels, all removed in this step. The goal was
+to change *where code comes from* without changing *what runs*, since the
+sandbox cannot boot the full app (it blocks on a live chain connection),
+so a visual regression would not have been caught here:
+
+1. **Global stylesheet.** `app/assets/stylesheets/vendors/_all.scss`
+   imported `~bitshares-ui-style-guide/dist/styles/style.css` - a single
+   1.6 MB minified file (antd 3.26 compiled with the BitShares dark/light
+   themes, scoped under `body.darkTheme`/`.lightTheme`; no external
+   `url()` deps). Copied **byte-for-byte** to `app/assets/stylesheets/
+   vendors/antd-bitshares-theme.css` (sha256 `7af53102...b74b`; the
+   directory is covered by a broad `assets` `.gitignore` rule, so it is
+   committed with `git add -f`, like the other 573 tracked files under
+   `app/assets`) and imported from there. Gotcha found by the verifying
+   build, not by tsc/jest: Sass leaves a `.css` `@import` as a plain CSS
+   import for css-loader, which resolves it relative to the *entry* SCSS
+   (`app.scss`), not the partial - so the path is `./vendors/...`, not
+   `./...`. Same hoisting-to-top semantics as the old `~...` import, so
+   cascade order is unchanged.
+2. **`antd` itself.** It was never a direct dependency - it came in only
+   transitively through the style guide (`antd ^3.26.20`) - yet five
+   files import from `"antd"` directly: `Explorer/Assets.tsx` (`List`),
+   `Utility/NodeSelector.tsx` (`TreeSelect`), `Layout/NewsHeadline.tsx`
+   (`Carousel`), and `Modal/DirectDebitModal.tsx`/`Exchange/BuySell.tsx`
+   (`DatePicker`), plus `CreditOffer/{Create,Edit}Modal.tsx`'s
+   `antd/es/date-picker/locale/zh_CN`. All still live (NodeSelector is in
+   `AccessSettings` and the shell, NewsHeadline in `App`). Replacing
+   `TreeSelect`/`Carousel`/`List` is real component work, not a swap, so
+   `antd@^3.26.20` is now an **explicit** dependency - `yarn add` reused
+   the existing lock entry (3.26.20), so the installed antd is unchanged.
+3. **Webpack alias** `"bitshares-ui-style-guide$"` -> removed.
+4. **Type shim** `declare module "bitshares-ui-style-guide"` in
+   `app/types/vendor-shims.d.ts` -> removed.
+
+`yarn remove bitshares-ui-style-guide` then dropped the package and its
+now-orphaned private chain (its own `react-router-dom@5`/`history`/
+`normalize.css`, ...). `yarn.lock` diff checked entry-by-entry: only
+removals/range trims, **no retained package changed version**. `react`,
+`react-dom`, `react-router-dom`, `prop-types` (also listed by the style
+guide) are already direct dependencies; `normalize.css` was a false
+positive (grep hits were `normalize_brainKey` etc. and Foundation's own
+`_normalize.scss`).
+
+**Verification that mattered most - the CSS is byte-identical.** The
+production build emits nothing when it has errors, so the 2 known
+`charting_library` errors normally hide the bundle. Forcing emission
+(`webpack --env prod --optimization-emit-on-errors`) before and after:
+`styles.a8d70de66abf8bfaf292.css` (1,637,414 B) and
+`app.dbd979c49070dd99da10.css` (485,707 B) have **identical content-hashed
+filenames and identical sha256** both times. (This same procedure caught
+the `./vendors/` path error above.) Also confirmed: `tsc` clean with
+`node_modules/bitshares-ui-style-guide` physically absent, `yarn test`
+5,560/5,560, the build showing only the 2 known pre-existing
+`charting_library.esm` errors, and no `bitshares-ui-style-guide` string in
+any emitted JS.
+
+**What is deliberately left, and why it is safe to defer:** the vendored
+CSS and `antd` stay until `List`/`TreeSelect`/`Carousel` (and the two
+direct `DatePicker`s, which could move to the design-system one as in
+§7.1) are replaced; `.ant-*` selectors in 17 SCSS files and a few TSX
+files target antd DOM that now exists only for those widgets, so they
+are dead-but-harmless CSS rather than a regression. Follow-ups, in
+rough order of effort: (a) `BuySell.tsx`/`DirectDebitModal.tsx`
+`DatePicker` -> design-system `DatePicker`, drop `localeZH`; (b) `List`
+in Explorer's prediction-market view; (c) `Carousel` in `NewsHeadline`;
+(d) `TreeSelect` in `NodeSelector` (the hard one - checkable,
+searchable tree); then delete `antd` + the vendored CSS and prune dead
+`.ant-*` selectors. Because the global look of every legacy
+screen depends on that stylesheet, (d) onward deserves a real browser
+visual pass against a live chain, which this environment cannot do.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

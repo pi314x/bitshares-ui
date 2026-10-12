@@ -35,6 +35,18 @@ theme, wallet lock) is already migrated** — `app/next/NextShellContainer`
 (Dashboard, Exchange, Account, Settings, etc.) still render their original
 class-component/Alt.js internals inside that new shell — that's Phases 2+.
 
+The `bitshares-ui-style-guide` npm package (an antd v3 wrapper) has been
+**removed** - nothing under `app/` imports it; use `app/design-system/*`
+(Button, Modal, Form, Input, Select, Table, Tabs, DatePicker, Collapse,
+...). Two things still come from antd and are kept deliberately: `antd`
+itself is now an explicit dependency (5 files still import `List`,
+`TreeSelect`, `Carousel`, `DatePicker` from `"antd"` directly), and the
+global stylesheet is vendored at
+`app/assets/stylesheets/vendors/antd-bitshares-theme.css` (byte-for-byte
+the old package's `style.css`; committed with `git add -f` because of
+the broad `assets` rule in `.gitignore`). Don't import from `"antd"` in
+new code. See `docs/UI_MIGRATION_PLAN.md` §7.3 for what is left.
+
 ## Commands
 
 - Install: `yarn install`

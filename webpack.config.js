@@ -268,10 +268,6 @@ module.exports = function(env) {
         sanitize$: "xss",
         moment$: path.resolve(root_dir, "node_modules/moment/moment.js"),
         bitsharesjs$: path.resolve(root_dir, "node_modules/bitsharesjs/"),
-        "bitshares-ui-style-guide$": path.resolve(
-            root_dir,
-            "node_modules/bitshares-ui-style-guide/dist/main.js"
-        ),
         // Phase 8 (docs/UI_MIGRATION_PLAN.md): drop the `counterpart`
         // package in favor of a local, tested replacement covering the
         // exact subset of its API this app (and react-translate
