@@ -12258,6 +12258,58 @@ create/update/delete transaction signs and is accepted by the chain - no
 unlocked account or testnet was available. Try it on the testnet first
 (README, "Testnet").
 
+### 7.9 Cleanup (complete)
+
+A pass over what the migration left behind. Every step was verified with the
+full gates (tsc, eslint, Jest, a production webpack build) and, where it could
+change what users see, by booting the built bundle.
+
+- **Seven unused dependencies removed** (`package.json`, `yarn.lock`), then
+  `react-perf-devtool` and `react-autocomplete` (the latter had no importer;
+  the former only worked with React 16's User Timing marks and was never
+  reachable: the `start-perf` script passed its flag as a positional argument,
+  so `__PERFORMANCE_DEVTOOL__` was always false).
+  **`node-libs-browser` stays**: nothing imports it, but webpack 5 no longer
+  polyfills Node core modules and the `assert`/`events`/`stream`/... imports of
+  transitive dependencies resolve through it. Removing it broke the build with
+  25 module-not-found errors; do not remove it again because `depcheck` calls
+  it unused. (`depcheck` is wrong about more than that: webpack loaders,
+  `ProvidePlugin` globals and `assets/loader.js` all look unused to it.)
+- **28 dead source files deleted**: found with a comment-aware, transitive
+  import-reference graph (an early version miscounted commented-out imports and
+  `/* webpackChunkName */` lines; the final list was re-checked with grep
+  before deleting).
+- **Three components converted** from classes / plain JS to typed function
+  components, each with tests it did not have: `DisableCopyText`,
+  `DepositWithdrawAssetSelector`, `Deprecate`.
+- **`imports-test.ts`**: converting `Foo.js` to `Foo.tsx` left one importer
+  saying `./Foo.js`. `tsc` maps that to `Foo.tsx` and Jest never loads the
+  screen, so only `webpack` noticed. The test walks every static import,
+  `require` and dynamic `import()` in `app/` and fails on a specifier that
+  resolves to no file or package (the licensed `charting_library` download is
+  exempt).
+- **Dead SCSS removed, only where nothing can match**: `_existing_accounts.scss`
+  (two selectors, no element carries them), the unused `#console_input` /
+  `.console_div` rules (the live `code { margin-right }` stays), and
+  `.node-access-popup`, `.footer-status`, `.footer-block` with their theme
+  overrides. An experiment that dropped the whole `console`, `footer` and
+  `header` partials changed `/market` and `/create-account/password`
+  (`.footer`, `.v-align`, `ul.market-stats`, `.grp-menu-item` are live), so
+  those partials are kept; see §7.5 for why the rest of the global SCSS stays.
+- **React <=17 peers re-audited**: eleven packages still declare them, all are
+  in use and all work on React 18 (the boot smoke runs and the Jest suite
+  exercise them); nothing was changed.
+- **The 14 remaining class-component files** are left as classes on purpose.
+  Four are structural: `App` and `AppInit` (roots), `BindToChainState` (the
+  chain-subscription HOC every legacy screen uses) and `MarketStatsCheck` with
+  its two subclasses `EquivalentPrice` / `EquivalentValueComponent`, where
+  inheritance carries the subscription lifecycle. The two Highcharts wrappers
+  (`TransactionChart`, `BlocktimeChart`) rely on `shouldComponentUpdate` to
+  drive the chart imperatively. `MarketPrice`, `AmountSelector`, `Backup`,
+  `Barter` and the two prediction-market modals are already TypeScript; turning
+  them into hooks would be a behavior-risk rewrite for no user-visible gain, and
+  `Backup` is wallet-sensitive (AGENTS.md: minimal diffs).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12353,7 +12405,7 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 ## 12. Where this stands (end of the incremental migration)
 
 **Done and verified by automated gates** (tsc, eslint on changed files, Jest
-5,613 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
+5,780 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
 build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
@@ -12378,11 +12430,11 @@ introduced); each has a regression test or a measurable check.
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
   shared class names make scoping a class a multi-screen change that needs a
   fixture-rich environment to verify.
-- **~95 `.js`/`.jsx` files remain**, mostly `app/lib` services and API
-  helpers (AGENTS.md: reuse, don't rewrite), plus 17 files with class
-  components. 127 files use `useAltStore` and could move to `useSelector`;
+- **~76 `.js`/`.jsx` files remain**, mostly `app/lib` services and API
+  helpers (AGENTS.md: reuse, don't rewrite), plus 14 files with class
+  components, kept on purpose (§7.9). 127 files use `useAltStore` and could move to `useSelector`;
   optional cleanup, no behavior gain.
-- **Twelve dependencies declare React <=17 peers** (§7.4); none breaks on 18
+- **Eleven dependencies declare React <=17 peers** (§7.4, §7.9); none breaks on 18
   today, all are unmaintained.
 - **Phase 6 (wallet extension signing)** was never started: it needs the
   requester's confirmation of the extension/protocol first (§10, item 3).

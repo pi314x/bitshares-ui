@@ -14,9 +14,10 @@ passwords, or brainkeys.
 ## Current stack
 
 - React 18 (`createRoot` in `app/index.js`), TypeScript for new and migrated
-  code (about 470 `.ts`/`.tsx` files vs. about 95 remaining `.js`/`.jsx`,
-  mostly `app/lib` services and a few legacy entry points; 17 files still
-  contain class components), react-router-dom v6, SCSS.
+  code (about 470 `.ts`/`.tsx` files vs. about 76 remaining `.js`/`.jsx`,
+  mostly `app/lib` services and a few legacy entry points; 14 files still
+  contain class components - kept on purpose, see
+  `docs/UI_MIGRATION_PLAN.md` §7.9), react-router-dom v6, SCSS.
 - State: the Alt.js store/action API (`app/stores`, `app/actions`) is kept
   as a facade over Redux Toolkit slices (`app/store`); components read it
   through `useAltStore` (`app/next/hooks`), so legacy and migrated call
