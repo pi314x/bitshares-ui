@@ -111,7 +111,7 @@ LIVE_WEBSOCKET = r"""
       LiveWS._pump();
     }
     static _pump() {
-      while (LiveWS._active < 6 && LiveWS._queue.length) {
+      while (LiveWS._active < 12 && LiveWS._queue.length) {
         LiveWS._active++;
         Promise.resolve(LiveWS._queue.shift()()).finally(() => { LiveWS._active--; LiveWS._pump(); });
       }
@@ -144,6 +144,14 @@ def serve(dist, live_node=None):
             result = json.dumps({"error": {"code": -1, "message": str(exc)}}).encode()
         if not volatile:
             cache[key] = result
+        if os.environ.get("SMOKE_LOG_RPC"):
+            note = ""
+            try:
+                parsed = json.loads(result)
+                note = "ERROR " + json.dumps(parsed["error"])[:140] if parsed.get("error") else "ok %d bytes" % len(result)
+            except ValueError:
+                note = "non-JSON reply"
+            print("   RPC", payload["api"], payload["method"], json.dumps(payload["params"])[:70], "->", note, flush=True)
         return result
 
     class Handler(http.server.SimpleHTTPRequestHandler):
@@ -192,6 +200,9 @@ def main():
     ap.add_argument("--shots", help="directory for one screenshot per route (and boot.png)")
     ap.add_argument("--no-stub-chain", action="store_true", help="do not stub the WebSocket (boots to the init-error screen)")
     ap.add_argument("--live-node", help="relay chain calls to this node's HTTPS JSON-RPC endpoint (e.g. https://node.xbts.io/ws) instead of the canned stub")
+    ap.add_argument("--account", help="pre-select this account as the current (read-only, wallet stays locked) account, so dashboard/market/account screens render with that account's data (BitShares mainnet only)")
+    ap.add_argument("--dismiss", default="", help="comma-separated button labels to click when visible after boot and after each route (e.g. 'Not now' for the first-run gateway modal)")
+    ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
@@ -205,6 +216,15 @@ def main():
         page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)[:300]))
         page.on("console", lambda m: errors.append(m.text[:300]) if m.type == "error" else None)
+        if args.account:
+            # AccountStore persists these under `__graphene__<key>_<first 8 chars of chain id>`.
+            page.add_init_script(
+                "try { const n = %s; const c = '4018d784';"
+                " localStorage.setItem('__graphene__currentAccount_' + c, JSON.stringify(n));"
+                " localStorage.setItem('__graphene__passwordAccount_' + c, JSON.stringify(n));"
+                " localStorage.setItem('__graphene__starredAccounts_' + c, JSON.stringify({[n]: {name: n}})); } catch (e) {}"
+                % json.dumps(args.account)
+            )
         if args.live_node:
             page.add_init_script(LIVE_WEBSOCKET)
         elif not args.no_stub_chain:
@@ -213,6 +233,13 @@ def main():
         def boot():
             page.goto(base, wait_until="load")
             page.wait_for_timeout(args.boot_wait * 1000)
+
+        def dismiss():
+            for label in [l for l in args.dismiss.split(",") if l]:
+                button = page.get_by_role("button", name=label, exact=True)
+                if button.count():
+                    button.first.click()
+                    page.wait_for_timeout(500)
 
         def report(label):
             nonlocal failed
@@ -231,10 +258,30 @@ def main():
             return blank
 
         boot()
+        dismiss()
         if args.shots:
             os.makedirs(args.shots, exist_ok=True)
             page.screenshot(path=os.path.join(args.shots, "boot.png"))
         report("(boot)")
+
+        for label in [l for l in args.click.split(",") if l]:
+            button = page.get_by_role("button", name=label, exact=True)
+            if not button.count():
+                print(f"{'click ' + label:<34} (no such button)")
+                continue
+            button.first.click()
+            page.wait_for_timeout(int(args.route_wait * 1000))
+            if args.shots:
+                page.screenshot(path=os.path.join(args.shots, "click_" + label.replace(" ", "_") + ".png"))
+            if report("click " + label):
+                print("     (tree is blank - reloading the app)")
+                boot()
+                dismiss()
+                errors.clear()
+                page_errors.clear()
+            else:
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(300)
 
         for route in [r for r in args.routes.split(",") if r]:
             page.evaluate(
@@ -242,6 +289,7 @@ def main():
                 route,
             )
             page.wait_for_timeout(int(args.route_wait * 1000))
+            dismiss()
             if args.shots:
                 name = route.strip("/").replace("/", "_") or "root"
                 page.screenshot(path=os.path.join(args.shots, name + ".png"))
