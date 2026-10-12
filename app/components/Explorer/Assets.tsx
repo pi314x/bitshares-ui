@@ -52,7 +52,7 @@ import {Radio} from "../../design-system/Radio";
 import {Table} from "../../design-system/Table";
 import {Select} from "../../design-system/Select";
 import {Icon} from "../../design-system/Icon";
-import {List} from "antd";
+import {List} from "../../design-system/List";
 import SearchInput from "../Utility/SearchInput";
 import AssetStore from "stores/AssetStore";
 import {useAltStore} from "../../next/hooks/useAltStore";

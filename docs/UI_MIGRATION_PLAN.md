@@ -11746,6 +11746,29 @@ Verified (this follow-up): `tsc` clean, `eslint` 0 errors, `yarn test`
 5,560/5,560, build showing only the 2 known pre-existing
 `charting_library.esm` errors.
 
+**Follow-ups (b), (c), (d) done - no file imports `"antd"` any more.**
+Three more design-system components, each built only for the one real
+call site (grepped first, as for the other 24), tested, and visually
+checked in both themes via `yarn build-preview`:
+- `List` (`List.Item`, `List.Item.Meta`) for `Explorer/Assets.tsx`'s
+  prediction-market list: `dataSource`/`renderItem`, `size`, client-side
+  `pagination` (`itemLayout`/`pagination.position` accepted as no-ops),
+  `actions` right-aligned.
+- `Carousel` for `Layout/NewsHeadline.tsx`'s rotating banner: `autoplay`/
+  `autoplaySpeed`/`dots`, pause-on-hover like react-slick; no slide
+  transition animation.
+- `TreeSelect` for `Utility/NodeSelector.tsx` - the hard one: the
+  checkable multi-select tree with SHOW_PARENT semantics (a fully-checked
+  parent is represented by the parent alone; a parent value counts as all
+  descendants checked), inline search on node `value`, ancestors of
+  matches kept and auto-expanded, indeterminate parents, tag-remove, and
+  unknown persisted values kept rather than silently dropped. antd's
+  `getPopupContainer`/`dropdownPopupAlign` and `NodeSelector`'s empty
+  `#node-selector--drop-down` sibling div (which only hosted the popup)
+  are gone: the component positions its own dropdown.
+Verified: `tsc` clean, `eslint` 0 errors, `yarn test` 5,578/5,578 (+18),
+build showing only the 2 known pre-existing errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

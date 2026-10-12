@@ -92,7 +92,7 @@
 import * as React from "react";
 import {Alert} from "../../design-system/Alert";
 import {Icon} from "../../design-system/Icon";
-import {Carousel} from "antd";
+import {Carousel} from "../../design-system/Carousel";
 import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";
 import {hash} from "bitsharesjs";

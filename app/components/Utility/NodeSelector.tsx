@@ -10,8 +10,17 @@
 // instance (a class field initializer, evaluated in the constructor) -
 // replicated with a `useState` lazy initializer. The empty
 // `componentDidMount() {}` is dropped (confirmed dead - does nothing).
+//
+// UPDATE (docs/UI_MIGRATION_PLAN.md §7.3): moved off antd's `TreeSelect`
+// onto the design-system one, which *is* the checkable/SHOW_PARENT mode
+// this call site always used (so `treeCheckable`/`showCheckedStrategy`
+// are gone as props, not just renamed). `getPopupContainer`/
+// `dropdownPopupAlign` and the empty sibling `<div id="node-selector--
+// drop-down">` that only ever existed to host antd's popup directly
+// below the box are dropped: the design-system component positions its
+// own dropdown below the box.
 import * as React from "react";
-import {TreeSelect} from "antd";
+import {TreeSelect} from "../../design-system/TreeSelect";
 import {settingsAPIs, nodeRegions} from "api/apiConfig";
 import SettingsStore from "../../stores/SettingsStore";
 import SettingsActions from "../../actions/SettingsActions";
@@ -19,8 +28,6 @@ import counterpart from "counterpart";
 import {Icon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
-
-const {SHOW_PARENT} = TreeSelect;
 
 function getTreeData() {
     const nodesPerRegion: {[region: string]: any} = {};
@@ -93,24 +100,6 @@ function NodeSelector({onChange, size}: NodeSelectorProps) {
         }
     };
 
-    const tProps = {
-        treeData,
-        value: filteredApiServers,
-        onChange: onChangeValue,
-        treeCheckable: true,
-        showCheckedStrategy: SHOW_PARENT,
-        searchPlaceholder: counterpart.translate(
-            "connection.narrow_down_nodes"
-        ), // narrow_down_nodes_tooltip
-        size,
-        style: {
-            width: "88%"
-        },
-        key: "nodeSelector",
-        getPopupContainer: () => {
-            return document.getElementById("node-selector--drop-down");
-        }
-    };
     return (
         <React.Fragment>
             <div
@@ -120,12 +109,15 @@ function NodeSelector({onChange, size}: NodeSelectorProps) {
                 }}
             >
                 <TreeSelect
-                    {...(tProps as any)}
-                    dropdownPopupAlign={{
-                        points: ["tl", "bl"],
-                        offset: [0, 4],
-                        overflow: false
-                    }}
+                    key="nodeSelector"
+                    treeData={treeData}
+                    value={filteredApiServers}
+                    onChange={onChangeValue}
+                    searchPlaceholder={counterpart.translate(
+                        "connection.narrow_down_nodes"
+                    )}
+                    size={size as any}
+                    style={{width: "88%"}}
                 />
                 <Tooltip
                     title={counterpart.translate(
@@ -141,10 +133,6 @@ function NodeSelector({onChange, size}: NodeSelectorProps) {
                         type={"question-circle"}
                     />
                 </Tooltip>
-                <div
-                    id="node-selector--drop-down"
-                    className="node-selector--drop-down"
-                />
             </div>
         </React.Fragment>
     );
