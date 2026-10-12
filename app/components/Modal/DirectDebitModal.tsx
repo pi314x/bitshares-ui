@@ -127,7 +127,7 @@ import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Form} from "../../design-system/Form";
-import {DatePicker} from "antd";
+import {DatePicker} from "../../design-system/DatePicker";
 import ApplicationApi from "../../api/ApplicationApi";
 import moment from "moment";
 import {useAltStore} from "../../next/hooks/useAltStore";
@@ -470,12 +470,6 @@ function DirectDebitModal({
         mergeState({period: {amount, type}});
     };
 
-    const onDatepickerRef = (el: any) => {
-        if (el && el.picker.input) {
-            el.picker.input.readOnly = false;
-        }
-    };
-
     const onStartDateChanged = (utcValue: any) => {
         if (utcValue) {
             mergeState({period_start_time: utcValue});
@@ -709,7 +703,6 @@ function DirectDebitModal({
                                 onChange={onStartDateChanged}
                                 className="date-picker-width100"
                                 style={{width: "100%"}}
-                                ref={(el: any) => onDatepickerRef(el)}
                                 disabledDate={(current: any) =>
                                     current &&
                                     current < (moment as any)().add(2, "minutes")

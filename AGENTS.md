@@ -39,8 +39,8 @@ The `bitshares-ui-style-guide` npm package (an antd v3 wrapper) has been
 **removed** - nothing under `app/` imports it; use `app/design-system/*`
 (Button, Modal, Form, Input, Select, Table, Tabs, DatePicker, Collapse,
 ...). Two things still come from antd and are kept deliberately: `antd`
-itself is now an explicit dependency (5 files still import `List`,
-`TreeSelect`, `Carousel`, `DatePicker` from `"antd"` directly), and the
+itself is now an explicit dependency (3 files still import `List`,
+`TreeSelect`, `Carousel` from `"antd"` directly), and the
 global stylesheet is vendored at
 `app/assets/stylesheets/vendors/antd-bitshares-theme.css` (byte-for-byte
 the old package's `style.css`; committed with `git add -f` because of

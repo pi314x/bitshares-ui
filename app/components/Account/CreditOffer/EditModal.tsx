@@ -157,7 +157,6 @@ import {checkBalance} from "common/trxHelper";
 import {Asset, Price} from "../../../lib/common/MarketClasses";
 import Translate from "react-translate-component";
 import moment from "moment";
-import localeZH from "antd/es/date-picker/locale/zh_CN";
 import CreditOfferActions, {
     FEE_RATE_DENOM,
     listRepayPeriod
@@ -871,11 +870,6 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                                             placeholder={counterpart.translate(
                                                 "credit_offer.plh_select_validity_period"
                                             )}
-                                            locale={
-                                                props.currentLocale == "zh"
-                                                    ? localeZH
-                                                    : null
-                                            }
                                             style={{width: "100%"}}
                                             showTime={true}
                                             value={validity_period}

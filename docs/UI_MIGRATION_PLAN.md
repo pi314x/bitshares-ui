@@ -11677,7 +11677,8 @@ so a visual regression would not have been caught here:
    cascade order is unchanged.
 2. **`antd` itself.** It was never a direct dependency - it came in only
    transitively through the style guide (`antd ^3.26.20`) - yet five
-   files import from `"antd"` directly: `Explorer/Assets.tsx` (`List`),
+   files imported from `"antd"` directly when this step started (two of
+   them, the `DatePicker`s, were migrated right after - see below): `Explorer/Assets.tsx` (`List`),
    `Utility/NodeSelector.tsx` (`TreeSelect`), `Layout/NewsHeadline.tsx`
    (`Carousel`), and `Modal/DirectDebitModal.tsx`/`Exchange/BuySell.tsx`
    (`DatePicker`), plus `CreditOffer/{Create,Edit}Modal.tsx`'s
@@ -11712,20 +11713,38 @@ the `./vendors/` path error above.) Also confirmed: `tsc` clean with
 `charting_library.esm` errors, and no `bitshares-ui-style-guide` string in
 any emitted JS.
 
-**What is deliberately left, and why it is safe to defer:** the vendored
-CSS and `antd` stay until `List`/`TreeSelect`/`Carousel` (and the two
-direct `DatePicker`s, which could move to the design-system one as in
-§7.1) are replaced; `.ant-*` selectors in 17 SCSS files and a few TSX
-files target antd DOM that now exists only for those widgets, so they
-are dead-but-harmless CSS rather than a regression. Follow-ups, in
-rough order of effort: (a) `BuySell.tsx`/`DirectDebitModal.tsx`
-`DatePicker` -> design-system `DatePicker`, drop `localeZH`; (b) `List`
-in Explorer's prediction-market view; (c) `Carousel` in `NewsHeadline`;
-(d) `TreeSelect` in `NodeSelector` (the hard one - checkable,
-searchable tree); then delete `antd` + the vendored CSS and prune dead
-`.ant-*` selectors. Because the global look of every legacy
-screen depends on that stylesheet, (d) onward deserves a real browser
-visual pass against a live chain, which this environment cannot do.
+**Follow-up (a) done in the same pass:** `Exchange/BuySell.tsx` and
+`Modal/DirectDebitModal.tsx` now use the design-system `DatePicker`
+instead of `antd`'s, and `CreditOffer/{Create,Edit}Modal.tsx` dropped
+their `antd/es/date-picker/locale/zh_CN` import and the `locale` prop (a
+documented no-op on the native picker anyway). Same patterns as the
+earlier batches: `DirectDebitModal`'s `ref` -> `picker.input.readOnly =
+false` workaround dropped (a native input is never read-only);
+`BuySell`'s `picker.handleOpenChange(true/false)` replaced by a
+best-effort, try/catch-guarded `.showPicker()` via the forwarded ref -
+the "close" call has no native counterpart and is dropped, and the
+auto-open may be refused on that deliberately-hidden input (the same
+documented gap as `ScaledOrderTab.tsx`). `currentLocale` is still
+plumbed into the CreditOffer modals but no longer read; harmless.
+
+**What is deliberately left, and why it is safe to defer:** exactly three
+direct `"antd"` imports remain - `Explorer/Assets.tsx` (`List`),
+`Layout/NewsHeadline.tsx` (`Carousel`) and `Utility/NodeSelector.tsx`
+(`TreeSelect`) - so `antd` and the vendored stylesheet stay until those
+are replaced. `.ant-*` selectors in 17 SCSS files and a few TSX files
+target antd DOM that now exists only for those widgets, so they are
+dead-but-harmless CSS rather than a regression. Follow-ups, in rough
+order of effort: (b) `List` in Explorer's prediction-market view; (c)
+`Carousel` in `NewsHeadline`; (d) `TreeSelect` in `NodeSelector` (the hard
+one - checkable, searchable tree); then delete `antd` + the vendored CSS
+and prune dead `.ant-*` selectors. Because the global look of every
+legacy screen depends on that stylesheet, removing it deserves a real
+browser visual pass against a live chain, which this environment cannot
+do.
+
+Verified (this follow-up): `tsc` clean, `eslint` 0 errors, `yarn test`
+5,560/5,560, build showing only the 2 known pre-existing
+`charting_library.esm` errors.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

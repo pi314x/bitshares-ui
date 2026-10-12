@@ -87,7 +87,7 @@ import AssetName from "../Utility/AssetName";
 import {Asset} from "common/MarketClasses";
 import ExchangeInput from "./ExchangeInput";
 import assetUtils from "common/asset_utils";
-import {DatePicker} from "antd";
+import {DatePicker} from "../../design-system/DatePicker";
 import moment from "moment";
 import Icon from "../Icon/Icon";
 import SettleModal from "../Modal/SettleModal";
@@ -242,11 +242,21 @@ function BuySellInner(props: BuySellProps) {
         props.onBuy();
     };
 
+    // Best-effort replacement for antd's imperative `picker.handleOpenChange`
+    // (see `ScaledOrderTab.tsx`'s header for why `.showPicker()` can be
+    // refused on this intentionally-hidden input, and why there is no
+    // native "close" counterpart): never throws, may simply not open.
+    const openDatePicker = () => {
+        try {
+            datePickerRef.current?.showPicker?.();
+        } catch (err) {
+            // refused by the browser - missed auto-open only
+        }
+    };
+
     const onExpirationSelectChange = (e: any) => {
         if (e.target.value === "SPECIFIC") {
-            datePickerRef.current.picker.handleOpenChange(true);
-        } else {
-            datePickerRef.current.picker.handleOpenChange(false);
+            openDatePicker();
         }
 
         props.onExpirationTypeChange(e);
@@ -259,7 +269,7 @@ function BuySellInner(props: BuySellProps) {
             }
             firstClickRef.current = true;
             if (secondClickRef.current) {
-                datePickerRef.current.picker.handleOpenChange(true);
+                openDatePicker();
                 firstClickRef.current = false;
                 secondClickRef.current = false;
             }
