@@ -68,6 +68,14 @@ const CreditOfferPage = Loadable({
     loading: LoadingIndicator
 });
 
+const SametFundsPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "explorer" */ "./components/Account/SametFund/SametFundsPage"
+        ),
+    loading: LoadingIndicator
+});
+
 const Explorer = Loadable({
     loader: () =>
         import(
@@ -558,6 +566,10 @@ class App extends React.Component {
                                 <Route
                                     path="/credit-offer"
                                     element={<CreditOfferPage />}
+                                />
+                                <Route
+                                    path="/samet-funds"
+                                    element={<SametFundsPage />}
                                 />
                                 <Route
                                     path="/settings/:tab"

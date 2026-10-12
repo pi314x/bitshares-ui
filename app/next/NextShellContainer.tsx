@@ -18,7 +18,7 @@ import NextShell from "./NextShell";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
-import {RailNavGroup} from "../design-system/Rail";
+import {NAV_GROUPS, crumbFromPath} from "./navigation";
 import {useAltStore} from "./hooks/useAltStore";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
@@ -43,7 +43,6 @@ import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import SendModal from "components/Modal/SendModal";
 import DepositModal from "components/Modal/DepositModal";
 import WithdrawModal from "components/Modal/WithdrawModalNew";
-import {getDefaultMarket} from "branding";
 
 interface ImmutableSetLike<T> {
     toArray(): T[];
@@ -81,25 +80,6 @@ interface IntlStoreState {
     currentLocale: string;
 }
 
-const NAV_GROUPS: RailNavGroup[] = [
-    {
-        label: "Account",
-        items: [
-            {label: "Dashboard", to: "/", exact: true},
-            {label: "Accounts", to: "/accounts"},
-            {label: "Settings", to: "/settings"}
-        ]
-    },
-    {
-        label: "Markets",
-        items: [
-            {label: "Trade", to: `/market/${getDefaultMarket()}`},
-            {label: "Liquidity pools", to: "/pools"},
-            {label: "Explorer", to: "/explorer"}
-        ]
-    }
-];
-
 // The legacy `themes` setting has 3 values (darkTheme/lightTheme/
 // midnightTheme); this design system has 2. Reading collapses midnight
 // into dark (closest visual match); writing from here only ever picks
@@ -128,17 +108,6 @@ function RailThemeToggle() {
 export interface NextShellContainerProps {
     /** The real route content (App.jsx's <Switch>...</Switch>). */
     content: React.ReactNode;
-}
-
-// Capitalized first path segment as a stand-in breadcrumb (e.g. "/market/
-// BTS_CNY" -> "Market"). Real per-route breadcrumbs/titles are a Phase 2
-// concern (each migrated screen can pass its own); this just keeps the
-// topbar from lying with a hardcoded "Phase 1 shell preview" label now
-// that the shell wraps every route, not just /next.
-function crumbFromPath(pathname: string): string {
-    const segment = pathname.split("/").filter(Boolean)[0];
-    if (!segment) return "Dashboard";
-    return segment.charAt(0).toUpperCase() + segment.slice(1);
 }
 
 export default function NextShellContainer({
