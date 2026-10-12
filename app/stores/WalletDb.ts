@@ -55,6 +55,7 @@ import SettingsStore from "stores/SettingsStore";
 import {WalletTcomb} from "./tcomb_structs";
 import TransactionConfirmActions from "actions/TransactionConfirmActions";
 import WalletUnlockActions from "actions/WalletUnlockActions";
+import ExternalSignerActions from "actions/ExternalSignerActions";
 import PrivateKeyActions from "actions/PrivateKeyActions";
 import AccountActions from "actions/AccountActions";
 import {ChainStore, PrivateKey, key, Aes} from "bitsharesjs";
@@ -196,6 +197,18 @@ export class WalletDb {
         broadcast: any,
         extra_keys: any[] = []
     ) {
+        // The user chose the wallet extension and it is connected: it holds the
+        // keys, asks for its own approval and broadcasts, so none of the local
+        // unlock/sign path below applies. Off by default.
+        if ((ExternalSignerActions as any).isActive()) {
+            return (ExternalSignerActions as any).processTransaction(
+                tr,
+                signer_pubkeys,
+                broadcast,
+                extra_keys
+            );
+        }
+
         const passwordLogin = (SettingsStore as any)
             .getState()
             .settings.get("passwordLogin");

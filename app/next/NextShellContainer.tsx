@@ -13,7 +13,7 @@
 // component here, not reimplemented — docs/UI_MIGRATION_PLAN.md's
 // "reuse, don't rewrite" principle.
 import * as React from "react";
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import NextShell from "./NextShell";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
@@ -25,6 +25,7 @@ import {selectBlockchain} from "../store/slices/blockchainSlice";
 import {selectWalletUnlockState} from "../store/slices/walletUnlockSlice";
 import {selectSettingsState} from "../store/slices/settingsSlice";
 import {selectGateway} from "../store/slices/gatewaySlice";
+import {selectExternalSigningActive} from "../store/slices/externalSignerSlice";
 import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
@@ -123,6 +124,10 @@ export default function NextShellContainer({
     const gateway = useReduxState<GatewayStoreState>(selectGateway);
     const intl = useReduxState<IntlStoreState>(selectIntlState);
     const location = useLocation();
+    const navigate = useNavigate();
+    // While the wallet extension is the signer, the local wallet's lock state is
+    // moot: the pill says so and leads to the signing settings instead.
+    const extensionSigning = useReduxState(selectExternalSigningActive);
 
     const currentAccount = account.currentAccount || account.passwordAccount;
     const accounts = account.myActiveAccounts.toArray();
@@ -171,8 +176,13 @@ export default function NextShellContainer({
                 connectionStatus={blockchain.rpc_connection_status}
                 activeNode={activeNode}
                 nodeSelector={<NodeSelector />}
-                locked={walletUnlock.locked}
-                onToggleLock={onToggleLock}
+                locked={extensionSigning ? false : walletUnlock.locked}
+                onToggleLock={
+                    extensionSigning
+                        ? () => navigate("/settings/signing")
+                        : onToggleLock
+                }
+                lockLabel={extensionSigning ? "Extension" : null}
                 currentLocale={intl.currentLocale}
                 locales={settings.defaults.locale}
                 onSelectLocale={locale => IntlActions.switchLocale(locale)}

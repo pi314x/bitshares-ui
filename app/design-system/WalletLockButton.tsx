@@ -5,6 +5,9 @@ export interface WalletLockButtonProps {
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggle: () => void;
+    /** Replaces the Locked/Unlocked text (e.g. "Extension" while the wallet
+     * extension is the signer, where the local wallet's lock state is moot). */
+    label?: string | null;
 }
 
 // Replaces the legacy Header's lock/unlock indicator. Deliberately just
@@ -14,10 +17,12 @@ export interface WalletLockButtonProps {
 // and already exists; this button only needs to trigger it.
 export function WalletLockButton({
     locked,
-    onToggle
+    onToggle,
+    label: labelOverride
 }: WalletLockButtonProps): JSX.Element {
     const label =
-        locked === null ? "Wallet" : locked ? "Locked" : "Unlocked";
+        labelOverride ||
+        (locked === null ? "Wallet" : locked ? "Locked" : "Unlocked");
     return (
         <button type="button" className={styles.btn} onClick={onToggle}>
             <span

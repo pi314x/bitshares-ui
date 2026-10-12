@@ -33,6 +33,7 @@ import SettingsActions from "actions/SettingsActions";
 import WebsocketAddModal from "./WebsocketAddModal";
 import SettingsEntry from "./SettingsEntry";
 import AccountsSettings from "./AccountsSettings";
+import ExternalSignerSettings from "./ExternalSignerSettings";
 import WalletSettings from "./WalletSettings";
 import PasswordSettings from "./PasswordSettings";
 import RestoreSettings from "./RestoreSettings";
@@ -52,6 +53,7 @@ function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
     const menuEntries: string[] = ["general"];
     if (!passwordLogin) menuEntries.push("wallet");
     menuEntries.push("accounts");
+    menuEntries.push("signing");
     if (!passwordLogin) menuEntries.push("password");
     if (!passwordLogin) menuEntries.push("backup");
     if (!passwordLogin) menuEntries.push("restore");
@@ -333,6 +335,10 @@ export default function Settings(props: SettingsProps) {
 
         case "wallet":
             entries = <WalletSettings deprecated={deprecated} />;
+            break;
+
+        case "signing":
+            entries = <ExternalSignerSettings />;
             break;
 
         case "password":

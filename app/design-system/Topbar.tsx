@@ -20,6 +20,8 @@ export interface TopbarProps {
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
+    /** Overrides the lock button's text; see WalletLockButton. */
+    lockLabel?: string | null;
     currentLocale: string | null;
     locales: string[];
     onSelectLocale: (locale: string) => void;
@@ -38,6 +40,7 @@ export function Topbar({
     onSelectAccount,
     locked,
     onToggleLock,
+    lockLabel,
     currentLocale,
     locales,
     onSelectLocale,
@@ -77,7 +80,11 @@ export function Topbar({
                 locales={locales}
                 onSelect={onSelectLocale}
             />
-            <WalletLockButton locked={locked} onToggle={onToggleLock} />
+            <WalletLockButton
+                locked={locked}
+                onToggle={onToggleLock}
+                label={lockLabel}
+            />
             <AccountSwitcher
                 currentAccount={currentAccount}
                 accounts={accounts}

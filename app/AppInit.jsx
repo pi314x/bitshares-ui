@@ -40,6 +40,8 @@ import InitError from "./components/InitError";
 import SyncError from "./components/SyncError";
 import counterpart from "counterpart";
 import LogsActions from "actions/LogsActions";
+import ExternalSignerActions from "actions/ExternalSignerActions";
+import {startExternalAccountSync} from "stores/ExternalAccountSync";
 import NodeSelector from "./components/Utility/NodeSelector";
 /*
  * Electron does not support browserHistory, so we need to use hashHistory.
@@ -204,6 +206,10 @@ class AppInit extends React.Component {
                     apiError: false,
                     syncError: null
                 });
+                // Optional extension-based signing (off unless the user chose it):
+                // look for the extension now that the chain id is known.
+                startExternalAccountSync();
+                ExternalSignerActions.init();
             })
             .catch(err => {
                 console.log("willTransitionTo err:", err);

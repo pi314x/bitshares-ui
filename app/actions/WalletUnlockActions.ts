@@ -15,6 +15,7 @@
 // calling `WalletUnlockActions.change()` directly, a completely separate
 // path - grep-confirmed.
 import walletUnlockStore from "../stores/WalletUnlockStore";
+import ExternalSignerActions from "./ExternalSignerActions";
 
 class WalletUnlockActionsFacade {
     /** If you get resolved then the wallet is or was just unlocked.  If you get
@@ -32,6 +33,19 @@ class WalletUnlockActionsFacade {
             .catch(params => {
                 throw params;
             });
+    }
+
+    /**
+     * `unlock()` for the step before a transaction is built and signed. When
+     * the wallet extension is the chosen, connected signer there is nothing to
+     * unlock locally (the extension asks for its own approval), so this
+     * resolves at once; otherwise it is exactly `unlock()`. Screens that need
+     * the local wallet itself (viewing keys, decrypting memos, backups) keep
+     * calling `unlock()`.
+     */
+    unlockForSigning(): Promise<void> {
+        if ((ExternalSignerActions as any).isActive()) return Promise.resolve();
+        return this.unlock();
     }
 
     lock(): Promise<void> {

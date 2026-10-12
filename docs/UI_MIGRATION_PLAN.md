@@ -3038,6 +3038,10 @@ headers, specifically to make that review tractable.
   fixed-test-vector + second-reviewer bar as Phase 5 applies here too,
   since this is still money-moving code.
 
+**Progress:** the extension is `pi314x/bitshares-wallet-browser-extension`; a
+first opt-in increment (adapter, guards, Settings -> Signing, `process_transaction`
+delegation) is described in §7.11, with what is still unverified.
+
 ### Phase 7 — Gateways & deposit/withdraw bridges
 - **Scope note (per requester direction):** of the 7 gateway integrations
   (BlockTrades, Citadel, RuDex, Gdex, Xbtsx, Bitspark, Piratecash), this
@@ -12348,6 +12352,81 @@ preview build and every component test render screens without one.
   Prettier 1.x output (they were not formatted at `HEAD` either), so the diff
   keeps only the lines it had to change instead of reformatting whole files.
 
+### 7.11 Phase 6: signing with the wallet browser extension (first increment, opt-in)
+
+The extension is `pi314x/bitshares-wallet-browser-extension` (v0.8.7), the
+"purpose-built" option the Phase 6 text left open. The protocol below was read
+from its source (`src/content/inpage.js`, `inject.js`, the service worker and
+`wallet-manager.js`), not from its README, which disagrees with the code in one
+place (it documents `transfer({amount: {amount, asset_id}})`; the handler only
+accepts `amount` as a number or string). The app therefore uses only
+`connect`, `checkConnection`, `getChainId`, `isLocked`, `signTransaction` and
+`disconnect` on `window.bitsharesWallet`, and never `window.beet`.
+
+**What it does.** *Settings -> Signing* lets the user choose the **local wallet
+(default)** or the **wallet extension** and connect it. While the extension is
+chosen *and* connected:
+- `WalletDb.process_transaction` (the one place every screen signs through)
+  hands the transaction's operations to the extension, which shows its own
+  approval dialog, signs with its own key and broadcasts. No local unlock, no
+  key in this app. `WalletUnlockActions.unlockForSigning()` (used by
+  `ApplicationApi`) skips the local unlock only in this mode; screens that need
+  the local wallet itself (viewing keys, memo decryption, backup) still call
+  `unlock()`.
+- The extension's account is treated as the user's own in the UI
+  (`stores/ExternalAccountSync.ts`, plus one guarded early return in
+  `AccountStore.getMyAuthorityForAccount`), so Send, Trade, ... are enabled for
+  it. Nothing is persisted but the preference; the link is restored silently
+  (`checkConnection`) at startup. The top-bar lock pill reads "Extension".
+
+**Checked on every signing call** (`wallet-extension/adapter.ts`): the extension
+is unlocked, on the same chain id as this app, and connected as the account the
+operations act for; every authority-bearing account field of every operation
+must be that account. The extension's answers are treated as untrusted (shape
+checked, error text cut to its first line: it appends the whole operation JSON
+to broadcast errors).
+
+**Refused on purpose, with a message** (`wallet-extension/transaction.ts`):
+- **memos**: `signTransaction` serialises a plain-text memo as given, i.e.
+  **unencrypted on chain**, and this app has no memo key to encrypt it;
+- **a fee in a non-core asset**: the extension overwrites every fee with the
+  core-asset fee, so the user's fee-asset choice would be silently ignored;
+- **transactions not to be broadcast, and extra signing keys (balance claims)**:
+  the extension signs and broadcasts in one step and only holds its own keys.
+
+**An unknown outcome is not a failure.** The extension's content script gives up
+with a bare "Request timeout" after 60 s, which can fire after the user
+approved at 59 s and the transaction was signed and sent. That (and "Extension
+disconnected") is reported as *unknown outcome: check your account history
+before trying again*, never as a plain failure.
+
+**Verified.** 69 Jest suites / 5,893 tests (adapter against a fake that mirrors
+the documented protocol, transaction conversion, the `process_transaction`
+delegation incl. "the default path never changes and the local unlock is never
+touched in extension mode", the account sync, the settings panel); and in a real
+browser against the live node with the extension's **real `inpage.js`** loaded
+and a stub standing in for its background (it never broadcasts): connect sends
+`chain_id`, the app adopts the account, a Send of 1 BTS reaches the extension as
+exactly `[0, {from: 1.2.12376, to: 1.2.18503, amount: {amount: "100000",
+asset_id: "1.3.0"}, fee: {...}}]` after the lock, chain and account checks, and
+rejection, timeout and a broadcast error each show the right message. The local
+wallet lifecycle (create, backup, delete, restore, unlock) still passes
+unchanged. Screenshots: `docs/screenshots/signing-extension-*.png`.
+
+**Not done / needs a person.** Nothing here has signed a real transaction with
+the real extension (no Chrome extension was loaded; the stub answers for its
+background), so a run against a throwaway account on the testnet is still the
+real test, and a second reviewer should read `WalletDb.process_transaction`'s
+new first branch, `AccountStore.getMyAuthorityForAccount`'s early return and
+`wallet-extension/*`. Memos need an encryption path (the extension's `transfer`
+method encrypts, `signTransaction` does not). Findings in the extension itself
+(not changed from here): `signTransaction` leaves a memo unencrypted; its
+authority-field list lacks `owner_account` / `borrower` / `owner` (the node
+would still reject a wrong signer); the 60 s bridge timeout can fire after a
+late approval; the README's `transfer` example does not match the code and
+says the approval window is 2 minutes where the code uses 60 s;
+`BeetCompatAPI.requestIdentity` reads `.name` off `{account, balances}`.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12443,7 +12522,7 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 ## 12. Where this stands (end of the incremental migration)
 
 **Done and verified by automated gates** (tsc, eslint on changed files, Jest
-5,780 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
+5,893 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
 build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
@@ -12473,8 +12552,11 @@ introduced); each has a regression test or a measurable check.
   components, kept on purpose (§7.9).
 - **Eleven dependencies declare React <=17 peers** (§7.4, §7.9); none breaks on 18
   today, all are unmaintained.
-- **Phase 6 (wallet extension signing)** was never started: it needs the
-  requester's confirmation of the extension/protocol first (§10, item 3).
+- **Phase 6 (wallet extension signing)**: a first opt-in increment exists
+  (§7.11): the extension is `pi314x/bitshares-wallet-browser-extension`, signing
+  works for operations without memos and with a core-asset fee, and it has not
+  yet signed a real transaction with the real extension. Memos, a non-core fee
+  asset and balance claims are refused with a message.
 
 **Needs a human, cannot be done from an agent sandbox:**
 - A second-reviewer sign-off on the wallet/signing screens (Phase 5/§7.2:

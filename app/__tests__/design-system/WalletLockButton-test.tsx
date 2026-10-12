@@ -25,4 +25,18 @@ describe("design-system/WalletLockButton", () => {
         );
         expect(getByText("Wallet")).toBeTruthy();
     });
+
+    it("can show another label, such as the active signing method", () => {
+        const onToggle = jest.fn();
+        const {getByText, queryByText} = render(
+            <WalletLockButton
+                locked={false}
+                onToggle={onToggle}
+                label="Extension"
+            />
+        );
+        fireEvent.click(getByText("Extension"));
+        expect(onToggle).toHaveBeenCalledTimes(1);
+        expect(queryByText("Unlocked")).toBeNull();
+    });
 });

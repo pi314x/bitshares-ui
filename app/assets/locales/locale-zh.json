@@ -1227,6 +1227,29 @@
             "hello": "亲爱的BitShares用户"
         }
     },
+    "externalSigner": {
+        "title": "Wallet extension",
+        "intro": "Sign with the BitShares wallet browser extension instead of a wallet stored in this browser. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key.",
+        "method": "Signing method",
+        "local": "Local wallet (default)",
+        "extension": "Wallet extension",
+        "status_unknown": "Looking for the extension...",
+        "status_unavailable": "The BitShares wallet extension was not found in this browser.",
+        "status_disconnected": "The extension was found but is not connected.",
+        "status_connecting": "Waiting for you to approve the connection in the extension...",
+        "status_connected": "Connected as %(account)s.",
+        "locked": "The extension is locked. Unlock it before signing.",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "limits": "Not supported with the extension yet: memos (it would publish them unencrypted), a fee in an asset other than the core asset, and claiming balances. Use the local wallet for those.",
+        "noChain": "Not connected to a node yet, so the network cannot be checked.",
+        "noUnbroadcast": "The extension signs and broadcasts in one step, so a transaction cannot be signed without being sent.",
+        "noExtraKeys": "This transaction needs keys the extension does not hold. Use the local wallet for it.",
+        "notConnected": "The wallet extension is not connected.",
+        "waiting": "Approve the transaction in the BitShares wallet extension.",
+        "sent": "Transaction sent.",
+        "failed": "The extension did not sign the transaction: %(reason)s"
+    },
     "fees": {
         "title": "费率表"
     },
@@ -2311,7 +2334,9 @@
         "wallet_required_text": "你需要切换到钱包模式才能恢复旧的备份钱包文件，点击下方按钮继续。",
         "wallet_text": "管理本地钱包。",
         "wallets": "钱包管理",
-        "yes": "是"
+        "yes": "是",
+        "signing": "Signing",
+        "signing_text": "Choose how transactions are signed: with the wallet stored in this browser, or with the BitShares wallet browser extension."
     },
     "showcases": {
         "barter": {

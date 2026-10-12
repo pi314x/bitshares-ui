@@ -36,6 +36,7 @@ import {ChainStore, ChainValidation, FetchChain} from "bitsharesjs";
 import {Apis} from "bitsharesjs-ws";
 import AccountRefsStore from "stores/AccountRefsStore";
 import AddressIndex from "stores/AddressIndex";
+import ExternalSignerActions from "actions/ExternalSignerActions";
 import ls from "common/localStorage";
 import {
     patchState,
@@ -537,6 +538,14 @@ class AccountStoreFacade {
     */
     getMyAuthorityForAccount(account: any, recursion_count = 1): any {
         if (!account) return undefined;
+
+        // The wallet extension holds this account's keys and decides at signing
+        // time whether its authority is enough; the UI only needs to treat the
+        // account as the user's own (see `ExternalAccountSync.ts`).
+        if ((ExternalSignerActions as any).isActive()) {
+            const linked = (ExternalSignerActions as any).getState().account;
+            if (linked && account.get("id") === linked.accountId) return "full";
+        }
 
         const owner_authority = account.get("owner");
         const active_authority = account.get("active");

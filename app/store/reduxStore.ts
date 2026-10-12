@@ -46,6 +46,7 @@ import walletUnlockReducer from "./slices/walletUnlockSlice";
 import accountReducer from "./slices/accountSlice";
 import walletManagerReducer from "./slices/walletManagerSlice";
 import walletDbReducer from "./slices/walletDbSlice";
+import externalSignerReducer from "./slices/externalSignerSlice";
 
 const rootReducer = combineReducers({
     notification: notificationReducer,
@@ -69,7 +70,8 @@ const rootReducer = combineReducers({
     walletUnlock: walletUnlockReducer,
     account: accountReducer,
     walletManager: walletManagerReducer,
-    walletDb: walletDbReducer
+    walletDb: walletDbReducer,
+    externalSigner: externalSignerReducer
 });
 
 export const reduxStore = configureStore({

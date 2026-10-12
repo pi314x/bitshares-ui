@@ -28,6 +28,8 @@ export interface NextShellProps {
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
+    /** Overrides the lock button's text (see design-system/WalletLockButton). */
+    lockLabel?: string | null;
     currentLocale: string | null;
     locales: string[];
     onSelectLocale: (locale: string) => void;
@@ -57,6 +59,7 @@ function ShellChrome({
     onSelectAccount,
     locked,
     onToggleLock,
+    lockLabel,
     currentLocale,
     locales,
     onSelectLocale,
@@ -79,6 +82,7 @@ function ShellChrome({
                     onSelectAccount={onSelectAccount}
                     locked={locked}
                     onToggleLock={onToggleLock}
+                    lockLabel={lockLabel}
                     currentLocale={currentLocale}
                     locales={locales}
                     onSelectLocale={onSelectLocale}
