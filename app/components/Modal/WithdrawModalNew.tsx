@@ -15,7 +15,7 @@
 // (subscribes to GatewayStore/AssetStore/SettingsStore/MarketsStore) -
 // collapses into one container component resolving the same data
 // directly via `ChainStore` calls under `useChainStoreTick()` plus
-// `useAltStore()`, per this migration's established BindToChainState
+// `useReduxState()`, per this migration's established BindToChainState
 // replacement pattern (see e.g. `Brainkey.tsx`). `BalanceWrapper`'s own
 // `orders`/`balanceAssets` computation is not carried over: grepped, and
 // `WithdrawModalNew` never actually reads either prop - both were already
@@ -39,9 +39,6 @@ import DepositWithdrawAssetSelector from "../DepositWithdraw/DepositWithdrawAsse
 import Translate from "react-translate-component";
 import ExchangeInput from "components/Exchange/ExchangeInput";
 import AssetName from "../Utility/AssetName";
-import GatewayStore from "stores/GatewayStore";
-import AssetStore from "stores/AssetStore";
-import MarketsStore from "stores/MarketsStore";
 import MarketsActions from "actions/MarketsActions";
 import SettingsStore from "stores/SettingsStore";
 import Immutable from "immutable";
@@ -49,7 +46,6 @@ import {Asset, Price} from "common/MarketClasses";
 import utils from "common/utils";
 import MarketUtils from "common/market_utils";
 import AccountActions from "actions/AccountActions";
-import AccountStore from "stores/AccountStore";
 import FormattedAsset from "../Utility/FormattedAsset";
 import BalanceComponent from "../Utility/BalanceComponent";
 import QRScanner from "../QRAddressScanner";
@@ -75,7 +71,12 @@ import {checkBalance} from "common/trxHelper";
 import AccountSelector from "components/Account/AccountSelector";
 import {ChainStore} from "bitsharesjs";
 import {getAssetAndGateway, getIntermediateAccount} from "common/gatewayUtils";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectGateway} from "../../store/slices/gatewaySlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const gatewayBoolCheck = "withdrawalAllowed";
@@ -449,10 +450,10 @@ function WithdrawModalCore({
     hideModal,
     close
 }: WithdrawModalCoreProps) {
-    const gatewayState = useAltStore<any>(GatewayStore as any);
-    useAltStore<any>(AssetStore as any);
-    const settingsState = useAltStore<any>(SettingsStore as any);
-    const marketsState = useAltStore<any>(MarketsStore as any);
+    const gatewayState = useReduxState<any>(selectGateway);
+    useReduxState<any>(selectAsset);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
     const preferredCurrency = (SettingsStore as any).getSetting("unit");
     const marketStats = marketsState.allMarketStats;
     // `backedCoins` prop is passed straight through from the top-level
@@ -1483,7 +1484,7 @@ function WithdrawModalAccountContainer(
     props: WithdrawModalAccountContainerProps
 ) {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore as any);
+    const accountState = useReduxState<any>(selectAccountState);
     const currentAccountName = accountState.currentAccount;
     const account = currentAccountName
         ? (ChainStore as any).getAccount(currentAccountName)

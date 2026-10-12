@@ -9,7 +9,7 @@
 // directly-callable `setWalletObjct(wallet_object)` method (the
 // original's `_export("setWalletObjct")` - not Alt-dispatched, called
 // straight on the store singleton by `Wallet/Backup.tsx`) - so every
-// `useAltStore(BackupStore)` caller (`Login/WalletLogin.tsx`,
+// `BackupStore` caller (`Login/WalletLogin.tsx`,
 // `Login/DecryptBackup.tsx`, `Wallet/Backup.tsx`,
 // `Wallet/WalletUnlockModal.tsx`) and `BackupStore.setWalletObjct(...)`
 // keep working completely unchanged.

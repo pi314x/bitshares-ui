@@ -29,7 +29,7 @@
 // The outer `EquivalentPriceWrapper` (an `AltContainer` wrapping
 // `EquivalentPrice`, deriving `toAsset`/`allMarketStats` from
 // `SettingsStore`/`MarketsStore`) IS converted to a function component,
-// using `useAltStore(SettingsStore)`/`useAltStore(MarketsStore)` - this
+// using `useReduxState(selectSettingsState)`/`useReduxState(selectMarkets)` - this
 // outer layer has no lifecycle/inheritance of its own, so the usual
 // Container+Core translation applies cleanly. Store-derived props are
 // spread after the passed-in `{...props}`, matching alt-container's own
@@ -40,14 +40,15 @@
 // original's own `||`.
 import * as React from "react";
 import utils from "common/utils";
-import SettingsStore from "stores/SettingsStore";
 import FormattedPrice from "./FormattedPrice";
 import MarketStatsCheck from "./MarketStatsCheck";
 import MarketsStore from "stores/MarketsStore";
 import MarketUtils from "common/market_utils";
 import AssetWrapper from "./AssetWrapper";
 import {ChainStore} from "bitsharesjs";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const getFinalPrice = function(
     fromAsset: any,
@@ -138,8 +139,8 @@ interface EquivalentPriceWrapperProps {
 }
 
 function EquivalentPriceWrapper(props: EquivalentPriceWrapperProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
-    const marketsState = useAltStore<any>(MarketsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     const toAsset =
         props.toAsset || settingsState.settings.get("unit", "1.3.0");

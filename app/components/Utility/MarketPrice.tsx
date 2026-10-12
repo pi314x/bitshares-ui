@@ -38,18 +38,18 @@
 //
 // Structural change (same substitution used throughout this migration):
 // `connect(MarketPrice, {listenTo: [MarketsStore], getProps})` is
-// replaced by `useAltStore(MarketsStore)`. `AssetWrapper(MarketPriceInner,
+// replaced by `useReduxState(selectMarkets)`. `AssetWrapper(MarketPriceInner,
 // {propNames: ["quote", "base"]})` wrapping is kept exactly as-is around
 // the inner component (shared HOC, ported in this same batch - see
 // `AssetWrapper.tsx`'s own header comment), so `base`/`quote` are already
 // resolved chain `Asset` objects by the time `MarketPriceInner` runs.
 import * as React from "react";
 import cnames from "classnames";
-import MarketsStore from "stores/MarketsStore";
 import marketUtils from "common/market_utils";
 import FormattedPrice from "./FormattedPrice";
 import AssetWrapper from "./AssetWrapper";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 
 interface MarketPriceInnerProps {
     base?: any;
@@ -108,7 +108,7 @@ interface MarketPriceProps {
 }
 
 function MarketPrice(props: MarketPriceProps) {
-    const marketsState = useAltStore<any>(MarketsStore as any);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <WrappedMarketPriceInner

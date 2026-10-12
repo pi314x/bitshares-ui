@@ -83,7 +83,7 @@
 // with `fee_asset_symbol` merged in on top of the chain-resolved props
 // (no naming collision between the two, so merge order is immaterial
 // here). This is folded into the same `DepositWithdrawContentContainer`
-// below via `useAltStore(SettingsStore)`, the established
+// below via `useReduxState(selectSettingsState)`, the established
 // `connect(Component, {listenTo, getProps})` replacement.
 //
 // `UNSAFE_componentWillMount` (calls `_getDepositAddress()`, no args - it
@@ -225,14 +225,14 @@ import CopyButton from "../Utility/CopyButton";
 import Icon from "../Icon/Icon";
 import LoadingIndicator from "../LoadingIndicator";
 import {checkBalance} from "common/trxHelper";
-import SettingsStore from "stores/SettingsStore";
 import {openledgerAPIs} from "api/apiConfig";
 import {getWalletName} from "branding";
 import {Modal} from "../../design-system/Modal";
 import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import FeeAssetSelector from "components/Utility/FeeAssetSelector";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 interface DepositWithdrawContentProps {
@@ -989,7 +989,7 @@ function DepositWithdrawContent(props: DepositWithdrawContentProps) {
 
 function DepositWithdrawContentContainer(props: DepositWithdrawContentProps) {
     useChainStoreTick();
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const fee_asset_symbol = settingsState.settings.get("fee_asset");
 
     const sender = (ChainStore as any).getAccount(props.sender);

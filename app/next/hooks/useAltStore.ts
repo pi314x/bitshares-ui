@@ -1,8 +1,13 @@
-// Adapter between the new component tree and the legacy Alt.js flux
-// stores (docs/UI_MIGRATION_PLAN.md §6.2: "Adapter layer, not a parallel
-// backend"). New components read the SAME account/connection/settings data
-// the legacy Header/Footer read, through this hook, rather than duplicating
-// it — so there is one source of truth while both stacks are live.
+// Adapter between a component and a legacy flux-style store object
+// (`getState()` / `listen()` / `unlisten()`).
+//
+// Components read the Redux-backed stores with `useReduxState(selectX)`
+// instead (`./useReduxState.ts`). This hook is what remains for the two cases
+// that are not a single Redux slice selector:
+//   - `WalletDb`, whose state is a plain object that it mutates in place and
+//     announces through a version counter (`WalletUnlockModal.tsx`);
+//   - per-name `BrainkeyStore` instances (`Wallet/Brainkey.tsx`).
+// Both hold wallet material, so they were deliberately left as they were.
 import * as React from "react";
 
 export interface AltStore<T> {

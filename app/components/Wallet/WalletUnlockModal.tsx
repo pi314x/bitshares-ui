@@ -2,7 +2,7 @@
 // (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes to
 // the actual unlock/restore/backup flow. `AltContainer`'s `inject` map
 // (6 stores, several derived-value functions) becomes several
-// `useAltStore()` calls plus the same derivations computed inline.
+// `useReduxState()` calls plus the same derivations computed inline.
 //
 // Security-sensitive per AGENTS.md: this is the modal that collects the
 // wallet/account password and calls the now-ported, characterization-
@@ -21,7 +21,7 @@
 //    (but NOT the state/props commit itself) when nothing had actually
 //    changed - a pure performance guard against `AltContainer` re-running
 //    `inject`'s functions on every one of the 6 listened stores' updates.
-//    Hooks re-render whenever any `useAltStore`/`useState` dependency
+//    Hooks re-render whenever any `useReduxState`/`useState` dependency
 //    changes, which is standard, correct hooks behavior; this port does
 //    not attempt to replicate the exact shallow-equality skip, since
 //    doing so would need to skip *this component's own* state-triggered
@@ -56,7 +56,7 @@
 // store re-renders `AltContainer` (in practice, `WalletUnlockStore` via
 // `WalletUnlockActions.change()` inside `validate()`). This port computes
 // `isLocked` fresh on every render the same way, and the
-// `useAltStore(WalletUnlockStore)` subscription below provides the same
+// `useReduxState(selectWalletUnlockState)` subscription below provides the same
 // triggering re-render, so the reactivity timing matches.
 //
 // UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.2): moved
@@ -77,10 +77,6 @@ import * as React from "react";
 import ZfApi from "common/zfApi";
 import WalletDb from "stores/WalletDb";
 import WalletUnlockStore from "stores/WalletUnlockStore";
-import WalletManagerStore from "stores/WalletManagerStore";
-import BackupStore from "stores/BackupStore";
-import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import WalletActions from "actions/WalletActions";
 import BackupActions, {
@@ -118,6 +114,12 @@ import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import Translate from "react-translate-component";
 import Icon from "../Icon/Icon";
 import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectBackupState} from "../../store/slices/backupSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 
 function WalletUnlockModal({
     modalId = "unlock_wallet_modal2"
@@ -128,17 +130,17 @@ function WalletUnlockModal({
     // `withRouter` at this file's export below) - `useNavigate()`
     // replaces it.
     const navigate = useNavigate();
-    const walletUnlockState = useAltStore<any>(WalletUnlockStore as any);
-    const accountState = useAltStore<any>(AccountStore as any);
-    const walletManagerState = useAltStore<any>(WalletManagerStore as any);
+    const walletUnlockState = useReduxState<any>(selectWalletUnlockState);
+    const accountState = useReduxState<any>(selectAccountState);
+    const walletManagerState = useReduxState<any>(selectWalletManagerState);
     // Subscribing (not just reading getWallet() once) matters:
     // WalletDb.setState({wallet}) (from onCreateWallet/_updateWallet/etc.)
     // is what makes `dbWallet` refresh reactively here, exactly like the
     // original AltContainer's `stores={[..., WalletDb, ...]}` did.
     useAltStore<any>(WalletDb as any);
     const dbWallet = (WalletDb as any).getWallet();
-    const backupState = useAltStore<any>(BackupStore as any);
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const backupState = useReduxState<any>(selectBackupState);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     const currentWallet = walletManagerState.current_wallet;
     const walletNames = walletManagerState.wallet_names;

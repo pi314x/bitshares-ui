@@ -3,7 +3,7 @@
 // header for the overall migration approach). Preserves the exact
 // Alt-store interface every call site already relies on -
 // `getState()`, `listen(callback)`, `unlisten(callback)` - so every
-// `useAltStore(CreditOfferStore)` call site keeps working completely
+// legacy `CreditOfferStore` call site keeps working completely
 // unchanged. The state-mutating half of the original store's handlers
 // now lives in `../store/slices/creditOfferSlice.ts`; the other half
 // (pure side-effect chaining to further `CreditOfferActions` calls) now

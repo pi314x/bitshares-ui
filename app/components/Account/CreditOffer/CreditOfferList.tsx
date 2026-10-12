@@ -17,7 +17,7 @@
 // forwards `account`.
 //
 // `connect(CreditOfferList, {listenTo: [AccountStore, CreditOfferStore,
-// IntlStore], getProps() {...}})` is replaced by `useAltStore(...)` calls
+// IntlStore], getProps() {...}})` is replaced by `useReduxState(...)` calls
 // for all three stores in an outer `CreditOfferList` wrapper, passed down
 // to a `CreditOfferListCore` function - this migration's established
 // Container+Core split. `getProps()` doesn't derive `account` itself (it
@@ -52,7 +52,6 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import utils from "../../../lib/common/utils";
-import AccountStore from "stores/AccountStore";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Button} from "../../../design-system/Button";
 import {Table} from "../../../design-system/Table";
@@ -64,12 +63,13 @@ import CreditOfferActions, {
     FEE_RATE_DENOM,
     parsingTime
 } from "../../../actions/CreditOfferActions";
-import CreditOfferStore from "../../../stores/CreditOfferStore";
 import LinkToAssetById from "../../Utility/LinkToAssetById";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import moment from "moment";
-import IntlStore from "stores/IntlStore";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
+import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
+import {selectIntlState} from "../../../store/slices/intlSlice";
 
 interface CreditOfferListCoreProps {
     account: any;
@@ -354,9 +354,9 @@ interface CreditOfferListProps {
 }
 
 function CreditOfferList({account}: CreditOfferListProps) {
-    const accountState = useAltStore<any>(AccountStore);
-    const creditOfferState = useAltStore<any>(CreditOfferStore);
-    const intlState = useAltStore<any>(IntlStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const creditOfferState = useReduxState<any>(selectCreditOffer);
+    const intlState = useReduxState<any>(selectIntlState);
 
     return (
         <CreditOfferListCore

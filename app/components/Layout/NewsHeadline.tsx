@@ -9,10 +9,10 @@
 // Structural change (not a behavior change): the original's
 // `connect(NewsHeadline, {listenTo: [SettingsStore], getProps() {return
 // {hiddenNewsHeadline: SettingsStore.getState().hiddenNewsHeadline};}})`
-// is replaced by an outer `NewsHeadline` wrapper calling `useAltStore
+// is replaced by an outer `NewsHeadline` wrapper calling `useReduxState
 // (SettingsStore)` and passing the derived `hiddenNewsHeadline` into
 // `NewsHeadlineCore`, following this migration's established `connect`
-// -> `useAltStore` translation (e.g. `AccountPortfolioList.tsx`'s header
+// -> `useReduxState` translation (e.g. `AccountPortfolioList.tsx`'s header
 // comment). Prop precedence is preserved exactly: alt-react's `connect`
 // renders `<Component {...this.props} {...this.getNextProps()} />`, i.e.
 // store-derived props always win - the wrapper spreads `{...props}`
@@ -94,10 +94,10 @@ import {Alert} from "../../design-system/Alert";
 import {Icon} from "../../design-system/Icon";
 import {Carousel} from "../../design-system/Carousel";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import {hash} from "bitsharesjs";
 import {getNotifications} from "../../lib/chain/onChainConfig";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const getNewsItemHash = (news: any) => {
     return hash
@@ -228,7 +228,7 @@ function NewsHeadlineCore(props: {hiddenNewsHeadline: any}) {
 }
 
 export default function NewsHeadline(props: NewsHeadlineProps) {
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <NewsHeadlineCore

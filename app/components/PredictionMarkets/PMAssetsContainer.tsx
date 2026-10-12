@@ -21,15 +21,15 @@
 //
 // `connect(PMAssetsContainer, {listenTo() {return [AssetStore,
 // MarketsStore]}, getProps() {...}})` is replaced with two
-// `useAltStore(...)` calls, this migration's established Alt.js-store
-// adapter (`app/next/hooks/useAltStore.ts`). Only `AssetStore`'s
+// `useReduxState(...)` calls, this migration's established Alt.js-store
+// adapter (`app/next/hooks/useReduxState.ts`). Only `AssetStore`'s
 // `assets` is actually read anywhere in this file; `MarketsStore`'s
 // derived props (`bucketSize`/`currentGroupOrderLimit`/
 // `marketLimitOrders`) were part of the original `getProps()` but never
-// read anywhere in this file either - `useAltStore(MarketsStore)` is
+// read anywhere in this file either - `useReduxState(selectMarkets)` is
 // still called (its return value discarded, same precedent as
 // `Account/CreateAccount.tsx`/`CreateAccountPassword.tsx`'s
-// `useAltStore(AccountStore);`) purely to preserve the original's
+// `useReduxState(AccountStore);`) purely to preserve the original's
 // re-render-on-`MarketsStore`-change subscription.
 //
 // Split into an outer store-subscribing `PMAssetsContainer` and an inner
@@ -62,14 +62,14 @@
 // first.
 import * as React from "react";
 import AssetActions from "actions/AssetActions";
-import AssetStore from "stores/AssetStore";
 import PredictionMarkets from "./PredictionMarkets";
-import MarketsStore from "../../stores/MarketsStore";
 import {getPredictionMarketIssuers} from "../../lib/chain/onChainConfig";
 import {ChainStore, FetchChainObjects} from "bitsharesjs";
 import assetUtils from "common/asset_utils";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 
 const _convertPredictionMarketForUI = (asset: any) => {
     let market_fee = 0;
@@ -253,8 +253,8 @@ function PMAssetsContainerCore({assets}: PMAssetsContainerCoreProps) {
 }
 
 function PMAssetsContainer() {
-    const assetState = useAltStore<any>(AssetStore);
-    useAltStore(MarketsStore);
+    const assetState = useReduxState<any>(selectAsset);
+    useReduxState(selectMarkets);
 
     return <PMAssetsContainerCore assets={assetState.assets} />;
 }

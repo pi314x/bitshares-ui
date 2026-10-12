@@ -27,7 +27,7 @@
 //
 // `connect(TransactionConfirm, {listenTo: () => [TransactionConfirmStore],
 // getProps: () => TransactionConfirmStore.getState()})` becomes
-// `useAltStore(TransactionConfirmStore)` (per `useAltStore.ts`'s header
+// `useReduxState(selectTransactionConfirm)` (per `useReduxState.ts`'s header
 // comment, the hooks replacement for this exact Alt.js `connect` pattern),
 // read once in the default-exported wrapper and spread as this component's
 // props - `TransactionConfirmStore`'s state shape (`transaction`, `error`,
@@ -47,7 +47,7 @@
 // runs for the initial mount) or via its exported `reset()` method, which
 // assigns `this.state` directly (`this.state = this.getInitialState()`)
 // rather than going through Alt's `this.setState(...)`, so it never emits
-// a change event `connect`/`useAltStore` would even see. Every other Alt
+// a change event `connect`/`useReduxState` would even see. Every other Alt
 // action handler (`onConfirm`/`onClose`/`onBroadcast`/`onWasBroadcast`/
 // `onWasIncluded`/`onError`/`onTogglePropose`/`onProposeFeePayingAccount`)
 // merges partial state via `this.setState(...)` without ever touching
@@ -96,7 +96,6 @@ import Transaction from "./Transaction";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import TransactionConfirmActions from "actions/TransactionConfirmActions";
-import TransactionConfirmStore from "stores/TransactionConfirmStore";
 import Icon from "../Icon/Icon";
 import WalletDb from "stores/WalletDb";
 import AccountStore from "stores/AccountStore";
@@ -110,7 +109,8 @@ import {Icon as AIcon} from "../../design-system/Icon";
 import {Alert} from "../../design-system/Alert";
 import {Switch} from "../../design-system/Switch";
 import QRCode from "qrcode.react";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectTransactionConfirm} from "../../store/slices/transactionConfirmSlice";
 
 interface TransactionConfirmCoreProps {
     transaction: any;
@@ -512,7 +512,7 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
 }
 
 function TransactionConfirm() {
-    const storeState = useAltStore<any>(TransactionConfirmStore as any);
+    const storeState = useReduxState<any>(selectTransactionConfirm);
     return <TransactionConfirmCore {...storeState} />;
 }
 

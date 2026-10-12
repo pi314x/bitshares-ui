@@ -14,7 +14,7 @@
 // `connect(AccountRegistrationConfirm, {listenTo: [AccountStore],
 // getProps: () => ({})})` - same "re-render-only, no injected props"
 // pattern as `AccountRegistrationForm.tsx` - replicated with
-// `useAltStore(AccountStore)` called purely for its re-render-on-change
+// `useReduxState(selectAccountState)` called purely for its re-render-on-change
 // side effect (`createAccount` reads `AccountStore.getState()
 // .referralAccount` directly, not through props). `shouldComponentUpdate`
 // (a pure `state.confirmed` comparison) dropped - no hooks equivalent,
@@ -66,7 +66,8 @@ import {Checkbox} from "../../design-system/Checkbox";
 import {Form} from "../../design-system/Form";
 import {Alert} from "../../design-system/Alert";
 import CopyButton from "../Utility/CopyButton";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface AccountRegistrationConfirmState {
     confirmed: boolean;
@@ -85,7 +86,7 @@ function AccountRegistrationConfirm({
     password,
     history
 }: AccountRegistrationConfirmProps) {
-    useAltStore<any>(AccountStore);
+    useReduxState<any>(selectAccountState);
 
     const [state, setState] = React.useState<AccountRegistrationConfirmState>(
         {confirmed: false}

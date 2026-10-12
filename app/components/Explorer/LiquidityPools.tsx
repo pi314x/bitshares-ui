@@ -38,13 +38,13 @@ import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import AssetName from "../Utility/AssetName";
 import SearchInput from "../Utility/SearchInput";
-import PoolmartStore from "../../stores/PoolmartStore";
 import PoolmartActions from "../../actions/PoolmartActions";
 import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
 import AccountStore from "../../stores/AccountStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectPoolmart} from "../../store/slices/poolmartSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
@@ -52,7 +52,7 @@ const TypedLink = Link as React.ComponentType<LinkProps>;
 
 export default function LiquidityPools() {
     useChainStoreTick();
-    const poolmartState = useAltStore<any>(PoolmartStore);
+    const poolmartState = useReduxState<any>(selectPoolmart);
     const liquidityPools: Immutable.Map<string, any> =
         poolmartState.liquidityPools;
     const lastPoolId: string | null = poolmartState.lastPoolId;

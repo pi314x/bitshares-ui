@@ -18,20 +18,20 @@
 // picked up a *new* `settings` value) when `AccountStore` fired a change
 // event (or this tree re-rendered for some unrelated reason) -
 // `SettingsStore` was never itself registered as a trigger. Reproduced
-// here by subscribing to `AccountStore` via `useAltStore` (so this
+// here by subscribing to `AccountStore` via `useReduxState` (so this
 // component re-renders on every `AccountStore` change) but reading
 // `SettingsStore.getState().settings` as a plain, non-subscribed call
 // during render - a `SettingsStore`-only change does not, by itself,
 // cause this component (or anything downstream of it) to re-render or
 // re-propagate the new settings, exactly as before.
 import * as React from "react";
-import AccountStore from "stores/AccountStore";
 import SettingsStore from "stores/SettingsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import BrowserNotifications from "./BrowserNotifications";
 
 export default function BrowserNotificationsContainer() {
-    const accountState = useAltStore<any>(AccountStore as any);
+    const accountState = useReduxState<any>(selectAccountState);
     const account = accountState.currentAccount;
     const settings = (SettingsStore as any).getState().settings;
 

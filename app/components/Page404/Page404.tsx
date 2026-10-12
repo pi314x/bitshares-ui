@@ -7,9 +7,9 @@
 // Structural change (not a behavior change): the original's
 // `connect(Page404, {listenTo: [SettingsStore], getProps() {return
 // {theme: SettingsStore.getState().settings.get("themes")};}})` is
-// replaced by an outer `Page404` wrapper calling `useAltStore
+// replaced by an outer `Page404` wrapper calling `useReduxState
 // (SettingsStore)` and passing the derived `theme` into `Page404Core`,
-// following this migration's established `connect` -> `useAltStore`
+// following this migration's established `connect` -> `useReduxState`
 // translation (e.g. `AccountPortfolioList.tsx`'s header comment). Prop
 // precedence is preserved exactly: alt-react's `connect` renders
 // `<Component {...this.props} {...this.getNextProps()} />`, i.e.
@@ -24,9 +24,9 @@
 // default-parameter destructure in `Page404Core`.
 import * as React from "react";
 import {Link} from "react-router-dom";
-import SettingsStore from "stores/SettingsStore";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 // `Link` is cast to a loosely-typed component, matching the established
 // workaround already in use elsewhere in this migration (see
@@ -95,7 +95,7 @@ function Page404Core(props: Page404Props) {
 }
 
 export default function Page404(props: Page404Props) {
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const theme = settingsState.settings.get("themes");
 
     return <Page404Core {...props} theme={theme} />;

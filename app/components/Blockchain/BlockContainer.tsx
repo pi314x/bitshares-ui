@@ -8,7 +8,7 @@
 // `BlockchainStore` change and stayed live - unlike `FeesContainer.jsx`'s
 // static `inject` value) and to re-render on `BlockchainStore` changes
 // (`stores={[BlockchainStore]}`). Both are covered by this migration's
-// standard `useAltStore` adapter hook (`app/next/hooks/useAltStore.ts`),
+// standard `useReduxState` adapter hook (`app/next/hooks/useReduxState.ts`),
 // which subscribes to the store and always returns its current state -
 // the same, always-fresh behavior the original's function-form `inject`
 // already had.
@@ -26,8 +26,8 @@
 // - none appear; this file and `Block.jsx` only read and display
 // already-broadcast block/transaction data.
 import * as React from "react";
-import BlockchainStore from "stores/BlockchainStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBlockchain} from "../../store/slices/blockchainSlice";
 import Block from "./Block";
 
 interface BlockContainerProps {
@@ -36,7 +36,7 @@ interface BlockContainerProps {
 }
 
 export default function BlockContainer(props: BlockContainerProps) {
-    const blockchainState = useAltStore<any>(BlockchainStore);
+    const blockchainState = useReduxState<any>(selectBlockchain);
     const height = parseInt(props.match.params.height, 10);
     const txIndex = props.match.params.txIndex
         ? parseInt(props.match.params.txIndex)

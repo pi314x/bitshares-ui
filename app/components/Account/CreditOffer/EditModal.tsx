@@ -49,7 +49,7 @@
 //   migration's `shouldComponentUpdate`-drop precedent of only ever
 //   affecting render frequency, never output; see e.g.
 //   `AccountPortfolioList.tsx`'s header comment for the same class of
-//   change). Only `SettingsStore` is read, via `useAltStore`, for
+//   change). Only `SettingsStore` is read, via `useReduxState`, for
 //   `currentLocale`.
 //
 // `getDataState(itemData)` (building the full "edit an existing offer"
@@ -134,7 +134,6 @@
 // bare `catch (err)` as `unknown`.
 import * as React from "react";
 import counterpart from "counterpart";
-import SettingsStore from "stores/SettingsStore";
 import {ChainStore} from "bitsharesjs";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Table} from "../../../design-system/Table";
@@ -161,7 +160,8 @@ import CreditOfferActions, {
     FEE_RATE_DENOM,
     listRepayPeriod
 } from "../../../actions/CreditOfferActions";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../../store/slices/settingsSlice";
 
 const getUninitializedFeeAmount = () =>
     new (Asset as any)({amount: 0, asset_id: "1.3.0"});
@@ -1118,7 +1118,7 @@ interface EditModalProps {
 }
 
 export default function EditModal({refCallback, ...rest}: EditModalProps) {
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const currentLocale = settingsState.settings.get("locale");
 
     return (

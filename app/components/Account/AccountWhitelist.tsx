@@ -16,7 +16,7 @@
 //   (this.tempComponent)` is what the original HOC falls back to when a
 //   `tempComponent` option is set.
 // - `AccountList`'s `connect(Component, {listenTo, getProps})` is
-//   replaced by `useAltStore(SettingsStore)`.
+//   replaced by `useReduxState(selectSettingsState)`.
 //
 // Dropped as confirmed dead: the outer `<div ref="appTables">` legacy
 // string ref - grepped the whole file, `this.refs.appTables` is never
@@ -24,7 +24,6 @@
 import * as React from "react";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import SettingsStore from "stores/SettingsStore";
 import {Tabs, Tab} from "../Utility/Tabs";
 import constants from "chain/account_constants.js";
 import AccountSelector from "../Account/AccountSelector";
@@ -33,7 +32,8 @@ import Translate from "react-translate-component";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import WalletApi from "api/WalletApi";
 import WalletDb from "stores/WalletDb";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface AccountRowCoreProps {
     account: any;
@@ -178,7 +178,7 @@ function AccountListCore({
 type AccountListProps = Omit<AccountListCoreProps, "settings">;
 
 function AccountList(props: AccountListProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     return <AccountListCore {...props} settings={settingsState.settings} />;
 }
 

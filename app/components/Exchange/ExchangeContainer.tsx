@@ -43,13 +43,13 @@
 //    *before* any store is ever touched, matching the original never
 //    mounting its `AltContainer` at all for a degenerate "same asset
 //    twice" URL) and an inner `ExchangeContainerCore` (all five
-//    `useAltStore` subscriptions, this migration's standard `connect`/
+//    `useReduxState` subscriptions, this migration's standard `connect`/
 //    `AltContainer` replacement, applied per-store since the original's
 //    `inject` functions each read from a specific store rather than
 //    from one). `GatewayStore` is read via a plain, non-subscribed
 //    `GatewayStore.getState()` call each render, reproducing the exact
 //    "not in `stores`" quirk above rather than "fixing" it into a sixth
-//    `useAltStore` subscription.
+//    `useReduxState` subscription.
 //
 //    `dataFeed: () => new DataFeed()` is a function-valued `inject`
 //    entry, so the original constructs a *brand-new* `DataFeed`
@@ -167,19 +167,20 @@
 // creating an actual runtime binding, so the exact same
 // `ReferenceError` still occurs at runtime, unchanged.
 import * as React from "react";
-import MarketsStore from "stores/MarketsStore";
-import AccountStore from "stores/AccountStore";
 import SettingsStore from "stores/SettingsStore";
 import GatewayStore from "stores/GatewayStore";
-import IntlStore from "stores/IntlStore";
-import WalletUnlockStore from "stores/WalletUnlockStore";
 import Exchange from "./Exchange";
 import {ChainStore, EmitterInstance} from "bitsharesjs";
 import MarketsActions from "actions/MarketsActions";
 import {DataFeed} from "components/Exchange/tradingViewClasses";
 import Page404 from "../Page404/Page404";
 import LoadingIndicator from "../LoadingIndicator";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectIntlState} from "../../store/slices/intlSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 // See the header comment's last paragraph: intentionally not imported,
@@ -201,11 +202,11 @@ function ExchangeContainerCore(props: {
 }) {
     const {symbols} = props;
 
-    const marketsState = useAltStore<any>(MarketsStore);
-    const accountState = useAltStore<any>(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
-    const walletUnlockState = useAltStore<any>(WalletUnlockStore);
-    const intlState = useAltStore<any>(IntlStore);
+    const marketsState = useReduxState<any>(selectMarkets);
+    const accountState = useReduxState<any>(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const walletUnlockState = useReduxState<any>(selectWalletUnlockState);
+    const intlState = useReduxState<any>(selectIntlState);
 
     // `GatewayStore` is read fresh every render but *not* subscribed -
     // see header comment.

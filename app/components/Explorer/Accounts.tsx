@@ -15,7 +15,7 @@
 // see TotalBalanceValue.tsx), so plain state updates already re-render;
 // the one thing that still needs an explicit subscription is
 // `accountContacts` itself, which comes from `AccountStore` rather than
-// local state - handled below with `useAltStore(AccountStore)` instead
+// local state - handled below with `useReduxState(selectAccountState)` instead
 // of a forceUpdate call.
 import * as React from "react";
 import {Link, LinkProps} from "react-router-dom";
@@ -25,13 +25,13 @@ import AccountActions from "actions/AccountActions";
 import {debounce} from "lodash-es";
 import Icon from "../Icon/Icon";
 import BalanceComponent from "../Utility/BalanceComponent";
-import AccountStore from "stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {Table} from "../../design-system/Table";
 import {Select} from "../../design-system/Select";
 import SearchInput from "../Utility/SearchInput";
 import {ChainStore} from "bitsharesjs";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
@@ -48,7 +48,7 @@ interface AccountRow {
 
 export default function Accounts() {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const searchAccounts: Immutable.Map<string, string> =
         accountState.searchAccounts;
     const accountContacts = accountState.accountContacts;

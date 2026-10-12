@@ -5,7 +5,7 @@
 // `getState()`, `listen(callback)`, `unlisten(callback)`, plus the
 // original's plain (non-`onXxx`) `reset()` method, exported via Alt's
 // `exportPublicMethods({reset: this.reset.bind(this)})` - so every
-// `useAltStore(TransactionConfirmStore)` hook caller and every remaining
+// legacy `TransactionConfirmStore` caller and every remaining
 // direct `.listen()`/`.unlisten()`/`.reset()` caller (e.g. `SendModal.tsx`,
 // `XbtsFiat.tsx`, `WalletRegistrationForm.tsx`, `CreateAccount.tsx`,
 // `CreateAccountPassword.tsx`, `InvoicePay.tsx`) keeps working completely

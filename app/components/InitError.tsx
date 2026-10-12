@@ -10,8 +10,8 @@
 // getProps})` - unlike the sibling `SyncError.tsx`, every field returned
 // by `getProps()` here (`rpc_connection_status`, `apis`, `apiServer`,
 // `defaultConnection`) is genuinely read somewhere in the file (grepped) -
-// replicated with `useAltStore(BlockchainStore)` +
-// `useAltStore(SettingsStore)`.
+// replicated with `useReduxState(selectBlockchain)` +
+// `useReduxState(selectSettingsState)`.
 //
 // `UNSAFE_componentWillReceiveProps` (dispatches `SettingsActions
 // .showWS(nextProps.apiServer)` when the connection just opened and
@@ -41,8 +41,6 @@
 // past the stricter required-prop type rather than inventing handlers
 // that were never there.
 import * as React from "react";
-import BlockchainStore from "stores/BlockchainStore";
-import SettingsStore from "stores/SettingsStore";
 import Translate from "react-translate-component";
 import WebsocketAddModal from "./Settings/WebsocketAddModal";
 import SettingsActions from "actions/SettingsActions";
@@ -52,15 +50,17 @@ import {Select} from "../design-system/Select";
 import {Button} from "../design-system/Button";
 import {Input} from "../design-system/Input";
 import counterpart from "counterpart";
-import {useAltStore} from "../next/hooks/useAltStore";
+import {useReduxState} from "../next/hooks/useReduxState";
+import {selectBlockchain} from "../store/slices/blockchainSlice";
+import {selectSettingsState} from "../store/slices/settingsSlice";
 
 const WebsocketAddModalAny = WebsocketAddModal as any;
 
 const optionalApis = {enableCrypto: true, enableOrders: true};
 
 export default function InitError() {
-    const blockchainState = useAltStore<any>(BlockchainStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    const blockchainState = useReduxState<any>(selectBlockchain);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     const rpc_connection_status = blockchainState.rpc_connection_status;
     const apis = settingsState.defaults.apiServer;

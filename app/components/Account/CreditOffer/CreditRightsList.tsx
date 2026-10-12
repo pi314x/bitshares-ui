@@ -10,12 +10,12 @@
 // Structural change (not a behavior change): the original's
 // `connect(CreditRightsList, {listenTo: [AccountStore, CreditOfferStore],
 // getProps})` is replaced by a small container component calling
-// `useAltStore` once per store, matching this migration's established
+// `useReduxState` once per store, matching this migration's established
 // `connect` replacement pattern. `getProps()`'s `currentAccount`/
 // `passwordAccount` (from `AccountStore`) are grep-confirmed never read
 // anywhere in this file (only `props.account` - passed directly by the
 // caller, not store-derived - and `props.dealsByOfferOwner`, from
-// `CreditOfferStore`, are read) - `useAltStore(AccountStore)` is still
+// `CreditOfferStore`, are read) - `useReduxState(selectAccountState)` is still
 // called (return value discarded) purely to preserve the
 // `listenTo`-driven re-render-on-`AccountStore`-change behavior, same
 // precedent as `Account/CreditOffer/CreateModal.tsx`'s container.
@@ -34,8 +34,6 @@
 // `<CreditRightsList account={this.props.account} />`, with no `ref`.
 import * as React from "react";
 import counterpart from "counterpart";
-import AccountStore from "../../../stores/AccountStore";
-import CreditOfferStore from "../../../stores/CreditOfferStore";
 import {Table} from "../../../design-system/Table";
 import CreditOfferActions, {
     FEE_RATE_DENOM
@@ -43,7 +41,9 @@ import CreditOfferActions, {
 import LinkToAccountById from "../../Utility/LinkToAccountById";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import moment from "moment";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
+import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
 
 interface CreditRightsListCoreProps {
     account: any;
@@ -158,8 +158,8 @@ function CreditRightsList(props: CreditRightsListProps) {
     // Preserves `listenTo: [AccountStore, CreditOfferStore]`'s re-render
     // cadence - `currentAccount`/`passwordAccount` (AccountStore) are
     // grep-confirmed unused downstream, see header comment.
-    useAltStore(AccountStore);
-    const creditOfferState = useAltStore<any>(CreditOfferStore);
+    useReduxState(selectAccountState);
+    const creditOfferState = useReduxState<any>(selectCreditOffer);
 
     return (
         <CreditRightsListCore

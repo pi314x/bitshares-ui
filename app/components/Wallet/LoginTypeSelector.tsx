@@ -17,10 +17,10 @@ import * as React from "react";
 import counterpart from "counterpart";
 import {Form} from "../../design-system/Form";
 import {Select} from "../../design-system/Select";
-import WalletUnlockStore from "stores/WalletUnlockStore";
 import SettingsActions from "actions/SettingsActions";
 import {getAllowedLogins} from "../../branding";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 
 function LoginTypeSelectorView({
     value,
@@ -56,7 +56,7 @@ function LoginTypeSelectorView({
 }
 
 export default function LoginTypeSelector(props: any) {
-    const walletUnlockState = useAltStore<any>(WalletUnlockStore as any);
+    const walletUnlockState = useReduxState<any>(selectWalletUnlockState);
 
     if (getAllowedLogins().length == 1) return null;
 

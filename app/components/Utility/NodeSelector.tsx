@@ -3,8 +3,8 @@
 //
 // Structural change (not a behavior change): the original's `connect
 // (NodeSelector, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(SettingsStore)`, per this migration's established Alt.js
-// -store adapter pattern (see app/next/hooks/useAltStore.ts).
+// `useReduxState(selectSettingsState)`, per this migration's established Alt.js
+// -store adapter pattern (see app/next/hooks/useReduxState.ts).
 //
 // `state = {treeData: this._getTreeData()}` was computed once per
 // instance (a class field initializer, evaluated in the constructor) -
@@ -22,12 +22,12 @@
 import * as React from "react";
 import {TreeSelect} from "../../design-system/TreeSelect";
 import {settingsAPIs, nodeRegions} from "api/apiConfig";
-import SettingsStore from "../../stores/SettingsStore";
 import SettingsActions from "../../actions/SettingsActions";
 import counterpart from "counterpart";
 import {Icon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 function getTreeData() {
     const nodesPerRegion: {[region: string]: any} = {};
@@ -84,7 +84,7 @@ interface NodeSelectorProps {
 
 function NodeSelector({onChange, size}: NodeSelectorProps) {
     const [treeData] = React.useState(() => getTreeData());
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const filteredApiServers = settingsState.settings.get(
         "filteredApiServers",
         []

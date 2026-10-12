@@ -18,7 +18,7 @@
 //   `Utility/AssetSelect.tsx`/`Account/BalanceWrapper.tsx`).
 // - `AccountTreemapWrapper`'s `AltContainer` (injecting `marketStats`
 //   from `MarketsStore` and `settings` from `SettingsStore`) replaced by
-//   two `useAltStore()` calls, the same multi-store pattern already
+//   two `useReduxState()` calls, the same multi-store pattern already
 //   established in `Dashboard/DashboardList.tsx`.
 //
 // The commented-out `shouldComponentUpdate` was already dead (commented
@@ -31,10 +31,10 @@ import utils from "common/utils";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import MarketUtils from "common/market_utils";
-import MarketsStore from "stores/MarketsStore";
-import SettingsStore from "stores/SettingsStore";
 import {Link, useNavigate} from "react-router-dom";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 Treemap(ReactHighcharts.Highcharts);
 Heatmap(ReactHighcharts.Highcharts);
@@ -321,8 +321,8 @@ interface AccountTreemapWrapperProps {
 }
 
 function AccountTreemapWrapper(props: AccountTreemapWrapperProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
-    const marketsState = useAltStore<any>(MarketsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <AccountTreemapBalanceWrapper

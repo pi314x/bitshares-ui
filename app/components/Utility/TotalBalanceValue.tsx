@@ -24,9 +24,9 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {Tooltip} from "../../design-system/Tooltip";
 import FormattedAsset from "./FormattedAsset";
-import SettingsStore from "stores/SettingsStore";
-import MarketsStore from "stores/MarketsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useMarketStatsSubscription} from "../../next/hooks/useMarketStatsSubscription";
 import {
@@ -60,8 +60,8 @@ export default function TotalBalanceValue(props: TotalBalanceValueProps) {
     } = props;
 
     useChainStoreTick();
-    const settingsState = useAltStore<any>(SettingsStore);
-    const marketsState = useAltStore<any>(MarketsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
     const allMarketStats = marketsState.allMarketStats;
 
     const balanceAmounts: BalanceAmount[] = [];

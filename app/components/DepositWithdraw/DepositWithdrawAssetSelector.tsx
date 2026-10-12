@@ -1,8 +1,8 @@
 import * as React from "react";
 import counterpart from "counterpart";
-import GatewayStore from "stores/GatewayStore";
 import {Select} from "../../design-system/Select";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectGateway} from "../../store/slices/gatewaySlice";
 
 /** One backed coin as the gateway store lists it. */
 export interface BackedCoin {
@@ -145,11 +145,11 @@ export function DepositWithdrawAssetSelectorView(
 }
 
 // The gateway store replaces the old alt-react `connect` HOC (same
-// `useAltStore` pattern as the rest of the migration).
+// `useReduxState` pattern as the rest of the migration).
 function DepositWithdrawAssetSelector(
     props: Omit<DepositWithdrawAssetSelectorProps, "backedCoins">
 ) {
-    const gatewayState = useAltStore<any>(GatewayStore);
+    const gatewayState = useReduxState<any>(selectGateway);
     return (
         <DepositWithdrawAssetSelectorView
             {...props}

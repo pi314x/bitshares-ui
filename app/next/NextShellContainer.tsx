@@ -19,16 +19,17 @@ import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
 import {NAV_GROUPS, crumbFromPath} from "./navigation";
-import {useAltStore} from "./hooks/useAltStore";
+import {useReduxState} from "./hooks/useReduxState";
+import {selectAccountState} from "../store/slices/accountSlice";
+import {selectBlockchain} from "../store/slices/blockchainSlice";
+import {selectWalletUnlockState} from "../store/slices/walletUnlockSlice";
+import {selectSettingsState} from "../store/slices/settingsSlice";
+import {selectGateway} from "../store/slices/gatewaySlice";
+import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
 // resolve.modules.
 import AccountStore from "stores/AccountStore";
-import BlockchainStore from "stores/BlockchainStore";
-import WalletUnlockStore from "stores/WalletUnlockStore";
-import SettingsStore from "stores/SettingsStore";
-import GatewayStore from "stores/GatewayStore";
-import IntlStore from "stores/IntlStore";
 import AccountActions from "actions/AccountActions";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import SettingsActions from "actions/SettingsActions";
@@ -113,14 +114,14 @@ export interface NextShellContainerProps {
 export default function NextShellContainer({
     content
 }: NextShellContainerProps): JSX.Element {
-    const account = useAltStore<AccountStoreState>(AccountStore);
-    const blockchain = useAltStore<BlockchainStoreState>(BlockchainStore);
-    const walletUnlock = useAltStore<WalletUnlockStoreState>(
-        WalletUnlockStore
+    const account = useReduxState<AccountStoreState>(selectAccountState);
+    const blockchain = useReduxState<BlockchainStoreState>(selectBlockchain);
+    const walletUnlock = useReduxState<WalletUnlockStoreState>(
+        selectWalletUnlockState
     );
-    const settings = useAltStore<SettingsStoreState>(SettingsStore);
-    const gateway = useAltStore<GatewayStoreState>(GatewayStore);
-    const intl = useAltStore<IntlStoreState>(IntlStore);
+    const settings = useReduxState<SettingsStoreState>(selectSettingsState);
+    const gateway = useReduxState<GatewayStoreState>(selectGateway);
+    const intl = useReduxState<IntlStoreState>(selectIntlState);
     const location = useLocation();
 
     const currentAccount = account.currentAccount || account.passwordAccount;

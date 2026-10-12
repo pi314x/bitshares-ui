@@ -22,7 +22,7 @@
 // - `EquivalentValueComponent` (a plain wrapper class around
 //   `ValueComponent`, wrapped with `connect(..., {listenTo:
 //   [MarketsStore]})`) becomes a function component calling
-//   `useAltStore(MarketsStore)`.
+//   `useReduxState(selectMarkets)`.
 // - `BalanceValueComponent` (wraps `EquivalentValueComponent`, wrapped
 //   with `BindToChainState(BalanceValueComponent, {keep_updating:
 //   true})`) becomes a Container+Core pair using `useChainStoreTick()` +
@@ -47,7 +47,8 @@ import MarketStatsCheck from "./MarketStatsCheck";
 import MarketUtils from "common/market_utils";
 import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const getEquivalentValue = function(
@@ -172,7 +173,7 @@ interface EquivalentValueComponentProps {
 
 function EquivalentValueComponent(props: EquivalentValueComponentProps) {
     const {refCallback, ...others} = props;
-    const marketsState = useAltStore<any>(MarketsStore);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <WrappedValueComponent

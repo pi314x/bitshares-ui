@@ -15,7 +15,7 @@
 // for the same reason, not threaded down to the inner component at all).
 // `connect(Component, {listenTo, getProps})` (injecting
 // `myActiveAccounts`/`myHiddenAccounts` from `AccountStore`) replaced by
-// `useAltStore(AccountStore)`.
+// `useReduxState(selectAccountState)`.
 //
 // `_getReferrals`'s local `referralsIndex` variable is captured once per
 // call and *mutated in place* (`.push(...)`) inside each of several
@@ -37,11 +37,11 @@ import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import AccountStore from "stores/AccountStore";
 import Statistics from "./Statistics";
 import {settingsAPIs} from "api/apiConfig";
 import {Table} from "../../design-system/Table";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -333,7 +333,7 @@ function AccountReferralsTableChainContainer({
 function AccountReferralsTableWrapper(
     props: AccountReferralsTableContainerProps
 ) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
 
     return (
         <AccountReferralsTableChainContainer

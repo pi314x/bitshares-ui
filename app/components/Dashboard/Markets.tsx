@@ -18,14 +18,14 @@
 // code (e.g. `Forms/RefcodeInput.tsx`), not dropped.
 //
 // `connect(Component, {listenTo, getProps})` on both `StarredMarkets` and
-// `FeaturedMarkets` is replaced by `useAltStore(...)` calls in each
+// `FeaturedMarkets` is replaced by `useReduxState(...)` calls in each
 // component's own body (no separate Container/Core split needed here -
 // both stay simple enough to keep the store reads inline). `FeaturedMarkets`
 // additionally `listenTo`s `MarketsStore` without ever reading anything
-// from it in `getProps()` - `useAltStore(MarketsStore)`'s return value is
+// from it in `getProps()` - `useReduxState(selectMarkets)`'s return value is
 // discarded, purely to preserve the original's re-render-on-`MarketsStore`
 // -change subscription (same precedent as `Account/CreateAccount.tsx`'s
-// `useAltStore(AccountStore);`).
+// `useReduxState(AccountStore);`).
 //
 // `FeaturedMarkets`' `shouldComponentUpdate(nextProps)` is a pure
 // re-render guard (`!utils.are_equal_shallow(nextProps, this.props)`) -
@@ -66,13 +66,13 @@
 // the two branches.
 import * as React from "react";
 import {Apis} from "bitsharesjs-ws";
-import SettingsStore from "stores/SettingsStore";
-import MarketsStore from "stores/MarketsStore";
 import MarketsTable from "./MarketsTable";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 function StarredMarkets() {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <MarketsTable
@@ -163,8 +163,8 @@ function FeaturedMarketsCore({quotes, markets}: FeaturedMarketsCoreProps) {
 }
 
 function FeaturedMarkets({quotes}: {quotes: any[]}) {
-    useAltStore(MarketsStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    useReduxState(selectMarkets);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     let defaultMarkets = settingsState.defaultMarkets;
     const userMarkets = settingsState.userMarkets;

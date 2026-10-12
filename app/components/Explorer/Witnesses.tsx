@@ -35,9 +35,9 @@ import FormattedAsset from "../Utility/FormattedAsset";
 import TimeAgo from "../Utility/TimeAgo";
 import SearchInput from "../Utility/SearchInput";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import utils from "common/utils";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import "./witnesses.scss";
 
@@ -88,7 +88,7 @@ function keyRender(item: any) {
 export default function Witnesses() {
     useChainStoreTick();
     const navigate = useNavigate();
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const viewSettings = settingsState.viewSettings;
 
     const [filterWitness, setFilterWitness] = React.useState<string>(

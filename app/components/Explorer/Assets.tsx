@@ -54,8 +54,8 @@ import {Select} from "../../design-system/Select";
 import {Icon} from "../../design-system/Icon";
 import {List} from "../../design-system/List";
 import SearchInput from "../Utility/SearchInput";
-import AssetStore from "stores/AssetStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const accountStorage = ls("__graphene__");
@@ -103,7 +103,7 @@ function buildMarketId(asset: any, coreAsset: any): string {
 
 export default function Assets() {
     useChainStoreTick();
-    const assetState = useAltStore<any>(AssetStore);
+    const assetState = useReduxState<any>(selectAsset);
     const assets: Immutable.Map<string, any> = assetState.assets;
 
     const [chainID] = React.useState(computeInitialChainID);

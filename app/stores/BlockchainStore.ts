@@ -7,7 +7,7 @@
 // the original's own instance fields - see `../store/slices/
 // blockchainSlice.ts`'s header for why the state shape is exactly that),
 // `listen(callback)`, `unlisten(callback)` - so every
-// `useAltStore(BlockchainStore)` hook caller (`BlocksContainer.tsx`,
+// `BlockchainStore` caller (`BlocksContainer.tsx`,
 // `SyncError.tsx`, `BlockDate.tsx`, `BlockTime.tsx`, `BlockContainer.tsx`,
 // `InitError.tsx`) keeps working completely unchanged.
 import {reduxStore} from "../store/reduxStore";

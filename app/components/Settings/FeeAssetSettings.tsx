@@ -22,7 +22,7 @@
 // deliberate ChainStore-freshness design - was this component's only
 // mechanism for ever re-reading `ChainStore.getAsset(current_asset)`
 // after mount if that asset object became available asynchronously.
-// Kept `useAltStore(SettingsStore)` (discarding its returned value) to
+// Kept `useReduxState(selectSettingsState)` (discarding its returned value) to
 // preserve that same incidental re-render trigger faithfully, rather
 // than either dropping it (behavior-changing) or adding a ChainStore-tick
 // mechanism the original never had (over-fixing).
@@ -34,7 +34,8 @@ import {Button} from "../../design-system/Button";
 import Translate from "react-translate-component";
 import AssetName from "../Utility/AssetName";
 import SetDefaultFeeAssetModal from "../Modal/SetDefaultFeeAssetModal";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 function computeInitialFeeAsset(): string {
     const feeAsset = SettingsStore.getState().settings.get("fee_asset");
@@ -42,7 +43,7 @@ function computeInitialFeeAsset(): string {
 }
 
 export default function FeeAssetSettings() {
-    useAltStore<any>(SettingsStore);
+    useReduxState<any>(selectSettingsState);
     const [showModal, setShowModal] = React.useState(false);
     const [currentAsset, setCurrentAsset] = React.useState(
         computeInitialFeeAsset

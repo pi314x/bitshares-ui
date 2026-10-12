@@ -23,7 +23,7 @@
 //
 // `connect(DecryptBackup, {listenTo: [WalletManagerStore, BackupStore,
 // AccountStore], getProps})` becomes an outer `DecryptBackup` wrapper
-// calling `useAltStore` once per store and passing the store-derived
+// calling `useReduxState` once per store and passing the store-derived
 // values down to a `DecryptBackupCore` function - this migration's
 // established Container+Core split (see `Account/
 // AccountPortfolioList.tsx`'s header comment for the general pattern and
@@ -37,13 +37,13 @@
 // `wallet` (from `WalletManagerStore`) is declared via `propTypes`/
 // `defaultProps` but never actually referenced anywhere in `render()` or
 // any handler in the original (grep-confirmed: no `this.props.wallet`
-// read anywhere besides its own declaration) - `useAltStore
+// read anywhere besides its own declaration) - `useReduxState
 // (WalletManagerStore)` is still called and its value is still passed
 // down as the (here, unused) `wallet` prop, purely to preserve the
 // original's subscribe-for-re-render-only side effect, matching this
 // migration's established "connect wrap with an otherwise-unused store"
 // treatment (e.g. `Account/CreditRightsList.tsx`/`CreateModal.tsx`'s
-// `useAltStore(AccountStore)`).
+// `useReduxState(selectAccountState)`).
 //
 // `componentDidUpdate(prevProps)` becomes a dependency-free `useEffect`
 // (fires after every render, matching `componentDidUpdate`'s "runs after
@@ -87,9 +87,6 @@
 // covering all 4 `Login/` files together).
 import * as React from "react";
 import {PrivateKey} from "bitsharesjs/es";
-import WalletManagerStore from "stores/WalletManagerStore";
-import BackupStore from "stores/BackupStore";
-import AccountStore from "stores/AccountStore";
 import WalletActions from "actions/WalletActions";
 import WalletDb from "stores/WalletDb";
 import WalletUnlockActions from "actions/WalletUnlockActions";
@@ -100,7 +97,10 @@ import {Button} from "../../design-system/Button";
 import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectBackupState} from "../../store/slices/backupSlice";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
 interface DecryptBackupState {
     backupPassword: string;
@@ -295,9 +295,9 @@ interface DecryptBackupProps {
 }
 
 function DecryptBackup(props: DecryptBackupProps) {
-    const wallet = useAltStore<any>(WalletManagerStore);
-    const backup = useAltStore<any>(BackupStore);
-    const accountState = useAltStore<any>(AccountStore);
+    const wallet = useReduxState<any>(selectWalletManagerState);
+    const backup = useReduxState<any>(selectBackupState);
+    const accountState = useReduxState<any>(selectAccountState);
     const currentAccount =
         accountState.currentAccount || accountState.passwordAccount;
 

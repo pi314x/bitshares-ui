@@ -9,7 +9,7 @@
 //
 // Structural change (not a behavior change): the original's
 // `connect(FeeAssetSelector, {listenTo, getProps})` alt-react HOC is
-// replaced by `useAltStore(SettingsStore)`.
+// replaced by `useReduxState(selectSettingsState)`.
 //
 // The class's multiple `this.state.X` fields are kept as one combined
 // state object (not split into separate `useState` calls), updated via a
@@ -64,9 +64,9 @@ import AssetSelect from "./AssetSelect";
 import {FetchChain} from "bitsharesjs";
 import SetDefaultFeeAssetModal from "../Modal/SetDefaultFeeAssetModal";
 import debounceRender from "react-debounce-render";
-import SettingsStore from "../../stores/SettingsStore";
 import {checkFeeStatusAsync} from "common/trxHelper";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const DEBUG = __DEV__ && false;
 
@@ -416,7 +416,7 @@ const WrappedFeeAssetSelector = AssetWrapper(DebouncedFeeAssetSelector, {
 });
 
 function FeeAssetSelectorContainer(props: FeeAssetSelectorProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const defaultFeeAsset =
         settingsState.settings.get("fee_asset") || "1.3.0";
 

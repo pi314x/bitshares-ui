@@ -11,7 +11,7 @@
 // security notes).
 //
 // `connect(WalletLogin, {listenTo: [BackupStore], getProps})` becomes
-// `useAltStore(BackupStore)` in an outer `WalletLogin` wrapper, passed
+// `useReduxState(selectBackupState)` in an outer `WalletLogin` wrapper, passed
 // down to a `WalletLoginCore` function - this migration's established
 // Container+Core split.
 //
@@ -32,7 +32,7 @@
 // a no-op either way, in the original as much as here: the
 // `BackupActions.incommingWebFile(file)` dispatch it follows only kicks
 // off an async `FileReader` whose `onload` resolves (and updates
-// `BackupStore`) later - the existing `useAltStore(BackupStore)`
+// `BackupStore`) later - the existing `useReduxState(selectBackupState)`
 // subscription already re-renders this component once that actually
 // happens, so forcing an extra, immediate re-render here, before that
 // async update lands, can't itself change what's rendered. Kept anyway,
@@ -67,11 +67,11 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
 import ReactTooltip from "react-tooltip";
-import BackupStore from "stores/BackupStore";
 import BackupActions from "actions/BackupActions";
 import DecryptBackup from "./DecryptBackup";
 import Icon from "../Icon/Icon";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBackupState} from "../../store/slices/backupSlice";
 
 // `Link` triggers a `@types/react-router-dom` vs. `@types/react` version
 // mismatch error (TS2786) already worked around the same way elsewhere
@@ -330,7 +330,7 @@ interface WalletLoginProps {
 }
 
 function WalletLogin(props: WalletLoginProps) {
-    const backup = useAltStore<any>(BackupStore);
+    const backup = useReduxState<any>(selectBackupState);
 
     return <WalletLoginCore {...props} backup={backup} />;
 }

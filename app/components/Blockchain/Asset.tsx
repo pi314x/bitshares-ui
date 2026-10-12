@@ -26,7 +26,7 @@
 // "coreAsset"]})` (resolving those two string ids into live asset
 // objects, and injecting `currentAccount`) - is collapsed into two
 // components: `AssetContainer` (does all the ChainStore resolution
-// directly, via `ChainStore.getAsset`/`ChainStore.getObject` + `useAltStore
+// directly, via `ChainStore.getAsset`/`ChainStore.getObject` + `useReduxState
 // (AccountStore)`, gated by `useChainStoreTick()`) and `Asset` (receives
 // already-resolved props, exactly as before). `ChainStore.getAsset`'s
 // null-vs-undefined contract (`null` = confirmed not found, `undefined`
@@ -76,7 +76,6 @@ import {Apis} from "bitsharesjs-ws";
 import {CallOrder, CollateralBid, FeedPrice} from "common/MarketClasses";
 import Page404 from "../Page404/Page404";
 import FeePoolOperation from "../Account/FeePoolOperation";
-import AccountStore from "stores/AccountStore";
 import counterpart from "counterpart";
 import AssetOwnerUpdate from "./AssetOwnerUpdate";
 import AssetPublishFeed from "./AssetPublishFeed";
@@ -89,7 +88,8 @@ import {Tabs} from "../../design-system/Tabs";
 import {Alert} from "../../design-system/Alert";
 import {Collapse} from "../../design-system/Collapse";
 import GatewayStore from "../../stores/GatewayStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const {Panel} = Collapse;
@@ -2443,7 +2443,7 @@ function Asset({
 
 function AssetContainer({assetSymbol}: {assetSymbol: string}) {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const currentAccount =
         accountState.currentAccount || accountState.passwordAccount;
 

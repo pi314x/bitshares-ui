@@ -26,7 +26,6 @@
 import * as React from "react";
 import XbtsxGatewayDepositRequest from "./XbtsxGatewayDepositRequest";
 import Translate from "react-translate-component";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
 import {
     RecentTransactions,
@@ -34,7 +33,8 @@ import {
 } from "components/Account/RecentTransactions";
 import Immutable from "immutable";
 import LoadingIndicator from "../../LoadingIndicator";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../../store/slices/settingsSlice";
 
 function getActiveCoin(props: any, state: {action: string}) {
     const cachedCoin = props.viewSettings.get(
@@ -61,7 +61,7 @@ interface XbtsxGatewayProps {
 
 function XbtsxGateway(props: XbtsxGatewayProps) {
     const {coins, account} = props;
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const viewSettings = settingsState.viewSettings;
 
     const [action, setAction] = React.useState<string>(() =>

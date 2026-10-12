@@ -7,7 +7,7 @@
 // Structural changes:
 // - The original's `connect(MarketsTable, {listenTo, getProps})` is
 //   replaced by a Container+Core split (`MarketsTableContainer` calling
-//   `useAltStore` once per store, `MarketsTableCore` doing everything
+//   `useReduxState` once per store, `MarketsTableCore` doing everything
 //   else), this migration's established multi-store pattern. Per
 //   alt-react's own `connect` (`<Component {...this.props}
 //   {...this.getNextProps()} />`), store-derived props always won over
@@ -103,9 +103,7 @@ import * as React from "react";
 import {ChainStore} from "bitsharesjs";
 import Translate from "react-translate-component";
 import cnames from "classnames";
-import MarketsStore from "stores/MarketsStore";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import utils from "common/utils";
 import PaginatedList from "../Utility/PaginatedList";
 import {Input} from "../../design-system/Input";
@@ -114,7 +112,9 @@ import Icon from "../Icon/Icon";
 import AssetName from "../Utility/AssetName";
 import {Link} from "react-router-dom";
 import {Icon as AntIcon} from "../../design-system/Icon";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 // `@types/react-router-dom`'s `Link` return type isn't assignable to
 // `JSX.Element` under this repo's `@types/react` version (a `key: Key |
@@ -719,8 +719,8 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
 }
 
 function MarketsTableContainer(props: MarketsTableProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
-    const marketsState = useAltStore<any>(MarketsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <MarketsTableCore

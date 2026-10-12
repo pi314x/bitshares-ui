@@ -19,9 +19,9 @@
 //
 // Structural change (not a behavior change): the original's
 // `connect(CreditDebtList, {listenTo: [AccountStore, CreditOfferStore],
-// getProps})` alt-react HOC is replaced by `useAltStore(AccountStore)` +
-// `useAltStore(CreditOfferStore)` calls inside the component body, per
-// this migration's established `useAltStore` pattern. Per alt-react's
+// getProps})` alt-react HOC is replaced by `useReduxState(selectAccountState)` +
+// `useReduxState(selectCreditOffer)` calls inside the component body, per
+// this migration's established `useReduxState` pattern. Per alt-react's
 // `connect` semantics (`<Component {...this.props} {...this.getNextProps()}
 // />` - store-derived props always win over same-named caller-passed
 // props, see `AccountPortfolioList.tsx`'s header comment for the
@@ -77,8 +77,6 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import utils from "common/utils";
-import AccountStore from "../../../stores/AccountStore";
-import CreditOfferStore from "../../../stores/CreditOfferStore";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Modal} from "../../../design-system/Modal";
 import {Button} from "../../../design-system/Button";
@@ -96,7 +94,9 @@ import AmountSelector from "../../Utility/AmountSelectorStyleGuide";
 import FeeAssetSelector from "../../Utility/FeeAssetSelector";
 import {checkBalance as checkBalanceHasFunds} from "common/trxHelper";
 import {ChainStore} from "bitsharesjs";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
+import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
 
 import {Asset} from "../../../lib/common/MarketClasses";
 import BalanceComponent from "../../Utility/BalanceComponent";
@@ -131,8 +131,8 @@ interface CreditDebtListState {
 }
 
 function CreditDebtList(props: CreditDebtListProps) {
-    const accountState = useAltStore<any>(AccountStore);
-    const creditOfferState = useAltStore<any>(CreditOfferStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const creditOfferState = useReduxState<any>(selectCreditOffer);
 
     const currentAccount = accountState.currentAccount;
     // `passwordAccount` was read from `AccountStore` in the original's

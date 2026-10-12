@@ -6,7 +6,7 @@
 // getProps})` (an outer alt-react HOC) wrapping `BindToChainState(
 // AccountPools, {show_loader: true})` (resolving the required
 // `defaultAsset` prop) is replaced by a single `AccountPoolsContainer`
-// that calls `useAltStore` twice (once per store - the established
+// that calls `useReduxState` twice (once per store - the established
 // multi-store pattern from `AccountBrowsingMode.tsx`/`DashboardList.tsx`)
 // and then resolves `defaultAsset` via `ChainStore.getAsset` under
 // `useChainStoreTick()`, replicating the `show_loader` fallback
@@ -69,9 +69,10 @@ import {ChainStore} from "bitsharesjs";
 import Translate from "react-translate-component";
 import AssetName from "../Utility/AssetName";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectPoolmart} from "../../store/slices/poolmartSlice";
 import SearchInput from "../Utility/SearchInput";
-import PoolmartStore from "../../stores/PoolmartStore";
 import PoolmartActions from "../../actions/PoolmartActions";
 import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
@@ -80,7 +81,6 @@ import CreatePoolModal from "../Modal/CreatePoolModal";
 import DeletePoolModal from "../Modal/DeletePoolModal";
 import {Tabs, Tab} from "../Utility/Tabs";
 import {List} from "immutable";
-import AssetStore from "stores/AssetStore";
 import ApplicationApi from "api/ApplicationApi";
 import LoadingIndicator from "../LoadingIndicator";
 
@@ -610,8 +610,8 @@ function AccountPoolsChainContainer({
 }
 
 function AccountPoolsContainer(props: AccountPoolsContainerProps) {
-    const poolmartState = useAltStore<any>(PoolmartStore);
-    const assetState = useAltStore<any>(AssetStore);
+    const poolmartState = useReduxState<any>(selectPoolmart);
+    const assetState = useReduxState<any>(selectAsset);
 
     let assetsList = List();
     if (props.account.get("assets", []).size) {

@@ -16,7 +16,7 @@
 // observable effect of this `connect` wrap is forcing a re-render
 // whenever `AccountStore` changes (the component reads `AccountStore
 // .getMyAccounts()` directly in its render body, not through props) -
-// replicated with `useAltStore(AccountStore)`, called purely for its
+// replicated with `useReduxState(selectAccountState)`, called purely for its
 // re-render-on-change side effect (its returned state is intentionally
 // unused, matching the original's empty `getProps()`).
 //
@@ -51,7 +51,8 @@ import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
 import {Button} from "../../design-system/Button";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface AccountRegistrationFormState {
     validAccountName: boolean;
@@ -68,7 +69,7 @@ interface AccountRegistrationFormProps {
 }
 
 function AccountRegistrationForm({continue: onContinue}: AccountRegistrationFormProps) {
-    useAltStore<any>(AccountStore);
+    useReduxState<any>(selectAccountState);
 
     const [state, setState] = React.useState<AccountRegistrationFormState>(
         () => ({

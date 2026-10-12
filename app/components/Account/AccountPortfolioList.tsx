@@ -14,7 +14,7 @@
 // Structural changes:
 // - The original's `connect(AccountPortfolioList, {listenTo: [
 //   SettingsStore, GatewayStore, MarketsStore], getProps})` is replaced by
-//   an outer `AccountPortfolioList` wrapper that calls `useAltStore` once
+//   an outer `AccountPortfolioList` wrapper that calls `useReduxState` once
 //   per store (the established multi-store pattern, e.g.
 //   `MyMarkets.tsx`/`AccountPools.tsx`) and passes the store-derived
 //   values as explicit props into the debounced core component - the same
@@ -227,10 +227,11 @@ import BorrowModal from "../Modal/BorrowModal";
 import ReactTooltip from "react-tooltip";
 import {getBackedCoin} from "common/gatewayUtils";
 import {ChainStore} from "bitsharesjs";
-import SettingsStore from "stores/SettingsStore";
 import GatewayStore from "stores/GatewayStore";
-import MarketsStore from "stores/MarketsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectGateway} from "../../store/slices/gatewaySlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import Icon from "../Icon/Icon";
 import utils from "common/utils";
 import SendModal from "../Modal/SendModal";
@@ -1626,9 +1627,9 @@ const AccountPortfolioListDebounced: any = debounceRender(
 );
 
 export default function AccountPortfolioList(props: any) {
-    const settingsState = useAltStore<any>(SettingsStore as any);
-    const gatewayState = useAltStore<any>(GatewayStore as any);
-    const marketsState = useAltStore<any>(MarketsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const gatewayState = useReduxState<any>(selectGateway);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <AccountPortfolioListDebounced

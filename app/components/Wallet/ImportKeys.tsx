@@ -19,7 +19,7 @@
 // Replicated the same way here: a `useRef`-held mutable state object plus
 // a render-triggering counter, so direct mutations followed by any later
 // state update (or, here, the `ImportKeysStore`-driven re-render from
-// `useAltStore`) are visible exactly when the original would show them.
+// `useReduxState`) are visible exactly when the original would show them.
 //
 // PRESERVED BUG (not fixed - flagged for the human second-reviewer):
 // `_passwordCheck` reads `this.refs.password.value` where `password` is a
@@ -106,7 +106,8 @@ import GenesisFilter from "chain/GenesisFilter";
 
 import {Button} from "../../design-system/Button";
 import {Input} from "../../design-system/Input";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectImportKeysState} from "../../store/slices/importKeysSlice";
 
 require("./ImportKeys.scss");
 
@@ -184,7 +185,7 @@ function referenceErrorLikeOriginal(name: string): Error {
 }
 
 function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
-    const {importing} = useAltStore<any>(ImportKeysStore as any);
+    const {importing} = useReduxState<any>(selectImportKeysState);
 
     const stateRef = React.useRef<ImportKeysState>(
         getInitialState(null, false)

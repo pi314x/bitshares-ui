@@ -24,7 +24,7 @@
 //
 // `alt-react`'s `connect(MarketPicker, {listenTo: () => [AssetStore],
 // getProps: () => ({searchAssets: ..., assetsLoading: ...})})` replaced
-// with `useAltStore(AssetStore)`, this migration's established Alt.js
+// with `useReduxState(selectAsset)`, this migration's established Alt.js
 // adapter, reading only the one field (`assets`) actually used.
 //
 // `MarketListItem`'s `this.props.history.push(linkTo)` - originally fed
@@ -68,7 +68,6 @@ import {debounce} from "lodash-es";
 import Translate from "react-translate-component";
 import {Link, LinkProps, useNavigate} from "react-router-dom";
 import AssetActions from "actions/AssetActions";
-import AssetStore from "stores/AssetStore";
 import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
 import {Modal} from "../../design-system/Modal";
@@ -79,7 +78,8 @@ import {
     assetFilter,
     fetchIssuerName
 } from "./MarketPickerHelpers";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
@@ -404,7 +404,7 @@ export default function MarketPicker(props: MarketPickerProps) {
         baseAsset,
         onToggleMarketPicker
     } = props;
-    const assetState = useAltStore<any>(AssetStore);
+    const assetState = useReduxState<any>(selectAsset);
     const searchAssets = assetState.assets;
 
     function onClose() {

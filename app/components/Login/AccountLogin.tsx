@@ -22,7 +22,7 @@
 //
 // `AltContainer` injecting `passwordAccount` (`() => AccountStore
 // .getState().passwordAccount || ""`) becomes an outer `AccountLogin`
-// wrapper calling `useAltStore(AccountStore)` once and passing
+// wrapper calling `useReduxState(selectAccountState)` once and passing
 // `passwordAccount` down to an `AccountLoginCore` function - this
 // migration's established Container+Core split. Precedence preserved:
 // `AltContainer.render()` does `React.cloneElement(children,
@@ -132,7 +132,6 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import ReactTooltip from "react-tooltip";
 import WalletDb from "stores/WalletDb";
-import AccountStore from "stores/AccountStore";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
@@ -142,7 +141,8 @@ import {Button} from "../../design-system/Button";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface AccountLoginState {
     password: string;
@@ -409,7 +409,7 @@ interface AccountLoginProps {
 }
 
 function AccountLogin(props: AccountLoginProps) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
 
     return (
         <AccountLoginCore

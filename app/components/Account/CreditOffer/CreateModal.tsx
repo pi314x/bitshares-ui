@@ -14,7 +14,7 @@
 //
 // Structural change (not a behavior change): the original's two-layer
 // `CreateModal` class + `CreateModalConnectWrapper = connect(...)` becomes
-// a `CreateModal` container function component (calling `useAltStore`
+// a `CreateModal` container function component (calling `useReduxState`
 // once per store, replacing `connect`'s `listenTo`/`getProps`) wrapping a
 // `CreateModalCore` (the former class body) that is wrapped in
 // `React.forwardRef`. Prop precedence matches alt-react's `connect`,
@@ -30,7 +30,7 @@
 // and `this.props.currentLocale` are read; `state.account` is seeded once
 // from `props.account` in the constructor and never touches
 // `this.props.currentAccount`/`passwordAccount`). They are dropped as
-// unused values, but `useAltStore(AccountStore)` is still called (its
+// unused values, but `useReduxState(selectAccountState)` is still called (its
 // return value discarded) purely to preserve the `listenTo: [AccountStore,
 // SettingsStore]`-driven re-render-on-`AccountStore`-change behavior,
 // matching the precedent set in `Account/CreateAccount.tsx` and
@@ -134,8 +134,6 @@
 // in `Exchange/Exchange.tsx`.
 import * as React from "react";
 import counterpart from "counterpart";
-import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
 import {ChainStore} from "bitsharesjs";
 import {Alert} from "../../../design-system/Alert";
 import {Tooltip} from "../../../design-system/Tooltip";
@@ -169,7 +167,9 @@ import CreditOfferActions, {
     FEE_RATE_DENOM,
     listRepayPeriod
 } from "../../../actions/CreditOfferActions";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
+import {selectSettingsState} from "../../../store/slices/settingsSlice";
 
 const getUninitializedFeeAmount = () =>
     new Asset({amount: 0, asset_id: "1.3.0"});
@@ -1101,8 +1101,8 @@ function CreateModal(props: CreateModalOwnProps) {
     // Preserves `listenTo: [AccountStore, SettingsStore]`'s re-render
     // cadence - `currentAccount`/`passwordAccount` (AccountStore) are
     // grep-confirmed unused downstream, see header comment.
-    useAltStore(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    useReduxState(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const currentLocale = settingsState.settings.get("locale");
 
     return (

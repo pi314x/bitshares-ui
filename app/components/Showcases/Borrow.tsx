@@ -13,7 +13,7 @@
 // its resolved value is never inspected.
 //
 // `connect(Borrow, {listenTo: [AccountStore], getProps})` becomes a
-// `BorrowContainer` calling `useAltStore(AccountStore)` and computing
+// `BorrowContainer` calling `useReduxState(selectAccountState)` and computing
 // `currentAccount` the same way `getProps()` did
 // (`state.currentAccount || state.passwordAccount`), passed as a prop
 // into the debounced Core - the same "outer wrapper gathers stores, inner
@@ -73,10 +73,10 @@ import {ChainStore} from "bitsharesjs";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 
 import BorrowModal from "../Modal/BorrowModal";
-import AccountStore from "../../stores/AccountStore";
 import Icon from "../Icon/Icon";
 import AssetSelect from "../Utility/AssetSelect";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface BorrowStep {
     key: string;
@@ -498,7 +498,7 @@ const BorrowCoreDebounced: any = debounceRender(BorrowCore, 50, {
 });
 
 function BorrowContainer() {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const currentAccount =
         accountState.currentAccount || accountState.passwordAccount;
     return <BorrowCoreDebounced currentAccount={currentAccount} />;

@@ -7,7 +7,7 @@
 // Structural changes:
 // - The original's outer `AccountsContainer` class wrapping `<AltContainer
 //   stores={[AccountStore, SettingsStore, MarketsStore]} inject={{...}}>`
-//   is replaced by a small function component calling `useAltStore` once
+//   is replaced by a small function component calling `useReduxState` once
 //   per store, this migration's established multi-store pattern (see
 //   `Account/AccountPortfolioList.tsx`'s header comment for the general
 //   precedent). Per `alt-container`'s own `cloneElement` merge order
@@ -21,7 +21,7 @@
 //   neither was used as an `inject` key except `SettingsStore`, whose
 //   single injected value (`currentEntry`, see below) turned out to be
 //   fully dead. Both stores are still subscribed here via bare
-//   `useAltStore(...)` calls purely to preserve that re-render-on-change
+//   `useReduxState(...)` calls purely to preserve that re-render-on-change
 //   behavior, matching `DashboardList.tsx`'s identical treatment of
 //   `WalletUnlockStore` (subscribed only to force a re-render, its value
 //   never read).
@@ -103,11 +103,11 @@ import DashboardList from "./DashboardList";
 import {RecentTransactions} from "../Account/RecentTransactions";
 import LoadingIndicator from "../LoadingIndicator";
 import LoginSelector from "../LoginSelector";
-import SettingsStore from "stores/SettingsStore";
-import AccountStore from "stores/AccountStore";
-import MarketsStore from "stores/MarketsStore";
 import {Tabs, Tab} from "../Utility/Tabs";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface AccountsProps {
     myActiveAccounts: Immutable.Set<string>;
@@ -235,11 +235,11 @@ function Accounts(props: AccountsProps) {
 }
 
 function AccountsContainer(props: Record<string, any>) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     // Re-render trigger only, matching this file's original `stores`
     // list - neither store's state is read here (see header comment).
-    useAltStore<any>(SettingsStore);
-    useAltStore<any>(MarketsStore);
+    useReduxState<any>(selectSettingsState);
+    useReduxState<any>(selectMarkets);
 
     const contacts = accountState.accountContacts;
     const myActiveAccounts = accountState.myActiveAccounts;

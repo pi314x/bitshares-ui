@@ -13,7 +13,7 @@
 //
 // No Alt.js `connect`/`AltContainer` existed in the original - it never
 // read an Alt store directly, so there's nothing to translate to
-// `useAltStore` here.
+// `useReduxState` here.
 //
 // `this.state.activeWalletModel` becomes a plain `useState`;
 // `changeActiveModel(isActiveWallet)` becomes a `setActiveWalletModel`

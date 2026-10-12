@@ -28,7 +28,7 @@
 // `connect(Barter, {listenTo: [AccountStore], ...})` anywhere in the
 // original (the class is exported directly, `export default class
 // Barter extends Component`), so this is a one-shot imperative read, not
-// a subscription. No `useAltStore` call was added - that would change
+// a subscription. No `useReduxState` call was added - that would change
 // behavior by making the component re-render on every `AccountStore`
 // change, something the class never did either.
 //

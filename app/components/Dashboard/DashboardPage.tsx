@@ -12,7 +12,7 @@
 // components; no transaction is ever built or signed here.
 //
 // `connect(DashboardPage, {listenTo: [AccountStore, SettingsStore],
-// getProps() {...}})` is replaced by `useAltStore(...)` calls for both
+// getProps() {...}})` is replaced by `useReduxState(...)` calls for both
 // stores in an outer `DashboardPage` wrapper, passed down to a
 // `DashboardPageCore` function - this migration's established
 // Container+Core split. No `BindToChainState` existed in the original
@@ -29,13 +29,13 @@
 import * as React from "react";
 import LoadingIndicator from "../LoadingIndicator";
 import LoginSelector from "../LoginSelector";
-import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
 
 import {Tabs, Tab} from "../Utility/Tabs";
 import {StarredMarkets, FeaturedMarkets} from "./Markets";
 import {getPossibleGatewayPrefixes} from "common/gateways";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import "./DashboardList.scss";
 
 interface DashboardPageCoreProps {
@@ -124,8 +124,8 @@ function DashboardPageCore({
 }
 
 function DashboardPage() {
-    const accountState = useAltStore<any>(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     const {
         myActiveAccounts,

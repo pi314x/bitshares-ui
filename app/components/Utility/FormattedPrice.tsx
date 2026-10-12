@@ -7,7 +7,7 @@
 //
 // Structural change (not a behavior change): the outer wrapper's
 // `AltContainer` (`alt-container` package, injecting `marketDirections`
-// from `SettingsStore`) is replaced by `useAltStore(SettingsStore)`.
+// from `SettingsStore`) is replaced by `useReduxState(selectSettingsState)`.
 //
 // `UNSAFE_componentWillReceiveProps` (recomputes `marketName`/`first`/
 // `second` when `base_asset`/`quote_asset` change) is replicated with a
@@ -30,7 +30,6 @@
 import * as React from "react";
 import {FormattedNumber} from "react-intl";
 import AssetWrapper from "./AssetWrapper";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
 import Popover from "react-popover";
 import Translate from "react-translate-component";
@@ -41,7 +40,8 @@ import {Asset, Price} from "common/MarketClasses";
 import {useNavigate, Link} from "react-router-dom";
 import {Tooltip} from "../../design-system/Tooltip";
 import MarketsActions from "actions/MarketsActions";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -287,7 +287,7 @@ interface FormattedPriceWrapperProps {
 }
 
 function FormattedPriceWrapper(props: FormattedPriceWrapperProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     return (
         <WrappedFormattedPrice
             {...props}

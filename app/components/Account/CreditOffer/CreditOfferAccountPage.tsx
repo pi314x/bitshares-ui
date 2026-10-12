@@ -15,7 +15,7 @@
 // no `listenTo` and no `getProps` - is a pure no-op wrapper (grep-
 // confirmed: `{}` supplies neither a store subscription nor any derived
 // props), so it's dropped entirely rather than translated to a
-// `useAltStore` call; there is nothing for it to subscribe to or inject.
+// `useReduxState` call; there is nothing for it to subscribe to or inject.
 import * as React from "react";
 import counterpart from "counterpart";
 import {Tabs, Tab} from "../../Utility/Tabs";

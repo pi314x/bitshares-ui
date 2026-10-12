@@ -3,7 +3,7 @@
 //
 // Structural change (not a behavior change): the original's `connect
 // (CustomTable, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(SettingsStore)`. `getProps(nextProps)` only injected the
+// `useReduxState(selectSettingsState)`. `getProps(nextProps)` only injected the
 // store's `viewSettings` when the caller hadn't already passed one -
 // replicated with `props.viewSettings || settingsState.viewSettings`.
 import * as React from "react";
@@ -14,8 +14,8 @@ import {Select} from "../../design-system/Select";
 import SettingsActions from "actions/SettingsActions";
 import PaginatedList from "./PaginatedList";
 import "./paginated-list.scss";
-import SettingsStore from "../../stores/SettingsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const {Option} = Select;
 
@@ -181,7 +181,7 @@ function CustomTable({
 }
 
 function CustomTableContainer(props: CustomTableCoreProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const viewSettings = props.viewSettings || settingsState.viewSettings;
     return <CustomTable {...props} viewSettings={viewSettings} />;
 }

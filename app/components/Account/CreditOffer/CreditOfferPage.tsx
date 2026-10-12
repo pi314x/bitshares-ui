@@ -29,9 +29,9 @@
 // Structural change (not a behavior change): the original's
 // `connect(CreditOfferPage, {listenTo: [AccountStore, CreditOfferStore,
 // IntlStore], getProps})` alt-react HOC is replaced by
-// `useAltStore(AccountStore)` + `useAltStore(CreditOfferStore)` +
-// `useAltStore(IntlStore)` calls inside the component body, per this
-// migration's established `useAltStore` pattern (e.g.
+// `useReduxState(selectAccountState)` + `useReduxState(selectCreditOffer)` +
+// `useReduxState(selectIntlState)` calls inside the component body, per this
+// migration's established `useReduxState` pattern (e.g.
 // `Dashboard/DashboardPage.tsx`).
 //
 // The class's several `this.state.X` fields are kept as one combined
@@ -107,8 +107,6 @@ import CreditOfferActions, {
     parsingTime
 } from "../../../actions/CreditOfferActions";
 
-import AccountStore from "stores/AccountStore";
-import CreditOfferStore from "stores/CreditOfferStore";
 import {Asset, Price as PriceUntyped} from "../../../lib/common/MarketClasses";
 import {ChainStore} from "bitsharesjs";
 
@@ -124,15 +122,17 @@ import AssetSelect from "../../Utility/AssetSelect";
 import Translate from "react-translate-component";
 import FeeAssetSelector from "../../Utility/FeeAssetSelector";
 import {checkBalance as checkBalanceHasFunds} from "common/trxHelper";
-import IntlStore from "stores/IntlStore";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
+import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
+import {selectIntlState} from "../../../store/slices/intlSlice";
 
 const getUninitializedFeeAmount = () =>
     new Asset({amount: 0, asset_id: "1.3.0"});
 
 // Note (see header comment): this is a route-level component rendered
 // with no props of its own - `currentAccount`/`passwordAccount`/
-// `allList`/`locale` are all resolved below via `useAltStore`, not
+// `allList`/`locale` are all resolved below via `useReduxState`, not
 // received as props, so no props interface is declared.
 
 interface CreditOfferPageState {
@@ -153,9 +153,9 @@ interface CreditOfferPageState {
 }
 
 function CreditOfferPage() {
-    const accountState = useAltStore<any>(AccountStore);
-    const creditOfferState = useAltStore<any>(CreditOfferStore);
-    const intlState = useAltStore<any>(IntlStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const creditOfferState = useReduxState<any>(selectCreditOffer);
+    const intlState = useReduxState<any>(selectIntlState);
 
     const currentAccount = accountState.currentAccount;
     // `passwordAccount` was read from `AccountStore` in the original's

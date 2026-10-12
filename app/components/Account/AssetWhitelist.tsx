@@ -3,7 +3,7 @@
 //
 // Structural change (not a behavior change): the original's `connect
 // (AssetWhitelist, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(SettingsStore)`.
+// `useReduxState(selectSettingsState)`.
 import * as React from "react";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import LinkToAssetById from "../Utility/LinkToAssetById";
@@ -12,9 +12,9 @@ import AccountSelector from "../Account/AccountSelector";
 import AssetSelector from "../Utility/AssetSelector";
 import cnames from "classnames";
 import Translate from "react-translate-component";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const LIST_TYPES = [
     "whitelist_authorities",
@@ -254,7 +254,7 @@ function AssetWhitelist({
 function AssetWhitelistContainer(
     props: Omit<AssetWhitelistProps, "assetWhiteListType">
 ) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const assetWhiteListType = settingsState.viewSettings.get(
         "assetWhiteListType",
         "whitelist_authorities"

@@ -13,7 +13,7 @@
 // `.add_type_operation`/`process_transaction`, none appear.
 //
 // `connect(ShowcaseGrid, {listenTo: [AccountStore], getProps() {...}})`
-// is replaced by `useAltStore(AccountStore)` in an outer `ShowcaseGrid`
+// is replaced by `useReduxState(selectAccountState)` in an outer `ShowcaseGrid`
 // wrapper, passed down to a `ShowcaseGridCore` function - this
 // migration's established Container+Core split.
 //
@@ -67,9 +67,9 @@ import * as React from "react";
 import {useNavigate} from "react-router-dom";
 import Showcase from "./Showcase";
 import {ChainStore} from "bitsharesjs";
-import AccountStore from "../../stores/AccountStore";
 import {createPaperWalletAsPDF} from "common/paperWallet";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface ShowcaseGridCoreProps {
     currentAccount: any;
@@ -247,7 +247,7 @@ function ShowcaseGridCore({currentAccount}: ShowcaseGridCoreProps) {
 }
 
 function ShowcaseGrid() {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
 
     return (
         <ShowcaseGridCore

@@ -5,7 +5,7 @@
 // withDynamic: true})` kept as-is (shared HOC, out of scope).
 // Structural change (not a behavior change): the outer `connect
 // (Component, {listenTo: [AssetStore], getProps})` is replaced by
-// `useAltStore(AssetStore)`.
+// `useReduxState(selectAsset)`.
 //
 // `UNSAFE_componentWillMount` (calls `_checkAssets(props.assets, true)`)
 // + `UNSAFE_componentWillReceiveProps` (calls `_checkAssets(nextProps
@@ -41,7 +41,6 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
 import AssetActions from "actions/AssetActions";
-import AssetStore from "stores/AssetStore";
 import FormattedAsset from "../Utility/FormattedAsset";
 import LoadingIndicator from "../LoadingIndicator";
 import IssueModal from "../Modal/IssueModal";
@@ -50,7 +49,8 @@ import {Map, List} from "immutable";
 import AssetWrapper from "../Utility/AssetWrapper";
 import {Tabs, Tab} from "../Utility/Tabs";
 import Icon from "../Icon/Icon";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -369,7 +369,7 @@ interface AccountAssetsContainerProps {
 }
 
 function AccountAssetsContainer(props: AccountAssetsContainerProps) {
-    const assetState = useAltStore<any>(AssetStore);
+    const assetState = useReduxState<any>(selectAsset);
 
     let assets = Map();
     let assetsList = List();

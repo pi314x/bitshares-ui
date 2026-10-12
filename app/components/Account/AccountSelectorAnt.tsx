@@ -9,7 +9,7 @@
 // `ChainStore.getAccount` under `useChainStoreTick()` and always
 // renders, matching that. `connect(Component, {listenTo: [AccountStore],
 // getProps})` (providing `myActiveAccounts`/`contacts`) is replaced by
-// `useAltStore(AccountStore)`.
+// `useReduxState(selectAccountState)`.
 //
 // Dropped as confirmed dead (found while porting, verified by grepping
 // the whole app, not just this file): `getAccount()` and the
@@ -55,10 +55,10 @@
 // reads that happen before the binding's own initializer has run).
 import * as React from "react";
 import utils from "common/utils";
-import AccountStore from "stores/AccountStore";
 import {ChainStore, PublicKey, ChainValidation, FetchChain} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import counterpart from "counterpart";
 import accountUtils from "common/account_utils";
 import {Form} from "../../design-system/Form";
@@ -425,7 +425,7 @@ interface AccountSelectorContainerProps
 
 function AccountSelectorContainer(props: AccountSelectorContainerProps) {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
 
     const resolvedAccount = props.account
         ? (ChainStore as any).getAccount(props.account, props.autosubscribe)

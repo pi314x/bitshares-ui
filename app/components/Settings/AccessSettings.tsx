@@ -54,7 +54,8 @@ import {Switch} from "../../design-system/Switch";
 import {Button} from "../../design-system/Button";
 import NodeSelector from "../Utility/NodeSelector";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const autoSelectionUrl = "wss://fake.automatic-selection.com";
 
@@ -278,7 +279,7 @@ export default function AccessSettings({
     showAddNodeModal,
     showRemoveNodeModal
 }: AccessSettingsProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const selectedNode = settingsState.settings.get("apiServer");
     const connectedNodeUrl = settingsState.settings.get("activeNode");
     const apiLatencies = settingsState.apiLatencies;

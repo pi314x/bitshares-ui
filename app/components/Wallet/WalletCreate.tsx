@@ -29,7 +29,6 @@ import Translate from "react-translate-component";
 import BrainkeyInput from "components/Wallet/BrainkeyInputStyleGuide";
 import PasswordConfirm from "components/Wallet/PasswordConfirmStyleGuide";
 import WalletDb from "stores/WalletDb";
-import WalletManagerStore from "stores/WalletManagerStore";
 import WalletActions from "actions/WalletActions";
 import SettingsActions from "actions/SettingsActions";
 import {getWalletName} from "branding";
@@ -37,7 +36,8 @@ import {Button} from "../../design-system/Button";
 import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
 // See Explorer/Blocks.tsx's comment on `TypedLink` for why this cast is
 // needed - `Link`'s inferred return type isn't a valid JSX element type
@@ -55,8 +55,8 @@ interface CreateNewWalletState {
 }
 
 function CreateNewWallet({restoreBrainkey}: {restoreBrainkey?: boolean}) {
-    const {wallet_names, current_wallet} = useAltStore<any>(
-        WalletManagerStore as any
+    const {wallet_names, current_wallet} = useReduxState<any>(
+        selectWalletManagerState
     );
 
     const stateRef = React.useRef<CreateNewWalletState>({

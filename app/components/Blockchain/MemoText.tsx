@@ -25,7 +25,7 @@
 //   gets recomputed right after a wallet unlock, even though `memo`
 //   itself never changes) is achieved instead by `MemoTextContainer`
 //   simply re-rendering on every `WalletUnlockStore` change (via
-//   `useAltStore`), which unconditionally re-invokes this Core with a
+//   `useReduxState`), which unconditionally re-invokes this Core with a
 //   fresh render, no prop needed to carry that signal. `componentDidMount`
 //   (`ReactTooltip.rebuild()`) becomes a mount-only `useEffect`, called
 //   unconditionally before any early return, per React's rules of hooks
@@ -44,11 +44,11 @@ import PrivateKeyStore from "stores/PrivateKeyStore";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
-import WalletUnlockStore from "stores/WalletUnlockStore";
 import utils from "common/utils";
 import ReactTooltip from "react-tooltip";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 
 interface MemoTextCoreProps {
     memo?: any;
@@ -126,7 +126,7 @@ interface MemoTextContainerProps {
 }
 
 function MemoTextContainer(props: MemoTextContainerProps) {
-    useAltStore<any>(WalletUnlockStore);
+    useReduxState<any>(selectWalletUnlockState);
     return <MemoText {...props} />;
 }
 

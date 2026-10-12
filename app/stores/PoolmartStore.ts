@@ -3,7 +3,7 @@
 // header for the overall migration approach). Preserves the exact
 // Alt-store interface every call site already relies on - `getState()`,
 // `listen(callback)`, `unlisten(callback)` - so every
-// `useAltStore(PoolmartStore)` call site keeps working completely
+// legacy `PoolmartStore` call site keeps working completely
 // unchanged. The original extended `BaseStore` but never called
 // `_export(...)`, so there are no extra public methods to replicate
 // beyond the default Alt store interface.

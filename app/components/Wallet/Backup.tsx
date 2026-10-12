@@ -50,7 +50,9 @@ import {Button} from "../../design-system/Button";
 import {Input} from "../../design-system/Input";
 import {Notification} from "../../design-system/Notification";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBackupState} from "../../store/slices/backupSlice";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
 // See Explorer/Blocks.tsx's comment on `TypedLink` for why this cast is
 // needed - `Link`'s inferred return type isn't a valid JSX element type
@@ -58,8 +60,8 @@ import {useAltStore} from "../../next/hooks/useAltStore";
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
 function useWalletBackup() {
-    const wallet = useAltStore<any>(WalletManagerStore as any);
-    const backupState = useAltStore<any>(BackupStore as any);
+    const wallet = useReduxState<any>(selectWalletManagerState);
+    const backupState = useReduxState<any>(selectBackupState);
     return {wallet, backup: backupState};
 }
 
@@ -535,7 +537,7 @@ export function Upload({children}: {children?: any}) {
         // confirmed inert: `incommingWebFile` reads the file
         // asynchronously (FileReader.onload), so a forced re-render at
         // this point can't yet reflect the new BackupStore state anyway -
-        // the real re-render already happens via useAltStore's store
+        // the real re-render already happens via useReduxState's store
         // subscription once the async read actually dispatches.
     };
 

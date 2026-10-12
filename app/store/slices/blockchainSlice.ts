@@ -14,7 +14,7 @@
 // `Map`, not an Immutable one) in place via `.set(...)`, never
 // reassigning `this.blockHeaders` itself. Alt's `emitChange()` fires on
 // every successful dispatch regardless of whether anything changed by
-// reference, so listeners (e.g. `BlockDate.tsx` via `useAltStore`) always
+// reference, so listeners (e.g. `BlockDate.tsx` via `useReduxState`) always
 // re-rendered after a header arrived. Immer (which backs this slice)
 // does NOT auto-draft plain `Map`/`Set` instances, so mutating the
 // existing Map in place would leave the whole slice's reference

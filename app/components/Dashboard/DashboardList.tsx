@@ -4,7 +4,7 @@
 //
 // Like TotalBalanceValue.tsx, this replaces the BindToChainState/Alt
 // connect() HOC stack with direct ChainStore reads plus
-// useChainStoreTick/useAltStore, and does not replicate the legacy
+// useChainStoreTick/useReduxState, and does not replicate the legacy
 // shouldComponentUpdate's fine-grained re-render gating - a perf
 // tradeoff, not a correctness one (see TotalBalanceValue.tsx's header
 // comment). The actual balance/collateral/debt aggregation is imported
@@ -19,15 +19,16 @@ import counterpart from "counterpart";
 import {useNavigate} from "react-router-dom";
 import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";
-import SettingsStore from "stores/SettingsStore";
-import WalletUnlockStore from "stores/WalletUnlockStore";
 import AccountStore from "stores/AccountStore";
 import SettingsActions from "actions/SettingsActions";
 import AccountActions from "actions/AccountActions";
 import WalletDb from "stores/WalletDb";
 import Icon from "../Icon/Icon";
 import TotalBalanceValue from "../Utility/TotalBalanceValue";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {
     aggregateOpenOrders,
@@ -76,12 +77,12 @@ export default function DashboardList(props: DashboardListProps) {
 
     useChainStoreTick();
     const navigate = useNavigate();
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     // Legacy DashboardList only used WalletUnlockStore's `locked` to force
     // a re-render on lock/unlock (never read it in JSX) - this hook call
     // preserves that re-render trigger without an unused variable.
-    useAltStore<any>(WalletUnlockStore);
-    const accountState = useAltStore<any>(AccountStore);
+    useReduxState<any>(selectWalletUnlockState);
+    const accountState = useReduxState<any>(selectAccountState);
 
     const starredAccounts = accountState.starredAccounts;
     const viewSettings = settingsState.viewSettings;

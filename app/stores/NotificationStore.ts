@@ -4,7 +4,7 @@
 // Alt-store interface every call site already relies on -
 // `getState().notification`, `listen(callback)`, `unlisten(callback)` -
 // so `App.jsx` (still a direct `.listen()`/`.unlisten()`/`.getState()`
-// caller) and any `useAltStore(NotificationStore)` hook caller keep
+// caller) and any other `NotificationStore` caller keep
 // working completely unchanged.
 import {reduxStore} from "../store/reduxStore";
 import {selectNotification} from "../store/slices/notificationSlice";

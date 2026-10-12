@@ -5,11 +5,11 @@
 // wrinkles). Preserves the exact Alt-store interface every call site
 // already relies on:
 //   - `getState()`/`listen(callback)`/`unlisten(callback)` (the standard
-//     three, used by `useAltStore(MarketsStore)` call sites and by the
+//     three, used by legacy `MarketsStore` call sites and by the
 //     still-legacy-shaped direct uses).
 //   - `subscribe(id, callback)`/`unsubscribe(id)`/`clearSubs()` - the
 //     original's `exportPublicMethods({...})` call. Used directly (not
-//     through `useAltStore`) by `Exchange/tradingViewClasses.js`'s
+//     through `useReduxState`) by `Exchange/tradingViewClasses.js`'s
 //     TradingView datafeed glue (`subscribe("market_change", ...)`,
 //     `subscribe("subscribeBars", ...)`) and by
 //     `PriceAlertNotifications.tsx`. This pub-sub map is unrelated to

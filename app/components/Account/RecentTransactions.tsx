@@ -6,7 +6,7 @@
 //
 // `RecentTransactions`: the original's `connect(BindToChainState(
 // Component), {listenTo: [SettingsStore], getProps})` collapses into a
-// single `RecentTransactionsContainer` (`useAltStore(SettingsStore)` for
+// single `RecentTransactionsContainer` (`useReduxState(selectSettingsState)` for
 // `marketDirections`, then resolving the required `accountsList` prop).
 // `accountsList` is a `ChainTypes.ChainAccountsList`, so its resolution
 // loop increments its index *after* assigning (no sparse-array quirk,
@@ -76,10 +76,10 @@ import {Link} from "react-router-dom";
 import FormattedAsset from "../Utility/FormattedAsset";
 import BlockTime from "../Blockchain/BlockTime";
 import OperationAnt from "../Blockchain/OperationAnt";
-import SettingsStore from "stores/SettingsStore";
 import PendingBlock from "../Utility/PendingBlock";
 import utils from "common/utils";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const operation = new (OperationAnt as any)();
@@ -684,7 +684,7 @@ function RecentTransactionsContainer({
     ...rest
 }: RecentTransactionsContainerProps) {
     useChainStoreTick();
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     if (!accountsList || !accountsList.size) {
         return <span />;

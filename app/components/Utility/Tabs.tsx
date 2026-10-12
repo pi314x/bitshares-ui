@@ -4,7 +4,7 @@
 //
 // Structural change (not a behavior change): the original's `connect
 // (Tabs, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(SettingsStore)`, per this migration's established
+// `useReduxState(selectSettingsState)`, per this migration's established
 // Alt.js-store adapter pattern.
 //
 // `UNSAFE_componentWillReceiveProps` (syncs `state.activeTab` to
@@ -38,10 +38,10 @@
 import * as React from "react";
 import cnames from "classnames";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import counterpart from "counterpart";
 import {useNavigate} from "react-router-dom";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface TabProps {
     changeTab?: (index: number, isLinkTo: string) => void;
@@ -275,7 +275,7 @@ function TabsCore({
 type TabsProps = Omit<TabsCoreProps, "viewSettings">;
 
 function Tabs(props: TabsProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     return <TabsCore {...(props as any)} viewSettings={settingsState.viewSettings} />;
 }
 

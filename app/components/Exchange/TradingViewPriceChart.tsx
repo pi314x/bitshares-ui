@@ -127,10 +127,10 @@ import {Table} from "../../design-system/Table";
 import {Button} from "../../design-system/Button";
 import {Icon} from "../../design-system/Icon";
 import counterpart from "counterpart";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 export interface TradingViewPriceChartProps {
     dataFeed?: any;
@@ -537,7 +537,7 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
 }
 
 export default function TradingViewPriceChart(props: TradingViewPriceChartProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <TradingViewPriceChartCore

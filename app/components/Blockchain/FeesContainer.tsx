@@ -6,8 +6,8 @@
 // value evaluated once at `render()` time) from `SettingsStore` into
 // `Fees` via `AltContainer`'s `inject` prop, and to re-render whenever
 // `SettingsStore` changed (`stores={[SettingsStore]}`). Both are covered
-// here by this migration's standard `useAltStore` adapter hook
-// (`app/next/hooks/useAltStore.ts`), the same replacement already used
+// here by this migration's standard `useReduxState` adapter hook
+// (`app/next/hooks/useReduxState.ts`), the same replacement already used
 // for every other plain `AltContainer`-wrapping `*Container.jsx` in this
 // codebase (e.g. `Explorer/Assets.tsx`), which additionally makes the
 // injected value always current rather than only refreshed when the
@@ -21,12 +21,12 @@
 // - none appear anywhere in this file or in `Fees.jsx`; both are read-only
 // fee-schedule display components.
 import * as React from "react";
-import SettingsStore from "stores/SettingsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import Fees from "./Fees";
 
 export default function FeesContainer(props: Record<string, any>) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return <Fees {...props} settings={settingsState.settings} />;
 }

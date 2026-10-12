@@ -19,11 +19,9 @@
 //
 // `connect(Component, {listenTo: [MarketsStore, SettingsStore],
 // getProps})` - both `allMarketStats`/`priceAlert` are genuinely used -
-// replicated with `useAltStore(MarketsStore)` + `useAltStore
+// replicated with `useReduxState(selectMarkets)` + `useReduxState
 // (SettingsStore)`.
 import * as React from "react";
-import MarketsStore from "../stores/MarketsStore";
-import SettingsStore from "../stores/SettingsStore";
 import {PRICE_ALERT_TYPES} from "../services/Exchange";
 import {Notification} from "../design-system/Notification";
 import {Icon} from "../design-system/Icon";
@@ -31,7 +29,9 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import SettingsActions from "../actions/SettingsActions";
 import AssetName from "./Utility/AssetName";
-import {useAltStore} from "../next/hooks/useAltStore";
+import {useReduxState} from "../next/hooks/useReduxState";
+import {selectMarkets} from "../store/slices/marketsSlice";
+import {selectSettingsState} from "../store/slices/settingsSlice";
 
 function getRulesForCheck(priceAlertRules: any[], markets: any) {
     return priceAlertRules.map((rule, key) => {
@@ -167,8 +167,8 @@ function notifyAboutRules(rules: any[]) {
 }
 
 export default function PriceAlertNotifications() {
-    const marketsState = useAltStore<any>(MarketsStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    const marketsState = useReduxState<any>(selectMarkets);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const allMarketStats = marketsState.allMarketStats;
     const priceAlert = settingsState.priceAlert.toJS();
 

@@ -42,7 +42,7 @@
 //
 // Structural change (same substitution used throughout this migration):
 // `connect(Market24HourChangeComponent, {listenTo: [MarketsStore],
-// getProps})` is replaced by `useAltStore(MarketsStore)`.
+// getProps})` is replaced by `useReduxState(selectMarkets)`.
 // `AssetWrapper(MarketChangeComponent, {propNames: ["quote", "base"],
 // defaultProps: {quote: "1.3.0"}})` wrapping is kept exactly as-is around
 // the inner component (shared HOC, ported in this same batch - see
@@ -54,8 +54,8 @@
 import * as React from "react";
 import {FormattedNumber} from "react-intl";
 import AssetWrapper from "./AssetWrapper";
-import MarketsStore from "stores/MarketsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 
 /**
  *  Displays change in market value for an asset
@@ -117,7 +117,7 @@ function Market24HourChangeComponent({
     marketId,
     ...others
 }: Market24HourChangeComponentProps) {
-    const marketsState = useAltStore<any>(MarketsStore as any);
+    const marketsState = useReduxState<any>(selectMarkets);
     const allMarketStats = marketsState.allMarketStats;
     const marketStats = allMarketStats.get(marketId);
 

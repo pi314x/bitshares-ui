@@ -16,7 +16,7 @@
 //
 // Structural changes:
 // - The original's `connect(GatewaySelectorModal, {listenTo: [
-//   SettingsStore], getProps() {...}})` is replaced by `useAltStore<any>
+//   SettingsStore], getProps() {...}})` is replaced by `useReduxState<any>
 //   (SettingsStore)` (subscribes to the same store, re-rendering on every
 //   change - matching `FeeAssetSettings.tsx`'s precedent of discarding the
 //   hook's return value and instead re-reading `SettingsStore.getState()`
@@ -113,7 +113,8 @@ import SettingsActions from "../../actions/SettingsActions";
 import {updateGatewayBackers} from "common/gatewayUtils";
 import ServiceProviderExplanation from "./ServiceProviderExplanation";
 import {getGatewayConfig} from "../../lib/chain/onChainConfig";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface GatewaySelectorModalProps {
     visible: boolean;
@@ -144,7 +145,7 @@ type OnChainConfigMap = Record<string, any>;
 export default function GatewaySelectorModal(
     props: GatewaySelectorModalProps
 ) {
-    useAltStore<any>(SettingsStore);
+    useReduxState<any>(selectSettingsState);
     const settingsState = SettingsStore.getState();
     const filteredServiceProviders: string[] = settingsState.settings.get(
         "filteredServiceProviders",

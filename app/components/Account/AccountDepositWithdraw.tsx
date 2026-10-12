@@ -24,7 +24,7 @@
 // AccountDepositWithdraw)` (required `account`) wrapping
 // `DepositStoreWrapper`'s own `UNSAFE_componentWillMount` (calling
 // `updateGatewayBackers()`) collapse into a single Container: three
-// `useAltStore` calls (one per store - the established multi-store
+// `useReduxState` calls (one per store - the established multi-store
 // pattern), a mount-only `useEffect` for `updateGatewayBackers()`, and
 // chain resolution of `account` (required, so gated on the default
 // blank `<span />` fallback, matching `BindToChainState`'s own
@@ -63,12 +63,12 @@ import {updateGatewayBackers} from "common/gatewayUtils";
 import Translate from "react-translate-component";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectGateway} from "../../store/slices/gatewaySlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import HelpContent from "../Utility/HelpContent";
-import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
-import GatewayStore from "stores/GatewayStore";
 import AccountImage from "../Account/AccountImage";
 import PiratecashGateway from "../DepositWithdraw/piratecash/PiratecashGateway";
 import XbtsFiat from "../DepositWithdraw/XbtsFiat";
@@ -439,9 +439,9 @@ function AccountDepositWithdrawContainer(
     props: AccountDepositWithdrawContainerProps
 ) {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
-    const gatewayState = useAltStore<any>(GatewayStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const gatewayState = useReduxState<any>(selectGateway);
 
     const isMountRef = React.useRef(true);
     React.useEffect(() => {

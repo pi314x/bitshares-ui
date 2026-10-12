@@ -111,7 +111,7 @@
 //   `MarketRow.tsx` slice (`withRouter`'s own injected values always
 //   shadowed them in react-router v5) - not part of `MarketRowProps` any
 //   more, so there is nothing left to pass.
-// - `connect(..., {listenTo, getProps})` becomes three `useAltStore`
+// - `connect(..., {listenTo, getProps})` becomes three `useReduxState`
 //   calls (`SettingsStore`/`MarketsStore`/`AssetStore`), matching
 //   `listenTo`'s store list; `getProps()`'s field list is read directly
 //   off each store's state and merged with the JSX-supplied props,
@@ -123,9 +123,6 @@ import utils from "common/utils";
 import Translate from "react-translate-component";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 import MarketRow from "./MarketRow";
-import SettingsStore from "stores/SettingsStore";
-import MarketsStore from "stores/MarketsStore";
-import AssetStore from "stores/AssetStore";
 import AssetName from "../Utility/AssetName";
 import SettingsActions from "actions/SettingsActions";
 import AssetActions from "actions/AssetActions";
@@ -146,7 +143,10 @@ import SearchInputUntyped from "../Utility/SearchInput";
 // as making them optional), so TS would otherwise demand every one of
 // them at every call site - pre-existing, out of scope to touch here.
 const SearchInput: any = SearchInputUntyped;
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface MarketGroupProps {
     markets: any[] | undefined;
@@ -1203,9 +1203,9 @@ const MyMarketsDebounced: any = debounceRender(MyMarketsInner, 50, {
 });
 
 export default function MyMarkets(props: any) {
-    const settingsState = useAltStore<any>(SettingsStore as any);
-    const marketsState = useAltStore<any>(MarketsStore as any);
-    const assetState = useAltStore<any>(AssetStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const marketsState = useReduxState<any>(selectMarkets);
+    const assetState = useReduxState<any>(selectAsset);
 
     return (
         <MyMarketsDebounced

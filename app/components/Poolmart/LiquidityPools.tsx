@@ -38,7 +38,7 @@
 // {show_loader: true})`, same two-store-free shape here since this file
 // only ever listened to `PoolmartStore`):
 //   - `LiquidityPoolsContainer` (default export): calls
-//     `useAltStore(PoolmartStore)` once, replacing the outer `connect`.
+//     `useReduxState(selectPoolmart)` once, replacing the outer `connect`.
 //     The `LiquidityPoolsStoreWrapper` passthrough class isn't separately
 //     reproduced since it had no logic of its own.
 //   - `LiquidityPoolsChainContainer`: calls `useChainStoreTick()` and
@@ -115,13 +115,13 @@ import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import AssetName from "../Utility/AssetName";
 import SearchInput from "../Utility/SearchInput";
-import PoolmartStore from "../../stores/PoolmartStore";
 import PoolmartActions from "../../actions/PoolmartActions";
 import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
 import AccountStore from "../../stores/AccountStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectPoolmart} from "../../store/slices/poolmartSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import LoadingIndicator from "../LoadingIndicator";
 
@@ -544,7 +544,7 @@ export interface LiquidityPoolsContainerProps {
 export default function LiquidityPoolsContainer({
     defaultAsset
 }: LiquidityPoolsContainerProps) {
-    const poolmartState = useAltStore<any>(PoolmartStore);
+    const poolmartState = useReduxState<any>(selectPoolmart);
 
     return (
         <LiquidityPoolsChainContainer

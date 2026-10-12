@@ -12,7 +12,7 @@
 // `account`/`issuer`/`asset` and optional `balance` props) plus the outer
 // `connect(..., {listenTo: [SettingsStore], getProps: fee_asset_symbol})`
 // collapse into one container component resolving the same data directly
-// via `ChainStore` under `useChainStoreTick()` plus `useAltStore()`, per
+// via `ChainStore` under `useChainStoreTick()` plus `useReduxState()`, per
 // this migration's established `BindToChainState` replacement pattern -
 // `account`/`issuer`/`asset` are `.isRequired` in the original propTypes
 // (so `BindToChainState` gated rendering behind a loading fallback until
@@ -58,14 +58,14 @@ import counterpart from "counterpart";
 import AmountSelector from "components/Utility/AmountSelector";
 import AccountActions from "actions/AccountActions";
 import {validateAddress, WithdrawAddresses} from "common/XbtsxMethods";
-import SettingsStore from "stores/SettingsStore";
 import {ChainStore} from "bitsharesjs";
 import {checkFeeStatusAsync, checkBalance} from "common/trxHelper";
 import {Price, Asset} from "common/MarketClasses";
 import {debounce} from "lodash-es";
 import {Button} from "../../../design-system/Button";
 import {Modal} from "../../../design-system/Modal";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../../next/hooks/useChainStoreTick";
 
 function getAvailableAssets(state: XbtsxWithdrawState) {
@@ -936,7 +936,7 @@ function XbtsxWithdrawModalContainer(props: {
     memo_prefix?: string;
 }) {
     useChainStoreTick();
-    const settingsState = useAltStore<any>(SettingsStore as any);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const fee_asset_symbol = settingsState.settings.get("fee_asset");
 
     const account = ChainStore.getAccount(props.account);

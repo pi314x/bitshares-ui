@@ -3,7 +3,7 @@
 //
 // Structural change (not a behavior change): the original's `connect
 // (CreateWorker, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(AccountStore)`.
+// `useReduxState(selectAccountState)`.
 //
 // Preserved verbatim (not "fixed"):
 // - `shouldComponentUpdate` used the comma operator
@@ -19,11 +19,11 @@
 //   leftover debug log that fires on every render.
 import * as React from "react";
 import ApplicationApi from "api/ApplicationApi";
-import AccountStore from "stores/AccountStore";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {Notification} from "../../design-system/Notification";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface CreateWorkerState {
     title: string | null;
@@ -188,7 +188,7 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
 }
 
 function CreateWorkerContainer() {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     return <CreateWorker currentAccount={accountState.currentAccount} />;
 }
 

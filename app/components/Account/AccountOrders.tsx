@@ -8,13 +8,12 @@
 //
 // Structural change (not a behavior change): `connect(Component,
 // {listenTo: [SettingsStore], getProps})` replaced by
-// `useAltStore(SettingsStore)` in a thin Container.
+// `useReduxState(selectSettingsState)` in a thin Container.
 import * as React from "react";
 import counterpart from "counterpart";
 import MarketsActions from "actions/MarketsActions";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {LimitOrder, SettleOrder, FeedPrice} from "common/MarketClasses";
-import SettingsStore from "stores/SettingsStore";
 import SettingsActions from "actions/SettingsActions";
 import marketUtils from "common/market_utils";
 import Translate from "react-translate-component";
@@ -27,7 +26,8 @@ import AccountOrderRowDescription from "./AccountOrderRowDescription";
 import CollapsibleTable from "../Utility/CollapsibleTable";
 import {groupBy, sumBy, meanBy} from "lodash-es";
 import {FormattedNumber} from "react-intl";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 import {Link} from "react-router-dom";
 import {MarketPrice} from "../Utility/MarketPrice";
@@ -861,7 +861,7 @@ interface AccountOrdersContainerProps
 }
 
 function AccountOrdersContainer(props: AccountOrdersContainerProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <AccountOrders

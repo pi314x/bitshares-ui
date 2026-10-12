@@ -3,8 +3,8 @@
 //
 // Structural change (not a behavior change): the original's
 // `connect(BlockDate, {listenTo, getProps})` alt-react HOC is replaced by
-// `useAltStore(BlockchainStore)`, per this migration's established
-// Alt.js-store adapter pattern (see app/next/hooks/useAltStore.ts).
+// `useReduxState(selectBlockchain)`, per this migration's established
+// Alt.js-store adapter pattern (see app/next/hooks/useReduxState.ts).
 //
 // The default `format` (`"market_history_us"` vs `"market_history"` based
 // on `browser-locale`) was a `static defaultProps` value, computed once at
@@ -21,12 +21,12 @@
 // on `blockHeader`, comparing against the previous value via a ref.
 import * as React from "react";
 import counterpart from "counterpart";
-import BlockchainStore from "stores/BlockchainStore";
 import BlockchainActions from "actions/BlockchainActions";
 import ReactTooltip from "react-tooltip";
 import getLocale from "browser-locale";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBlockchain} from "../../store/slices/blockchainSlice";
 
 const DEFAULT_FORMAT =
     getLocale()
@@ -89,7 +89,7 @@ function BlockDateContainer({
     tooltip = false,
     component = "span"
 }: BlockDateContainerProps) {
-    const blockchainState = useAltStore<any>(BlockchainStore);
+    const blockchainState = useReduxState<any>(selectBlockchain);
     const blockHeader = blockchainState.blockHeaders.get(block_number);
 
     React.useEffect(() => {

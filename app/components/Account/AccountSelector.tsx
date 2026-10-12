@@ -5,7 +5,7 @@
 // gating render since it isn't `.isRequired`) replaced by a Container
 // resolving `account` via `ChainStore.getAccount` under
 // `useChainStoreTick()`. `connect(Component, {listenTo: [AccountStore],
-// getProps})` replaced by `useAltStore(AccountStore)`.
+// getProps})` replaced by `useReduxState(selectAccountState)`.
 //
 // The class's `this.state.accountIndex` (a search-results array,
 // *mutated in place* via `.push`/`.splice`/index-assignment across
@@ -50,7 +50,6 @@
 import * as React from "react";
 import utils from "common/utils";
 import AccountImage from "../Account/AccountImage";
-import AccountStore from "stores/AccountStore";
 import AccountActions from "actions/AccountActions";
 import Translate from "react-translate-component";
 import {
@@ -61,7 +60,8 @@ import {
     FetchChainObjects
 } from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import accountUtils from "common/account_utils";
@@ -879,7 +879,7 @@ interface AccountSelectorContainerProps
 
 function AccountSelectorContainer(props: AccountSelectorContainerProps) {
     useChainStoreTick();
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
 
     const resolvedAccount = props.account
         ? (ChainStore as any).getAccount(props.account, props.autosubscribe)

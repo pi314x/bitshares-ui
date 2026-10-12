@@ -8,12 +8,12 @@
 import * as React from "react";
 import {saveAs} from "file-saver";
 import Translate from "react-translate-component";
-import SettingsStore from "stores/SettingsStore";
 import {Button} from "../../design-system/Button";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 export default function BackupFavorites() {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const starredMarkets = settingsState.starredMarkets;
 
     function makeBackup() {

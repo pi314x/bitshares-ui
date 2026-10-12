@@ -6,7 +6,7 @@
 // signing, so this stays out of the wallet-security-sensitive tier.
 //
 // Replaces the legacy `alt-react` `connect(AccountsSettings, {listenTo,
-// getProps})` wrapper with `useAltStore(AccountStore)` for re-render
+// getProps})` wrapper with `useReduxState(selectAccountState)` for re-render
 // triggering (same adapter pattern as every other ported component this
 // phase), then reads `AccountStore.getMyAccounts()` fresh in the render
 // body - it's a plain method, not part of `getState()`, same as
@@ -24,12 +24,13 @@ import {Link, LinkProps} from "react-router-dom";
 import AccountStore from "stores/AccountStore";
 import AccountActions from "actions/AccountActions";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
 export default function AccountsSettings() {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const hiddenAccounts = accountState.myHiddenAccounts;
     const myAccounts = AccountStore.getMyAccounts();
 

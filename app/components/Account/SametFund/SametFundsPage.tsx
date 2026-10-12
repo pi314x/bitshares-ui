@@ -7,8 +7,8 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
-import AccountStore from "../../../stores/AccountStore";
-import {useAltStore} from "../../../next/hooks/useAltStore";
+import {useReduxState} from "../../../next/hooks/useReduxState";
+import {selectAccountState} from "../../../store/slices/accountSlice";
 import {Button} from "../../../design-system/Button";
 import {Table, TableColumn} from "../../../design-system/Table";
 import {Tabs} from "../../../design-system/Tabs";
@@ -114,7 +114,7 @@ function idNumber(id: string): number {
 }
 
 export default function SametFundsPage() {
-    const accountState = useAltStore<any>(AccountStore as any);
+    const accountState = useReduxState<any>(selectAccountState);
     const accountName: string | null =
         accountState.currentAccount || accountState.passwordAccount || null;
 

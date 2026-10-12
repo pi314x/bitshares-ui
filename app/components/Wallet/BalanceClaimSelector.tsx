@@ -27,14 +27,14 @@ import * as React from "react";
 import Immutable from "immutable";
 
 import PrivateKeyStore from "stores/PrivateKeyStore";
-import BalanceClaimActiveStore from "stores/BalanceClaimActiveStore";
 import BalanceClaimActiveActions from "actions/BalanceClaimActiveActions";
 import FormattedAsset from "components/Utility/FormattedAsset";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBalanceClaimActive} from "../../store/slices/balanceClaimActiveSlice";
 
 export default function BalanceClaimSelector() {
-    const storeState = useAltStore<any>(BalanceClaimActiveStore as any);
+    const storeState = useReduxState<any>(selectBalanceClaimActive);
     const {balances, address_to_pubkey, claim_account_name} = storeState;
     const {checked} = storeState;
 

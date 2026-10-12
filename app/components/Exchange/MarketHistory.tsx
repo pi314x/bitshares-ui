@@ -52,13 +52,13 @@ import * as React from "react";
 import Immutable from "immutable";
 import Ps from "perfect-scrollbar";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import {ChainTypes as grapheneChainTypes} from "bitsharesjs";
 const {operations} = (grapheneChainTypes as any);
 import ReactTooltip from "react-tooltip";
 import {FillOrder} from "common/MarketClasses";
 import {MarketHistoryView, MarketHistoryViewRow} from "./View/MarketHistoryView";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface MarketHistoryProps {
     history?: any;
@@ -99,7 +99,7 @@ function MarketHistoryInner(props: MarketHistoryProps) {
     } = props;
     let {activeTab} = props;
 
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const viewSettings = settingsState.viewSettings;
 
     const rowCount = 20;

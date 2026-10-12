@@ -15,7 +15,7 @@
 // established treatment of commented-out blocks, e.g.
 // `Account/CreateAccount.tsx`'s `RefcodeInput` block) - so it's never
 // actually consumed by any live code. Replicated with a bare
-// `useAltStore(AccountStore)` call purely for its re-render-on-change
+// `useReduxState(selectAccountState)` call purely for its re-render-on-change
 // side effect, matching this migration's established "connect wrap with
 // an otherwise-unused store" treatment.
 //
@@ -42,7 +42,6 @@
 //   `require()` in a TypeScript file.
 import * as React from "react";
 import counterpart from "counterpart";
-import AccountStore from "stores/AccountStore";
 import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
 import TranslateWithLinks from "./Utility/TranslateWithLinks";
@@ -58,7 +57,8 @@ import {Select} from "../design-system/Select";
 import {Row} from "../design-system/Row";
 import {Col} from "../design-system/Col";
 import {Icon} from "../design-system/Icon";
-import {useAltStore} from "../next/hooks/useAltStore";
+import {useReduxState} from "../next/hooks/useReduxState";
+import {selectAccountState} from "../store/slices/accountSlice";
 
 const LinkAny = Link as any;
 const RouteAny = Route as any;
@@ -71,7 +71,7 @@ interface LoginSelectorState {
 }
 
 export default function LoginSelector() {
-    useAltStore<any>(AccountStore);
+    useReduxState<any>(selectAccountState);
 
     const [state, setState] = React.useState<LoginSelectorState>({
         locales: (SettingsStore as any).getState().defaults.locale,

@@ -11,8 +11,8 @@
 // actually read anywhere in the file (grepped); `rpc_connection_status`
 // (from `BlockchainStore`), `defaultConnection`, and `apiLatencies` are
 // all fetched by `getProps()` but never used - dropped, keeping
-// `useAltStore(SettingsStore)` for `apis`/`apiServer` plus a bare
-// `useAltStore(BlockchainStore)` call purely for its re-render-on-change
+// `useReduxState(selectSettingsState)` for `apis`/`apiServer` plus a bare
+// `useReduxState(selectBlockchain)` call purely for its re-render-on-change
 // side effect (matching this migration's established "connect wrap with
 // an otherwise-unused store" treatment, e.g. `AccountRegistrationForm
 // .tsx`).
@@ -47,13 +47,13 @@
 // port gave `WebsocketAddModal`, rather than inventing a handler that
 // wasn't there.
 import * as React from "react";
-import SettingsStore from "stores/SettingsStore";
-import BlockchainStore from "stores/BlockchainStore";
 import Translate from "react-translate-component";
 import Icon from "./Icon/Icon";
 import WebsocketAddModal from "./Settings/WebsocketAddModal";
 import AccessSettings from "./Settings/AccessSettings";
-import {useAltStore} from "../next/hooks/useAltStore";
+import {useReduxState} from "../next/hooks/useReduxState";
+import {selectBlockchain} from "../store/slices/blockchainSlice";
+import {selectSettingsState} from "../store/slices/settingsSlice";
 
 const WebsocketAddModalAny = WebsocketAddModal as any;
 
@@ -64,8 +64,8 @@ interface SyncErrorState {
 }
 
 export default function SyncError() {
-    useAltStore<any>(BlockchainStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    useReduxState<any>(selectBlockchain);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const apis = settingsState.defaults.apiServer;
     const apiServer = settingsState.settings.get("apiServer");
 

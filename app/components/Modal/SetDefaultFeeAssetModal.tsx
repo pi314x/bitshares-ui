@@ -3,7 +3,7 @@
 // Mechanical, no logic changes.
 //
 // `connect(Component, {listenTo: [SettingsStore, AccountStore],
-// getProps})` replaced by `useAltStore` calls (the established
+// getProps})` replaced by `useReduxState` calls (the established
 // multi-store pattern) plus resolving `currentAccount` the same way
 // `getProps` did (caller-supplied `currentAccount`, falling back to
 // `ChainStore.getAccount(AccountStore.getState().currentAccount)`).
@@ -51,9 +51,9 @@ import {Button} from "../../design-system/Button";
 import {Radio} from "../../design-system/Radio";
 import {Modal} from "../../design-system/Modal";
 import {Checkbox} from "../../design-system/Checkbox";
-import SettingsStore from "stores/SettingsStore";
-import AccountStore from "stores/AccountStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -291,8 +291,8 @@ interface SetDefaultFeeAssetModalContainerProps {
 function SetDefaultFeeAssetModalContainer(
     props: SetDefaultFeeAssetModalContainerProps
 ) {
-    const settingsState = useAltStore<any>(SettingsStore);
-    const accountState = useAltStore<any>(AccountStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const accountState = useReduxState<any>(selectAccountState);
 
     const currentAccount =
         props.currentAccount ||

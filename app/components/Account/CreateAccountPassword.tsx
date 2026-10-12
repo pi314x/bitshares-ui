@@ -3,7 +3,7 @@
 // Mechanical, no logic changes. Structurally a near-twin of
 // `CreateAccount.tsx` (same batch) - see that file's header for the
 // rationale shared by both (dropping `withRouter`/`connect` for
-// `useAltStore`, the nested-ref/`useRef()` translation, the inert
+// `useReduxState`, the nested-ref/`useRef()` translation, the inert
 // commented-out `RefcodeInput` block, dropping `shouldComponentUpdate`
 // and `state.show_identicon`).
 //
@@ -56,7 +56,8 @@ import CopyButton from "../Utility/CopyButton";
 import {scroller} from "react-scroll";
 import {Notification} from "../../design-system/Notification";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -705,7 +706,7 @@ function CreateAccountPassword() {
 }
 
 function CreateAccountPasswordContainer() {
-    useAltStore(AccountStore);
+    useReduxState(selectAccountState);
     return <CreateAccountPassword />;
 }
 

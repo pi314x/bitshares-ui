@@ -5,9 +5,9 @@
 // string, no key/password material.
 //
 // The outer `StoreWrapper` (`AltContainer` injecting `searchAccounts`
-// from `AccountStore`) becomes a Container calling `useAltStore
+// from `AccountStore`) becomes a Container calling `useReduxState
 // (AccountStore)` and reading `.searchAccounts` off its state directly -
-// the standard `connect`/`AltContainer` -> `useAltStore` translation used
+// the standard `connect`/`AltContainer` -> `useReduxState` translation used
 // throughout this migration.
 //
 // Real, external ref-based caller: `Account/CreateAccountPassword.tsx`
@@ -79,10 +79,10 @@
 import * as React from "react";
 import classNames from "classnames";
 import AccountActions from "actions/AccountActions";
-import AccountStore from "stores/AccountStore";
 import {ChainValidation} from "bitsharesjs";
 import counterpart from "counterpart";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface AccountNameInputState {
     value: any;
@@ -269,7 +269,7 @@ const AccountNameInput = React.forwardRef<
     AccountNameInputHandle,
     AccountNameInputProps
 >(function AccountNameInput(props, ref) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const searchAccounts = accountState.searchAccounts;
 
     return (

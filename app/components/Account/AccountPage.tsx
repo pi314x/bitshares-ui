@@ -9,7 +9,7 @@
 // a Container gating on the resolved `account`, replicating
 // `BindToChainState.jsx`'s exact `show_loader` fallback markup. The
 // outer `connect(Component, {listenTo: [...], getProps})` (three stores)
-// is replaced by three `useAltStore()` calls.
+// is replaced by three `useReduxState()` calls.
 //
 // `componentDidMount` + `UNSAFE_componentWillReceiveProps` (both call
 // `AccountActions.setCurrentAccount`/`accountUtils.getPossibleFees` -
@@ -27,8 +27,6 @@
 import * as React from "react";
 import AccountActions from "actions/AccountActions";
 import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
-import WalletUnlockStore from "stores/WalletUnlockStore";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import accountUtils from "common/account_utils";
@@ -43,7 +41,10 @@ import {
     useParams
 } from "react-router-dom";
 import LoadingIndicator from "../LoadingIndicator";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 
 /* Nested routes */
 import AccountAssets from "./AccountAssets";
@@ -254,9 +255,9 @@ function AccountPageStoreWrapper(props: AccountPageStoreWrapperProps) {
         account_name: string;
     };
 
-    const accountState = useAltStore<any>(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
-    const walletUnlockState = useAltStore<any>(WalletUnlockStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const walletUnlockState = useReduxState<any>(selectWalletUnlockState);
 
     return (
         <AccountPageChainContainer

@@ -18,7 +18,7 @@
 // store subscription that injects no props of its own, used purely to
 // force a re-render whenever `AccountStore` changes (since
 // `AccountStore.getMyAccounts()` is read directly, not from props) - is
-// replaced by `useAltStore(AccountStore)` in a thin Container, called
+// replaced by `useReduxState(selectAccountState)` in a thin Container, called
 // for its re-render-triggering side effect exactly like the original's
 // empty `getProps`. `withRouter` is dropped since this component is only
 // ever rendered as a route `component` (`LoginSelector.jsx`), which
@@ -88,7 +88,8 @@ import counterpart from "counterpart";
 import {scroller} from "react-scroll";
 import {getWalletName} from "branding";
 import {Notification} from "../../design-system/Notification";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -669,7 +670,7 @@ function CreateAccount() {
 }
 
 function CreateAccountContainer() {
-    useAltStore(AccountStore);
+    useReduxState(selectAccountState);
     return <CreateAccount />;
 }
 

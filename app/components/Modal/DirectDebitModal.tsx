@@ -8,7 +8,7 @@
 //
 // `connect(DirectDebitModal, {listenTo: [AccountStore, SettingsStore],
 // getProps})` replaced by a Container using the established multi-store
-// `useAltStore` pattern (see `SetDefaultFeeAssetModal.tsx`).
+// `useReduxState` pattern (see `SetDefaultFeeAssetModal.tsx`).
 // `getProps().passwordAccount` is dropped - grep-verified unused anywhere
 // in the file (grabbed from `AccountStore` but never read).
 //
@@ -114,7 +114,6 @@ import {ChainStore} from "bitsharesjs";
 import AmountSelector from "../Utility/AmountSelector";
 import PeriodSelector from "../Utility/PeriodSelector";
 import FeeAssetSelector from "components/Utility/FeeAssetSelector";
-import AccountStore from "stores/AccountStore";
 import AccountSelector from "../Account/AccountSelector";
 import {Asset} from "common/MarketClasses";
 import {isNaN} from "lodash-es";
@@ -122,7 +121,6 @@ import {checkBalance} from "common/trxHelper";
 import BalanceComponent from "../Utility/BalanceComponent";
 import utils from "common/utils";
 import counterpart from "counterpart";
-import SettingsStore from "stores/SettingsStore";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -130,7 +128,9 @@ import {Form} from "../../design-system/Form";
 import {DatePicker} from "../../design-system/DatePicker";
 import ApplicationApi from "../../api/ApplicationApi";
 import moment from "moment";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface DirectDebitModalState {
     to_name: string;
@@ -744,8 +744,8 @@ interface DirectDebitModalContainerProps {
 }
 
 function DirectDebitModalContainer(props: DirectDebitModalContainerProps) {
-    const accountState = useAltStore<any>(AccountStore);
-    const settingsState = useAltStore<any>(SettingsStore);
+    const accountState = useReduxState<any>(selectAccountState);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <DirectDebitModal

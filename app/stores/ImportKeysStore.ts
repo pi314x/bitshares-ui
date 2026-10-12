@@ -11,7 +11,7 @@
 // AND the directly-callable `importing(value)` method (the original's
 // `_export("importing")` - not Alt-dispatched via a separate Actions
 // file, called straight on the store singleton) - so
-// `Wallet/ImportKeys.tsx`'s `useAltStore(ImportKeysStore)` and its
+// `Wallet/ImportKeys.tsx`'s reads of it and its
 // `ImportKeysStore.importing(true/false)` calls keep working completely
 // unchanged.
 import {reduxStore} from "../store/reduxStore";

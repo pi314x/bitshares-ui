@@ -38,12 +38,12 @@ import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import {Table} from "../../design-system/Table";
 import SettingsActions from "actions/SettingsActions";
-import SettingsStore from "stores/SettingsStore";
 import FormattedAsset from "../Utility/FormattedAsset";
 import SearchInput from "../Utility/SearchInput";
 import LoadingIndicator from "../LoadingIndicator";
 import utils from "common/utils";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 // SearchInput is an untyped legacy JS component whose defaultProps aren't
@@ -63,7 +63,7 @@ interface CommitteeMemberRow {
 
 export default function CommitteeMembers() {
     useChainStoreTick();
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
     const viewSettings = settingsState.viewSettings;
 
     const [filterCommitteeMember, setFilterCommitteeMember] = React.useState<

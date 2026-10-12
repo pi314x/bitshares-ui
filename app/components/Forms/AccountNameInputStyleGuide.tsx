@@ -4,7 +4,7 @@
 //
 // A near-twin of the sibling `Forms/AccountNameInput.tsx` (same batch) -
 // see that file's header for the shared rationale (the `AltContainer`->
-// `useAltStore` Container split, the `forwardRef`+`useImperativeHandle`
+// `useReduxState` Container split, the `forwardRef`+`useImperativeHandle`
 // `getValue`-only imperative API replacing the two-hop `this.refs
 // .nameInput` reach-through, the `stateRef` direct-mutation replication
 // of `validateAccountName`'s stale-`value`/fresh-`error` quirk, the
@@ -31,13 +31,13 @@
 //   ported.
 import * as React from "react";
 import AccountActions from "actions/AccountActions";
-import AccountStore from "stores/AccountStore";
 import {ChainValidation} from "bitsharesjs";
 import counterpart from "counterpart";
 import ReactTooltip from "react-tooltip";
 import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 interface AccountNameInputState {
     value: any;
@@ -226,7 +226,7 @@ const AccountNameInput = React.forwardRef<
     AccountNameInputHandle,
     AccountNameInputProps
 >(function AccountNameInput(props, ref) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const searchAccounts = accountState.searchAccounts;
 
     return (

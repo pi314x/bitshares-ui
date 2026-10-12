@@ -4,7 +4,7 @@
 //
 // Structural change (not a behavior change): the original's
 // `connect(Component, {listenTo: [AccountStore, SettingsStore], getProps})`
-// alt-react HOC is replaced by two `useAltStore()` calls (one per store),
+// alt-react HOC is replaced by two `useReduxState()` calls (one per store),
 // the same multi-store pattern already established elsewhere in this
 // migration (e.g. `Dashboard/DashboardList.tsx`).
 //
@@ -17,7 +17,6 @@
 // check would have mattered.
 import * as React from "react";
 import AccountStore from "stores/AccountStore";
-import SettingsStore from "stores/SettingsStore";
 import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
@@ -27,7 +26,9 @@ import {Modal} from "../../design-system/Modal";
 import {Icon} from "../../design-system/Icon";
 import {Popover} from "../../design-system/Popover";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface AccountBrowsingModeProps {
     usernameViewIcon?: boolean;
@@ -35,8 +36,8 @@ interface AccountBrowsingModeProps {
 }
 
 function AccountBrowsingMode({usernameViewIcon}: AccountBrowsingModeProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
-    const accountState = useAltStore<any>(AccountStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
+    const accountState = useReduxState<any>(selectAccountState);
     const viewOnlyMode = settingsState.settings.get("viewOnlyMode");
     const currentAccount = accountState.currentAccount;
 

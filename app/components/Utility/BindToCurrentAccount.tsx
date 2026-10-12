@@ -20,10 +20,10 @@
 import * as React from "react";
 import debounceRender from "react-debounce-render";
 import {ChainStore} from "bitsharesjs";
-import AccountStore from "../../stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 export const hasLoaded = function hasLoaded(currentAccount: any) {
     return !!currentAccount && !!currentAccount.get("id");
@@ -68,7 +68,7 @@ export const bindToCurrentAccount = function bindToCurrentAccount(
     });
 
     return function BindToCurrentAccountConnected(props: any) {
-        const accountState = useAltStore<any>(AccountStore as any);
+        const accountState = useReduxState<any>(selectAccountState);
         const currentAccount =
             accountState.currentAccount ||
             accountState.passwordAccount ||

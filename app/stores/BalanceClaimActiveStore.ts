@@ -4,7 +4,7 @@
 // Alt-store interface every call site already relies on - `getState()`,
 // `listen(callback)`, `unlisten(callback)`, plus the original's plain
 // (non-`onXxx`) `reset()` method, exported via Alt's `BaseStore._export`
-// - so every `useAltStore(BalanceClaimActiveStore)` hook caller and
+// - so every legacy `BalanceClaimActiveStore` caller and
 // every remaining direct caller (`WalletManagerStore.js`'s
 // `BalanceClaimActiveStore.reset()`) keeps working completely unchanged.
 //

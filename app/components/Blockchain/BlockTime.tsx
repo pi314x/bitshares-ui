@@ -8,7 +8,7 @@
 //
 // Structural change (not a behavior change): `connect(Component,
 // {listenTo: [BlockchainStore], getProps})` replaced by a thin
-// Container using `useAltStore(BlockchainStore)`, computing
+// Container using `useReduxState(selectBlockchain)`, computing
 // `blockHeader = blockchainState.blockHeaders.get(block_number)`
 // directly in the Container's render body - this recomputes on every
 // prop change (a plain function re-render) *and* on every
@@ -37,8 +37,8 @@ import * as React from "react";
 import TimeAgo from "../Utility/TimeAgo";
 import counterpart from "counterpart";
 import BlockchainActions from "actions/BlockchainActions";
-import BlockchainStore from "stores/BlockchainStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBlockchain} from "../../store/slices/blockchainSlice";
 
 interface BlockTimeCoreProps {
     block_number: number;
@@ -79,7 +79,7 @@ function BlockTimeContainer({
     block_number,
     fullDate
 }: BlockTimeContainerProps) {
-    const blockchainState = useAltStore<any>(BlockchainStore);
+    const blockchainState = useReduxState<any>(selectBlockchain);
     const blockHeader = blockchainState.blockHeaders.get(block_number);
 
     return (

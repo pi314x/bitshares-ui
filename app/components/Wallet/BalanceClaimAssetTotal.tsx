@@ -2,15 +2,15 @@
 // BalanceClaimAssetTotal.jsx (Phase 5, docs/UI_MIGRATION_PLAN.md).
 // Mechanical, no logic changes. `connect()`'s `getProps()` (a bare
 // `BalanceClaimActiveStore.getState()` passthrough) is replaced by
-// `useAltStore(BalanceClaimActiveStore)`.
+// `useReduxState(selectBalanceClaimActive)`.
 import * as React from "react";
-import BalanceClaimActiveStore from "stores/BalanceClaimActiveStore";
 import FormattedAsset from "components/Utility/FormattedAsset";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBalanceClaimActive} from "../../store/slices/balanceClaimActiveSlice";
 
 export default function BalanceClaimAssetTotals() {
-    const {balances} = useAltStore<any>(BalanceClaimActiveStore as any);
+    const {balances} = useReduxState<any>(selectBalanceClaimActive);
 
     if (balances === undefined)
         return (

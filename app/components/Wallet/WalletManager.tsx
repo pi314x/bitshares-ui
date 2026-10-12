@@ -18,7 +18,6 @@ import * as React from "react";
 import {Link, LinkProps, Routes, Route, useLocation} from "react-router-dom";
 import WalletActions from "actions/WalletActions";
 import BackupActions from "actions/BackupActions";
-import WalletManagerStore from "stores/WalletManagerStore";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {ExistingAccountOptions} from "./ExistingAccount";
@@ -33,7 +32,8 @@ import {Select} from "../../design-system/Select";
 import {Input} from "../../design-system/Input";
 import {Button} from "../../design-system/Button";
 import {Card} from "../../design-system/Card";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -132,8 +132,8 @@ export default function WalletManager() {
 }
 
 export function WalletOptions() {
-    const {current_wallet, wallet_names} = useAltStore<any>(
-        WalletManagerStore as any
+    const {current_wallet, wallet_names} = useReduxState<any>(
+        selectWalletManagerState
     );
     const has_wallet = !!current_wallet;
     const has_wallets = wallet_names.size > 1;
@@ -253,7 +253,7 @@ export function WalletOptions() {
 }
 
 export function ChangeActiveWallet() {
-    const walletManagerState = useAltStore<any>(WalletManagerStore as any);
+    const walletManagerState = useReduxState<any>(selectWalletManagerState);
 
     const [currentWallet, setCurrentWallet] = React.useState<string>(
         () => walletManagerState.current_wallet
@@ -331,7 +331,7 @@ export function ChangeActiveWallet() {
 }
 
 export function WalletDelete() {
-    const {wallet_names} = useAltStore<any>(WalletManagerStore as any);
+    const {wallet_names} = useReduxState<any>(selectWalletManagerState);
 
     const [selectedWallet, setSelectedWallet] = React.useState<string | null>(
         null

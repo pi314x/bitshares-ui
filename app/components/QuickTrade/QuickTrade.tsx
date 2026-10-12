@@ -34,10 +34,10 @@
 // ----------------------------------------------------------------------
 // - `connect(QuickTrade, {listenTo: [AssetStore, MarketsStore],
 //   getProps() {...}})` becomes `QuickTradeStoreConnected`, a thin
-//   wrapper calling `useAltStore` once per store and passing the same
+//   wrapper calling `useReduxState` once per store and passing the same
 //   eight derived props through, spread *after* `{...props}` so store-
 //   derived values keep winning over any same-named explicit prop, per
-//   this migration's established `connect` -> `useAltStore` precedent
+//   this migration's established `connect` -> `useReduxState` precedent
 //   (see `AccountPortfolioList.tsx`'s header comment for the worked
 //   example; alt-react's `connect` renders `<Component {...this.props}
 //   {...this.getNextProps()} />`).
@@ -165,8 +165,6 @@
 //   percentages - this can legitimately produce `NaN`, same as before.
 import * as React from "react";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
-import AssetStore from "../../stores/AssetStore";
-import MarketsStore from "../../stores/MarketsStore";
 import {Card} from "../../design-system/Card";
 import {Row} from "../../design-system/Row";
 import {Col} from "../../design-system/Col";
@@ -195,7 +193,9 @@ import {Notification} from "../../design-system/Notification";
 import FormattedPrice from "../Utility/FormattedPrice";
 import AssetName from "../Utility/AssetName";
 import Translate from "react-translate-component";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 
 // `LimitOrderCreate`'s constructor destructures some params without
 // default values mixed with others that do have them - TS's JS inference
@@ -1504,8 +1504,8 @@ function QuickTradeCore(props: QuickTradeProps) {
 }
 
 function QuickTradeStoreConnected(props: QuickTradeProps) {
-    const assetState = useAltStore<any>(AssetStore as any);
-    const marketsState = useAltStore<any>(MarketsStore as any);
+    const assetState = useReduxState<any>(selectAsset);
+    const marketsState = useReduxState<any>(selectMarkets);
     return (
         <QuickTradeCore
             {...props}

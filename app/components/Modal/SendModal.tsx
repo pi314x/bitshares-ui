@@ -66,7 +66,8 @@ import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Input} from "../../design-system/Input";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 
 const EqualWidthContainer = ({children}: {children: any[]}) => (
     <div
@@ -169,7 +170,7 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             tabIndex: tabIndexProp = 0
         } = props;
 
-        const accountState = useAltStore<any>(AccountStore as any);
+        const accountState = useReduxState<any>(selectAccountState);
         const currentAccount = accountState.currentAccount;
         const passwordAccount = accountState.passwordAccount;
 

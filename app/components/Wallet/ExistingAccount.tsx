@@ -1,12 +1,11 @@
 // TypeScript/functional-component port of the legacy ExistingAccount.jsx
 // (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 // `connect()`'s `getProps()` (a bare `WalletManagerStore.getState()`
-// passthrough) is replaced by `useAltStore(WalletManagerStore)` in both
+// passthrough) is replaced by `useReduxState(selectWalletManagerState)` in both
 // exported components, matching the original's two independently
 // `connect()`-wrapped components in this same file.
 import * as React from "react";
 import {Link, LinkProps} from "react-router-dom";
-import WalletManagerStore from "stores/WalletManagerStore";
 import BalanceClaimActive from "./BalanceClaimActive";
 import Translate from "react-translate-component";
 import {Routes, Route} from "react-router-dom";
@@ -14,7 +13,8 @@ import Brainkey from "./Brainkey";
 import ImportKeys from "./ImportKeys";
 import {BackupRestore} from "./Backup";
 import {getWalletName} from "branding";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
 // See Explorer/Blocks.tsx's comment on `TypedLink` for why this cast is
 // needed - `Link`'s inferred return type isn't a valid JSX element type
@@ -22,7 +22,7 @@ import {useAltStore} from "../../next/hooks/useAltStore";
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
 export default function ExistingAccount({children}: {children?: any}) {
-    const wallet = useAltStore<any>(WalletManagerStore as any);
+    const wallet = useReduxState<any>(selectWalletManagerState);
     const has_wallet = wallet.wallet_names.count() != 0;
     return (
         <div className="grid-container">
@@ -71,7 +71,7 @@ export default function ExistingAccount({children}: {children?: any}) {
 }
 
 export function ExistingAccountOptions() {
-    const wallet = useAltStore<any>(WalletManagerStore as any);
+    const wallet = useReduxState<any>(selectWalletManagerState);
     const has_wallet = wallet.wallet_names.count() != 0;
     return (
         <span>

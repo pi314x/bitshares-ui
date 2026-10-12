@@ -14,7 +14,7 @@
 // Structural change: `connect(BindToChainState(PoolExchangeModal), {
 // listenTo: [AccountStore], getProps})` becomes a single
 // `PoolExchangeModalContainer` that (a) reads `account` via
-// `useAltStore(AccountStore)` (see `useAltStore.ts`) and (b) resolves
+// `useReduxState(selectAccountState)` (see `useReduxState.ts`) and (b) resolves
 // `pool` the way `BindToChainState.jsx`'s `chain_liquidity_pools` block
 // does - `await ChainStore.getLiquidityPoolsByShareAsset([pool])`, taking
 // `pools.first()` if any were returned, else `null` - the one
@@ -135,13 +135,13 @@ import {Row} from "../../design-system/Row";
 import {Col} from "../../design-system/Col";
 import {Alert} from "../../design-system/Alert";
 import ApplicationApi from "api/ApplicationApi";
-import AccountStore from "stores/AccountStore";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import Icon from "../Icon/Icon";
 import AccountBalance from "../Account/AccountBalance";
 import AssetName from "../Utility/AssetName";
 import {ChainStore} from "bitsharesjs";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 interface PoolExchangeModalState {
@@ -586,7 +586,7 @@ function PoolExchangeModalContainer({
     isModalVisible,
     onHideModal
 }: PoolExchangeModalContainerProps) {
-    const accountState = useAltStore<any>(AccountStore);
+    const accountState = useReduxState<any>(selectAccountState);
     const tick = useChainStoreTick();
     const [resolvedPool, setResolvedPool] = React.useState<any>(undefined);
 

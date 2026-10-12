@@ -14,19 +14,19 @@ import cname from "classnames";
 import counterpart from "counterpart";
 
 import LoadingIndicator from "components/LoadingIndicator";
-import PrivateKeyStore from "stores/PrivateKeyStore";
 import AccountRefsStore from "stores/AccountRefsStore";
-import BalanceClaimActiveStore from "stores/BalanceClaimActiveStore";
 import BalanceClaimActiveActions from "actions/BalanceClaimActiveActions";
 import BalanceClaimSelector from "components/Wallet/BalanceClaimSelector";
 import WalletActions from "actions/WalletActions";
 import MyAccounts from "components/Forms/MyAccounts";
 import Translate from "react-translate-component";
 import {Notification} from "../../design-system/Notification";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectBalanceClaimActive} from "../../store/slices/balanceClaimActiveSlice";
+import {selectPrivateKeyState} from "../../store/slices/privateKeySlice";
 
 export default function BalanceClaimActive() {
-    const privateKeyState = useAltStore<any>(PrivateKeyStore as any);
+    const privateKeyState = useReduxState<any>(selectPrivateKeyState);
     const existingKeysRef = React.useRef<any>(null);
     const keySeq = privateKeyState.keys.keySeq();
     if (
@@ -37,7 +37,7 @@ export default function BalanceClaimActive() {
         (BalanceClaimActiveActions as any).setPubkeys(keySeq);
     }
 
-    const storeState = useAltStore<any>(BalanceClaimActiveStore as any);
+    const storeState = useReduxState<any>(selectBalanceClaimActive);
     const {
         loading,
         balances,

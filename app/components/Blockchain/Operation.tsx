@@ -43,7 +43,7 @@
 // - `Operation = connect(Operation, {listenTo: [SettingsStore],
 //   getProps})` becomes an `OperationContainer`/`OperationCore` split:
 //   `OperationContainer` reads `marketDirections` via
-//   `useAltStore(SettingsStore)` and passes it down, same pattern as
+//   `useReduxState(selectSettingsState)` and passes it down, same pattern as
 //   `AccountOrders.tsx`'s `AccountOrdersContainer`. `Operation`'s
 //   `defaultProps` (`op: []`, `current: ""`, `block: null`,
 //   `hideOpLabel: false`, `csvExportMode: false`) are applied by
@@ -85,9 +85,9 @@ import BlockTime from "./BlockTime";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
-import SettingsStore from "stores/SettingsStore";
 import {Tooltip} from "../../design-system/Tooltip";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const {operations} = grapheneChainTypes;
@@ -351,7 +351,7 @@ function OperationCore(props: OperationCoreProps) {
 type OperationContainerProps = Omit<OperationCoreProps, "marketDirections">;
 
 function OperationContainer(props: OperationContainerProps) {
-    const settingsState = useAltStore<any>(SettingsStore);
+    const settingsState = useReduxState<any>(selectSettingsState);
 
     return (
         <OperationCore

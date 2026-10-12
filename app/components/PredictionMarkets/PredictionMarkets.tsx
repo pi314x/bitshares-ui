@@ -20,7 +20,7 @@
 // Structural changes:
 // - `connect(PredictionMarkets, {listenTo() {return [AssetStore,
 //   MarketsStore]}, getProps() {...}})` is replaced by an outer
-//   `PredictionMarkets` wrapper that calls `useAltStore` once per store
+//   `PredictionMarkets` wrapper that calls `useReduxState` once per store
 //   (this migration's established multi-store pattern) and passes the
 //   store-derived `assets`/`bucketSize`/`currentGroupOrderLimit`/
 //   `marketLimitOrders` into the inner `PredictionMarketsCore` component,
@@ -103,7 +103,6 @@
 import * as React from "react";
 import assetUtils from "common/asset_utils";
 import AssetActions from "actions/AssetActions";
-import AssetStore from "stores/AssetStore";
 import MarketsActions from "actions/MarketsActions";
 import counterpart from "counterpart";
 import PredictionMarketsOverviewTable from "./PredictionMarketsOverviewTable";
@@ -122,8 +121,9 @@ import {Tooltip} from "../../design-system/Tooltip";
 import {Asset, Price} from "../../lib/common/MarketClasses";
 import Translate from "react-translate-component";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
-import MarketsStore from "../../stores/MarketsStore";
-import {useAltStore} from "../../next/hooks/useAltStore";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAsset} from "../../store/slices/assetSlice";
+import {selectMarkets} from "../../store/slices/marketsSlice";
 
 interface PredictionMarketsState {
     searchTerm: string;
@@ -847,8 +847,8 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
 }
 
 function PredictionMarkets(props: PredictionMarketsProps) {
-    const assetState = useAltStore<any>(AssetStore);
-    const marketsState = useAltStore<any>(MarketsStore);
+    const assetState = useReduxState<any>(selectAsset);
+    const marketsState = useReduxState<any>(selectMarkets);
 
     return (
         <PredictionMarketsCore

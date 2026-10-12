@@ -1,7 +1,7 @@
 // The real Phase 9 (docs/UI_MIGRATION_PLAN.md): incrementally replacing
 // each Alt.js store/actions pair with a Redux Toolkit slice, one store at
 // a time, while every call site - both already-ported hook components
-// (via `useAltStore`) and still-legacy class components that call
+// (via `useReduxState`) and still-legacy class components that call
 // `.listen()`/`.unlisten()`/`.getState()` directly (e.g. `App.jsx`) -
 // keeps working completely unchanged. Each migrated store's `.js`/`.ts`
 // file in `app/stores/` is rewritten to export an Alt-shaped facade
