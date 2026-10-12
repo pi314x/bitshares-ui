@@ -1,9 +1,9 @@
 .balance-row.active {
-    background-color: #3c3c3c;
+    background-color: var(--hover);
 }
 
 .balance-row:hover {
-    background-color: #3c3c3c;
+    background-color: var(--hover);
 }
 
 .balance-row {

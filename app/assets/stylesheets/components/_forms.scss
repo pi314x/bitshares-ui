@@ -430,7 +430,7 @@ body {
 .input-addon-before {
     position: absolute;
     height: 100%;
-    border: 1px solid #adadad;
+    border: 1px solid var(--field-border);
     padding: 0 15px;
     border-radius: 6px;
     left: 0;
@@ -440,9 +440,9 @@ body {
 
 .date-picker-width100 input.ant-input {
     height: 2.4rem;
-    background-color: #2d2d2d;
+    background-color: var(--field-bg);
     border: 0;
-    color: #e0e0e0;
+    color: var(--ink);
     border-radius: 6px;
     &:focus {
         border: none !important;

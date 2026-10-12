@@ -70,7 +70,7 @@ div.api-node {
             overflow-wrap: break-word;
             font-size: 80%;
             float: right;
-            color: gray;
+            color: var(--muted);
         }
     }
     > div:nth-child(2) {

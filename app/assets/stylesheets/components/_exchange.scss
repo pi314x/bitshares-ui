@@ -224,13 +224,13 @@ form.order-form {
 
 .buy-form {
     > div.ant-tabs-bar {
-        border-bottom: 1px solid #6ba583 !important;
+        border-bottom: 1px solid var(--up) !important;
     }
 }
 
 .sell-form {
     > div.ant-tabs-bar {
-        border-bottom: 1px solid #e3745b !important;
+        border-bottom: 1px solid var(--down) !important;
     }
 }
 
@@ -491,7 +491,7 @@ div.bucket-option {
 }
 
 .bottom-row {
-    border-top: #a09f9f 1px dotted;
+    border-top: var(--line-strong) 1px dotted;
     padding-top: 5px !important;
 }
 
@@ -556,7 +556,7 @@ div.bucket-option {
 
 .order-change {
     transition: all 3s ease;
-    background: #343434;
+    background: var(--hover);
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -573,7 +573,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .borrow-price-final {
-    border-top: #a09f9f 1px dotted;
+    border-top: var(--line-strong) 1px dotted;
     padding-top: 5px !important;
 }
 
@@ -617,11 +617,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .exchange-content-header.bid {
-    border-bottom: 1px solid #6ba583 !important;
+    border-bottom: 1px solid var(--up) !important;
 }
 
 .exchange-content-header.ask {
-    border-bottom: 1px solid #e3745b !important;
+    border-bottom: 1px solid var(--down) !important;
 }
 
 .exchange-padded {
@@ -666,7 +666,7 @@ table thead tr th.mymarkets-header {
 }
 
 .blue-icon > svg path {
-    fill: #2196f3 !important;
+    fill: var(--accent) !important;
 }
 
 .gold-star > svg path {

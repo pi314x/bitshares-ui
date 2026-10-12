@@ -107,7 +107,7 @@ button,
         }
 
         background: none;
-        border: 1px solid #555;
+        border: 1px solid var(--line-strong);
     }
 }
 
@@ -149,7 +149,7 @@ section > .button:last-child {
     > h3,
     .recent-transactions > h3 {
         font-size: 2rem;
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid var(--line);
         margin-top: 0;
         padding-bottom: 0.5rem;
         margin-bottom: 0.5rem;
@@ -169,7 +169,7 @@ section > .button:last-child {
 
 .page-header {
     margin-bottom: 2rem;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--line);
     h3,
     h1 {
         margin: 0;
@@ -228,7 +228,7 @@ div.disabled * {
 }
 
 div.disabled input {
-    background-color: #444;
+    background-color: var(--hover);
 }
 
 .memo {
@@ -303,7 +303,7 @@ label.inline {
 }
 
 .click-for-help {
-    border-bottom: 1px dotted #777;
+    border-bottom: 1px dotted var(--faint);
     cursor: pointer;
 }
 
@@ -360,7 +360,7 @@ select.bts-select {
     background: none;
     background-color: transparent;
     max-width: 500px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--line);
     -webkit-appearance: menulist;
     -moz-appearance: menulist;
     appearance: menulist;
