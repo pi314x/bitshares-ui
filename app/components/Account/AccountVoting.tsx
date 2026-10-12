@@ -962,7 +962,12 @@ function AccountVotingContainer(props: any) {
     useChainStoreTick();
 
     const initialBudget = (ChainStore as any).getObject(props.initialBudget);
-    const globalObject = (ChainStore as any).getObject(props.globalObject);
+    // The original `static defaultProps = {globalObject: "2.0.0"}` was lost in
+    // the port: without it nothing ever supplies the id and `getObject(undefined)`
+    // throws, which took the whole app down on every voting page.
+    const globalObject = (ChainStore as any).getObject(
+        props.globalObject || "2.0.0"
+    );
     const proxy = (ChainStore as any).getAccount(props.proxy);
 
     if (!initialBudget || !globalObject || !proxy) {
