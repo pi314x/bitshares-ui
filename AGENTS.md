@@ -19,9 +19,12 @@ passwords, or brainkeys.
   contain class components - kept on purpose, see
   `docs/UI_MIGRATION_PLAN.md` §7.9), react-router-dom v6, SCSS.
 - State: the Alt.js store/action API (`app/stores`, `app/actions`) is kept
-  as a facade over Redux Toolkit slices (`app/store`); components read it
-  through `useAltStore` (`app/next/hooks`), so legacy and migrated call
-  sites coexist. Don't add new Alt.js stores - add a slice.
+  as a facade over Redux Toolkit slices (`app/store`); components read a
+  slice with `useReduxState(selectX)` (`app/next/hooks/useReduxState.ts`, no
+  `<Provider>` needed), while class components and the action files still use
+  the facades, so legacy and migrated call sites coexist. `useAltStore` is
+  left only for `WalletDb` and `BrainkeyStore`. Don't add new Alt.js stores -
+  add a slice.
 - Chain logic (tx building, serialization, keys) lives in the `bitsharesjs`
   npm package; UI-side wallet state and the Xbtsx/Piratecash gateway
   bridges live under `app/stores` and `app/lib`.

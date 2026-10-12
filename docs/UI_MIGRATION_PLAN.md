@@ -12310,6 +12310,44 @@ change what users see, by booting the built bundle.
   them into hooks would be a behavior-risk rewrite for no user-visible gain, and
   `Backup` is wallet-sensitive (AGENTS.md: minimal diffs).
 
+### 7.10 Components read the Redux store directly (complete)
+
+About 110 component files that read an Alt-style store through `useAltStore`
+(about 170 call sites) now call `useReduxState(selectX)` with the slice selector
+(`useReduxState(selectAccountState)` instead of `useAltStore(AccountStore)`).
+`app/next/hooks/useReduxState.ts` is `useSyncExternalStore` on the singleton
+`reduxStore`, which is what react-redux's `useSelector` is built on, minus the
+need for a `<Provider>`: the Provider is mounted only in `AppInit`, while the
+preview build and every component test render screens without one.
+
+- **Why not `useSelector`:** it throws without a Provider, so every test and
+  the standalone preview would have needed a wrapper. The hook is a few lines
+  and subscribes the same way.
+- **Behavior:** unchanged by construction. Every facade's `getState()` was a
+  plain slice selector, and its `listen()` only called back when that slice's
+  reference changed, which is exactly what `useSyncExternalStore` compares. The
+  hook no longer keeps a second copy of the state in `useState` plus an effect,
+  so there is also no render with a stale copy. `AssetStore`, `BlockchainStore`
+  and `GatewayStore` returned a fresh `{...slice}` copy on every call, which
+  would loop under a snapshot hook, so their call sites read the slice itself;
+  they only read from it.
+- **Left on `useAltStore` on purpose:** `Wallet/WalletUnlockModal.tsx`
+  (`WalletDb` is a plain object mutated in place and announced through a
+  version counter, not a slice) and `Wallet/Brainkey.tsx` (per-name
+  `BrainkeyStore` instances, which hold the brainkey). Both are wallet-sensitive
+  (AGENTS.md: minimal diffs), so they were not touched.
+- **The Alt-style facades in `app/stores` stay.** Direct `.listen()` /
+  `.getState()` callers (`App.jsx`, the class components, `WalletDb`'s cross-store
+  calls) and the action files still go through them.
+- **Verified:** `tsc`, eslint, Jest (5,784 tests, 4 of them new for the hook),
+  the production build, a boot of 20 routes against the live node (as a real
+  account, all text in IBM Plex, no console errors), and the browser wallet
+  lifecycle again (create, backup download, delete, restore, reload, wrong
+  password rejected, correct password unlocks).
+- **Not done:** the formatting of ~60 of these files does not match the repo's
+  Prettier 1.x output (they were not formatted at `HEAD` either), so the diff
+  keeps only the lines it had to change instead of reformatting whole files.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12432,8 +12470,7 @@ introduced); each has a regression test or a measurable check.
   fixture-rich environment to verify.
 - **~76 `.js`/`.jsx` files remain**, mostly `app/lib` services and API
   helpers (AGENTS.md: reuse, don't rewrite), plus 14 files with class
-  components, kept on purpose (§7.9). 127 files use `useAltStore` and could move to `useSelector`;
-  optional cleanup, no behavior gain.
+  components, kept on purpose (§7.9).
 - **Eleven dependencies declare React <=17 peers** (§7.4, §7.9); none breaks on 18
   today, all are unmaintained.
 - **Phase 6 (wallet extension signing)** was never started: it needs the
