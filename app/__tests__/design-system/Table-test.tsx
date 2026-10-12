@@ -35,6 +35,25 @@ describe("design-system/Table", () => {
         expect(getByText("CNY")).toBeTruthy();
     });
 
+    it("treats a null/undefined dataSource as empty instead of throwing", () => {
+        // Htlc.tsx passes `null` while an account has no HTLCs; antd tolerated it,
+        // and the first real-data boot of /htlc crashed the whole app without it.
+        expect(() =>
+            render(
+                <Table columns={columns} dataSource={null} pagination={false} />
+            )
+        ).not.toThrow();
+        expect(() =>
+            render(
+                <Table
+                    columns={columns}
+                    dataSource={undefined}
+                    pagination={{pageSize: 5}}
+                />
+            )
+        ).not.toThrow();
+    });
+
     it("shows locale.emptyText when dataSource is empty", () => {
         const {getByText} = render(
             <Table

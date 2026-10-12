@@ -100,7 +100,9 @@ export interface TableOnChangePagination {
 
 export interface TableProps<T = any> {
     columns: TableColumn<T>[];
-    dataSource: T[];
+    /** `null`/`undefined` count as empty, like antd (call sites such as
+     * Htlc pass `null` while they have no rows). */
+    dataSource: T[] | null | undefined;
     /** Defaults to `"key"`, matching antd's own default (`record.key`),
      * not a row index. */
     rowKey?: string;
@@ -137,7 +139,7 @@ function getRowKeyValue<T>(record: T, rowKey: string, index: number) {
 
 export function Table<T = any>({
     columns,
-    dataSource,
+    dataSource: dataSourceProp,
     rowKey = "key",
     pagination,
     rowSelection,
@@ -151,6 +153,7 @@ export function Table<T = any>({
     onHeaderRow,
     onChange
 }: TableProps<T>): JSX.Element {
+    const dataSource: T[] = dataSourceProp ?? [];
     const initialSort = React.useRef<{
         columnKey: string;
         order: SortOrder;
