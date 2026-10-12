@@ -11,15 +11,16 @@
     min-height: 32px;
     box-sizing: border-box;
     padding: 3px 8px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--surface);
+    border: 1px solid var(--field-border);
+    border-radius: var(--radius);
+    background: var(--field-bg);
     color: var(--ink);
     cursor: text;
+    transition: border-color 0.15s var(--ease);
 }
 
 .box:hover {
-    border-color: var(--faint);
+    border-color: var(--field-border-hover);
 }
 
 .small .box {

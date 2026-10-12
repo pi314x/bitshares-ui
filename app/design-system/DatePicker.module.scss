@@ -4,21 +4,26 @@
 
 .input {
     font: inherit;
+    font-size: 14px;
     width: 100%;
     box-sizing: border-box;
-    padding: 7px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--line);
-    background: var(--surface);
+    min-height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
     color: var(--ink);
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
 
-.input:hover {
-    border-color: var(--faint);
+.input:hover:not(:disabled) {
+    border-color: var(--field-border-hover);
 }
 
 .input:focus-visible {
+    outline: none;
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .input:disabled {

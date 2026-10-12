@@ -33,6 +33,29 @@
     --warn: #d9a227;
     --on-accent: #06222c;
 
+    // Form controls (buttons, inputs, selects). The field fill and border are
+    // translucent mixes of the ink colour so one definition looks right on
+    // every surface the controls sit on - the new shell's navy as well as the
+    // legacy screens' gray panels - in both themes.
+    --line-strong: #334052;
+    --focus-ring: rgba(22, 184, 243, 0.38);
+    --field-bg: rgba(231, 236, 243, 0.055);
+    --field-bg: color-mix(in srgb, var(--ink) 5.5%, transparent);
+    --field-bg-hover: rgba(231, 236, 243, 0.09);
+    --field-bg-hover: color-mix(in srgb, var(--ink) 9%, transparent);
+    --field-border: rgba(231, 236, 243, 0.16);
+    --field-border: color-mix(in srgb, var(--ink) 16%, transparent);
+    --field-border-hover: rgba(231, 236, 243, 0.3);
+    --field-border-hover: color-mix(in srgb, var(--ink) 30%, transparent);
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --control-h: 38px;
+    --control-h-sm: 30px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
     --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
         "Segoe UI", sans-serif;
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
@@ -60,6 +83,11 @@
     --down-wash: #f8e9ea;
     --warn: #b07b14;
     --on-accent: #ffffff;
+
+    --line-strong: #c4ccd9;
+    --focus-ring: rgba(0, 121, 173, 0.28);
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.1);
+    --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.14);
 }
 
 // Base styles shared by every screen that imports this file, so individual
