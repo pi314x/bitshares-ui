@@ -125,52 +125,78 @@ interface AccountPermissionsProps {
     account: any;
 }
 
+// The state `updateAccountData` seeds from the account's authorities.
+function permissionStateFromAccount(acct: any) {
+    const active = permissionsFromImmutableObj(acct.get("active"));
+    const owner = permissionsFromImmutableObj(acct.get("owner"));
+    const memo_key = acct.get("options").get("memo_key");
+    return {
+        active_accounts: active.accounts,
+        active_keys: active.keys,
+        active_addresses: active.addresses,
+        owner_accounts: owner.accounts,
+        owner_keys: owner.keys,
+        owner_addresses: owner.addresses,
+        active_weights: active.weights,
+        owner_weights: owner.weights,
+        active_threshold: active.threshold,
+        owner_threshold: owner.threshold,
+        memo_key: memo_key,
+        prev_active_accounts: active.accounts,
+        prev_active_keys: active.keys,
+        prev_active_addresses: active.addresses,
+        prev_owner_accounts: owner.accounts,
+        prev_owner_keys: owner.keys,
+        prev_owner_addresses: owner.addresses,
+        prev_active_weights: active.weights,
+        prev_owner_weights: owner.weights,
+        prev_active_threshold: active.threshold,
+        prev_owner_threshold: owner.threshold,
+        prev_memo_key: memo_key
+    };
+}
+
 export default function AccountPermissions({account}: AccountPermissionsProps) {
-    const [state, setState] = React.useState<any>({});
+    // Seeded synchronously, like the original's UNSAFE_componentWillMount:
+    // render() reads these (sumUpWeights) on the very first pass, so
+    // seeding in an effect - as an earlier version of this port did - threw
+    // "Cannot read properties of undefined (reading 'reduce')" on every
+    // account's permissions page.
+    const [state, setState] = React.useState<any>(() =>
+        permissionStateFromAccount(account)
+    );
 
     function mergeState(partial: any) {
         setState((prev: any) => ({...prev, ...partial}));
     }
 
     function updateAccountData(acct: any) {
-        const active = permissionsFromImmutableObj(acct.get("active"));
-        const owner = permissionsFromImmutableObj(acct.get("owner"));
-        const memo_key = acct
-            .get("options")
-            .get("memo_key");
-        mergeState({
-            active_accounts: active.accounts,
-            active_keys: active.keys,
-            active_addresses: active.addresses,
-            owner_accounts: owner.accounts,
-            owner_keys: owner.keys,
-            owner_addresses: owner.addresses,
-            active_weights: active.weights,
-            owner_weights: owner.weights,
-            active_threshold: active.threshold,
-            owner_threshold: owner.threshold,
-            memo_key: memo_key,
-            prev_active_accounts: active.accounts,
-            prev_active_keys: active.keys,
-            prev_active_addresses: active.addresses,
-            prev_owner_accounts: owner.accounts,
-            prev_owner_keys: owner.keys,
-            prev_owner_addresses: owner.addresses,
-            prev_active_weights: active.weights,
-            prev_owner_weights: owner.weights,
-            prev_active_threshold: active.threshold,
-            prev_owner_threshold: owner.threshold,
-            prev_memo_key: memo_key
-        });
+        mergeState(permissionStateFromAccount(acct));
     }
 
+    // The original's UNSAFE_componentWillReceiveProps: re-seed when a
+    // different account object arrives (not on mount - already seeded).
+    const seededAccount = React.useRef(account);
     React.useEffect(() => {
-        updateAccountData(account);
+        if (seededAccount.current !== account) {
+            seededAccount.current = account;
+            updateAccountData(account);
+        }
         // eslint-disable-next-line
     }, [account]);
 
     React.useEffect(() => {
-        (accountUtils as any).getFinalFeeAsset(account, "account_update");
+        // Cache warm-up only (the result is unused). On a cold start - this
+        // page opened directly - the default fee asset is not in ChainStore
+        // yet, `getAsset` answers `undefined` while it fetches, and
+        // `getFinalFeeAsset` then throws on `.toJS()`; uncaught, that takes
+        // the whole app down. The lookup it kicked off is what fills the
+        // cache, so swallowing the first failure is the intended outcome.
+        try {
+            (accountUtils as any).getFinalFeeAsset(account, "account_update");
+        } catch (e) {
+            // asset not loaded yet - see above
+        }
         // eslint-disable-next-line
     }, []);
 
@@ -347,10 +373,13 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
 
     let error1, error2;
 
-    const {active_accounts, active_keys, active_addresses, active_weights} =
-        state;
-    const {owner_accounts, owner_keys, owner_addresses, owner_weights} =
-        state;
+    const {
+        active_accounts,
+        active_keys,
+        active_addresses,
+        active_weights
+    } = state;
+    const {owner_accounts, owner_keys, owner_addresses, owner_weights} = state;
 
     let threshold = state.active_threshold > 0 ? state.active_threshold : 0;
     let weights_total = sumUpWeights(
@@ -380,9 +409,7 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
 
     const publish_buttons_class =
         "button" +
-        (!(error1 || error2) &&
-        isChanged() &&
-        isValidPubKey(state.memo_key)
+        (!(error1 || error2) && isChanged() && isValidPubKey(state.memo_key)
             ? ""
             : " disabled");
     const reset_buttons_class = "button" + (isChanged() ? "" : " disabled");
