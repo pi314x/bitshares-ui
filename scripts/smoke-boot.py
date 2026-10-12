@@ -29,6 +29,13 @@ blocks - without a working WebSocket route out of a sandbox - at the price of
 no live subscriptions (`set_subscribe_callback` is acknowledged but never
 pushes), so screens show a snapshot.
 
+With `--fonts` every visited route is also checked for typography: each
+visible element that carries text (plus inputs, buttons and selects) must
+resolve to IBM Plex Sans/Mono as its first font family. Unrendered nodes
+(`display: none`, zero-size, script/style) are skipped. Any other family fails
+the run and is listed, so a stray `font-family` in a legacy stylesheet or an
+inline style shows up here rather than on a user's screen.
+
 Limits of the default stub: it returns `null` for every other object, so screens
 that need real accounts, assets or blocks can legitimately throw on `null`
 (`/explorer/fees`, `/barter`, `/block/1` do) - read those as "needs a real
@@ -126,6 +133,29 @@ LIVE_WEBSOCKET = r"""
   window.WebSocket = LiveWS;
 })();
 """
+
+
+FONT_CENSUS_JS = r"""() => {
+  const tally = {}; const off = [];
+  const walk = (el) => {
+    if (el.nodeType !== 1) return;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HEAD'].includes(el.tagName)) return;
+    const cs = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    const visible = cs.display !== 'none' && cs.visibility !== 'hidden' && (r.width > 0 || r.height > 0);
+    const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim());
+    if (visible && (hasText || ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(el.tagName))) {
+      const family = cs.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+      tally[family] = (tally[family] || 0) + 1;
+      if (!/^IBM Plex (Sans|Mono)$/.test(family)) {
+        off.push(el.tagName.toLowerCase() + '.' + String(el.className).slice(0, 40) + ' [' + family + '] ' + (el.textContent || el.value || '').trim().slice(0, 30));
+      }
+    }
+    if (visible || el.tagName === 'BODY') [...el.children].forEach(walk);
+  };
+  walk(document.body);
+  return {tally, off};
+}"""
 
 
 def serve(dist, live_node=None):
@@ -234,6 +264,7 @@ def main():
     ap.add_argument("--account", help="pre-select this account as the current (read-only, wallet stays locked) account, so dashboard/market/account screens render with that account's data (BitShares mainnet only)")
     ap.add_argument("--dismiss", default="", help="comma-separated button labels to click when visible after boot and after each route (e.g. 'Not now' for the first-run gateway modal)")
     ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
+    ap.add_argument("--fonts", action="store_true", help="also fail on any visible text that is not set in IBM Plex Sans/Mono (see the module docstring)")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
@@ -286,6 +317,15 @@ def main():
                 print("    ", e)
             if real or page_errors:
                 failed = True
+            if args.fonts:
+                census = page.evaluate(FONT_CENSUS_JS)
+                total = sum(census["tally"].values())
+                plex = sum(n for f, n in census["tally"].items() if f.startswith("IBM Plex"))
+                print(f"{'':<34} fonts: {plex}/{total} elements in IBM Plex")
+                for line in census["off"][:6]:
+                    print("      not Plex:", line)
+                if census["off"]:
+                    failed = True
             blank = not body.strip()
             errors.clear()
             page_errors.clear()
