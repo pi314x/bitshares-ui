@@ -35,17 +35,20 @@ theme, wallet lock) is already migrated** — `app/next/NextShellContainer`
 (Dashboard, Exchange, Account, Settings, etc.) still render their original
 class-component/Alt.js internals inside that new shell — that's Phases 2+.
 
-The `bitshares-ui-style-guide` npm package (an antd v3 wrapper) has been
-**removed** - nothing under `app/` imports it; use `app/design-system/*`
-(Button, Modal, Form, Input, Select, Table, Tabs, DatePicker, Collapse,
-...). Two things still come from antd and are kept deliberately: `antd`
-itself is now an explicit dependency (3 files still import `List`,
-`TreeSelect`, `Carousel` from `"antd"` directly), and the
-global stylesheet is vendored at
-`app/assets/stylesheets/vendors/antd-bitshares-theme.css` (byte-for-byte
-the old package's `style.css`; committed with `git add -f` because of
-the broad `assets` rule in `.gitignore`). Don't import from `"antd"` in
-new code. See `docs/UI_MIGRATION_PLAN.md` §7.3 for what is left.
+The `bitshares-ui-style-guide` npm package (an antd v3 wrapper) and `antd`
+itself have both been **removed** - nothing under `app/` imports either;
+use `app/design-system/*` (Button, Modal, Form, Input, Select, Table,
+Tabs, DatePicker, Collapse, List, Carousel, TreeSelect, ...). Don't
+reintroduce either package. The global look of the legacy screens still
+depends on one trimmed stylesheet, `app/assets/stylesheets/vendors/
+legacy-base.css` (the former 1.6 MB antd/BitShares theme with every rule
+that requires an unused `ant-*` class pruned, proven computed-style
+identical; committed with `git add -f` because of the broad `assets` rule
+in `.gitignore`). A few legacy markup spots still carry `ant-*` class
+names (`ant-form-item-label`, `ant-input`) because that stylesheet and the
+`$ant-fix` SCSS selector suffix key off them - leave those alone until the
+SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
+§7.3 for the details and what is left.
 
 ## Commands
 

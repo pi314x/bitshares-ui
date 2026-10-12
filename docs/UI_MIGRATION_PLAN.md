@@ -11769,6 +11769,54 @@ checked in both themes via `yarn build-preview`:
 Verified: `tsc` clean, `eslint` 0 errors, `yarn test` 5,578/5,578 (+18),
 build showing only the 2 known pre-existing errors.
 
+**`antd` and the vendored stylesheet removed (complete).** With no
+`"antd"` import left, `yarn remove antd --ignore-scripts` dropped the
+package and its private dependency chain; `yarn.lock` was checked
+entry-by-entry again (only removals, no retained package changed
+version). The 1.6 MB vendored theme was the harder part, because every
+legacy screen's base look (typography, forms, buttons, tooltips, ...)
+comes from it:
+
+- `vendors/antd-bitshares-theme.css` was replaced by
+  `vendors/legacy-base.css` (98,906 B, ~6% of the original), produced by
+  a postcss pass that removes every selector which *requires* an `ant-*`/
+  `anticon*` class that no code can render any more. Selectors in `:not()`
+  are kept, as are the `ant-form-item-label` and `ant-input` classes that a
+  few legacy TSX files still put on plain elements by hand.
+- **Proof, not judgement:** a Playwright probe loaded the original and
+  the trimmed sheet separately into headless Chromium and compared
+  computed styles of a synthetic DOM: every plain HTML tag and `<input>`
+  type, every class that survives in the trimmed sheet (115 of them)
+  applied to nine different host tags, and a nested form/label/input
+  scaffold per class. Run under all four theme states (`darkTheme`,
+  `lightTheme`, `midnightTheme`, none): 1,911 elements per state,
+  3,103,464 computed-property comparisons in total, **0 differences**.
+  So the pruning changes nothing for plain elements or any class the app
+  can still emit; it does not replace a look at the real screens (below).
+- The SCSS that targeted antd widget internals only was deleted
+  (`components/_node-selector.scss`; the `.ant-*` rules in
+  `layout/_antd.scss` and `style-guide-fixes.scss`). What was live in
+  those files was kept: the `.market-layout .inputAddon` rules (used by
+  `BuySell.tsx` and `CreatePoolModal.tsx`) now live in
+  `layout/_market-inputs.scss`, and `style-guide-fixes.scss` keeps only
+  the `$ant-fix` selector suffix that `_wallet.scss`, `_shame.scss` and
+  the theme template still use. About 89 further `.ant-*` selectors (~8 KB,
+  1.7% of the compiled app CSS) sit inside 22 other legacy SCSS files;
+  they are inert and are left to the SCSS-to-CSS-Modules step rather than
+  hand-edited here, where pruning can silently break Sass nesting.
+- Verified: `tsc` clean, `eslint` 0 errors on every touched file, `yarn
+  test` 5,578/5,578, `yarn test:market:ci` unchanged (64 passing, the 5
+  known `CallOrder` failures), a forced-emission production build that
+  compiles all Sass, and the plain build showing only the 2 known
+  pre-existing `charting_library.esm` errors.
+- Also fixed in this pass: six `no-unused-vars` errors in two legacy files
+  the branch had already touched (`lib/common/gatewayUtils.js`,
+  `test/marketTests.js`) that `yarn lint:changed` - the CI gate - would
+  flag; no behavior change.
+
+Still not verifiable from this environment: a visual pass of the legacy
+screens against a live chain.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

@@ -175,7 +175,6 @@
         "@fontsource/ibm-plex-sans": "^5.0.20",
         "@hiveio/hive-js": "^2.0.5",
         "@reduxjs/toolkit": "^1.9.7",
-        "antd": "^3.26.20",
         "bignumber.js": "^4.0.0",
         "bitshares-report": "https://github.com/bitshares/bitshares-report.git",
         "bitsharesjs": "^6.0.3",
