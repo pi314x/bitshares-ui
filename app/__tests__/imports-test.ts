@@ -23,8 +23,15 @@ const EXTENSIONS = [
 ];
 // webpack `resolve.modules` / `resolve.alias` roots (see webpack.config.js, tsconfig paths)
 const ROOTS = [appDir, path.join(appDir, "lib")];
-// handled by aliases/loaders rather than the file system
-const SPECIAL = [/^counterpart$/, /^worker-loader/, /^file-loader/, /^!!/];
+// handled by aliases/loaders rather than the file system; the charting library
+// is a licensed download (git-ignored, fetched by install-charting-library.cjs)
+const SPECIAL = [
+    /^counterpart$/,
+    /^worker-loader/,
+    /^file-loader/,
+    /^!!/,
+    /charting_library\/charting_library\.esm$/
+];
 
 function walk(dir: string, out: string[] = []): string[] {
     for (const name of fs.readdirSync(dir)) {

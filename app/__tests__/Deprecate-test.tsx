@@ -1,8 +1,9 @@
 // The deprecation page is only rendered on a retired deployment, so nothing in
 // normal use (or the boot smoke test) ever shows it; this pins its two variants.
-jest.mock("react-loadable", () => () => () => (
-    <div data-testid="settings">settings</div>
-));
+jest.mock("react-loadable", () => () => {
+    const Settings = () => <div data-testid="settings">settings</div>;
+    return Settings;
+});
 jest.mock("stores/WalletDb", () => ({
     __esModule: true,
     default: {getWallet: jest.fn()}
