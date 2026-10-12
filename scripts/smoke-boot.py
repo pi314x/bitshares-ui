@@ -44,11 +44,15 @@ import argparse
 import http.server
 import json
 import os
+import re
 import socketserver
 import sys
 import threading
 
 from playwright.sync_api import sync_playwright
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EXTRA_FILES = {"/dictionary.json": os.path.join(REPO_ROOT, "app", "lib", "common", "dictionary_en.json")}
 
 STUB_WEBSOCKET = r"""
 (() => {
@@ -170,6 +174,22 @@ def serve(dist, live_node=None):
 
         def do_GET(self):
             path = self.path.split("?")[0]
+            # `webpack --output-path <dir>` leaves out the files the CopyPlugin
+            # writes next to the real output (dictionary.json for wallet
+            # creation, the locale files); serve them from the sources so a
+            # custom output path behaves like a real deployment.
+            source = EXTRA_FILES.get(path)
+            if source is None and re.match(r"^/locale-[\w-]+\.json$", path):
+                source = os.path.join(REPO_ROOT, "app", "assets", "locales", path.lstrip("/"))
+            if source and not os.path.exists(os.path.join(dist, path.lstrip("/"))) and os.path.exists(source):
+                with open(source, "rb") as handle:
+                    body = handle.read()
+                self.send_response(200)
+                self.send_header("content-type", "application/json")
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/" or not os.path.exists(os.path.join(dist, path.lstrip("/"))):
                 self.path = "/index.html"
             return super().do_GET()
