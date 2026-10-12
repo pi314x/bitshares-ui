@@ -23,6 +23,7 @@ import Loadable from "react-loadable";
 import NewsHeadline from "components/Layout/NewsHeadline";
 
 import {Routes, Route, Navigate} from "react-router-dom";
+import {withLegacyRouterProps} from "./components/Utility/withLegacyRouterProps";
 
 // Nested route components
 import Page404 from "./components/Page404/Page404";
@@ -39,21 +40,25 @@ const AppShell = Loadable({
     loading: LoadingIndicator
 });
 
-const Invoice = Loadable({
-    loader: () =>
-        import(
-            /* webpackChunkName: "exchange" */ "./components/Transfer/Invoice"
-        ),
-    loading: LoadingIndicator
-});
+const Invoice = withLegacyRouterProps(
+    Loadable({
+        loader: () =>
+            import(
+                /* webpackChunkName: "exchange" */ "./components/Transfer/Invoice"
+            ),
+        loading: LoadingIndicator
+    })
+);
 
-const Exchange = Loadable({
-    loader: () =>
-        import(
-            /* webpackChunkName: "exchange" */ "./components/Exchange/ExchangeContainer"
-        ),
-    loading: LoadingIndicator
-});
+const Exchange = withLegacyRouterProps(
+    Loadable({
+        loader: () =>
+            import(
+                /* webpackChunkName: "exchange" */ "./components/Exchange/ExchangeContainer"
+            ),
+        loading: LoadingIndicator
+    })
+);
 
 const CreditOfferPage = Loadable({
     loader: () =>
@@ -108,10 +113,12 @@ const Settings = Loadable({
     loading: LoadingIndicator
 });
 
-const Help = Loadable({
-    loader: () => import(/* webpackChunkName: "help" */ "./components/Help"),
-    loading: LoadingIndicator
-});
+const Help = withLegacyRouterProps(
+    Loadable({
+        loader: () => import(/* webpackChunkName: "help" */ "./components/Help"),
+        loading: LoadingIndicator
+    })
+);
 
 const Asset = Loadable({
     loader: () =>
@@ -119,13 +126,15 @@ const Asset = Loadable({
     loading: LoadingIndicator
 });
 
-const Block = Loadable({
-    loader: () =>
-        import(
-            /* webpackChunkName: "block" */ "./components/Blockchain/BlockContainer"
-        ),
-    loading: LoadingIndicator
-});
+const Block = withLegacyRouterProps(
+    Loadable({
+        loader: () =>
+            import(
+                /* webpackChunkName: "block" */ "./components/Blockchain/BlockContainer"
+            ),
+        loading: LoadingIndicator
+    })
+);
 
 const DashboardAccountsOnly = Loadable({
     loader: () =>
@@ -199,13 +208,15 @@ const DirectDebit = Loadable({
     loading: LoadingIndicator
 });
 
-const QuickTrade = Loadable({
-    loader: () =>
-        import(
-            /* webpackChunkName: "QuickTrade" */ "./components/QuickTrade/QuickTradeRouter"
-        ),
-    loading: LoadingIndicator
-});
+const QuickTrade = withLegacyRouterProps(
+    Loadable({
+        loader: () =>
+            import(
+                /* webpackChunkName: "QuickTrade" */ "./components/QuickTrade/QuickTradeRouter"
+            ),
+        loading: LoadingIndicator
+    })
+);
 
 const PoolmartPage = Loadable({
     loader: () =>
@@ -227,6 +238,13 @@ import GatewaySelectorModal from "./components/Gateways/GatewaySelectorModal";
 import SettingsStore from "./stores/SettingsStore";
 import GatewayActions from "./actions/GatewayActions";
 import {allowedGateway} from "./branding";
+
+// Route components that still read react-router v5's match/history/location
+// props (see components/Utility/withLegacyRouterProps.tsx).
+const LoginRoute = withLegacyRouterProps(Login);
+const RegistrationSelectorRoute = withLegacyRouterProps(RegistrationSelector);
+const WalletRegistrationRoute = withLegacyRouterProps(WalletRegistration);
+const AccountRegistrationRoute = withLegacyRouterProps(AccountRegistration);
 
 class App extends React.Component {
     constructor() {
@@ -558,18 +576,18 @@ class App extends React.Component {
                                     path="/create-account/*"
                                     element={<LoginSelector />}
                                 />
-                                <Route path="/login" element={<Login />} />
+                                <Route path="/login" element={<LoginRoute />} />
                                 <Route
                                     path="/registration"
-                                    element={<RegistrationSelector />}
+                                    element={<RegistrationSelectorRoute />}
                                 />
                                 <Route
                                     path="/registration/local"
-                                    element={<WalletRegistration />}
+                                    element={<WalletRegistrationRoute />}
                                 />
                                 <Route
                                     path="/registration/cloud"
-                                    element={<AccountRegistration />}
+                                    element={<AccountRegistrationRoute />}
                                 />
                                 <Route path="/news" element={<News />} />
                                 <Route
