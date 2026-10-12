@@ -91,4 +91,24 @@ describe("DashboardList (rendered against the real bitsharesjs ChainStore)", () 
         expect(getByText(fixture.accountName)).toBeTruthy();
         expect(getByText(fixture.accountId)).toBeTruthy();
     });
+
+    it("also accepts a plain array of account names (what the contacts tab passes)", () => {
+        seedChainStore();
+
+        const {getByText} = render(
+            <IntlProvider locale="en">
+                <MemoryRouter>
+                    <DashboardList
+                        accounts={[fixture.accountName]}
+                        ignoredAccounts={List()}
+                        width={1400}
+                        showMyAccounts={false}
+                        isContactsList={true}
+                    />
+                </MemoryRouter>
+            </IntlProvider>
+        );
+
+        expect(getByText(fixture.accountName)).toBeTruthy();
+    });
 });

@@ -80,6 +80,9 @@
 //   broken as before - the plain array is passed through unchanged, only
 //   cast (`as unknown as List<string>`) to satisfy `tsc`, which now
 //   type-checks both sides of this call for the first time.
+//   UPDATE: fixed in `DashboardList.tsx` (its `resolveAccounts` now accepts
+//   a plain array, test added) after the crash showed up on /accounts
+//   against a real node; the cast here is now merely redundant.
 // - `state.width` starts as `null` (not `undefined`), and is passed
 //   straight through to `DashboardList`'s `width?: number` prop exactly as
 //   before - `null` does NOT trigger that prop's own `= 2000` default

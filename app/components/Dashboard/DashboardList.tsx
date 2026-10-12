@@ -38,7 +38,10 @@ import {
 import "./DashboardList.scss";
 
 export interface DashboardListProps {
-    accounts: List<string>;
+    // `AccountStore` hands the contacts tab a plain array (`Set.toArray()`),
+    // the other tabs an Immutable `List`; the legacy BindToChainState
+    // resolution only ever called `.forEach`, which both support.
+    accounts: List<string> | string[];
     ignoredAccounts?: List<string>;
     width?: number;
     compact?: boolean;
@@ -50,9 +53,13 @@ export interface DashboardListProps {
     passwordAccount?: string;
 }
 
-function resolveAccounts(ids: List<string> | undefined): any[] {
+function resolveAccounts(ids: List<string> | string[] | undefined): any[] {
     if (!ids) return [];
-    return ids.map(id => ChainStore.getAccount(id)).toArray();
+    // `.map(...).toArray()` only works on an Immutable List and threw
+    // "map(...).toArray is not a function" for the plain array the contacts
+    // tab passes (found on /accounts against a real node).
+    const list: string[] = Array.isArray(ids) ? ids : ids.toArray();
+    return list.map(id => ChainStore.getAccount(id));
 }
 
 export default function DashboardList(props: DashboardListProps) {
