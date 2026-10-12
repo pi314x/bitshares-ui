@@ -120,7 +120,11 @@ export default function BackupBrainkey() {
                     <Translate content="wallet.brainkey_w3" />
                 </div>
 
-                <Button variant="accent" onClick={onComplete}>
+                <Button
+                    variant="accent"
+                    onClick={onComplete}
+                    style={{marginRight: "16px"}}
+                >
                     <Translate content="wallet.verify" />
                 </Button>
                 <Button onClick={reset}>

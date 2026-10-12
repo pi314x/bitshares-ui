@@ -247,6 +247,7 @@ function CreateNewWallet({restoreBrainkey}: {restoreBrainkey?: boolean}) {
                         variant="accent"
                         type="submit"
                         disabled={!state.isValid}
+                        style={{marginRight: "16px"}}
                     >
                         <Translate content="wallet.create_wallet" />
                     </Button>
