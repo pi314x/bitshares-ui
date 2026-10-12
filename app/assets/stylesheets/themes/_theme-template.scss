@@ -546,13 +546,6 @@
             color: darken($secondary-text-color, 10%);
         }
     }
-    .node-access-popup {
-        @include color($secondary-text-color, $panel-bg-color);
-        border: 1px solid black;
-        .nodes-list .api-status {
-            border-bottom: 1px solid lighten($bg-color, 4%);
-        }
-    }
     .panel-left {
         @include color($light-text-color, $light-panel-bg-color);
         .block-list li > a {
@@ -2137,19 +2130,6 @@
             color: $ask-color;
             > svg path {
                 fill: $ask-color;
-            }
-        }
-    }
-    .footer {
-        div.footer-status {
-            > span.testnet {
-                font-size: 0.85rem;
-            }
-            > span.success {
-                color: $success-color;
-            }
-            > span.warning {
-                color: $alert-color;
             }
         }
     }
