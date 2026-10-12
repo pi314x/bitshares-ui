@@ -44,10 +44,8 @@ import http.server
 import json
 import os
 import socketserver
-import ssl
 import sys
 import threading
-import urllib.request
 
 from playwright.sync_api import sync_playwright
 
@@ -111,7 +109,7 @@ LIVE_WEBSOCKET = r"""
       LiveWS._pump();
     }
     static _pump() {
-      while (LiveWS._active < 12 && LiveWS._queue.length) {
+      while (LiveWS._active < 16 && LiveWS._queue.length) {
         LiveWS._active++;
         Promise.resolve(LiveWS._queue.shift()()).finally(() => { LiveWS._active--; LiveWS._pump(); });
       }
@@ -127,8 +125,21 @@ LIVE_WEBSOCKET = r"""
 
 def serve(dist, live_node=None):
     cache = {}
-    ca_file = os.environ.get("SSL_CERT_FILE") or "/root/.ccr/ca-bundle.crt"
-    context = ssl.create_default_context(cafile=ca_file) if os.path.exists(ca_file) else ssl.create_default_context()
+    cache_path = os.environ.get("SMOKE_RPC_CACHE")  # persist relayed replies between runs (warm runs are much faster)
+    if cache_path and os.path.exists(cache_path):
+        with open(cache_path) as handle:
+            cache = {k: v.encode() for k, v in json.load(handle).items()}
+    local = threading.local()
+
+    def session():
+        # One keep-alive session per request thread: opening a new TLS tunnel
+        # through the sandbox proxy for every call made the bridge ~10x slower.
+        if not hasattr(local, "session"):
+            import requests  # imported lazily: only the live mode needs it
+
+            local.session = requests.Session()
+            local.session.headers.update({"content-type": "application/json", "user-agent": "curl/8 smoke-boot"})
+        return local.session
 
     def relay(payload):
         key = json.dumps(payload, sort_keys=True)
@@ -136,10 +147,8 @@ def serve(dist, live_node=None):
         if key in cache and not volatile:
             return cache[key]
         body = json.dumps({"jsonrpc": "2.0", "method": "call", "params": [payload["api"], payload["method"], payload["params"]], "id": 1}).encode()
-        request = urllib.request.Request(live_node, data=body, headers={"content-type": "application/json", "user-agent": "curl/8 smoke-boot"})
         try:
-            with urllib.request.urlopen(request, timeout=30, context=context) as response:
-                result = response.read()
+            result = session().post(live_node, data=body, timeout=30).content
         except Exception as exc:  # network failure: surface as an RPC error
             result = json.dumps({"error": {"code": -1, "message": str(exc)}}).encode()
         if not volatile:
@@ -188,6 +197,7 @@ def serve(dist, live_node=None):
 
     httpd = Server(("127.0.0.1", 0), Handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    httpd.save_cache = lambda: cache_path and json.dump({k: v.decode() for k, v in cache.items()}, open(cache_path, "w"))
     return httpd
 
 
@@ -216,6 +226,9 @@ def main():
         page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)[:300]))
         page.on("console", lambda m: errors.append(m.text[:300]) if m.type == "error" else None)
+        watch = os.environ.get("SMOKE_CONSOLE_FILTER")  # print console output containing this substring
+        if watch:
+            page.on("console", lambda m: print("   console.%s: %s" % (m.type, m.text[:300])) if watch in m.text else None)
         if args.account:
             # AccountStore persists these under `__graphene__<key>_<first 8 chars of chain id>`.
             page.add_init_script(
@@ -300,6 +313,7 @@ def main():
                 page_errors.clear()
         browser.close()
 
+    httpd.save_cache()
     httpd.shutdown()
     sys.exit(1 if failed else 0)
 
