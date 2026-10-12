@@ -6,6 +6,8 @@
 // `[data-theme="light"]` on the root element, never derived from
 // `prefers-color-scheme`.
 
+@import "palette";
+
 // IBM Plex is the only type family: IBM Plex Sans for all text (headings
 // included), IBM Plex Mono for numbers/code. Self-hosted via @fontsource
 // (imported in app/design-system/fonts.ts from the app entry - SCSS
@@ -14,38 +16,40 @@
 // on the network just to render its own UI font.
 
 :root {
-    --ground: #0e1218;
-    --surface: #151a22;
-    --raised: #1a212b;
-    --line: #262e3a;
-    --line-soft: #1f262f;
-    --ink: #e7ecf3;
-    --ink-2: #b6c0ce;
-    --muted: #8792a4;
-    --faint: #646e7e;
-    --accent: #16b8f3;
-    --accent-2: #4cc5f0;
-    --accent-wash: #0f2029;
-    --up: #46b487;
-    --down: #e0666e;
-    --up-wash: #14271f;
-    --down-wash: #2a1719;
-    --warn: #d9a227;
-    --on-accent: #06222c;
+    --ground: #{$palette-dark-ground};
+    --surface: #{$palette-dark-surface};
+    --raised: #{$palette-dark-raised};
+    --hover: #{$palette-dark-hover};
+    --line: #{$palette-dark-line};
+    --line-soft: #{$palette-dark-line-soft};
+    --ink: #{$palette-dark-ink};
+    --ink-2: #{$palette-dark-ink-2};
+    --muted: #{$palette-dark-muted};
+    --faint: #{$palette-dark-faint};
+    --accent: #{$palette-dark-accent};
+    --accent-2: #{$palette-dark-accent-2};
+    --accent-wash: #{$palette-dark-accent-wash};
+    --up: #{$palette-dark-up};
+    --down: #{$palette-dark-down};
+    --up-wash: #{$palette-dark-up-wash};
+    --down-wash: #{$palette-dark-down-wash};
+    --warn: #{$palette-dark-warn};
+    --on-accent: #{$palette-dark-on-accent};
 
     // Form controls (buttons, inputs, selects). The field fill and border are
     // translucent mixes of the ink colour so one definition looks right on
-    // every surface the controls sit on - the new shell's navy as well as the
-    // legacy screens' gray panels - in both themes.
-    --line-strong: #334052;
-    --focus-ring: rgba(22, 184, 243, 0.38);
-    --field-bg: rgba(231, 236, 243, 0.055);
+    // every surface the controls sit on (ground, surface, raised and the
+    // legacy panels, which now take their colours from the same palette), in
+    // both themes.
+    --line-strong: #{mix($palette-dark-line, $palette-dark-muted, 65%)};
+    --focus-ring: #{rgba($palette-dark-accent, 0.38)};
+    --field-bg: #{rgba($palette-dark-ink, 0.055)};
     --field-bg: color-mix(in srgb, var(--ink) 5.5%, transparent);
-    --field-bg-hover: rgba(231, 236, 243, 0.09);
+    --field-bg-hover: #{rgba($palette-dark-ink, 0.09)};
     --field-bg-hover: color-mix(in srgb, var(--ink) 9%, transparent);
-    --field-border: rgba(231, 236, 243, 0.16);
+    --field-border: #{rgba($palette-dark-ink, 0.16)};
     --field-border: color-mix(in srgb, var(--ink) 16%, transparent);
-    --field-border-hover: rgba(231, 236, 243, 0.3);
+    --field-border-hover: #{rgba($palette-dark-ink, 0.3)};
     --field-border-hover: color-mix(in srgb, var(--ink) 30%, transparent);
     --radius-sm: 6px;
     --radius: 8px;
@@ -54,40 +58,44 @@
     --control-h-sm: 30px;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
     --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+    --overlay: rgba(5, 8, 12, 0.62);
     --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
     --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
         "Segoe UI", sans-serif;
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
         "Segoe UI", sans-serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
-        monospace;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 :root[data-theme="light"] {
-    --ground: #f4f6f9;
-    --surface: #ffffff;
-    --raised: #fbfcfd;
-    --line: #dfe4ec;
-    --line-soft: #ebeff5;
-    --ink: #131820;
-    --ink-2: #3c4657;
-    --muted: #6b7688;
-    --faint: #98a2b3;
-    --accent: #0079ad;
-    --accent-2: #04719f;
-    --accent-wash: #e3f4fc;
-    --up: #2e8f65;
-    --down: #c24a52;
-    --up-wash: #e6f2ec;
-    --down-wash: #f8e9ea;
-    --warn: #b07b14;
-    --on-accent: #ffffff;
+    --ground: #{$palette-light-ground};
+    --surface: #{$palette-light-surface};
+    --raised: #{$palette-light-raised};
+    --hover: #{$palette-light-hover};
+    --line: #{$palette-light-line};
+    --line-soft: #{$palette-light-line-soft};
+    --ink: #{$palette-light-ink};
+    --ink-2: #{$palette-light-ink-2};
+    --muted: #{$palette-light-muted};
+    --faint: #{$palette-light-faint};
+    --accent: #{$palette-light-accent};
+    --accent-2: #{$palette-light-accent-2};
+    --accent-wash: #{$palette-light-accent-wash};
+    --up: #{$palette-light-up};
+    --down: #{$palette-light-down};
+    --up-wash: #{$palette-light-up-wash};
+    --down-wash: #{$palette-light-down-wash};
+    --warn: #{$palette-light-warn};
+    --on-accent: #{$palette-light-on-accent};
 
-    --line-strong: #c4ccd9;
-    --focus-ring: rgba(0, 121, 173, 0.28);
+    --line-strong: #{mix($palette-light-line, $palette-light-muted, 70%)};
+    --focus-ring: #{rgba($palette-light-accent, 0.28)};
     --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.1);
     --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.14);
+    --shadow-lg: 0 16px 48px rgba(16, 24, 40, 0.2);
+    --overlay: rgba(17, 24, 39, 0.42);
 }
 
 // Base styles shared by every screen that imports this file, so individual

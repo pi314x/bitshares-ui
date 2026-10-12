@@ -1,0 +1,73 @@
+// The one place raw colour values are defined.
+//
+// Two consumers read this file:
+//   * `theme.scss` turns it into the CSS custom properties (`--ground`,
+//     `--accent`, ...) that the design system and all new code use;
+//   * the legacy per-theme variable sheets in
+//     `assets/stylesheets/themes/_{dark,light,midnight}-theme.scss` derive
+//     their `$bg-color`, `$panel-bg-color`, `$bid-color`, ... from it, so the
+//     old screens and the new shell no longer drift apart (they used to be a
+//     navy shell around neutral-gray panels).
+//
+// `tokens.ts` is the typed mirror for TS/JS code; a Jest test
+// (`__tests__/design-system/palette-test.ts`) fails if the two disagree, so
+// change a value here and in `tokens.ts` together.
+//
+// Design notes. Neutrals are cool slate with a slight blue cast instead of
+// pure gray, stepped by elevation (ground < surface < raised < hover) so
+// depth comes from tone, not from borders and shadows. One brand accent
+// (BitShares cyan); up/down are an emerald and a warm rose rather than
+// pure green/red, so a price column stays readable without shouting and
+// colour-blind users still get a clear lightness difference.
+//
+// Dark is the default theme; `midnight` is the legacy near-black variant
+// (the shell has no midnight of its own and renders it with the dark tokens).
+
+// ---- Dark ---------------------------------------------------------------
+$palette-dark-ground: #0b0f14;
+$palette-dark-surface: #11171f;
+$palette-dark-raised: #172029;
+$palette-dark-hover: #1e2935;
+$palette-dark-line: #232d3a;
+$palette-dark-line-soft: #1a222d;
+$palette-dark-ink: #e9eef5;
+$palette-dark-ink-2: #b8c2d0;
+$palette-dark-muted: #8794a7;
+$palette-dark-faint: #627085;
+$palette-dark-accent: #16b8f3;
+$palette-dark-accent-2: #4cc5f0;
+$palette-dark-accent-wash: #0c202b;
+$palette-dark-up: #34c38f;
+$palette-dark-down: #ef5f6b;
+$palette-dark-up-wash: #0f2a21;
+$palette-dark-down-wash: #2d171b;
+$palette-dark-warn: #e0a93b;
+$palette-dark-on-accent: #04202b;
+
+// ---- Light --------------------------------------------------------------
+$palette-light-ground: #f3f5f9;
+$palette-light-surface: #ffffff;
+$palette-light-raised: #f8fafc;
+$palette-light-hover: #edf1f6;
+$palette-light-line: #dde3ec;
+$palette-light-line-soft: #e9eef5;
+$palette-light-ink: #111827;
+$palette-light-ink-2: #374151;
+$palette-light-muted: #646e82;
+$palette-light-faint: #98a2b3;
+$palette-light-accent: #0074a6;
+$palette-light-accent-2: #005f89;
+$palette-light-accent-wash: #e1f3fb;
+$palette-light-up: #157e53;
+$palette-light-down: #c73845;
+$palette-light-up-wash: #e3f4ec;
+$palette-light-down-wash: #fbe9eb;
+$palette-light-warn: #956309;
+$palette-light-on-accent: #ffffff;
+
+// ---- Midnight (legacy near-black theme) ---------------------------------
+$palette-midnight-ground: #05080c;
+$palette-midnight-surface: #0a0f15;
+$palette-midnight-raised: #101720;
+$palette-midnight-hover: #172230;
+$palette-midnight-line: #1a232f;

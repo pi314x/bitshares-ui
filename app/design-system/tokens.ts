@@ -4,11 +4,11 @@
 // fallback, per the reference design's rationale ("a terminal that flips to
 // white because the laptop woke up in daylight mode is not a terminal").
 //
-// The values here must stay in sync with `theme.scss`, which defines the
-// same tokens as CSS custom properties for actual styling. TypeScript can't
-// generate SCSS, so this file is the typed reference and `theme.scss` is
-// kept aligned with it by hand until the design system has its own build
-// step.
+// The values here must stay in sync with `_palette.scss`, the single source
+// that `theme.scss` turns into CSS custom properties (and the legacy theme
+// sheets derive their colours from). TypeScript can't generate SCSS, so this
+// file is the typed reference and a Jest test
+// (`__tests__/design-system/palette-test.ts`) fails when the two disagree.
 
 export type ThemeName = "dark" | "light";
 
@@ -16,6 +16,7 @@ export interface ThemeTokens {
     ground: string;
     surface: string;
     raised: string;
+    hover: string;
     line: string;
     lineSoft: string;
     ink: string;
@@ -35,43 +36,45 @@ export interface ThemeTokens {
 
 export const themes: Record<ThemeName, ThemeTokens> = {
     dark: {
-        ground: "#0E1218",
-        surface: "#151A22",
-        raised: "#1A212B",
-        line: "#262E3A",
-        lineSoft: "#1F262F",
-        ink: "#E7ECF3",
-        ink2: "#B6C0CE",
-        muted: "#8792A4",
-        faint: "#646E7E",
+        ground: "#0B0F14",
+        surface: "#11171F",
+        raised: "#172029",
+        hover: "#1E2935",
+        line: "#232D3A",
+        lineSoft: "#1A222D",
+        ink: "#E9EEF5",
+        ink2: "#B8C2D0",
+        muted: "#8794A7",
+        faint: "#627085",
         accent: "#16B8F3",
         accent2: "#4CC5F0",
-        accentWash: "#0F2029",
-        up: "#46B487",
-        down: "#E0666E",
-        upWash: "#14271F",
-        downWash: "#2A1719",
-        warn: "#D9A227",
-        onAccent: "#06222C"
+        accentWash: "#0C202B",
+        up: "#34C38F",
+        down: "#EF5F6B",
+        upWash: "#0F2A21",
+        downWash: "#2D171B",
+        warn: "#E0A93B",
+        onAccent: "#04202B"
     },
     light: {
-        ground: "#F4F6F9",
+        ground: "#F3F5F9",
         surface: "#FFFFFF",
-        raised: "#FBFCFD",
-        line: "#DFE4EC",
-        lineSoft: "#EBEFF5",
-        ink: "#131820",
-        ink2: "#3C4657",
-        muted: "#6B7688",
+        raised: "#F8FAFC",
+        hover: "#EDF1F6",
+        line: "#DDE3EC",
+        lineSoft: "#E9EEF5",
+        ink: "#111827",
+        ink2: "#374151",
+        muted: "#646E82",
         faint: "#98A2B3",
-        accent: "#0079AD",
-        accent2: "#04719F",
-        accentWash: "#E3F4FC",
-        up: "#2E8F65",
-        down: "#C24A52",
-        upWash: "#E6F2EC",
-        downWash: "#F8E9EA",
-        warn: "#B07B14",
+        accent: "#0074A6",
+        accent2: "#005F89",
+        accentWash: "#E1F3FB",
+        up: "#157E53",
+        down: "#C73845",
+        upWash: "#E3F4EC",
+        downWash: "#FBE9EB",
+        warn: "#956309",
         onAccent: "#FFFFFF"
     }
 };
@@ -89,8 +92,7 @@ export const typography = {
         '"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
     fontSans:
         '"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
-    fontMono:
-        '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace'
+    fontMono: '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace'
 };
 
 export function isThemeName(value: unknown): value is ThemeName {
