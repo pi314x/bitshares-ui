@@ -96,4 +96,14 @@ describe("design-system/Modal", () => {
         );
         expect(dialog.className).toContain("custom-dialog");
     });
+
+    it("overrides the backdrop z-index when zIndex is passed", () => {
+        render(
+            <Modal visible zIndex={1001} wrapClassName="zi-test">
+                content
+            </Modal>
+        );
+        const backdrop = document.querySelector(".zi-test") as HTMLElement;
+        expect(backdrop.style.zIndex).toBe("1001");
+    });
 });

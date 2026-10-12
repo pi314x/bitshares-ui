@@ -138,7 +138,9 @@ import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
 import ChainStore from "bitsharesjs/es/chain/src/ChainStore";
 import AccountInputStyleGuide from "../Account/AccountInputStyleGuide";
-import {Button, Input, Form} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Form} from "../../design-system/Form";
 import counterpart from "counterpart";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -285,7 +287,7 @@ function AccountLoginCore({
         return (
             <Form.Item style={{textAlign: "center"}}>
                 {active ? (
-                    <Button onClick={onPasswordEnter} type="primary">
+                    <Button onClick={onPasswordEnter} variant="accent">
                         {counterpart.translate("login.loginButton")}
                     </Button>
                 ) : (

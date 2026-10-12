@@ -28,7 +28,11 @@ import WalletChangePassword from "./WalletChangePassword";
 import {WalletCreate} from "./WalletCreate";
 import {BackupCreate, BackupRestore} from "./Backup";
 import BackupBrainkey from "./BackupBrainkey";
-import {Form, Select, Input, Button, Card} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Select} from "../../design-system/Select";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {Card} from "../../design-system/Card";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const FormItem = Form.Item;
@@ -269,8 +273,8 @@ export function ChangeActiveWallet() {
 
     const is_dirty = currentWallet !== walletManagerState.current_wallet;
 
-    const onChange = (value: string) => {
-        setCurrentWallet(value);
+    const onChange = (value: string | number) => {
+        setCurrentWallet(value as string);
     };
 
     const onConfirm = () => {
@@ -349,8 +353,8 @@ export function WalletDelete() {
         // window.history.back()
     };
 
-    const onChange = (value: string) => {
-        setSelectedWallet(value);
+    const onChange = (value: string | number) => {
+        setSelectedWallet(value as string);
     };
 
     if (confirm === 1) {

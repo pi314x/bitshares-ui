@@ -47,7 +47,10 @@ import AccountSelect from "../Forms/AccountSelect";
 import LoadingIndicator from "../LoadingIndicator";
 import Icon from "../Icon/Icon";
 import CopyButton from "../Utility/CopyButton";
-import {Form, Input, Button, Tooltip} from "bitshares-ui-style-guide";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 interface AccountRegistrationFormState {
@@ -247,8 +250,8 @@ function AccountRegistrationForm({continue: onContinue}: AccountRegistrationForm
                         <LoadingIndicator type="three-bounce" />
                     ) : (
                         <Button
-                            htmlType="submit"
-                            type="primary"
+                            type="submit"
+                            variant="accent"
                             disabled={
                                 !valid ||
                                 !state.passwordConfirmed ||

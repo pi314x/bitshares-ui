@@ -17,7 +17,9 @@ import * as React from "react";
 import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {getWalletName} from "branding";
-import {Alert, Checkbox, Tooltip} from "bitshares-ui-style-guide";
+import {Alert} from "../../design-system/Alert";
+import {Checkbox} from "../../design-system/Checkbox";
+import {Tooltip} from "../../design-system/Tooltip";
 
 /* Dummy input to trick Chrome into disabling auto-complete */
 export const DisableChromeAutocomplete = () => (

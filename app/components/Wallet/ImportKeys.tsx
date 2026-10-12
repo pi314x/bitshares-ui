@@ -39,6 +39,28 @@
 // Replicated exactly: `passwordInputRef.current.value` (not `.state
 // .value`), so this port has the identical (non-)behavior.
 //
+// UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.2): moved off
+// `bitshares-ui-style-guide`'s antd `Input` onto the design-system `Input`,
+// whose `ref` forwards to the native `<input>` DOM node (not an antd
+// class-component instance). Both `Input`-ref reads in this file were
+// affected, with opposite consequences:
+// - `onWif` read `wifInputRef.current.state.value` (antd's internal state).
+//   A native input has no `.state`, so left as-is that line would throw on
+//   every WIF paste - changed to `wifInputRef.current.value`, the same
+//   uncontrolled-input read, so the "paste private key" flow behaves as
+//   before.
+// - `_passwordCheck`'s `passwordInputRef.current.value` (PRESERVED BUG
+//   above) now genuinely returns what the user typed, since `.value` on a
+//   native input is the real value. That *fixes* the legacy bug as an
+//   unavoidable side effect of the component swap (keeping it would have
+//   meant deliberately reading something that is always `undefined`):
+//   the "BTS 1.0 wallet backup password" field now actually works, hashing
+//   the typed password and comparing it to the stored checksum exactly as
+//   the code always intended. No new exposure - the password is only ever
+//   typed into this one field, hashed locally, never logged. Still worth
+//   the human second-reviewer's eye; the behavior change is in the user's
+//   favor but it IS a change.
+//
 // PRESERVED BUG #2 (not fixed - also flagged for the human
 // second-reviewer): `_parseWalletJson` (the "hosted BTS 1.0 wallet
 // backup" JSON parser) references `file.name` (three call sites) and,
@@ -78,11 +100,12 @@ import BalanceClaimAssetTotal from "components/Wallet/BalanceClaimAssetTotal";
 import WalletDb from "stores/WalletDb";
 import ImportKeysStore from "stores/ImportKeysStore";
 
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
 
 import GenesisFilter from "chain/GenesisFilter";
 
-import {Button, Input} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 require("./ImportKeys.scss");
@@ -649,7 +672,7 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
 
     const onWif = (event: any) => {
         event.preventDefault();
-        const value = wifInputRef.current.state.value;
+        const value = wifInputRef.current.value;
         addByPattern(value);
     };
 
@@ -831,7 +854,7 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
                 <BalanceClaimActive />
 
                 <div style={{paddingTop: 15}}>
-                    <Button type="primary" onClick={onCancel}>
+                    <Button variant="accent" onClick={onCancel}>
                         <Translate content="wallet.done" />
                     </Button>
                 </div>
@@ -1000,8 +1023,8 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
                                         </span>
                                     </div>
                                     <Button
-                                        type="primary"
-                                        htmlType="submit"
+                                        variant="accent"
+                                        type="submit"
                                         style={{marginRight: "16px"}}
                                     >
                                         <Translate content="wallet.submit" />
@@ -1060,9 +1083,9 @@ function ImportKeys({privateKey = true}: {privateKey?: boolean}) {
                                     ) : null}
                                     <div className="button-group">
                                         <Button
-                                            type="primary"
+                                            variant="accent"
                                             disabled={!!state.no_file}
-                                            htmlType="submit"
+                                            type="submit"
                                             style={{marginRight: "16px"}}
                                         >
                                             <Translate content="wallet.submit" />

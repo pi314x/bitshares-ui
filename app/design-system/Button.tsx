@@ -19,6 +19,11 @@ export interface ButtonProps
      * reducing padding/font-size. Only `"small"` is real anywhere;
      * antd's `"large"` is never used. */
     size?: ButtonSize;
+    /** antd's own `loading`: replaces the leading `icon` with the
+     * spinning `loading` glyph and blocks clicks (rendered `disabled`)
+     * while true. Real at exactly one call site (`Registration/
+     * WalletRegistrationForm.tsx`'s submit button). */
+    loading?: boolean;
 }
 
 // `type` defaults to `"button"`, matching antd's own `Button` (whose
@@ -36,6 +41,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             variant = "default",
             size = "default",
             type = "button",
+            loading = false,
+            disabled,
             className,
             icon,
             children,
@@ -53,8 +60,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             .join(" ");
 
         return (
-            <button ref={ref} type={type} className={classes} {...rest}>
-                {icon ? (
+            <button
+                ref={ref}
+                type={type}
+                className={classes}
+                disabled={disabled || loading}
+                {...rest}
+            >
+                {loading ? (
+                    <Icon type="loading" className={styles.icon} />
+                ) : icon ? (
                     <Icon type={icon} className={styles.icon} />
                 ) : null}
                 {children}

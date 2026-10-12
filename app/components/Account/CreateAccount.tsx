@@ -87,7 +87,7 @@ import SettingsActions from "actions/SettingsActions";
 import counterpart from "counterpart";
 import {scroller} from "react-scroll";
 import {getWalletName} from "branding";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const LinkComponent = Link as React.ComponentType<any>;

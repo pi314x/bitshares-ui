@@ -53,14 +53,12 @@ import TransactionConfirmStore from "stores/TransactionConfirmStore";
 import AccountNameInput from "./../Forms/AccountNameInputStyleGuide";
 import PasswordInput from "./../Forms/PasswordInputStyleGuide";
 import Icon from "../Icon/Icon";
-import {
-    Notification,
-    Form,
-    Button,
-    Select,
-    Alert,
-    Tooltip
-} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
+import {Form} from "../../design-system/Form";
+import {Button} from "../../design-system/Button";
+import {Select} from "../../design-system/Select";
+import {Alert} from "../../design-system/Alert";
+import {Tooltip} from "../../design-system/Tooltip";
 
 interface WalletRegistrationFormState {
     validAccountName: boolean;
@@ -361,9 +359,9 @@ function WalletRegistrationForm({
 
                 <Form.Item>
                     <Button
-                        type="primary"
+                        variant="accent"
                         disabled={state.loading || isButtonDisabled()}
-                        htmlType="submit"
+                        type="submit"
                         loading={state.loading}
                     >
                         {counterpart.translate("registration.continue")}

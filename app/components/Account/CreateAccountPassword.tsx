@@ -54,7 +54,8 @@ import WalletUnlockActions from "actions/WalletUnlockActions";
 import Icon from "../Icon/Icon";
 import CopyButton from "../Utility/CopyButton";
 import {scroller} from "react-scroll";
-import {Notification, Tooltip} from "bitshares-ui-style-guide";
+import {Notification} from "../../design-system/Notification";
+import {Tooltip} from "../../design-system/Tooltip";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
 const LinkComponent = Link as React.ComponentType<any>;

@@ -55,7 +55,9 @@
 import * as React from "react";
 import zxcvbnAsync from "zxcvbn-async";
 import counterpart from "counterpart";
-import {Progress, Form, Input} from "bitshares-ui-style-guide";
+import {Progress} from "../../design-system/Progress";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 
 interface PasswordInputState {
     password: string;

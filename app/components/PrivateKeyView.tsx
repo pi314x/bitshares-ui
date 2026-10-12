@@ -10,7 +10,10 @@
 //
 // Dropped as confirmed dead (grepped): `ref={modalId}` (a legacy string
 // ref computed from a dynamic key, `"key_view_modal" + pubkey`) - never
-// read via `this.refs[modalId]` anywhere in the file.
+// read via `this.refs[modalId]` anywhere in the file. The `id={modalId}`
+// prop passed to `<Modal>` (and `modalId` itself) were dropped in the
+// call-site migration (docs/UI_MIGRATION_PLAN.md §7.2): the design-system
+// `Modal` has no `id` prop and nothing ever looked the element up by it.
 //
 // TS-forced cast: `state.wif` is typed `string | null` (matching the
 // original's `null` initial value) but the already-ported
@@ -29,7 +32,8 @@ import Translate from "react-translate-component";
 import PrivateKeyStore from "stores/PrivateKeyStore";
 import QrcodeModal from "./Modal/QrcodeModal";
 import counterpart from "counterpart";
-import {Modal, Button} from "bitshares-ui-style-guide";
+import {Modal} from "../design-system/Modal";
+import {Button} from "../design-system/Button";
 import QR_IMG from "../assets/qr.png";
 
 interface PrivateKeyViewState {
@@ -102,7 +106,6 @@ export default function PrivateKeyView({
         setState(prev => ({...prev, wif: null}));
     };
 
-    const modalId = "key_view_modal" + pubkey;
     const keys = (PrivateKeyStore as any).getState().keys;
 
     const has_private = keys.has(pubkey);
@@ -121,7 +124,6 @@ export default function PrivateKeyView({
             <Modal
                 visible={state.isModalVisible}
                 title={counterpart.translate("account.perm.key_viewer")}
-                id={modalId}
                 onCancel={onClose}
                 footer={footer}
             >

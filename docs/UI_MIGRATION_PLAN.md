@@ -11584,6 +11584,75 @@ Verified: `tsc` clean across the whole project, `eslint` 0 errors
 5,558/5,558 (up from 5,556 - the 2 new `Button` tests), `yarn build`
 showing only the 2 known pre-existing `charting_library.esm` errors.
 
+**Fifth (final) wallet-batch sweep** - the remaining 14 files, every one
+read in full before touching: `PrivateKeyView.tsx` (`Modal`/`Button`;
+reveals a WIF after `WalletUnlockActions.unlock()` - unchanged; dead
+`id={modalId}` Modal prop and its now-unused `modalId` dropped),
+`Wallet/WalletUnlockModalLib.tsx` (`Alert`/`Checkbox`/`Tooltip`),
+`Forms/PasswordInputStyleGuide.tsx` (`Progress`/`Form`/`Input`; the
+password-strength/confirm logic untouched), `Registration/
+AccountRegistrationForm.tsx` and `WalletRegistrationForm.tsx`,
+`Login/DecryptBackup.tsx` and `AccountLogin.tsx`, `Wallet/WalletCreate.tsx`,
+`WalletManager.tsx` and `Backup.tsx`, `Account/CreateAccount.tsx` and
+`CreateAccountPassword.tsx` (only `Notification`/`Tooltip` swaps),
+`Wallet/WalletUnlockModal.tsx` and `Wallet/ImportKeys.tsx`. Every
+password/key/brainkey code path in all of them (`WalletDb.*`,
+`PrivateKey.fromSeed`, `Aes.*`, the 550ms re-validate in
+`AccountLogin`, `_decryptPrivateKeys`, ...) is byte-for-byte unchanged -
+only imports, `type="primary"` -> `variant="accent"`, and `htmlType=` ->
+`type=` changed. `walletDbCrypto-test.js` re-run: 8/8 throughout.
+
+New design-system capabilities found by real call sites in this sweep:
+`Button.loading` (spinner glyph + blocks clicks; real at
+`WalletRegistrationForm`'s submit) and `Modal.zIndex` (default 1000;
+`WalletUnlockModal`'s `1001`, "always on top" - it is the one real
+user), each with a new test. `Select.onChange`'s `(string | number)`
+narrowing hit `WalletManager.tsx` twice, widened with `as string` as in
+earlier batches. `WalletUnlockModal`'s `<Modal id/closeable/overlay/
+overlayClose/modalHeader/leftHeader>` were all confirmed-inert props
+(`closeable` is a misspelling of antd's `closable`) and dropped.
+
+**Two antd-internals findings, both in `Wallet/ImportKeys.tsx`**, the
+same family as `TradingViewPriceChart.tsx` earlier in this migration
+(refs to antd's `Input` class instance vs. the design-system `Input`'s
+native-`<input>` ref):
+- `onWif` read `wifInputRef.current.state.value`. A native input has no
+  `.state`, so left unchanged *every* "paste private key (WIF)" submit
+  would have thrown a TypeError. Changed to `.value`.
+- `_passwordCheck` read `passwordInputRef.current.value` - which this
+  file's own header already documented as a PRESERVED pre-existing bug
+  (always `undefined` against an antd instance, so a typed "BTS 1.0
+  wallet backup password" was never read). On a native input `.value` is
+  real, so the swap *fixes* that bug as an unavoidable side effect
+  (preserving it would have meant deliberately reading something always
+  undefined). No new exposure - the password is only typed into that one
+  field, hashed locally, never logged. Documented in the file header and
+  flagged here for the human second reviewer: a behavior change in the
+  user's favor, but a change. A repo-wide grep for `.current.state`/
+  `.current.input`/`.picker`/antd-instance reads found no others.
+
+**Systemic fix: `Button` now defaults `type="button"`** (details in the
+fourth sweep above). Found re-auditing `BackupBrainkey.tsx`; matters most
+for `AccountLogin.tsx` here, whose login `Button` sits inside a `<Form>`
+with no `onSubmit` - a native submit would have reloaded the page. A
+repo-wide scan for the pattern flagged ~40 files with a `<Button onClick>`
+and a `<Form>` in the same file, but nearly all are modal-footer buttons
+rendered in a portal outside the form; the default-`type` fix covers
+the whole class at once. `Wallet/Backup.tsx`'s password `Button`
+(`type="submit"` *and* `onClick={onPassword}` inside `<form
+onSubmit={onPassword}>`) already double-fired `onPassword` in the
+original - preserved exactly, not fixed.
+
+With this sweep **no file under `app/` imports `bitshares-ui-style-guide`
+any more.** What is left of the dependency is non-import wiring - see
+§7.3.
+
+Verified: `tsc` clean across the whole project, `eslint` 0 errors
+(pre-existing `any`-warnings only), `yarn test` 5,560/5,560 (up from
+5,558 - `Button.loading` and `Modal.zIndex` tests), `walletDbCrypto-
+test.js` 8/8, `yarn build` showing only the 2 known pre-existing
+`charting_library.esm` errors.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

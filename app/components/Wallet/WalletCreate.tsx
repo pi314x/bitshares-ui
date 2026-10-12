@@ -33,7 +33,9 @@ import WalletManagerStore from "stores/WalletManagerStore";
 import WalletActions from "actions/WalletActions";
 import SettingsActions from "actions/SettingsActions";
 import {getWalletName} from "branding";
-import {Button, Form, Input} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -242,8 +244,8 @@ function CreateNewWallet({restoreBrainkey}: {restoreBrainkey?: boolean}) {
                     ) : null}
 
                     <Button
-                        type="primary"
-                        htmlType="submit"
+                        variant="accent"
+                        type="submit"
                         disabled={!state.isValid}
                     >
                         <Translate content="wallet.create_wallet" />

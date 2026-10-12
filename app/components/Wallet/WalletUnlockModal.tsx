@@ -58,6 +58,21 @@
 // `isLocked` fresh on every render the same way, and the
 // `useAltStore(WalletUnlockStore)` subscription below provides the same
 // triggering re-render, so the reactivity timing matches.
+//
+// UPDATE (call-site migration, docs/UI_MIGRATION_PLAN.md §7.2): moved
+// off `bitshares-ui-style-guide` onto the design-system `Modal`/`Form`/
+// `Input`/`Switch`/`InputNumber`/`Tooltip`/`Button`/`Notification`. Only
+// UI primitives changed - `handleLogin`/`validate`/`handlePasswordChange`
+// and every `WalletDb`/`WalletUnlockActions` call are untouched. The
+// `<Modal>`'s `id`/`closeable`/`overlay`/`overlayClose`/`modalHeader`/
+// `leftHeader` props were dropped as confirmed-inert: none are real antd
+// `Modal` props (`closeable` is a misspelling of antd's `closable`, so it
+// never hid the close button either) - antd just forwarded them
+// unrecognized, so the close button and click-outside-to-cancel behavior
+// the real antd dialog had are what the design-system `Modal` provides by
+// default too. `zIndex={1001}` is real and kept: the design-system
+// `Modal` gained a `zIndex` prop for exactly this call site (default
+// 1000), so the unlock dialog still renders above any other open modal.
 import * as React from "react";
 import ZfApi from "common/zfApi";
 import WalletDb from "stores/WalletDb";
@@ -75,16 +90,14 @@ import BackupActions, {
 import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
 import {Apis} from "bitsharesjs-ws";
-import {
-    Modal,
-    Button,
-    Form,
-    Input,
-    Switch,
-    InputNumber,
-    Tooltip,
-    Notification
-} from "bitshares-ui-style-guide";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Switch} from "../../design-system/Switch";
+import {InputNumber} from "../../design-system/InputNumber";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Notification} from "../../design-system/Notification";
 import AccountSelector from "../Account/AccountSelectorAnt";
 import {PrivateKey} from "bitsharesjs";
 import {saveAs} from "file-saver";
@@ -579,13 +592,7 @@ function WalletUnlockModal({
             title="Login"
             visible={isModalVisible}
             wrapClassName={"unlock_wallet_modal2"}
-            id={modalId}
-            closeable={false}
-            overlay={true}
-            overlayClose={false}
-            modalHeader="header.unlock_short"
             onCancel={handleModalClose}
-            leftHeader
             footer={footer}
             zIndex={1001} // always on top
         >

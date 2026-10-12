@@ -83,4 +83,18 @@ describe("design-system/Button", () => {
         fireEvent.click(getByText("Go"));
         expect(onSubmit).toHaveBeenCalledTimes(1);
     });
+
+    it("shows a spinner in place of icon and blocks clicks while loading", () => {
+        const onClick = jest.fn();
+        const {container, getByText} = render(
+            <Button icon="download" loading onClick={onClick}>
+                Save
+            </Button>
+        );
+        const button = getByText("Save") as HTMLButtonElement;
+        expect(button.disabled).toBe(true);
+        expect(container.querySelectorAll("svg").length).toBe(1);
+        fireEvent.click(button);
+        expect(onClick).not.toHaveBeenCalled();
+    });
 });

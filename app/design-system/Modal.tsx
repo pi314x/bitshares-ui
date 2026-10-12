@@ -32,6 +32,10 @@ export interface ModalProps {
      * own `wrapClassName` (as opposed to `className`, which applies to
      * the dialog box itself). */
     wrapClassName?: string;
+    /** Overrides the backdrop's `z-index` (default 1000) - real at one
+     * call site (`Wallet/WalletUnlockModal.tsx`, `1001`, so the unlock
+     * dialog always renders above any other open modal). */
+    zIndex?: number;
     className?: string;
     /** Accepted for API compatibility (one real call site sets it,
      * `Modal/DepositModal.tsx`) but a no-op: this component already
@@ -90,6 +94,7 @@ export function Modal({
     width,
     closable = true,
     wrapClassName,
+    zIndex,
     className,
     children
 }: ModalProps): JSX.Element | null {
@@ -122,6 +127,7 @@ export function Modal({
             className={[styles.backdrop, wrapClassName]
                 .filter(Boolean)
                 .join(" ")}
+            style={zIndex !== undefined ? {zIndex} : undefined}
         >
             <div
                 className={[styles.dialog, className]

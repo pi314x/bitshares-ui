@@ -46,7 +46,9 @@ import {PrivateKey} from "bitsharesjs";
 import SettingsActions from "actions/SettingsActions";
 import {backupName} from "common/backupUtils";
 import {getWalletName} from "branding";
-import {Button, Input, Notification} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Input} from "../../design-system/Input";
+import {Notification} from "../../design-system/Notification";
 import counterpart from "counterpart";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -198,7 +200,7 @@ export function Restore({children}: {children?: any}) {
                     />
                 </h5>
                 <TypedLink to="/">
-                    <Button type="primary">
+                    <Button variant="accent">
                         <Translate
                             component="span"
                             content="header.dashboard"
@@ -214,7 +216,7 @@ export function Restore({children}: {children?: any}) {
             <h3>
                 <Translate content="wallet.ready_to_restore" />
             </h3>
-            <Button type="primary" onClick={onRestore}>
+            <Button variant="accent" onClick={onRestore}>
                 <Translate
                     content="wallet.restore_wallet_of"
                     name={new_wallet}
@@ -304,7 +306,7 @@ export function NewWalletName({children}: {children?: any}) {
                     <Translate content="wallet.wallet_exist" />
                 ) : null}
             </p>
-            <Button onClick={onAccept} type="primary" disabled={!name_ready}>
+            <Button onClick={onAccept} variant="accent" disabled={!name_ready}>
                 <Translate content="wallet.accept" />
             </Button>
         </form>
@@ -374,7 +376,7 @@ export function Download({
     }
     return (
         <Button
-            type={"primary"}
+            variant="accent"
             disabled={!isReady}
             onClick={() => {
                 onDownload();
@@ -446,7 +448,7 @@ export function Create({
                 </div>
             )}
             <Button
-                type="primary"
+                variant="accent"
                 onClick={onCreateBackup}
                 style={{marginBottom: 10}}
                 disabled={!ready}
@@ -631,7 +633,7 @@ export function DecryptBackup({
                 value={backup_password}
             />
             <Sha1 />
-            <Button type="primary" htmlType="submit" onClick={onPassword}>
+            <Button variant="accent" type="submit" onClick={onPassword}>
                 <Translate content="wallet.submit" />
             </Button>
         </form>

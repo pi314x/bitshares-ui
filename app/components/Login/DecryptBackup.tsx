@@ -96,7 +96,9 @@ import WalletUnlockActions from "actions/WalletUnlockActions";
 import BackupActions, {restore} from "actions/BackupActions";
 import SettingsActions from "actions/SettingsActions";
 import Icon from "../Icon/Icon";
-import {Button, Form, Input} from "bitshares-ui-style-guide";
+import {Button} from "../../design-system/Button";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
 import {useAltStore} from "../../next/hooks/useAltStore";
 
@@ -207,7 +209,7 @@ function DecryptBackupCore({
         return (
             <div className="button-group">
                 {active ? (
-                    <Button onClick={onPassword} type="primary">
+                    <Button onClick={onPassword} variant="accent">
                         {counterpart.translate("login.loginButton")}
                     </Button>
                 ) : (
