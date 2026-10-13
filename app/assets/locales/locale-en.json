@@ -2526,7 +2526,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Initiate a transfer that will execute at a specified time.",
+            "description": "Send an asset that the recipient can claim only from a date you choose.",
             "title": "Timed transfer"
         },
         "voting": {
@@ -2566,7 +2566,14 @@
         "err_release_past": "That time has passed",
         "err_release_too_soon": "Choose a time at least one minute from now",
         "err_release_too_far": "That is too far in the future",
-        "button": "Timed transfer"
+        "button": "Timed transfer",
+        "page_intro": "Send an asset that the recipient can claim only from a date you choose. Nothing is sent later: the amount leaves your account now and is locked for the recipient until that moment.",
+        "step1": "Pick the recipient, the asset and the amount.",
+        "step2": "Choose the date and time from which it can be claimed.",
+        "step3": "The recipient claims it under Vesting balances once that time has come.",
+        "open": "New timed transfer",
+        "claim_link": "Claim a timed transfer sent to you",
+        "no_account": "Log in or choose an account first."
     },
     "tooltip": {
         "add_memo_field": "Add memo text field",

@@ -2525,7 +2525,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Iniciar una transferencia que se ejecutará a una hora especificada.",
+            "description": "Envíe un activo que el destinatario solo podrá reclamar a partir de una fecha que usted elija.",
             "title": "Transferencia temporizada"
         },
         "voting": {
@@ -2565,7 +2565,14 @@
         "err_release_past": "Ese momento ya pasó",
         "err_release_too_soon": "Elija un momento al menos un minuto a partir de ahora",
         "err_release_too_far": "Está demasiado lejos en el futuro",
-        "button": "Transferencia programada"
+        "button": "Transferencia programada",
+        "page_intro": "Envíe un activo que el destinatario solo podrá reclamar a partir de una fecha que usted elija. No se envía nada más tarde: la cantidad sale ahora de su cuenta y queda bloqueada para el destinatario hasta ese momento.",
+        "step1": "Elija el destinatario, el activo y la cantidad.",
+        "step2": "Elija la fecha y la hora a partir de las cuales se puede reclamar.",
+        "step3": "El destinatario la reclama en Saldos con vesting cuando llegue ese momento.",
+        "open": "Nueva transferencia programada",
+        "claim_link": "Reclamar una transferencia programada enviada a usted",
+        "no_account": "Inicie sesión o elija primero una cuenta."
     },
     "tooltip": {
         "add_memo_field": "Añadir campo de texto memo",

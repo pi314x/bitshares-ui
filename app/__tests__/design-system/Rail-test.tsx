@@ -1,5 +1,5 @@
 import * as React from "react";
-import {render} from "@testing-library/react";
+import {render, fireEvent} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
 import {Rail} from "../../design-system/Rail";
 
@@ -139,6 +139,30 @@ describe("design-system/Rail", () => {
             </MemoryRouter>
         );
         getByText("Accounts").click();
+        expect(onNavigate).toHaveBeenCalledTimes(1);
+    });
+
+    it("an action entry is a button that reports its action and closes the drawer", () => {
+        const onAction = jest.fn();
+        const onNavigate = jest.fn();
+        const {getByText} = render(
+            <MemoryRouter initialEntries={["/"]}>
+                <Rail
+                    groups={[
+                        {
+                            label: "Payments",
+                            items: [{label: "Send", action: "send"}]
+                        }
+                    ]}
+                    onAction={onAction}
+                    onNavigate={onNavigate}
+                />
+            </MemoryRouter>
+        );
+        const send = getByText("Send");
+        expect(send.tagName).toBe("BUTTON");
+        fireEvent.click(send);
+        expect(onAction).toHaveBeenCalledWith("send");
         expect(onNavigate).toHaveBeenCalledTimes(1);
     });
 });

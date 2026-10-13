@@ -2519,7 +2519,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Initiate a transfer that will execute at a specified time.",
+            "description": "受取人が、あなたが指定した日時から初めて請求できるアセットを送ります。",
             "title": "Timed transfer"
         },
         "voting": {
@@ -2559,7 +2559,14 @@
         "err_release_past": "その時刻は過ぎています",
         "err_release_too_soon": "現在から最低1分後の時刻を選んでください",
         "err_release_too_far": "先すぎます",
-        "button": "日時指定の送金"
+        "button": "日時指定の送金",
+        "page_intro": "受取人が、あなたが指定した日時から初めて請求できるアセットを送ります。後から送られるわけではありません。数量は今すぐあなたのアカウントを離れ、その日時まで受取人のためにロックされます。",
+        "step1": "受取人、アセット、数量を選びます。",
+        "step2": "請求できるようになる日付と時刻を選びます。",
+        "step3": "その時刻になったら、受取人が「権利確定残高」から請求します。",
+        "open": "新しい日時指定の送金",
+        "claim_link": "自分宛ての日時指定の送金を請求する",
+        "no_account": "先にログインするか、アカウントを選んでください。"
     },
     "tooltip": {
         "add_memo_field": "メモテキストフィールドを追加",

@@ -75,6 +75,14 @@ const SametFundsPage = Loadable({
     loading: LoadingIndicator
 });
 
+const TimedTransferPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "account" */ "./components/Account/TimedTransferPage"
+        ),
+    loading: LoadingIndicator
+});
+
 const Explorer = Loadable({
     loader: () =>
         import(
@@ -566,6 +574,10 @@ class App extends React.Component {
                                 <Route
                                     path="/credit-offer"
                                     element={<CreditOfferPage />}
+                                />
+                                <Route
+                                    path="/timed-transfer"
+                                    element={<TimedTransferPage />}
                                 />
                                 <Route
                                     path="/samet-funds"

@@ -108,6 +108,11 @@ function ShellChrome({
                 footer={railFooter}
                 open={navOpen}
                 onNavigate={closeNav}
+                onAction={action => {
+                    if (action === "send") onShowSend();
+                    else if (action === "deposit") onShowDeposit();
+                    else if (action === "withdraw") onShowWithdraw();
+                }}
                 onClose={closeNav}
             />
             <div className={styles.main}>
@@ -125,9 +130,6 @@ function ShellChrome({
                     currentLocale={currentLocale}
                     locales={locales}
                     onSelectLocale={onSelectLocale}
-                    onShowSend={onShowSend}
-                    onShowDeposit={onShowDeposit}
-                    onShowWithdraw={onShowWithdraw}
                     extensionAction={extensionAction}
                     onOpenNav={() => setNavOpen(true)}
                     navOpen={navOpen}

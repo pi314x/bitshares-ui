@@ -84,6 +84,34 @@
     transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
 }
 
+// the same entry as a button (Send, Deposit, Withdraw open dialogs)
+.rail button.navItem {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.rail button.navItem:hover {
+    background: var(--hover);
+    color: var(--ink);
+}
+
+.rail button.navItem:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
 .rail a.navItem:hover {
     background: var(--hover);
     color: var(--ink);

@@ -408,7 +408,15 @@ function AccountVesting({account}: AccountVestingProps) {
         <div className="grid-content vertical">
             <Translate component="h1" content="account.vesting.title" />
             <Translate content="account.vesting.explain" component="p" />
-            <div className="header-selector padding">
+            <div
+                className="header-selector padding"
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 16
+                }}
+            >
                 <SearchInput
                     onChange={onSearch}
                     value={state.searchTerm}
@@ -423,7 +431,7 @@ function AccountVesting({account}: AccountVestingProps) {
                 )}
                 <Button
                     variant="accent"
-                    style={{marginLeft: 16}}
+                    style={{marginLeft: "auto"}}
                     onClick={() => setTimedTransferOpen(true)}
                 >
                     {counterpart.translate("timed_transfer.button")}

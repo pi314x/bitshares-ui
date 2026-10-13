@@ -40,7 +40,6 @@ interface Tile {
     to?: string | ((accountName: string) => string);
     /** an action instead of a route */
     onSelect?: (account: any) => void;
-    comingSoon?: boolean;
 }
 
 export const TILES: Tile[] = [
@@ -98,7 +97,7 @@ export const TILES: Tile[] = [
         locale: "timed_transfer",
         icon: "alarm",
         group: "payments",
-        comingSoon: true
+        to: "/timed-transfer"
     },
     {
         id: "voting",
@@ -142,17 +141,6 @@ function TileBody({tile, badge}: {tile: Tile; badge?: string}) {
 }
 
 function SpotlightTile({tile, account}: {tile: Tile; account: any}) {
-    if (tile.comingSoon) {
-        return (
-            <div
-                className={`${styles.card} ${styles.disabled}`}
-                aria-disabled="true"
-                data-testid={`tile-${tile.id}`}
-            >
-                <TileBody tile={tile} badge={t("showcases.coming_soon")} />
-            </div>
-        );
-    }
     if (!account) {
         return (
             <div

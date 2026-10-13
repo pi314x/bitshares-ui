@@ -9,7 +9,13 @@ const TypedNavLink = NavLink as React.ComponentType<NavLinkProps>;
 
 export interface RailNavItem {
     label: string;
-    to: string;
+    /** The page this entry opens. Leave it out for an `action` entry. */
+    to?: string;
+    /**
+     * An entry that does something instead of going somewhere (Send opens its
+     * dialog): rendered as a button in the same style, never highlighted.
+     */
+    action?: string;
     exact?: boolean;
     /**
      * For an entry whose `to` redirects somewhere else (e.g. `/voting` ->
@@ -34,6 +40,8 @@ export interface RailProps {
     open?: boolean;
     /** Called after a link was followed (the drawer closes itself with it). */
     onNavigate?: () => void;
+    /** Called with an entry's `action` when it is chosen. */
+    onAction?: (action: string) => void;
     /** Called by the drawer's close button. */
     onClose?: () => void;
     id?: string;
@@ -47,6 +55,7 @@ export function Rail({
     footer,
     open = false,
     onNavigate,
+    onAction,
     onClose,
     id
 }: RailProps): JSX.Element {
@@ -75,23 +84,37 @@ export function Rail({
             {groups.map(group => (
                 <div className={styles.group} key={group.label}>
                     <span className={styles.groupLabel}>{group.label}</span>
-                    {group.items.map(item => (
-                        <TypedNavLink
-                            key={item.to}
-                            to={item.to}
-                            end={item.exact}
-                            onClick={onNavigate}
-                            className={({isActive}: {isActive: boolean}) =>
-                                (item.match
-                                  ? item.match.test(pathname)
-                                  : isActive)
-                                    ? `${styles.navItem} ${styles.navItemActive}`
-                                    : styles.navItem
-                            }
-                        >
-                            {item.label}
-                        </TypedNavLink>
-                    ))}
+                    {group.items.map(item =>
+                        item.action ? (
+                            <button
+                                type="button"
+                                key={item.action}
+                                className={styles.navItem}
+                                onClick={() => {
+                                    onAction && onAction(item.action as string);
+                                    onNavigate && onNavigate();
+                                }}
+                            >
+                                {item.label}
+                            </button>
+                        ) : (
+                            <TypedNavLink
+                                key={item.to}
+                                to={item.to as string}
+                                end={item.exact}
+                                onClick={onNavigate}
+                                className={({isActive}: {isActive: boolean}) =>
+                                    (item.match
+                                      ? item.match.test(pathname)
+                                      : isActive)
+                                        ? `${styles.navItem} ${styles.navItemActive}`
+                                        : styles.navItem
+                                }
+                            >
+                                {item.label}
+                            </TypedNavLink>
+                        )
+                    )}
                 </div>
             ))}
 

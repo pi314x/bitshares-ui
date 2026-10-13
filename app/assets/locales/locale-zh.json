@@ -2525,7 +2525,7 @@
             "title": "预测市场"
         },
         "timed_transfer": {
-            "description": "创建一个在特定时间执行的转账.",
+            "description": "发送一笔资产，收款人只能从你选定的日期起才能领取。",
             "title": "定时转账"
         },
         "voting": {
@@ -2565,7 +2565,14 @@
         "err_release_past": "该时间已过",
         "err_release_too_soon": "请选择至少一分钟之后的时间",
         "err_release_too_far": "时间过于遥远",
-        "button": "定时转账"
+        "button": "定时转账",
+        "page_intro": "发送一笔资产，收款人只能从你选定的日期起才能领取。之后不会再发送任何东西：该数量现在就离开你的账户，并在那一刻之前为收款人锁定。",
+        "step1": "选择收款人、资产和数量。",
+        "step2": "选择可领取的日期和时间。",
+        "step3": "到了那个时间，收款人在“待解冻余额”中领取。",
+        "open": "新建定时转账",
+        "claim_link": "领取发给你的定时转账",
+        "no_account": "请先登录或选择一个账户。"
     },
     "tooltip": {
         "add_memo_field": "添加备注memo文本字段",

@@ -2519,7 +2519,7 @@
             "title": "Tahmin Piyasaları"
         },
         "timed_transfer": {
-            "description": "Belirli bir zamanda yürütülecek bir aktarım başlatın.",
+            "description": "Alıcının yalnızca seçtiğiniz tarihten itibaren talep edebileceği bir varlık gönderin.",
             "title": "Zamanlı transfer"
         },
         "voting": {
@@ -2559,7 +2559,14 @@
         "err_release_past": "Bu zaman geçti",
         "err_release_too_soon": "Şu andan en az bir dakika sonrasını seçin",
         "err_release_too_far": "Bu çok uzak bir gelecek",
-        "button": "Zamanlı transfer"
+        "button": "Zamanlı transfer",
+        "page_intro": "Alıcının yalnızca seçtiğiniz tarihten itibaren talep edebileceği bir varlık gönderin. Sonradan hiçbir şey gönderilmez: miktar hesabınızdan şimdi çıkar ve o ana kadar alıcı için kilitli kalır.",
+        "step1": "Alıcıyı, varlığı ve miktarı seçin.",
+        "step2": "Talep edilebileceği tarihi ve saati seçin.",
+        "step3": "O zaman geldiğinde alıcı bunu Vesting bakiyeleri altından talep eder.",
+        "open": "Yeni zamanlı transfer",
+        "claim_link": "Size gönderilen bir zamanlı transferi talep edin",
+        "no_account": "Önce giriş yapın ya da bir hesap seçin."
     },
     "tooltip": {
         "add_memo_field": "Add memo text field",

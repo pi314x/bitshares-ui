@@ -29,6 +29,22 @@ describe("left navigation rail", () => {
         expect(labels("More")).toEqual(["Spotlight"]);
     });
 
+    it("keeps moving money together: send, deposit, withdraw as actions, timed transfer as a page", () => {
+        const payments = NAV_GROUPS.find(g => g.label === "Payments")!;
+        expect(payments.items.map(i => i.label)).toEqual([
+            "Send",
+            "Deposit",
+            "Withdraw",
+            "Timed transfer"
+        ]);
+        expect(payments.items.map(i => i.action || i.to)).toEqual([
+            "send",
+            "deposit",
+            "withdraw",
+            "/timed-transfer"
+        ]);
+    });
+
     it("recognises the account voting tab as the Voting entry", () => {
         const voting = NAV_GROUPS.flatMap(g => g.items).find(
             i => i.label === "Voting"
@@ -43,6 +59,8 @@ describe("left navigation rail", () => {
     it("only links to routes App.jsx registers", () => {
         NAV_GROUPS.forEach(group =>
             group.items.forEach(item => {
+                // an action (Send, Deposit, Withdraw) opens a dialog: no route
+                if (!item.to) return;
                 // /market/<pair> is registered as /market/:marketID
                 const route = item.to.startsWith("/market/")
                     ? "/market/:marketID"
@@ -53,7 +71,9 @@ describe("left navigation rail", () => {
     });
 
     it("has no duplicate targets", () => {
-        const targets = NAV_GROUPS.flatMap(group => group.items.map(i => i.to));
+        const targets = NAV_GROUPS.flatMap(group =>
+            group.items.map(i => i.to || `action:${i.action}`)
+        );
         expect(new Set(targets).size).toBe(targets.length);
     });
 });

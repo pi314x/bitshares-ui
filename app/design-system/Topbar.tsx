@@ -26,9 +26,10 @@ export interface TopbarProps {
     currentLocale: string | null;
     locales: string[];
     onSelectLocale: (locale: string) => void;
-    onShowSend: () => void;
-    onShowDeposit: () => void;
-    onShowWithdraw: () => void;
+    /** Optional: the shell offers these in the menu (Payments) instead. */
+    onShowSend?: () => void;
+    onShowDeposit?: () => void;
+    onShowWithdraw?: () => void;
     /**
      * One-click opt-in to a detected wallet browser extension (shown only while
      * it is installed and not the signer). Omit it and nothing shows.
@@ -79,11 +80,17 @@ export function Topbar({
             )}
             <span className={styles.crumb}>{crumb}</span>
             <span className={styles.spacer} />
-            <div className={styles.actions}>
-                <Button onClick={onShowSend}>Send</Button>
-                <Button onClick={onShowDeposit}>Deposit</Button>
-                <Button onClick={onShowWithdraw}>Withdraw</Button>
-            </div>
+            {(onShowSend || onShowDeposit || onShowWithdraw) && (
+                <div className={styles.actions}>
+                    {onShowSend && <Button onClick={onShowSend}>Send</Button>}
+                    {onShowDeposit && (
+                        <Button onClick={onShowDeposit}>Deposit</Button>
+                    )}
+                    {onShowWithdraw && (
+                        <Button onClick={onShowWithdraw}>Withdraw</Button>
+                    )}
+                </div>
+            )}
             <div className={styles.status}>
                 <NodePicker
                     connected={connected}

@@ -2525,7 +2525,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Initiate a transfer that will execute at a specified time.",
+            "description": "Sende ein Asset, das der Empfänger erst ab einem von dir gewählten Zeitpunkt einfordern kann.",
             "title": "Timed transfer"
         },
         "voting": {
@@ -2565,7 +2565,14 @@
         "err_release_past": "Dieser Zeitpunkt ist vorbei",
         "err_release_too_soon": "Wähle einen Zeitpunkt mindestens eine Minute ab jetzt",
         "err_release_too_far": "Das liegt zu weit in der Zukunft",
-        "button": "Zeitgesteuerte Überweisung"
+        "button": "Zeitgesteuerte Überweisung",
+        "page_intro": "Sende ein Asset, das der Empfänger erst ab einem von dir gewählten Zeitpunkt einfordern kann. Es wird nichts später gesendet: Der Betrag verlässt dein Konto sofort und ist bis zu diesem Zeitpunkt für den Empfänger gesperrt.",
+        "step1": "Wähle Empfänger, Asset und Betrag.",
+        "step2": "Lege Datum und Uhrzeit fest, ab denen eingefordert werden kann.",
+        "step3": "Der Empfänger fordert den Betrag unter Vesting-Guthaben ein, sobald der Zeitpunkt erreicht ist.",
+        "open": "Neue zeitgesteuerte Überweisung",
+        "claim_link": "Eine an dich gesendete zeitgesteuerte Überweisung einfordern",
+        "no_account": "Melde dich zuerst an oder wähle ein Konto."
     },
     "tooltip": {
         "add_memo_field": "Add memo text field",

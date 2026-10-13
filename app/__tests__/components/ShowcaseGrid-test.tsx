@@ -82,6 +82,7 @@ describe("Spotlight", () => {
         expect(href("merchant_protocol")).toBe("/invoice/request");
         expect(href("direct_debit")).toBe("/direct-debit");
         expect(href("htlc")).toBe("/htlc");
+        expect(href("timed_transfer")).toBe("/timed-transfer");
         expect(href("voting")).toBe("/account/alice/voting");
     });
 
@@ -92,19 +93,7 @@ describe("Spotlight", () => {
         const tile = getByTestId("tile-instant_trade");
         expect(tile.getAttribute("aria-disabled")).toBe("true");
         expect(tile.getAttribute("href")).toBeNull();
-        expect(getAllByText("Log in").length).toBe(TILES.length - 1);
-        expect(getByTestId("tile-timed_transfer").textContent).toMatch(
-            /Coming soon/
-        );
-    });
-
-    it("keeps the coming-soon tile off even with an account", () => {
-        setAccount("alice");
-        jest.spyOn(ChainStore as any, "getAccount").mockReturnValue(account);
-        const {getByTestId} = renderGrid();
-        const tile = getByTestId("tile-timed_transfer");
-        expect(tile.getAttribute("aria-disabled")).toBe("true");
-        expect(tile.getAttribute("href")).toBeNull();
+        expect(getAllByText("Log in").length).toBe(TILES.length);
     });
 
     it("treats an account the chain has not delivered yet as no account, then enables the tiles", () => {
