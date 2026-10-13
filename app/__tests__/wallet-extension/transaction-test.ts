@@ -1,5 +1,6 @@
 import {PrivateKey, TransactionBuilder} from "bitsharesjs";
 import {
+    actsForOtherAccount,
     assertOperationsBelongTo,
     toExtensionTransaction
 } from "../../wallet-extension/transaction";
@@ -143,5 +144,49 @@ describe("assertOperationsBelongTo", () => {
         expect(codeOf(() => assertOperationsBelongTo(tx, "1.2.100"))).toBe(
             "account_mismatch"
         );
+    });
+});
+
+describe("which account an operation is signed by", () => {
+    const vestingCreate = (overrides: any = {}) => ({
+        fee: {amount: 0, asset_id: 0},
+        creator: "1.2.100",
+        owner: "1.2.200",
+        amount: {amount: 1000, asset_id: "1.3.0"},
+        policy: [
+            0,
+            {
+                begin_timestamp: "2027-01-15T08:00:00",
+                vesting_cliff_seconds: 3600,
+                vesting_duration_seconds: 3600
+            }
+        ],
+        ...overrides
+    });
+
+    it("signs vesting_balance_create with `creator`; `owner` is the recipient", () => {
+        const operations = build("vesting_balance_create", vestingCreate());
+        expect(actsForOtherAccount(operations, "1.2.100")).toBe(false);
+        expect(() =>
+            assertOperationsBelongTo(
+                toExtensionTransaction(operations),
+                "1.2.100"
+            )
+        ).not.toThrow();
+        // the other way round it is another account's operation
+        expect(actsForOtherAccount(operations, "1.2.200")).toBe(true);
+    });
+
+    it("tells whether a transfer acts for another account", () => {
+        const operations = build("transfer", transfer({from: "1.2.999"}));
+        expect(actsForOtherAccount(operations, "1.2.100")).toBe(true);
+        expect(
+            actsForOtherAccount(build("transfer", transfer()), "1.2.100")
+        ).toBe(false);
+    });
+
+    it("does not count what it cannot read", () => {
+        expect(actsForOtherAccount([{bogus: true}], "1.2.100")).toBe(false);
+        expect(actsForOtherAccount([], "1.2.100")).toBe(false);
     });
 });

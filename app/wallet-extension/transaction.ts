@@ -41,6 +41,17 @@ const AUTHORITY_FIELDS = [
 
 const ACCOUNT_ID = /^1\.2\.\d+$/;
 
+// A few operations name the signing account differently, or carry a second
+// account that only receives. `vesting_balance_create` (32) is paid for and
+// signed by `creator`; its `owner` is the recipient, who is not signing.
+const AUTHORITY_FIELDS_BY_OPERATION: {[id: number]: string[]} = {
+    32: ["creator"]
+};
+
+function authorityFields(operationId: number): string[] {
+    return AUTHORITY_FIELDS_BY_OPERATION[operationId] || AUTHORITY_FIELDS;
+}
+
 function unsupported(message: string): ExternalSignerError {
     return new ExternalSignerError("unsupported", message);
 }
@@ -92,8 +103,8 @@ export function assertOperationsBelongTo(
     transaction: ExtensionTransaction,
     accountId: string
 ): void {
-    for (const [, data] of transaction.operations) {
-        for (const field of AUTHORITY_FIELDS) {
+    for (const [id, data] of transaction.operations) {
+        for (const field of authorityFields(id)) {
             const value = data && data[field];
             if (
                 typeof value === "string" &&
@@ -111,4 +122,38 @@ export function assertOperationsBelongTo(
             }
         }
     }
+}
+
+/**
+ * Whether any of the builder's operations is signed by an account other than
+ * `accountId`. Used to route a transaction: one that acts for another account
+ * is not the extension's to sign (it holds only its own account's key), so the
+ * local wallet handles it. An operation that cannot be read is not counted, so
+ * that the extension path reports it, as it always did.
+ */
+export function actsForOtherAccount(
+    operations: unknown[],
+    accountId: string
+): boolean {
+    if (!Array.isArray(operations)) return false;
+    for (const op of operations) {
+        let object: any;
+        try {
+            object = (ops as any).operation.toObject(op);
+        } catch (e) {
+            continue;
+        }
+        const [id, data] = object as ExtensionOperation;
+        for (const field of authorityFields(id)) {
+            const value = data && data[field];
+            if (
+                typeof value === "string" &&
+                ACCOUNT_ID.test(value) &&
+                value !== accountId
+            ) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

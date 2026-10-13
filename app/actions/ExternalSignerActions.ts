@@ -35,7 +35,10 @@ import {
     findProvider,
     waitForProvider
 } from "../wallet-extension/provider";
-import {toExtensionTransaction} from "../wallet-extension/transaction";
+import {
+    actsForOtherAccount,
+    toExtensionTransaction
+} from "../wallet-extension/transaction";
 import {
     ExternalSigner,
     ExternalSignerAccount,
@@ -97,6 +100,22 @@ class ExternalSignerActionsFacade {
     }
 
     /** Looks for the extension, loads the saved preference, restores a link. */
+    /**
+     * Whether *this* transaction is the extension's to sign: the extension is
+     * the chosen, connected signer, and the transaction does not act for some
+     * other account (one of the local wallet's). The latter goes through the
+     * local wallet, so the account switcher can hold both kinds of account.
+     */
+    shouldSign(tr: any): boolean {
+        if (!this.isActive()) return false;
+        const account = this.getState().account;
+        if (!account) return true; // let processTransaction report "not connected"
+        return !actsForOtherAccount(
+            (tr && tr.operations) || [],
+            account.accountId
+        );
+    }
+
     async init(): Promise<void> {
         this.patch({preference: readPreference()});
         const provider = await waitForProvider();

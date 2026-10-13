@@ -25,7 +25,11 @@ import {selectBlockchain} from "../store/slices/blockchainSlice";
 import {selectWalletUnlockState} from "../store/slices/walletUnlockSlice";
 import {selectSettingsState} from "../store/slices/settingsSlice";
 import {selectGateway} from "../store/slices/gatewaySlice";
-import {selectExternalSigningActive} from "../store/slices/externalSignerSlice";
+import {
+    selectExternalSigner,
+    selectExternalSigningActive
+} from "../store/slices/externalSignerSlice";
+import ExternalSignerActions from "../actions/ExternalSignerActions";
 import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
@@ -125,6 +129,26 @@ export default function NextShellContainer({
     // While the wallet extension is the signer, the local wallet's lock state is
     // moot: the pill says so and leads to the signing settings instead.
     const extensionSigning = useReduxState(selectExternalSigningActive);
+    const externalSigner = useReduxState(selectExternalSigner);
+    // The extension is installed (the provider answered), is not the signer, and
+    // the user has not asked for it yet: offer the one-click switch. Local
+    // signing stays the default; this only ever acts on a click.
+    const extensionAction =
+        !extensionSigning &&
+        (externalSigner.status === "disconnected" ||
+            externalSigner.status === "connecting")
+            ? {
+                  label:
+                      externalSigner.status === "connecting"
+                          ? "Connecting…"
+                          : "Use extension",
+                  disabled: externalSigner.status === "connecting",
+                  onClick: () => {
+                      ExternalSignerActions.setPreference("extension");
+                      ExternalSignerActions.connect();
+                  }
+              }
+            : undefined;
 
     const currentAccount = account.currentAccount || account.passwordAccount;
     const accounts = account.myActiveAccounts.toArray();
@@ -192,6 +216,7 @@ export default function NextShellContainer({
                     setWithdrawVisible(true);
                     setWithdrawEverShown(true);
                 }}
+                extensionAction={extensionAction}
                 themeValue={themeValue}
                 onThemeChange={theme =>
                     SettingsActions.changeSetting({

@@ -90,4 +90,17 @@ describe("design-system/Topbar", () => {
         expect(onShowDeposit).toHaveBeenCalledTimes(1);
         expect(onShowWithdraw).toHaveBeenCalledTimes(1);
     });
+
+    it("shows the extension action only when one is given, and runs it on click", () => {
+        const {queryByText, rerender, getByText} = renderTopbar();
+        expect(queryByText("Use extension")).toBeNull();
+        const onClick = jest.fn();
+        const {getByText: byText} = renderTopbar({
+            extensionAction: {label: "Use extension", onClick}
+        });
+        fireEvent.click(byText("Use extension"));
+        expect(onClick).toHaveBeenCalledTimes(1);
+        void rerender;
+        void getByText;
+    });
 });

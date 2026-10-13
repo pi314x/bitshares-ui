@@ -197,10 +197,12 @@ export class WalletDb {
         broadcast: any,
         extra_keys: any[] = []
     ) {
-        // The user chose the wallet extension and it is connected: it holds the
-        // keys, asks for its own approval and broadcasts, so none of the local
-        // unlock/sign path below applies. Off by default.
-        if ((ExternalSignerActions as any).isActive()) {
+        // The user chose the wallet extension, it is connected, and this
+        // transaction acts for its account: it holds the key, asks for its own
+        // approval and broadcasts, so none of the local unlock/sign path below
+        // applies. A transaction for another (local wallet) account takes the
+        // local path. Off by default.
+        if ((ExternalSignerActions as any).shouldSign(tr)) {
             return (ExternalSignerActions as any).processTransaction(
                 tr,
                 signer_pubkeys,

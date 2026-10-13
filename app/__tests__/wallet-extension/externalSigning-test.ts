@@ -14,6 +14,7 @@ import Immutable from "immutable";
 import {Apis} from "bitsharesjs-ws";
 import {PrivateKey, TransactionBuilder} from "bitsharesjs";
 import localeEn from "../../assets/locales/locale-en.json";
+import {patchState} from "../../store/slices/accountSlice";
 import {reduxStore} from "../../store/reduxStore";
 import {
     initialExternalSignerState,
@@ -149,6 +150,64 @@ describe("WalletDb.process_transaction", () => {
         expect(signCalls()).toHaveLength(0);
     });
 
+    it("sends a transaction for another account to the local wallet, not the extension", async () => {
+        // The account switcher can hold the extension's account and the local
+        // wallet's side by side: a transfer *from* a local account is signed
+        // with the local wallet, the extension (which holds only its own key)
+        // is not asked.
+        await useExtension();
+        const unlock = jest
+            .spyOn(WalletUnlockActions as any, "unlock")
+            .mockRejectedValue("stop here");
+        jest.spyOn(console, "error").mockImplementation(() => {});
+        await (WalletDb as any).process_transaction(
+            transferTx({from: "1.2.999"}),
+            null,
+            true
+        );
+        expect(unlock).toHaveBeenCalledTimes(1);
+        expect(signCalls()).toHaveLength(0);
+    });
+
+    it("still sends the extension account's own transactions to the extension", async () => {
+        await useExtension();
+        const unlock = jest.spyOn(WalletUnlockActions as any, "unlock");
+        await (WalletDb as any).process_transaction(transferTx(), null, true);
+        expect(unlock).not.toHaveBeenCalled();
+        expect(signCalls()).toHaveLength(1);
+    });
+
+    it("treats the recipient of a vesting balance as a recipient, not a signer", async () => {
+        // vesting_balance_create is signed by `creator`; `owner` only receives.
+        await useExtension();
+        const tr = new (TransactionBuilder as any)();
+        tr.add_type_operation("vesting_balance_create", {
+            fee: {amount: 0, asset_id: 0},
+            creator: "1.2.100",
+            owner: "1.2.200",
+            amount: {amount: 1000, asset_id: "1.3.0"},
+            policy: [
+                0,
+                {
+                    begin_timestamp: "2027-01-15T08:00:00",
+                    vesting_cliff_seconds: 3600,
+                    vesting_duration_seconds: 3600
+                }
+            ]
+        });
+        const result = await (WalletDb as any).process_transaction(
+            tr,
+            null,
+            true
+        );
+        expect(result).toEqual({id: "abc", block_num: 42});
+        expect(signCalls()).toHaveLength(1);
+        expect(signCalls()[0].params.operations[0][1]).toMatchObject({
+            creator: "1.2.100",
+            owner: "1.2.200"
+        });
+    });
+
     it("unlockForSigning skips the local unlock only for the extension", async () => {
         const unlock = jest
             .spyOn(WalletUnlockActions as any, "unlock")
@@ -196,11 +255,6 @@ describe("WalletDb.process_transaction", () => {
                 true
             ],
             /core asset/i
-        ],
-        [
-            "an operation for another account",
-            () => [transferTx({from: "1.2.999"}), null, true],
-            /connected as/i
         ]
     ])("refuses %s and tells the user", async (_label, args, message) => {
         await useExtension();
@@ -292,6 +346,26 @@ describe("the connected account in the UI", () => {
         expect(
             (AccountStore as any).getState().myActiveAccounts.has("alice")
         ).toBe(false);
+    });
+
+    it("lets the user switch to another account while the extension is connected", async () => {
+        await useExtension();
+        // a local wallet account next to the extension's
+        const state = (AccountStore as any).getState();
+        reduxStore.dispatch(
+            patchState({
+                myActiveAccounts: state.myActiveAccounts.add("localwallet")
+            })
+        );
+        (AccountStore as any).setCurrentAccount("localwallet");
+        // an unrelated store update must not put the extension account back
+        reduxStore.dispatch(patchState({}));
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "localwallet"
+        );
+        expect(
+            (AccountStore as any).getState().myActiveAccounts.has("alice")
+        ).toBe(true);
     });
 
     it("follows the extension when the user switches account there", async () => {

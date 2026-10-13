@@ -17,6 +17,12 @@ import AccountStore from "stores/AccountStore";
 
 let started = false;
 let added: string | null = null; // the name this module put into myActiveAccounts
+// The extension account this module last switched to. The switch happens when
+// the extension account becomes active or changes - not on every store update:
+// re-applying it each time turned the account switcher into a no-op (any other
+// account chosen was put straight back), so the extension account and the local
+// wallet's accounts could not be used side by side.
+let applied: string | null = null;
 
 function apply() {
     const root = reduxStore.getState();
@@ -35,12 +41,16 @@ function apply() {
                 } as any)
             );
         }
-        if (account.currentAccount !== name) {
-            (AccountStore as any).setCurrentAccount(name);
+        if (applied !== name) {
+            applied = name;
+            if (account.currentAccount !== name) {
+                (AccountStore as any).setCurrentAccount(name);
+            }
         }
         return;
     }
 
+    applied = null;
     if (added) {
         const gone = added;
         added = null;

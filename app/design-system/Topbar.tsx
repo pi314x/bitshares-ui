@@ -5,6 +5,7 @@ import {WalletLockButton} from "./WalletLockButton";
 import {NodePicker} from "./NodePicker";
 import {LocaleSwitcher} from "./LocaleSwitcher";
 import {Button} from "./Button";
+import {ExtensionChip} from "./ExtensionChip";
 
 export interface TopbarProps {
     crumb: string;
@@ -28,6 +29,11 @@ export interface TopbarProps {
     onShowSend: () => void;
     onShowDeposit: () => void;
     onShowWithdraw: () => void;
+    /**
+     * One-click opt-in to a detected wallet browser extension (shown only while
+     * it is installed and not the signer). Omit it and nothing shows.
+     */
+    extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
     /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
     onOpenNav?: () => void;
     navOpen?: boolean;
@@ -51,6 +57,7 @@ export function Topbar({
     onShowSend,
     onShowDeposit,
     onShowWithdraw,
+    extensionAction,
     onOpenNav,
     navOpen = false,
     navId
@@ -107,6 +114,13 @@ export function Topbar({
                     onToggle={onToggleLock}
                     label={lockLabel}
                 />
+                {extensionAction && (
+                    <ExtensionChip
+                        label={extensionAction.label}
+                        onClick={extensionAction.onClick}
+                        disabled={extensionAction.disabled}
+                    />
+                )}
                 <AccountSwitcher
                     currentAccount={currentAccount}
                     accounts={accounts}
