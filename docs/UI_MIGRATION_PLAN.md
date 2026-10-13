@@ -27,7 +27,7 @@ carefully and raising test coverage from "almost none" to "real" as we go.
 | Styling | SCSS, 101 files, 3 themes (light/dark/midnight) | no CSS Modules / styled-components |
 | Components | 412 files, 127,012 lines | largest: `Exchange.jsx` (3,683 lines), `BlockTradesBridgeDepositRequest.jsx` (2,874), `Asset.jsx` (2,461), `Transaction.jsx` (2,427) |
 | Design system | `bitshares-ui-style-guide` (external, partially adopted) | half-finished migration, `*StyleGuide.jsx` variants exist next to originals |
-| i18n | react-intl v2 **and** counterpart, in parallel | 10 locale files under `app/assets/locales`; `app/help/` covers only 6 |
+| i18n | react-intl v2 **and** counterpart, in parallel | 10 locale files under `app/assets/locales`; `app/help/` covered only 6 (all 10 since §7.16) |
 | TypeScript | none | 0 `.ts`/`.tsx` files |
 | Tests | Jest (ancient config, 2 real test files) + Mocha (`app/test`, market math + wallet action tests) | no e2e, no CI test gate |
 | CI | `npm-build-and-deploy.yml`, `build-release-binaries.yml` | build + deploy only, no lint/test step |
@@ -12561,6 +12561,53 @@ phone layout (a card list would be). Real devices, landscape and the soft
 keyboard covering a form were not tried. The `/settings/<unknown tab>` page still
 prints "missing translation" (the Nodes tab is `/settings/access`).
 
+### 7.16 Help pages in every UI language (complete)
+
+**What was wrong.** `app/help/` had six languages (`en es ja ru tr zh`) for the
+ten UI locales, and only English, Russian, Turkish and Chinese were more than a
+stub (Spanish had two files, Japanese three). German, French, Italian and
+Korean fell back to English on every page. Beyond the gaps, the existing texts
+had real defects: `index.md` and the committee/voting components linked to
+`introduction/witness|workers|committee`, which did not exist in English; the
+Russian `AccountAssetCreate` and `AccountMembership` pages translated the
+`[# section]` markers, so `section="permissions"` could never match and the
+component rendered nothing; Turkish and Chinese pages used `../assets/mpa.md`
+links (`HelpContent` prefixes `/help/`, which resolves to a path outside the help
+tree); several `BorrowModal` texts lacked the `{collateral}` placeholder; the
+`InitError` page said "Possible reasons: TODO" in four languages; an obsolete
+`ru/gateways/cryptobridge.md` had no English counterpart.
+
+**What it is now.**
+- English gained the three missing pages (`introduction/witness|workers|committee`),
+  the toc entries for them, and a real `InitError` text.
+- Every one of the nine other locales has every English page except the
+  disclaimer: `de fr it ko` in full, `es` and `ja` from scratch, `ru tr zh`
+  filled and corrected. Section markers, `{placeholders}`, link targets and the
+  gateway addresses and memo formats are identical to the English source.
+- The **disclaimer stays English-only** on purpose: it is legal text, a
+  translation without legal review could change its meaning, and the page already
+  says the English version prevails. `HelpContent` falls back to it per page.
+- Terminology follows the UI's own `locale-xx.json` where it has a word (for
+  example Témoins, Testigos, 증인, 証人, Заверители), and keeps
+  English protocol terms where the UI does (SmartCoin, BitAsset, Gateway, Proxy).
+
+**A check that stays.** `app/__tests__/help/helpFiles-test.ts` fails when a UI
+locale has no help directory (or one without a UI locale), when an English page is
+missing in a locale, when a translation has no English source, when a
+`[# section]` marker or `{placeholder}` differs from English, when a link points
+at a page that does not exist, when a gateway page's URLs and addresses differ, and
+when any page still contains "TODO". Adding a help page now means adding it to all
+ten locales, or the test names the gap. Rendering was checked in the built bundle
+for all ten locales with `scripts/smoke-boot.py --locale <code>` (new option:
+it switches the language through the menu, as a user does): the table of
+contents and the pages render in the chosen language, the disclaimer falls back
+to English, and there are no page errors.
+
+**Not done.** The translations were written without a native-speaker review;
+treat them as a solid first version. The older Russian, Turkish and Chinese
+texts were kept where they were structurally correct, so their wording and depth
+still differ from English in places (some are older, shorter explanations).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12639,9 +12686,8 @@ e2e, zero CI enforcement. Target, phased in from Phase 0 onward:
 3. Confirm the wallet-extension signing model is Phase 6 (additive, gated),
    not a Phase 1 prerequisite.
 4. Confirm Electron stays in scope for the whole migration.
-5. Confirm i18n consolidates on `react-intl`, and that `app/help/`'s
-   6-language coverage either expands to match the 10 UI locales or the UI
-   locale list is trimmed to match.
+5. Confirm i18n consolidates on `react-intl`. (The `app/help/` coverage part
+   is settled: all 10 UI locales now have help pages, §7.16.)
 
 ## 11. Rough sequencing (not calendar estimates)
 
@@ -12656,7 +12702,7 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 ## 12. Where this stands (end of the incremental migration)
 
 **Done and verified by automated gates** (tsc, eslint over all of `app/` with
-0 errors, Jest 5,918 tests, Mocha 64 passing + the 5 known `CallOrder`
+0 errors, Jest 6,353 tests, Mocha 64 passing + the 5 known `CallOrder`
 failures, production build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
@@ -12686,9 +12732,9 @@ introduced); each has a regression test or a measurable check.
   in CI; there is no visual-regression snapshot job and no packaged-Electron
   smoke test; `test:market:ci` is still not in CI because of the 5 known
   `CallOrder` failures (Phase 4 says to add it once those are resolved).
-- **`app/help/` has 6 languages, the UI has 10 locales** (§10, item 5): never
-  reconciled; the choice (write the 4 missing help languages, or trim the UI
-  locale list) is still open.
+- **Help pages are written in all 10 UI locales** (§7.16), checked for
+  completeness by a test; the disclaimer stays English on purpose and the
+  translations have had no native-speaker review.
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
   shared class names make scoping a class a multi-screen change that needs a
   fixture-rich environment to verify.

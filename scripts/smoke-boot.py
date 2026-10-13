@@ -68,6 +68,9 @@ from playwright.sync_api import sync_playwright
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXTRA_FILES = {"/dictionary.json": os.path.join(REPO_ROOT, "app", "lib", "common", "dictionary_en.json")}
 
+# Names shown by the language menu (app/design-system/LocaleSwitcher.tsx).
+LOCALE_NAMES = {"en": "English", "zh": "中文", "fr": "Français", "ko": "한국어", "de": "Deutsch", "es": "Español", "it": "Italiano", "tr": "Türkçe", "ru": "Русский", "ja": "日本語"}
+
 STUB_WEBSOCKET = r"""
 (() => {
   class StubWS {
@@ -320,6 +323,7 @@ def main():
     ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
     ap.add_argument("--fonts", action="store_true", help="also fail on any visible text that is not set in IBM Plex Sans/Mono (see the module docstring)")
     ap.add_argument("--colors", action="store_true", help="also fail when more than 2%% of the painted background area is a neutral gray, i.e. a colour that bypasses the palette (see the module docstring)")
+    ap.add_argument("--locale", choices=sorted(LOCALE_NAMES), help="switch the app to this UI locale after boot, through the language menu (for example de), to check translated screens and help pages")
     ap.add_argument("--viewport", default="1400x900", help="browser size WIDTHxHEIGHT; at 860px or less the page is loaded as a touch phone (for example 390x844)")
     ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
@@ -357,6 +361,11 @@ def main():
         def boot():
             page.goto(base, wait_until="load")
             page.wait_for_timeout(args.boot_wait * 1000)
+            if args.locale:
+                # Same path as a user: language chip in the top bar, then the menu item.
+                page.locator("button[aria-haspopup=menu]").filter(has_text="English").first.click()
+                page.get_by_role("menuitem", name=LOCALE_NAMES[args.locale], exact=True).click()
+                page.wait_for_timeout(2000)
 
         def dismiss():
             for label in [l for l in args.dismiss.split(",") if l]:

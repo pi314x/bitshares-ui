@@ -113,7 +113,8 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   HTTPS for real accounts/markets - this is what finds first-render bugs
   that unit tests with hand-built props cannot).
   Add `--viewport 390x844 --layout` to load it as a phone and fail on sideways
-  overflow or an open navigation rail (plan §7.15).
+  overflow or an open navigation rail (plan §7.15). `--locale de` switches the
+  UI language through the language menu first (translated screens, help pages).
   Add `--fonts` to also fail on any visible text that is not IBM Plex and
   `--colors` to fail on neutral-gray leftovers (see Conventions). A custom `--output-path` build lacks the CopyPlugin
   files (`dictionary.json`, locale files); the script serves them from the
@@ -165,6 +166,19 @@ gate at all.
 - Locale files live in `app/assets/locales/*.json`; keep keys in sync
   across locales when adding user-facing strings (English is the source of
   truth).
+
+## Help pages
+
+- `app/help/<locale>/**/*.md` is the in-app help (`HelpContent`), one folder per
+  UI locale (all ten). English is the source; `HelpContent` falls back to it per
+  page. The disclaimer is deliberately English-only (legal text).
+- A new or changed page goes into **all ten locales**, and
+  `app/__tests__/help/helpFiles-test.ts` names what is missing or differs. Keep
+  the `[# section]` markers (components request them by their English name, so
+  never translate them), the `{placeholders}`, the link targets and every
+  address/URL/memo format exactly as in English. Links are relative to the help
+  root (`dex/shorting.md` or `/help/dex/shorting`), never `../x.md`.
+- No placeholder text ("TODO") in a page: the test rejects it.
 
 ## i18n (Phase 8)
 

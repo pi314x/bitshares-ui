@@ -6,6 +6,7 @@ BitShares 2.0 - это платформа Финансовых Смарт-Кон
 
 ## Введение
 
+- [Отказ от ответственности](disclaimer.md)
 - [BitShares](introduction/bitshares.md)
 - [Кошелек](introduction/wallets.md)
 - [Резервные копии](introduction/backups.md)

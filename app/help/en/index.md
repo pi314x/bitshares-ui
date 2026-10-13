@@ -13,7 +13,7 @@ of this application.
  * [Blockchain](introduction/blockchain.md)
  * [Witnesses](introduction/witness.md)
  * [Workers](introduction/workers.md)
- * [Committe Members](introduction/committee.md)
+ * [Committee Members](introduction/committee.md)
 
 ## Accounts
  * [Introduction](accounts/general.md)

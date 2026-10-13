@@ -1,11 +1,16 @@
 #### Содержание
 
+- [Отказ от ответственности](disclaimer.md)
 - [BitShares](introduction/bitshares.md)
 - [Кошелек](introduction/wallets.md)
 - [Резервные копии](introduction/backups.md)
 - [Блокчейн](introduction/blockchain.md)
+- [Заверители](introduction/witness.md)
+- [Работники](introduction/workers.md)
+- [Члены Комитета](introduction/committee.md)
 - [Голосование](voting.md)
 - [Аккаунты](accounts/general.md)
+- [Предлагаемые транзакции](accounts/proposed.md)
 - [Разрешения](accounts/permissions.md)
 - [Подписки](accounts/membership.md)
 - [Привязанные к рынку активы](assets/mpa.md) 
@@ -19,3 +24,4 @@
 - [Короткая продажа BitAssets](dex/shorting.md)
 - [Шлюзы](gateways/introduction.md)
     - [XBTSX](gateways/xbtsx.md)
+    - [ioxbank](gateways/ioxbank.md)
