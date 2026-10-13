@@ -12734,9 +12734,9 @@ introduced); each has a regression test or a measurable check.
   in CI; there is no visual-regression snapshot job and no packaged-Electron
   smoke test; `test:market:ci` is still not in CI because of the 5 known
   `CallOrder` failures (Phase 4 says to add it once those are resolved).
-- **Help pages are written in all 10 UI locales** (§7.16), checked for
-  completeness by a test; the disclaimer stays English on purpose and the
-  translations have had no native-speaker review.
+- **Help translations have had no native-speaker review** (§7.16): the pages
+  exist in all 10 UI locales and a test checks completeness, but the wording is
+  a first version; the disclaimer stays English on purpose.
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
   shared class names make scoping a class a multi-screen change that needs a
   fixture-rich environment to verify.
