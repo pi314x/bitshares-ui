@@ -1,3 +1,4 @@
+import {Select} from "./Select";
 import * as React from "react";
 import styles from "./Table.module.scss";
 
@@ -544,20 +545,19 @@ export function Table<T = any>({
                         <span>{pagination.showTotal(total)}</span>
                     ) : null}
                     {pagination && pagination.showSizeChanger ? (
-                        <select
+                        <Select
                             className={styles.pageSizeSelect}
-                            aria-label="Page size"
-                            value={effectivePageSize}
-                            onChange={e =>
-                                handlePageSizeChange(Number(e.target.value))
+                            value={String(effectivePageSize)}
+                            onChange={value =>
+                                handlePageSizeChange(Number(value))
                             }
                         >
                             {pageSizeOptions.map(size => (
-                                <option key={size} value={size}>
+                                <Select.Option key={size} value={String(size)}>
                                     {size} / page
-                                </option>
+                                </Select.Option>
                             ))}
-                        </select>
+                        </Select>
                     ) : null}
                     <button
                         type="button"

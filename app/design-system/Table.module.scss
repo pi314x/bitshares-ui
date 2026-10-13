@@ -103,12 +103,11 @@
     color: var(--ink-2);
 }
 
-.pageSizeSelect {
-    border-radius: 4px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink);
-    padding: 3px 6px;
+// The page-size dropdown is the design-system Select; as a flex item of the
+// pagination row it must keep a fixed, small width (its own default is 100%).
+.pagination .pageSizeSelect {
+    width: 128px;
+    flex: none;
 }
 
 .loadingOverlay {

@@ -64,13 +64,33 @@
 .dropdown {
     z-index: 2000;
     box-sizing: border-box;
-    max-height: min(260px, 50vh);
+    // room for about ten compact rows, so most lists need no scrollbar
+    max-height: min(340px, 55vh);
     overflow-y: auto;
     background: var(--raised);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    padding: 6px;
+    padding: 4px;
+    // for the long ones (a few dozen assets): a thin, quiet scrollbar instead
+    // of the system's wide one
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 3px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .dropdownAutoWidth {
@@ -97,7 +117,9 @@
 }
 
 .option {
-    padding: 8px 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+    line-height: 1.35;
     border-radius: var(--radius-sm);
     cursor: pointer;
     color: var(--ink);

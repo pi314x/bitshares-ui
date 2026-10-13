@@ -1,7 +1,6 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 import styles from "./Modal.module.scss";
-import {useClickOutside} from "../next/hooks/useClickOutside";
 
 // React 16 (this project's version, see AGENTS.md) has no `useId()`
 // (React 18+ only) - a plain incrementing counter captured once per
@@ -98,10 +97,18 @@ export function Modal({
     className,
     children
 }: ModalProps): JSX.Element | null {
-    const dialogRef = useClickOutside<HTMLDivElement>(
-        () => onCancel && onCancel(),
-        visible
-    );
+    const dialogRef = React.useRef<HTMLDivElement>(null);
+    // Escape closes the dialog. A dropdown that is open (Select draws its list
+    // on <body>, outside the dialog) takes the key first: it handles it in the
+    // capture phase and stops it, so one Escape closes one thing.
+    React.useEffect(() => {
+        if (!visible || !onCancel) return;
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === "Escape") onCancel();
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [visible, onCancel]);
     const titleId = useStableId("modal-title");
     const triggerRef = React.useRef<Element | null>(null);
 
@@ -128,6 +135,14 @@ export function Modal({
                 .filter(Boolean)
                 .join(" ")}
             style={zIndex !== undefined ? {zIndex} : undefined}
+            // A click on the backdrop itself (not on anything inside the dialog
+            // or in a layer that belongs to it, such as a Select's list, which
+            // React bubbles to here through its portal) dismisses the dialog.
+            onMouseDown={event => {
+                if (event.target === event.currentTarget && onCancel) {
+                    onCancel();
+                }
+            }}
         >
             <div
                 className={[styles.dialog, className].filter(Boolean).join(" ")}

@@ -156,3 +156,19 @@ html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
+
+// Native controls (a <select>'s popup, scrollbars, date pickers) are drawn by
+// the browser; without this they are always the light scheme, so the options of
+// a dark page were light text on a white list.
+:root {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+select option {
+    background-color: var(--raised);
+    color: var(--ink);
+}

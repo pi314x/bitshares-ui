@@ -1,6 +1,7 @@
 import * as React from "react";
 import {render, fireEvent} from "@testing-library/react";
 import {Modal} from "../../design-system/Modal";
+import {Select} from "../../design-system/Select";
 
 describe("design-system/Modal", () => {
     it("renders nothing when closed", () => {
@@ -105,5 +106,45 @@ describe("design-system/Modal", () => {
         );
         const backdrop = document.querySelector(".zi-test") as HTMLElement;
         expect(backdrop.style.zIndex).toBe("1001");
+    });
+
+    describe("with a dropdown inside (its list is drawn on <body>)", () => {
+        const renderWithSelect = (onCancel: () => void, onChange: () => void) =>
+            render(
+                <Modal visible onCancel={onCancel}>
+                    <Select value="a" onChange={onChange}>
+                        <Select.Option value="a">Alpha</Select.Option>
+                        <Select.Option value="b">Beta</Select.Option>
+                    </Select>
+                </Modal>
+            );
+
+        it("choosing an option does not dismiss the dialog", () => {
+            const onCancel = jest.fn();
+            const onChange = jest.fn();
+            const {getByText} = renderWithSelect(onCancel, onChange);
+            fireEvent.click(getByText("Alpha"));
+            const option = document.body.querySelector(
+                '[role="option"]:not([aria-selected="true"])'
+            ) as HTMLElement;
+            fireEvent.mouseDown(option);
+            fireEvent.click(option);
+            expect(onChange).toHaveBeenCalledWith("b");
+            expect(onCancel).not.toHaveBeenCalled();
+        });
+
+        it("Escape closes the open list first and the dialog on the next press", () => {
+            const onCancel = jest.fn();
+            const {getByText} = renderWithSelect(onCancel, () => {});
+            fireEvent.click(getByText("Alpha"));
+            expect(
+                document.body.querySelector('[role="listbox"]')
+            ).toBeTruthy();
+            fireEvent.keyDown(document.body, {key: "Escape"});
+            expect(document.body.querySelector('[role="listbox"]')).toBeNull();
+            expect(onCancel).not.toHaveBeenCalled();
+            fireEvent.keyDown(document.body, {key: "Escape"});
+            expect(onCancel).toHaveBeenCalledTimes(1);
+        });
     });
 });

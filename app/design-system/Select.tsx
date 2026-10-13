@@ -195,13 +195,17 @@ function SelectBase({
             }
         };
         const onKey = (event: KeyboardEvent) => {
-            if (event.key === "Escape") setOpen(false);
+            if (event.key === "Escape") {
+                // an open list takes the key: the dialog around it stays
+                event.stopPropagation();
+                setOpen(false);
+            }
         };
         document.addEventListener("mousedown", onPointer);
-        document.addEventListener("keydown", onKey);
+        document.addEventListener("keydown", onKey, true);
         return () => {
             document.removeEventListener("mousedown", onPointer);
-            document.removeEventListener("keydown", onKey);
+            document.removeEventListener("keydown", onKey, true);
         };
     }, [open]);
 
