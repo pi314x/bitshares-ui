@@ -504,8 +504,13 @@
         "connected": "接続しました",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
+        "loading_title": "BitShares を起動しています",
+        "node_label": "ノード:",
         "not_connected": "接続していません",
         "retry": "再試行",
+        "step_connect": "ノードに接続",
+        "step_database": "ローカルデータを開く",
+        "step_latency": "最速のノードを選択",
         "title": "アプリケーション初期化エラー",
         "understand": "理解しました。",
         "ws_status": "フルノード接続状態"

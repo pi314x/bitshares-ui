@@ -504,8 +504,13 @@
         "connected": "Bağlandı",
         "connecting": "API sunucusuna bağlanma: %(server)s",
         "database": "Bağlantı kuruldu, yerel veritabanları başlatılıyor",
+        "loading_title": "BitShares başlatılıyor",
+        "node_label": "Düğüm:",
         "not_connected": "Bağlı değil",
         "retry": "Yeniden dene",
+        "step_connect": "Düğüme bağlanılıyor",
+        "step_database": "Yerel veriler açılıyor",
+        "step_latency": "En hızlı düğüm seçiliyor",
         "title": "Uygulama başlatma problemleri",
         "understand": "Anladım ve onaylıyorum.",
         "ws_status": "Websocket Bağlantı Durumu"

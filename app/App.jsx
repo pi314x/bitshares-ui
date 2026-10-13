@@ -502,8 +502,15 @@ class App extends React.Component {
             this.notificationSystemRef.current.addNotification(notification);
     }
 
+    // Once per frame at most, and only when the height really changed: this
+    // re-rendered the whole app on every resize event (flicker while resizing).
     _getWindowHeight() {
-        this.setState({height: window && window.innerHeight});
+        if (this._heightFrame) return;
+        this._heightFrame = window.requestAnimationFrame(() => {
+            this._heightFrame = null;
+            const height = window && window.innerHeight;
+            if (height !== this.state.height) this.setState({height});
+        });
     }
 
     // /** Non-static, used by passing notificationSystem via react Component refs */

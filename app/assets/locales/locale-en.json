@@ -505,8 +505,13 @@
         "connected": "Connected",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
+        "loading_title": "Starting BitShares",
+        "node_label": "Node:",
         "not_connected": "Not connected",
         "retry": "Retry",
+        "step_connect": "Connecting to the node",
+        "step_database": "Opening local data",
+        "step_latency": "Choosing the fastest node",
         "title": "Application initialization issues",
         "understand": "I understand",
         "ws_status": "Full node connection status"

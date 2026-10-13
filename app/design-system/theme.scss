@@ -126,3 +126,13 @@ h3,
     outline-offset: 2px;
     border-radius: 3px;
 }
+
+// During a window resize (lib/common/resizeGuard.js): no transitions, so
+// elements that cross a breakpoint jump to their new layout instead of
+// animating through it. Animations (spinners) are left alone.
+html.is-resizing,
+html.is-resizing *,
+html.is-resizing *::before,
+html.is-resizing *::after {
+    transition: none !important;
+}

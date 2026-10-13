@@ -504,8 +504,13 @@
         "connected": "연결됨",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
+        "loading_title": "BitShares 시작 중",
+        "node_label": "노드:",
         "not_connected": "연결안됨",
         "retry": "다시 시도",
+        "step_connect": "노드에 연결",
+        "step_database": "로컬 데이터 열기",
+        "step_latency": "가장 빠른 노드 선택",
         "title": "Application initialization issues",
         "understand": "I understand",
         "ws_status": "웹소켓 연결 상태"

@@ -15,7 +15,7 @@ interface LoadingIndicatorProps {
     children?: React.ReactNode;
 }
 
-function Ring({small}: {small?: boolean}) {
+export function Ring({small}: {small?: boolean}) {
     return (
         <svg
             className={`${styles.ring} ${

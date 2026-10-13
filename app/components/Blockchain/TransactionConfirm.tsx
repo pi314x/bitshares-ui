@@ -143,8 +143,17 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
         showQrCode: false
     });
 
+    // Returns the same object when the patch changes nothing, so React bails
+    // out: the dependency-less effect below runs after every render and used
+    // to set a new (equal) state each time while closed - an endless
+    // "Maximum update depth exceeded" loop.
     const mergeState = (patch: Partial<TransactionConfirmState>) => {
-        setState(prev => ({...prev, ...patch}));
+        setState(prev => {
+            const changed = (Object.keys(patch) as Array<
+                keyof TransactionConfirmState
+            >).some(key => prev[key] !== patch[key]);
+            return changed ? {...prev, ...patch} : prev;
+        });
     };
 
     const isMountRef = React.useRef(true);

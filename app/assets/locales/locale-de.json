@@ -504,8 +504,13 @@
         "connected": "verbunden",
         "connecting": "Verbindung zum API Server: %(server)s",
         "database": "Verbindung hergestllt, Initialisiere lokale Datenbank",
+        "loading_title": "BitShares wird gestartet",
+        "node_label": "Knoten:",
         "not_connected": "Nicht verbunden",
         "retry": "nocheinmal versuchen",
+        "step_connect": "Mit dem Knoten verbinden",
+        "step_database": "Lokale Daten öffnen",
+        "step_latency": "Schnellsten Knoten wählen",
         "title": "Initialisierungsfehler",
         "understand": "Verstanden",
         "ws_status": "Websocket Verbindungsstatus"

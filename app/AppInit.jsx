@@ -35,10 +35,9 @@ import intlData from "./components/Utility/intlData";
 import {IntlProvider} from "react-intl";
 import willTransitionTo from "./routerTransition";
 import {BodyClassName} from "./design-system/BodyClassName";
-import LoadingIndicator from "./components/LoadingIndicator";
+import LoadingScreen from "./components/LoadingScreen";
 import InitError from "./components/InitError";
 import SyncError from "./components/SyncError";
-import counterpart from "counterpart";
 import LogsActions from "actions/LogsActions";
 import ExternalSignerActions from "actions/ExternalSignerActions";
 import {startExternalAccountSync} from "stores/ExternalAccountSync";
@@ -262,34 +261,26 @@ class AppInit extends React.Component {
         });
     }
 
-    _renderLoadingScreen(server) {
-        if (!!!server) {
-            server = "";
-        }
+    _renderLoadingScreen(server, theme) {
         return (
-            <React.Fragment>
-                <LoadingIndicator
-                    loadingText={
-                        this.state.status ||
-                        counterpart.translate("app_init.connecting", {
-                            server: server
-                        })
-                    }
-                >
-                    {this.state.showNodeFilter && (
-                        <div className="padding">
-                            <NodeSelector
-                                onChange={this._onNodeFilterChange.bind(this)}
-                            />
-                            {this.state.nodeFilterHasChanged && (
-                                <div style={{marginTop: "1rem"}}>
-                                    Please reload for the changes to take effect
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </LoadingIndicator>
-            </React.Fragment>
+            <LoadingScreen
+                status={this.state.status}
+                server={server || ""}
+                theme={theme}
+            >
+                {this.state.showNodeFilter && (
+                    <div className="padding">
+                        <NodeSelector
+                            onChange={this._onNodeFilterChange.bind(this)}
+                        />
+                        {this.state.nodeFilterHasChanged && (
+                            <div style={{marginTop: "1rem"}}>
+                                Please reload for the changes to take effect
+                            </div>
+                        )}
+                    </div>
+                )}
+            </LoadingScreen>
         );
     }
 
@@ -315,7 +306,7 @@ class AppInit extends React.Component {
                         <div className="grid-frame vertical">
                             <BodyClassName className={theme}>
                                 {!apiError ? (
-                                    this._renderLoadingScreen(apiServer)
+                                    this._renderLoadingScreen(apiServer, theme)
                                 ) : syncError ? (
                                     <SyncError />
                                 ) : (

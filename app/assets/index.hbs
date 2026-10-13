@@ -11,6 +11,16 @@
     <title>{{title}}</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; worker-src 'self' blob:; script-src https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/ 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' *; font-src 'self' data: https://at.alicdn.com; img-src 'self' data:;">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script>
+        // Before first paint: apply the saved theme to <html>, so the splash, the
+        // loading screen and the app agree and nothing flashes between them.
+        (function () {
+            try {
+                var saved = JSON.parse(localStorage.getItem("__graphene__settings_v4") || "{}");
+                document.documentElement.setAttribute("data-theme", saved && saved.themes === "lightTheme" ? "light" : "dark");
+            } catch (e) { }
+        })();
+    </script>
     <style>
         /* First paint, before any script or stylesheet of the app has loaded.
            Values mirror app/design-system/_palette.scss (dark and light). */
@@ -19,15 +29,20 @@
             --boot-ink: #e9eef5;
             --boot-muted: #8794a7;
             --boot-accent: #16b8f3;
-        }
+                    }
 
-        @media (prefers-color-scheme: light) {
-            :root {
-                --boot-bg: #ffffff;
-                --boot-ink: #111827;
-                --boot-muted: #646e82;
-                --boot-accent: #0074a6;
-            }
+        /* The app's own theme setting decides (set by the script below), not the
+           system scheme: the app starts dark unless the user chose light, and a
+           splash in the other scheme would flash before the app paints. */
+        :root[data-theme="light"] {
+            --boot-bg: #ffffff;
+            --boot-ink: #111827;
+            --boot-muted: #646e82;
+            --boot-accent: #0074a6;
+                    }
+
+        html {
+            background-color: var(--boot-bg);
         }
 
         body {
@@ -41,24 +56,38 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 18px;
+            justify-content: flex-start;
+            padding-top: 30vh;
             margin: 0;
-            color: var(--boot-muted);
+            color: var(--boot-ink);
             font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-            font-size: 14px;
-            font-weight: 400;
-            letter-spacing: 0.02em;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
+        /* Same ring as components/LoadingIndicator (Ring) and the loading screen:
+           24x24 viewBox, r=9, 3px stroke, a short arc, 0.9s per turn. */
         .centerDiv .boot-ring {
             width: 34px;
             height: 34px;
-            border-radius: 50%;
-            border: 3px solid var(--boot-muted);
-            border-top-color: var(--boot-accent);
-            opacity: 0.9;
+            color: var(--boot-accent);
             animation: boot-spin 0.9s linear infinite;
+        }
+
+        .centerDiv .boot-ring circle {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .centerDiv .boot-ring .track {
+            opacity: 0.18;
+        }
+
+        .centerDiv .boot-ring .arc {
+            stroke-dasharray: 18 100;
         }
 
         @keyframes boot-spin {
@@ -93,7 +122,7 @@
 
 <body spellcheck="false">
     <main id="content">
-        <div class="centerDiv" role="status"><div class="boot-ring"></div><span>Loading</span></div>
+        <div class="centerDiv" role="status"><svg class="boot-ring" viewBox="0 0 24 24" aria-hidden="true"><circle class="track" cx="12" cy="12" r="9"></circle><circle class="arc" cx="12" cy="12" r="9"></circle></svg></div>
     </main>
     <script>
         function ieVersion(uaString) {

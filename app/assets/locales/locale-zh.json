@@ -504,8 +504,13 @@
         "connected": "已连接",
         "connecting": "正在连接 API 服务: %(server)s",
         "database": "连接已建立, 正在初始化本地数据",
+        "loading_title": "正在启动 BitShares",
+        "node_label": "节点：",
         "not_connected": "未连接",
         "retry": "重试",
+        "step_connect": "连接到节点",
+        "step_database": "打开本地数据",
+        "step_latency": "选择最快的节点",
         "title": "应用初始化错误",
         "understand": "我已明白",
         "ws_status": "全节点连接状态"
