@@ -126,6 +126,25 @@ function _getAccountNameById(accountId: any): any {
     return account.get("name");
 }
 
+/**
+ * Whether the browser has the Notification API at all. iOS Safari does not
+ * expose `window.Notification` outside an installed home-screen web app, and
+ * `notifyjs` calls `Notification.requestPermission` without checking: that
+ * threw while the app mounted and left a black page on iPhones.
+ */
+export function browserNotificationsSupported(win: any = window): boolean {
+    try {
+        return (
+            !!win &&
+            "Notification" in win &&
+            !!win.Notification &&
+            typeof win.Notification.requestPermission === "function"
+        );
+    } catch (e) {
+        return false;
+    }
+}
+
 function notifyUsingBrowserNotification(params: any = {}) {
     /*
      * params.title (string) - title of notification
@@ -139,6 +158,7 @@ function notifyUsingBrowserNotification(params: any = {}) {
      * */
 
     if (!params.title && !params.body) return null;
+    if (!browserNotificationsSupported()) return null;
 
     const notifyParams: any = {
         body: params.body
@@ -243,6 +263,7 @@ function BrowserNotificationsInner({
     const prevAccountRef = React.useRef(account);
 
     React.useEffect(() => {
+        if (!browserNotificationsSupported()) return;
         if ((Notify as any).needsPermission) {
             (Notify as any).requestPermission();
         }
@@ -257,6 +278,9 @@ function BrowserNotificationsInner({
 
         const prevAccount = prevAccountRef.current;
         prevAccountRef.current = account;
+
+        // a browser without the API (iOS Safari) has nothing to notify with
+        if (!browserNotificationsSupported()) return;
 
         // if browser notifications disabled on settings we can skip all checks
         if (!settings.get("browser_notifications").allow) {
