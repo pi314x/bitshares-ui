@@ -27,6 +27,7 @@ import {Button} from "../../design-system/Button";
 import PaginatedList from "components/Utility/PaginatedList";
 import SearchInput from "../Utility/SearchInput";
 import counterpart from "counterpart";
+import TimedTransferModal from "./TimedTransferModal";
 
 interface AccountVestingState {
     vesting_balances: any[];
@@ -50,6 +51,8 @@ function AccountVesting({account}: AccountVestingProps) {
     const mergeState = (partial: Partial<AccountVestingState>) => {
         setState(prev => ({...prev, ...partial}));
     };
+
+    const [timedTransferOpen, setTimedTransferOpen] = React.useState(false);
 
     const mapVestingBalances = (vb: any) => {
         if (!vb) {
@@ -418,7 +421,23 @@ function AccountVesting({account}: AccountVestingProps) {
                         content="errors.loading_from_blockchain"
                     />
                 )}
+                <Button
+                    variant="accent"
+                    style={{marginLeft: 16}}
+                    onClick={() => setTimedTransferOpen(true)}
+                >
+                    {counterpart.translate("timed_transfer.button")}
+                </Button>
             </div>
+            <TimedTransferModal
+                visible={timedTransferOpen}
+                creator={{id: account.get("id"), name: account.get("name")}}
+                onCancel={() => setTimedTransferOpen(false)}
+                onDone={() => {
+                    setTimedTransferOpen(false);
+                    retrieveVestingBalances(account.get("id"));
+                }}
+            />
             <div>
                 <PaginatedList
                     loading={state.loading}
