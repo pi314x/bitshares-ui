@@ -95,7 +95,7 @@ export function Rail({
                 </div>
             ))}
 
-            {footer}
+            {footer ? <div className={styles.footer}>{footer}</div> : null}
         </nav>
     );
 }

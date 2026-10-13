@@ -1471,7 +1471,9 @@ function QuickTradeCore(props: QuickTradeProps) {
             className="quick-trade"
             style={{
                 display: "flex",
-                justifyContent: "center",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 16,
                 minWidth: "300px",
                 marginTop: "1rem"
             }}
@@ -1498,8 +1500,10 @@ function QuickTradeCore(props: QuickTradeProps) {
             {Details}
             <div
                 style={{
-                    marginTop: "1rem",
-                    textAlign: "center"
+                    width: "100%",
+                    maxWidth: 920,
+                    display: "flex",
+                    justifyContent: "flex-end"
                 }}
             >
                 <Tooltip

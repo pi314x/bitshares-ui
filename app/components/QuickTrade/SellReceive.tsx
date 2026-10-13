@@ -44,8 +44,7 @@
 import * as React from "react";
 import AmountSelector3 from "../Utility/AmountSelector3";
 import Icon from "../Icon/Icon";
-import {Row} from "../../design-system/Row";
-import {Col} from "../../design-system/Col";
+import styles from "./SellReceive.module.scss";
 
 export interface SellReceiveProps {
     sellAssetInput?: string;
@@ -82,72 +81,35 @@ function SellReceive({
     onSwap,
     isSwappable
 }: SellReceiveProps) {
-    const smallScreen = window.innerWidth < 850 ? true : false;
-
-    const sellSelector = (
-        <AmountSelector3
-            label={"exchange.sell"}
-            asset={sellAsset}
-            assets={sellAssets}
-            amount={sellAmount}
-            onAmountChange={onSellAmountChange}
-            imgName={sellImgName}
-        />
-    );
-
-    const receiveSelector = (
-        <AmountSelector3
-            label={"exchange.receive"}
-            asset={receiveAsset}
-            assets={receiveAssets}
-            amount={receiveAmount}
-            onSearch={onReceiveAssetSearch}
-            onAmountChange={onReceiveAmountChange}
-            imgName={receiveImgName}
-        />
-    );
-
-    const btnStyle: React.CSSProperties & {opacity?: number} = {
-        display: "flex",
-        justifyContent: "center"
-    };
-
-    if (!isSwappable) {
-        btnStyle.opacity = 0.1;
-    }
-
-    const swapButton = (
-        <div style={btnStyle}>
-            <Icon
-                name="swap"
-                size="2x"
-                style={
-                    !smallScreen
-                        ? {
-                              marginTop: "3rem"
-                          }
-                        : undefined
-                }
-                onClick={onSwap}
-            />
-        </div>
-    );
-
     return (
-        <div>
-            {smallScreen ? (
-                <div>
-                    <Row>{sellSelector}</Row>
-                    <Row>{swapButton}</Row>
-                    <Row>{receiveSelector}</Row>
-                </div>
-            ) : (
-                <Row>
-                    <Col span={10}>{sellSelector}</Col>
-                    <Col span={4}>{swapButton}</Col>
-                    <Col span={10}>{receiveSelector}</Col>
-                </Row>
-            )}
+        <div className={styles.row}>
+            <AmountSelector3
+                label={"exchange.sell"}
+                asset={sellAsset}
+                assets={sellAssets}
+                amount={sellAmount}
+                onAmountChange={onSellAmountChange}
+                imgName={sellImgName}
+            />
+            <button
+                type="button"
+                className={styles.swap}
+                onClick={onSwap}
+                disabled={!isSwappable}
+                aria-label="Swap"
+                title="Swap"
+            >
+                <Icon name="swap" size="1x" />
+            </button>
+            <AmountSelector3
+                label={"exchange.receive"}
+                asset={receiveAsset}
+                assets={receiveAssets}
+                amount={receiveAmount}
+                onSearch={onReceiveAssetSearch}
+                onAmountChange={onReceiveAmountChange}
+                imgName={receiveImgName}
+            />
         </div>
     );
 }

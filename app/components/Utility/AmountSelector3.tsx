@@ -2,11 +2,9 @@
 // (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
 import Translate from "react-translate-component";
-import {Row} from "../../design-system/Row";
-import {Col} from "../../design-system/Col";
 import {Tooltip} from "../../design-system/Tooltip";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
-import ChainSelect from "./ChainSelect";
+import styles from "../QuickTrade/SellReceive.module.scss";
 
 interface AmountSelector3Props {
     label?: string;
@@ -51,73 +49,40 @@ function AmountSelector3({
 
     const imgName = imageError ? "unknown" : imgNameProp;
 
-    const labelText = (
-        <Translate
-            className="left-label"
-            component="label"
-            content={label}
-            style={{
-                fontSize: "1.2rem",
-                margin: "0",
-                padding: "0"
-            }}
-        />
-    );
-
-    const chainSelector = <ChainSelect />;
-
     const image = (
         <img
-            style={{
-                width: "3.5rem",
-                height: "3.5rem",
-                marginTop: "0.5rem"
-            }}
+            className={styles.icon}
             onError={onImageError}
             src={`${__BASE_URL__}asset-symbols/${imgName.toLowerCase()}.png`}
+            alt=""
         />
     );
 
-    const amountSelector = (
-        <AmountSelector
-            onChange={onAmountChange}
-            amount={amount}
-            asset={asset}
-            assets={assets}
-            placeholder={placeholderAmount}
-            onSearch={onSearch}
-        />
-    );
-
+    // No chain selector: it was a permanently disabled dropdown that only ever
+    // showed "Select asset" (the BitShares chain is the only one), which read
+    // as a broken control.
     return (
-        <div
-            className="amount-selector-2"
-            style={{
-                minWidth: "3.5rem",
-                width: "100%"
-            }}
-        >
-            {labelText}
-            <Row
-                style={{
-                    minWidth: "18rem"
-                }}
-            >
-                <Col
-                    style={{
-                        minWidth: "3.5rem"
-                    }}
-                    span={5}
-                >
+        <div className={styles.panel}>
+            <Translate
+                className={styles.title}
+                component="label"
+                content={label}
+            />
+            <div className={styles.body}>
+                <Tooltip placement="top" title={tooltipText}>
                     {image}
-                </Col>
-                <Col span={19}>
-                    <Tooltip placement="top" title={tooltipText}>
-                        {chainSelector}
-                    </Tooltip>
-                    {amountSelector}
-                </Col>
-            </Row>
+                </Tooltip>
+                <div className={styles.field}>
+                    <AmountSelector
+                        onChange={onAmountChange}
+                        amount={amount}
+                        asset={asset}
+                        assets={assets}
+                        placeholder={placeholderAmount}
+                        onSearch={onSearch}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

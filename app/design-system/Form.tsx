@@ -104,7 +104,7 @@ function FormItem({
         .join(" ");
 
     const labelNode =
-        label !== undefined ? (
+        label !== undefined && label !== null && label !== false ? (
             <label
                 className={styles.label}
                 style={

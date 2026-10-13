@@ -39,27 +39,10 @@ export function ExchangePriceChart(props: any) {
     const other: ChartEngine =
         engine === "tradingview" ? "lightweight" : "tradingview";
 
+    // `small-12` (width: 100%) is what TradingViewPriceChart's own root had;
+    // without it this wrapper shrank to content width inside the flex row.
     return (
-        <div style={{position: "relative"}}>
-            {available ? (
-                <button
-                    type="button"
-                    className="button outline small"
-                    style={{position: "absolute", top: 4, right: 4, zIndex: 2}}
-                    title={
-                        other === "lightweight"
-                            ? "Switch to the built-in chart"
-                            : "Switch to TradingView"
-                    }
-                    onClick={() =>
-                        SettingsActions.changeViewSetting({
-                            chartEngine: other
-                        } as any)
-                    }
-                >
-                    {other === "lightweight" ? "Simple chart" : "TradingView"}
-                </button>
-            ) : null}
+        <div className="small-12">
             {engine === "tradingview" ? (
                 <TradingViewPriceChart {...props} />
             ) : (
@@ -68,6 +51,31 @@ export function ExchangePriceChart(props: any) {
                     chartHeight={props.chartHeight}
                 />
             )}
+            {available ? (
+                // Below the chart, not over it: TradingView draws its own
+                // header along the top edge.
+                <div style={{display: "flex", justifyContent: "flex-end"}}>
+                    <button
+                        type="button"
+                        className="button outline small"
+                        style={{marginTop: 6}}
+                        title={
+                            other === "lightweight"
+                                ? "Switch to the built-in chart"
+                                : "Switch to TradingView"
+                        }
+                        onClick={() =>
+                            SettingsActions.changeViewSetting({
+                                chartEngine: other
+                            } as any)
+                        }
+                    >
+                        {other === "lightweight"
+                            ? "Simple chart"
+                            : "TradingView"}
+                    </button>
+                </div>
+            ) : null}
         </div>
     );
 }

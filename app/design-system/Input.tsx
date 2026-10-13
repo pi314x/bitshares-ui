@@ -34,6 +34,41 @@ function handlePressEnter(
     if (event.key === "Enter" && onPressEnter) onPressEnter(event);
 }
 
+// With an addon or a suffix the control is a wrapper around the field. The
+// layout part of `style` (width, margins, flex) belongs to that wrapper - as in
+// antd, which this replaces - otherwise `style={{width: 200}}` narrowed the
+// field inside a full-width wrapper and left the addon (a search button) at the
+// far edge of the row. Everything else (text-align, colour, ...) stays on the
+// field.
+const WRAPPER_STYLE_KEYS = [
+    "width",
+    "minWidth",
+    "maxWidth",
+    "margin",
+    "marginTop",
+    "marginRight",
+    "marginBottom",
+    "marginLeft",
+    "flex",
+    "flexGrow",
+    "flexShrink",
+    "flexBasis",
+    "alignSelf",
+    "order"
+];
+
+export function splitStyle(
+    style: React.CSSProperties | undefined
+): {wrapper: React.CSSProperties; field: React.CSSProperties} {
+    const wrapper: any = {};
+    const field: any = {};
+    Object.keys(style || {}).forEach(key => {
+        const target = WRAPPER_STYLE_KEYS.includes(key) ? wrapper : field;
+        target[key] = (style as any)[key];
+    });
+    return {wrapper, field};
+}
+
 const InputBase = React.forwardRef<HTMLInputElement, InputProps>(function Input(
     {
         addonBefore,
@@ -46,6 +81,11 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(function Input(
     },
     ref
 ) {
+    const hasWrapper = !!(addonBefore || addonAfter || suffix);
+    const {wrapper: wrapperStyle, field: fieldStyle} = hasWrapper
+        ? splitStyle((rest as any).style)
+        : {wrapper: undefined, field: undefined};
+    const inputProps: any = hasWrapper ? {...rest, style: fieldStyle} : rest;
     const input = (
         <input
             ref={ref}
@@ -60,14 +100,14 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(function Input(
             onKeyDown={event =>
                 handlePressEnter(event, onKeyDown, onPressEnter)
             }
-            {...rest}
+            {...inputProps}
         />
     );
 
-    if (!addonBefore && !addonAfter && !suffix) return input;
+    if (!hasWrapper) return input;
 
     return (
-        <span className={styles.wrap}>
+        <span className={styles.wrap} style={wrapperStyle}>
             {addonBefore ? (
                 <span className={styles.addonBefore}>{addonBefore}</span>
             ) : null}

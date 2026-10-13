@@ -15,6 +15,17 @@
     min-height: 100vh;
 }
 
+// At the bottom of the screen: the rail stretches the full height of the page,
+// so the footer sticks to the bottom edge of the *viewport* (not of the page,
+// and not 100vh below a banner that pushes the shell down).
+.footer {
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    padding: 12px 4px 8px;
+    background: var(--surface);
+}
+
 .brand {
     display: flex;
     align-items: center;

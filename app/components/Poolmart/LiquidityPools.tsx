@@ -408,18 +408,23 @@ function LiquidityPools({
 
     return (
         <div className="grid-block vertical">
-            <div className="grid-content no-padding">
+            <div
+                className="grid-content no-padding"
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 16
+                }}
+            >
                 <TypedSearchInput
                     placeholder={counterpart.translate(
                         "poolmart.liquidity_pools.asset_a"
                     )}
                     value={filterAssetA}
                     onChange={onFilterAssetA}
-                    style={{
-                        width: "200px",
-                        marginBottom: "12px",
-                        marginTop: "4px"
-                    }}
+                    style={{width: "200px"}}
                 />
                 <TypedSearchInput
                     placeholder={counterpart.translate(
@@ -427,12 +432,7 @@ function LiquidityPools({
                     )}
                     value={filterAssetB}
                     onChange={onFilterAssetB}
-                    style={{
-                        width: "200px",
-                        marginLeft: "20px",
-                        marginBottom: "12px",
-                        marginTop: "4px"
-                    }}
+                    style={{width: "200px"}}
                 />
                 <TypedSearchInput
                     placeholder={counterpart.translate(
@@ -440,20 +440,11 @@ function LiquidityPools({
                     )}
                     value={filterShareAsset}
                     onChange={onFilterShareAsset}
-                    style={{
-                        width: "200px",
-                        marginLeft: "20px",
-                        marginBottom: "12px",
-                        marginTop: "4px"
-                    }}
+                    style={{width: "200px"}}
                 />
                 <Select
-                    style={{
-                        width: "150px",
-                        marginLeft: "24px",
-                        marginTop: "4px"
-                    }}
-                    value={limit}
+                    style={{width: "150px"}}
+                    value={String(limit)}
                     onChange={value => handleRowsChange(value as string)}
                 >
                     <Select.Option key={"10"} value={"10"}>

@@ -131,6 +131,7 @@
 // investigating whether the string branch is ever actually reachable in
 // practice.
 import * as React from "react";
+import styles from "./AccountVoting.module.scss";
 import {useNavigate, useLocation, Link, LinkProps} from "react-router-dom";
 import Immutable from "immutable";
 import Translate from "react-translate-component";
@@ -790,11 +791,7 @@ function AccountVoting({
                 )}
                 mouseEnterDelay={0.5}
             >
-                <div
-                    style={{
-                        float: "right"
-                    }}
-                >
+                <div className={styles.actions}>
                     <Button
                         variant="accent"
                         onClick={onPublish}
@@ -847,11 +844,7 @@ function AccountVoting({
             )}
             mouseEnterDelay={0.5}
         >
-            <div
-                style={{
-                    float: "right"
-                }}
-            >
+            <div>
                 <Button variant="accent" onClick={showCreateLockModal}>
                     <Translate content="voting.increase_voting_power" />
                 </Button>
@@ -862,20 +855,20 @@ function AccountVoting({
     return (
         <div className="main-content grid-content">
             <div className="voting">
-                <div className="padding">
-                    <div>
+                <div className={`padding ${styles.head}`}>
+                    <div className={styles.title}>
                         <Translate content="voting.title" component="h1" />
                         <Translate content="voting.description" component="p" />
                     </div>
-                    <div className="ticket-row">
+                    <div className={`ticket-row ${styles.card}`}>
                         {increase_voting_power}
                         <Translate
                             content="voting.ticket_explanation"
                             component="p"
                         />
                     </div>
-                    <div className="proxy-row">
-                        {proxyInput}
+                    <div className={`proxy-row ${styles.card}`}>
+                        <div className={styles.proxy}>{proxyInput}</div>
                         {actionButtons}
                     </div>
                 </div>
