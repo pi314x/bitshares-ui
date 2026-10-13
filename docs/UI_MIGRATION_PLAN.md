@@ -12516,6 +12516,51 @@ global `.showcases-grid*` rules in `themes/_theme-template.scss` are gone.
   1 coming-soon box; Enter on a tile navigates) and logged out (all 10 boxes
   disabled); fonts 64/64 IBM Plex. Screenshots: `docs/screenshots/spotlight-*.png`.
 
+### 7.15 Phone width (complete for what could be checked)
+
+**What was wrong.** Driving every route at 390 px (and 360 and 768) in a real
+browser showed the app was unusable on a phone: the left rail stayed a
+full-height 232 px column on every screen, leaving the page about 150 px. The
+narrow-screen rules existed (the rail was meant to become a horizontal strip
+below 860 px) but they used a single `.rail` selector, lost to the base rule's
+`.rail.rail` (written to beat a legacy `nav` rule) and never applied. Page-level
+"overflow" measurements said everything was fine, because the content was
+squeezed instead of overflowing; only the screenshots showed it
+(`docs/screenshots/phone-before-fix.png`).
+
+**What it is now** (`docs/screenshots/phone-*.png`):
+- At 860 px and below the rail is an off-canvas **drawer** opened by a menu
+  button in the top bar: closes on navigation, on Escape, on the close button and
+  when the backdrop is tapped; the page behind it does not scroll; closed, its
+  links are out of the tab order (`visibility: hidden`); `prefers-reduced-motion`
+  turns the slide off; links are taller for fingers.
+- The top bar becomes three rows: menu and page title; Send / Deposit /
+  Withdraw at equal width; the status chips (node, language, lock, account). On a
+  wide screen the wrappers are `display: contents` and it is the same single row
+  as before.
+- The node popover was right-aligned to a chip at the left of the row and opened
+  off the left edge of the screen; it now spans the status row.
+- Content padding is smaller, and the news banner (4-5 lines of 15px bold text,
+  a quarter of the screen) is 12.5px with room for its close icon.
+- 360, 390 and 768 px: no route scrolls sideways or has an element outside the
+  screen outside a scroller; the Send dialog fits (24 px margins, scrolls inside).
+
+**A check that stays.** `scripts/smoke-boot.py --viewport 390x844 --layout`
+loads the page as a touch phone and fails on horizontal page overflow, on an
+element outside the screen (outside a scroller), on a navigation rail that is
+open on a phone, and on a top bar narrower than the screen. It fails on the
+bundle from before this fix ("navigation rail is open on a phone (232px of
+390px)") and passes on this one.
+
+**Not checked, and why.** The **Exchange** renders nothing in this environment,
+at any width, in the build from before today's work too, so it is not a
+regression and its phone layout is unverified; the same goes for the TradingView
+chart (licensed library not in the repo, stubbed for the checks). Tables scroll
+sideways inside their own container, which is acceptable but not a designed
+phone layout (a card list would be). Real devices, landscape and the soft
+keyboard covering a form were not tried. The `/settings/<unknown tab>` page still
+prints "missing translation" (the Nodes tab is `/settings/access`).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
@@ -12673,9 +12718,10 @@ introduced); each has a regression test or a measurable check.
   untested.
 - The **TradingView chart** (licensed library not in the repo) and **Electron**
   packaging.
-- Visual review at phone widths. Dark and light were reviewed on nine
-  real-data screens in §7.6 and the colour pass (§7.7) added midnight for the
-  dashboard, market and settings; narrow viewports were not.
+- Visual review at phone widths: done for the shell and 21 routes (§7.15), not
+  for the Exchange (it does not render here), real devices or landscape. Dark and
+  light were reviewed on nine real-data screens in §7.6 and the colour pass
+  (§7.7) added midnight for the dashboard, market and settings.
 - Re-enable immer's auto-freeze (`store/immerConfig.ts`) after auditing the
   `getState()` consumers; and decide whether to extract CSS Modules in the
   production build (§7.5).

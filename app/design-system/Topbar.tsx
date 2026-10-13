@@ -28,6 +28,10 @@ export interface TopbarProps {
     onShowSend: () => void;
     onShowDeposit: () => void;
     onShowWithdraw: () => void;
+    /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
+    onOpenNav?: () => void;
+    navOpen?: boolean;
+    navId?: string;
 }
 
 export function Topbar({
@@ -46,48 +50,69 @@ export function Topbar({
     onSelectLocale,
     onShowSend,
     onShowDeposit,
-    onShowWithdraw
+    onShowWithdraw,
+    onOpenNav,
+    navOpen = false,
+    navId
 }: TopbarProps): JSX.Element {
     const connected = connectionStatus === "open";
     return (
         <header className={styles.topbar}>
+            {onOpenNav && (
+                <button
+                    type="button"
+                    className={styles.menuBtn}
+                    aria-label="Menu"
+                    aria-expanded={navOpen}
+                    aria-controls={navId}
+                    onClick={onOpenNav}
+                >
+                    <span className={styles.menuBars} aria-hidden="true" />
+                </button>
+            )}
             <span className={styles.crumb}>{crumb}</span>
             <span className={styles.spacer} />
-            <Button onClick={onShowSend}>Send</Button>
-            <Button onClick={onShowDeposit}>Deposit</Button>
-            <Button onClick={onShowWithdraw}>Withdraw</Button>
-            <NodePicker
-                connected={connected}
-                label={
-                    connected ? "Connected" : connectionStatus || "Connecting…"
-                }
-            >
-                <div
-                    style={{
-                        fontSize: 12,
-                        color: "var(--muted)",
-                        marginBottom: 8
-                    }}
+            <div className={styles.actions}>
+                <Button onClick={onShowSend}>Send</Button>
+                <Button onClick={onShowDeposit}>Deposit</Button>
+                <Button onClick={onShowWithdraw}>Withdraw</Button>
+            </div>
+            <div className={styles.status}>
+                <NodePicker
+                    connected={connected}
+                    label={
+                        connected
+                            ? "Connected"
+                            : connectionStatus || "Connecting…"
+                    }
                 >
-                    {activeNode || "No node selected"}
-                </div>
-                {nodeSelector}
-            </NodePicker>
-            <LocaleSwitcher
-                currentLocale={currentLocale}
-                locales={locales}
-                onSelect={onSelectLocale}
-            />
-            <WalletLockButton
-                locked={locked}
-                onToggle={onToggleLock}
-                label={lockLabel}
-            />
-            <AccountSwitcher
-                currentAccount={currentAccount}
-                accounts={accounts}
-                onSelect={onSelectAccount}
-            />
+                    <div
+                        style={{
+                            fontSize: 12,
+                            color: "var(--muted)",
+                            marginBottom: 8
+                        }}
+                    >
+                        {activeNode || "No node selected"}
+                    </div>
+                    {nodeSelector}
+                </NodePicker>
+                <LocaleSwitcher
+                    currentLocale={currentLocale}
+                    locales={locales}
+                    onSelect={onSelectLocale}
+                />
+                <WalletLockButton
+                    locked={locked}
+                    onToggle={onToggleLock}
+                    label={lockLabel}
+                />
+                <AccountSwitcher
+                    currentAccount={currentAccount}
+                    accounts={accounts}
+                    onSelect={onSelectAccount}
+                />
+            </div>
         </header>
     );
 }

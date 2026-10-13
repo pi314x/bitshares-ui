@@ -4,6 +4,7 @@
 // see NextShellContainer.tsx for why (it's the one that reads the real
 // Alt.js stores and is what App.jsx actually mounts at /next).
 import * as React from "react";
+import {useLocation} from "react-router-dom";
 import {ThemeProvider} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
 import {Rail, RailNavGroup} from "../design-system/Rail";
@@ -68,9 +69,44 @@ function ShellChrome({
     onShowWithdraw,
     content
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
+    // Phone width: the rail is a drawer. It closes on navigation, on Escape and
+    // when the backdrop is tapped, and the page behind it does not scroll.
+    const [navOpen, setNavOpen] = React.useState(false);
+    const {pathname} = useLocation();
+    const closeNav = React.useCallback(() => setNavOpen(false), []);
+    React.useEffect(() => setNavOpen(false), [pathname]);
+    React.useEffect(() => {
+        if (!navOpen) return undefined;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setNavOpen(false);
+        };
+        document.addEventListener("keydown", onKey);
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            document.body.style.overflow = previous;
+        };
+    }, [navOpen]);
+
     return (
         <div className={styles.shell}>
-            <Rail groups={navGroups} footer={railFooter} />
+            {navOpen && (
+                <div
+                    className={styles.scrim}
+                    onClick={closeNav}
+                    aria-hidden="true"
+                    data-testid="nav-scrim"
+                />
+            )}
+            <Rail
+                id="main-nav"
+                groups={navGroups}
+                footer={railFooter}
+                open={navOpen}
+                onNavigate={closeNav}
+                onClose={closeNav}
+            />
             <div className={styles.main}>
                 <Topbar
                     crumb={crumb}
@@ -89,6 +125,9 @@ function ShellChrome({
                     onShowSend={onShowSend}
                     onShowDeposit={onShowDeposit}
                     onShowWithdraw={onShowWithdraw}
+                    onOpenNav={() => setNavOpen(true)}
+                    navOpen={navOpen}
+                    navId="main-nav"
                 />
                 <div className={styles.content}>{content}</div>
             </div>

@@ -80,38 +80,71 @@
     font-weight: 600;
 }
 
-// Below this width (the reference mockup's own breakpoint) the rail
-// becomes a horizontal, scrollable strip instead of a fixed-height side
-// column, and group labels/brand name drop to keep it compact — a
-// two-line-tall sidebar makes no sense once it's this narrow.
+.close {
+    display: none;
+}
+
+// Phone and small tablet (the reference mockup's own breakpoint): the rail is an
+// off-canvas drawer opened from the top bar's menu button instead of a 232px
+// column that leaves a phone about 150px for the page. `.rail.rail` and
+// `.rail.rail.railOpen` match the specificity of the base rule above; the old
+// version of this block used a single `.rail`, lost to `.rail.rail` and never
+// applied, so the full-width sidebar stayed on every phone screen.
 @media (max-width: 860px) {
-    .rail {
-        width: auto;
+    .rail.rail {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1100;
+        width: min(288px, 86vw);
         min-height: 0;
-        flex-direction: row;
-        align-items: center;
-        overflow-x: auto;
-        padding: 8px 12px;
-        gap: 4px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-100%);
+        // closed: out of the tab order and away from screen readers
+        visibility: hidden;
+        transition: transform 0.2s var(--ease), visibility 0s linear 0.2s;
     }
 
-    .brandName,
-    .groupLabel {
-        display: none;
+    .rail.rail.railOpen {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.2s var(--ease);
     }
 
-    .brand {
-        padding: 4px 8px;
+    .close {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--ink-2);
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
     }
 
-    .group {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        margin-top: 0;
+    .close:hover {
+        background: var(--hover);
+        color: var(--ink);
     }
 
+    // a finger needs more than the desktop's 8px of padding
     .rail a.navItem {
-        width: auto;
+        padding: 12px 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rail.rail,
+    .rail.rail.railOpen {
+        transition: none;
     }
 }

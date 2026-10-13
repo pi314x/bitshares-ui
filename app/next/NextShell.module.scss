@@ -12,8 +12,24 @@
     padding: 24px;
 }
 
+// Behind the open navigation drawer on a phone.
+.scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    background: var(--overlay);
+}
+
 @media (max-width: 860px) {
-    .shell {
-        flex-direction: column;
+    .content {
+        padding: 16px 12px;
+    }
+}
+
+@media (min-width: 861px) {
+    // the drawer cannot be open on a wide screen; if the window was resized with
+    // it open, do not leave a dead scrim behind
+    .scrim {
+        display: none;
     }
 }

@@ -112,6 +112,8 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   add `--live-node https://node.xbts.io/ws` to relay to a real node over
   HTTPS for real accounts/markets - this is what finds first-render bugs
   that unit tests with hand-built props cannot).
+  Add `--viewport 390x844 --layout` to load it as a phone and fail on sideways
+  overflow or an open navigation rail (plan §7.15).
   Add `--fonts` to also fail on any visible text that is not IBM Plex and
   `--colors` to fail on neutral-gray leftovers (see Conventions). A custom `--output-path` build lacks the CopyPlugin
   files (`dictionary.json`, locale files); the script serves them from the

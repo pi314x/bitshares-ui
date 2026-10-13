@@ -288,6 +288,24 @@ def serve(dist, live_node=None):
     return httpd
 
 
+LAYOUT_JS = """() => {
+  const vw = document.documentElement.clientWidth;
+  const inScroller = el => { for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) { const o = getComputedStyle(p); if (/(auto|scroll|hidden)/.test(o.overflowX) && p.getBoundingClientRect().right <= vw + 1 && p.getBoundingClientRect().left >= -1) return true; } return false; };
+  const wide = [];
+  for (const el of document.querySelectorAll('body *')) {
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+    if (!r.width || !r.height || cs.visibility === 'hidden' || cs.display === 'none' || cs.position === 'fixed') continue;
+    if ((r.right > vw + 1 || r.left < -1) && !inScroller(el)) wide.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' [' + Math.round(r.left) + ',' + Math.round(r.right) + ']');
+  }
+  const nav = document.querySelector('nav[aria-label=Main]');
+  const navRect = nav ? nav.getBoundingClientRect() : null;
+  const navVisible = !!navRect && getComputedStyle(nav).visibility !== 'hidden' && navRect.right > 1 && navRect.left < vw - 1;
+  const bar = document.querySelector('header');
+  return {vw, scrollW: document.documentElement.scrollWidth, wide: wide.slice(0, 5), navVisible, navWidth: navRect ? Math.round(navRect.width) : 0,
+          barWidth: bar ? Math.round(bar.getBoundingClientRect().width) : 0};
+}"""
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("dist", help="built bundle directory (contains index.html)")
@@ -302,6 +320,8 @@ def main():
     ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
     ap.add_argument("--fonts", action="store_true", help="also fail on any visible text that is not set in IBM Plex Sans/Mono (see the module docstring)")
     ap.add_argument("--colors", action="store_true", help="also fail when more than 2%% of the painted background area is a neutral gray, i.e. a colour that bypasses the palette (see the module docstring)")
+    ap.add_argument("--viewport", default="1400x900", help="browser size WIDTHxHEIGHT; at 860px or less the page is loaded as a touch phone (for example 390x844)")
+    ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
@@ -312,7 +332,9 @@ def main():
 
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path=args.chromium_path)
-        page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
+        vw, vh = (int(v) for v in args.viewport.lower().split("x"))
+        phone = vw <= 860
+        page = browser.new_context(viewport={"width": vw, "height": vh}, is_mobile=phone, has_touch=phone, device_scale_factor=2 if phone else 1).new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)[:300]))
         page.on("console", lambda m: errors.append(m.text[:300]) if m.type == "error" else None)
         watch = os.environ.get("SMOKE_CONSOLE_FILTER")  # print console output containing this substring
@@ -372,6 +394,21 @@ def main():
                 for c, a in sorted(gray.items(), key=lambda kv: -kv[1])[:4]:
                     print(f"      neutral {c} ({100.0 * a / total:.1f}%) e.g. {census['sample'].get(c, '')}")
                 if share > 2.0:
+                    failed = True
+            if args.layout:
+                lay = page.evaluate(LAYOUT_JS)
+                problems = []
+                if lay["scrollW"] > lay["vw"] + 1:
+                    problems.append("page scrolls sideways by %dpx" % (lay["scrollW"] - lay["vw"]))
+                if lay["wide"]:
+                    problems.append("outside the screen: " + "; ".join(lay["wide"]))
+                if lay["vw"] <= 860:
+                    if lay["navVisible"]:
+                        problems.append("navigation rail is open on a phone (%dpx of %dpx)" % (lay["navWidth"], lay["vw"]))
+                    if lay["barWidth"] and lay["barWidth"] < lay["vw"] * 0.9:
+                        problems.append("top bar is %dpx on a %dpx screen" % (lay["barWidth"], lay["vw"]))
+                print(f"{'':<34} layout: " + ("ok" if not problems else "; ".join(problems)))
+                if problems:
                     failed = True
             blank = not body.strip()
             errors.clear()

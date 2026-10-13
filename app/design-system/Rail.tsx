@@ -27,15 +27,46 @@ export interface RailNavGroup {
 export interface RailProps {
     groups: RailNavGroup[];
     footer?: React.ReactNode;
+    /**
+     * Phone width only: the rail is an off-canvas drawer there, and this is
+     * whether it is open. Ignored on wider screens, where it is always visible.
+     */
+    open?: boolean;
+    /** Called after a link was followed (the drawer closes itself with it). */
+    onNavigate?: () => void;
+    /** Called by the drawer's close button. */
+    onClose?: () => void;
+    id?: string;
 }
 
 // Left navigation rail (reference "BitShares Desk" mockup). Unlike the
 // mockup's static prototype, `to` is a real react-router path — this is
 // meant to actually navigate the app, not toggle a fake in-page view.
-export function Rail({groups, footer}: RailProps): JSX.Element {
+export function Rail({
+    groups,
+    footer,
+    open = false,
+    onNavigate,
+    onClose,
+    id
+}: RailProps): JSX.Element {
     const {pathname} = useLocation();
     return (
-        <nav className={styles.rail} aria-label="Main">
+        <nav
+            id={id}
+            className={`${styles.rail}${open ? ` ${styles.railOpen}` : ""}`}
+            aria-label="Main"
+        >
+            {onClose && (
+                <button
+                    type="button"
+                    className={styles.close}
+                    aria-label="Close menu"
+                    onClick={onClose}
+                >
+                    ×
+                </button>
+            )}
             <div className={styles.brand}>
                 <img className={styles.brandMark} src={logo} alt="BitShares" />
                 <span className={styles.brandName}>BitShares</span>
@@ -49,6 +80,7 @@ export function Rail({groups, footer}: RailProps): JSX.Element {
                             key={item.to}
                             to={item.to}
                             end={item.exact}
+                            onClick={onNavigate}
                             className={({isActive}: {isActive: boolean}) =>
                                 (item.match
                                   ? item.match.test(pathname)

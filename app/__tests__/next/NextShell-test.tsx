@@ -1,5 +1,5 @@
 import * as React from "react";
-import {render} from "@testing-library/react";
+import {render, fireEvent} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
 import NextShell from "../../next/NextShell";
 
@@ -77,5 +77,58 @@ describe("next/NextShell", () => {
         expect(document.documentElement.getAttribute("data-theme")).toBe(
             "dark"
         );
+    });
+
+    describe("navigation drawer (phone width)", () => {
+        it("opens from the menu button and says so to assistive technology", () => {
+            const {getByLabelText, getByRole} = renderShell();
+            const button = getByLabelText("Menu");
+            expect(button.getAttribute("aria-expanded")).toBe("false");
+            expect(button.getAttribute("aria-controls")).toBe("main-nav");
+            fireEvent.click(button);
+            expect(button.getAttribute("aria-expanded")).toBe("true");
+            expect(getByRole("navigation", {hidden: true}).className).toContain(
+                "railOpen"
+            );
+        });
+
+        it("shows a backdrop while open, and tapping it closes the drawer", () => {
+            const {getByLabelText, getByTestId, queryByTestId} = renderShell();
+            expect(queryByTestId("nav-scrim")).toBeNull();
+            fireEvent.click(getByLabelText("Menu"));
+            fireEvent.click(getByTestId("nav-scrim"));
+            expect(queryByTestId("nav-scrim")).toBeNull();
+            expect(getByLabelText("Menu").getAttribute("aria-expanded")).toBe(
+                "false"
+            );
+        });
+
+        it("closes on Escape and on the close button", () => {
+            const {getByLabelText, queryByTestId} = renderShell();
+            fireEvent.click(getByLabelText("Menu"));
+            fireEvent.keyDown(document, {key: "Escape"});
+            expect(queryByTestId("nav-scrim")).toBeNull();
+            fireEvent.click(getByLabelText("Menu"));
+            fireEvent.click(getByLabelText("Close menu"));
+            expect(queryByTestId("nav-scrim")).toBeNull();
+        });
+
+        it("closes after a link is followed", () => {
+            const {getByLabelText, getByText, queryByTestId} = renderShell();
+            fireEvent.click(getByLabelText("Menu"));
+            fireEvent.click(getByText("Dashboard"));
+            expect(queryByTestId("nav-scrim")).toBeNull();
+        });
+
+        it("keeps the page behind it from scrolling, and gives that back", () => {
+            const {getByLabelText, unmount} = renderShell();
+            fireEvent.click(getByLabelText("Menu"));
+            expect(document.body.style.overflow).toBe("hidden");
+            fireEvent.keyDown(document, {key: "Escape"});
+            expect(document.body.style.overflow).toBe("");
+            fireEvent.click(getByLabelText("Menu"));
+            unmount();
+            expect(document.body.style.overflow).toBe("");
+        });
     });
 });

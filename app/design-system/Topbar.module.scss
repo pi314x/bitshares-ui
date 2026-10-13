@@ -13,13 +13,101 @@
     background: var(--surface);
 }
 
-@media (max-width: 480px) {
-    .topbar {
-        padding: 10px 16px;
+// The wrappers only exist so the phone layout can move the buttons and the
+// status chips onto rows of their own; on a wide screen they disappear and the
+// topbar is the same single flex row as before.
+.actions,
+.status {
+    display: contents;
+}
+
+.menuBtn {
+    display: none;
+}
+
+.menuBars,
+.menuBars::before,
+.menuBars::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--ink);
+}
+
+.menuBars {
+    position: relative;
+}
+
+.menuBars::before,
+.menuBars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+}
+
+.menuBars::before {
+    top: -6px;
+}
+
+.menuBars::after {
+    top: 6px;
+}
+
+// Phone and small tablet. `.topbar.topbar` and friends again match the base
+// rule's specificity so these actually apply.
+@media (max-width: 860px) {
+    .topbar.topbar {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    .menuBtn {
+        display: inline-grid;
+        place-items: center;
+        flex: none;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--raised);
+        cursor: pointer;
+    }
+
+    .topbar .crumb {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .spacer {
         display: none;
+    }
+
+    // row 2: Send / Deposit / Withdraw, equal width
+    .topbar .actions {
+        display: flex;
+        flex: 1 1 100%;
+        order: 3;
+        gap: 8px;
+    }
+
+    .topbar .actions > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    // row 3: node, language, lock, account
+    .topbar .status {
+        position: relative;
+        display: flex;
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        order: 4;
+        gap: 8px;
     }
 }
 

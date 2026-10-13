@@ -101,4 +101,44 @@ describe("design-system/Rail", () => {
         );
         expect(getByText("Voting").className).not.toContain("navItemActive");
     });
+
+    it("is the drawer only when told so: open class and close button", () => {
+        const onClose = jest.fn();
+        const {container, getByLabelText, rerender} = render(
+            <MemoryRouter>
+                <Rail groups={groups} open={false} onClose={onClose} />
+            </MemoryRouter>
+        );
+        expect(container.querySelector("nav")!.className).not.toContain(
+            "railOpen"
+        );
+        rerender(
+            <MemoryRouter>
+                <Rail groups={groups} open onClose={onClose} />
+            </MemoryRouter>
+        );
+        expect(container.querySelector("nav")!.className).toContain("railOpen");
+        getByLabelText("Close menu").click();
+        expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("has no close button without an onClose handler", () => {
+        const {queryByLabelText} = render(
+            <MemoryRouter>
+                <Rail groups={groups} />
+            </MemoryRouter>
+        );
+        expect(queryByLabelText("Close menu")).toBeNull();
+    });
+
+    it("tells the owner when a link was followed", () => {
+        const onNavigate = jest.fn();
+        const {getByText} = render(
+            <MemoryRouter>
+                <Rail groups={groups} onNavigate={onNavigate} />
+            </MemoryRouter>
+        );
+        getByText("Accounts").click();
+        expect(onNavigate).toHaveBeenCalledTimes(1);
+    });
 });

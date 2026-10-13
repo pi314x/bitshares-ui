@@ -50,3 +50,19 @@
     padding: 12px;
     z-index: 20;
 }
+
+// Phone: the 320px panel is right-aligned to a chip that sits at the left of the
+// status row, so it opened off the left edge of the screen. Anchor it to the whole
+// row instead (Topbar's `.status`, which is `position: relative` there) and let it
+// span it.
+@media (max-width: 860px) {
+    .wrap {
+        position: static;
+    }
+
+    .panel {
+        left: 0;
+        right: 0;
+        width: auto;
+    }
+}
