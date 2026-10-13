@@ -136,3 +136,23 @@ html.is-resizing *::before,
 html.is-resizing *::after {
     transition: none !important;
 }
+
+// The page scrolls as a document. The legacy top-level frame
+// (App.jsx: #content-wrapper > .grid-frame) was locked to the viewport height
+// with `overflow: hidden`; the new shell inside it is taller than that on every
+// screen with more than a screenful (Spotlight 2151px in an 844px frame), so the
+// rest was cut off and could not be scrolled to - and iOS Safari has no inner
+// scroller to fall back on. Panels that need their own scrolling (the exchange)
+// bring their own scroll containers.
+#content-wrapper > .grid-frame {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+}
+
+html {
+    // no font inflation after rotating a phone
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
