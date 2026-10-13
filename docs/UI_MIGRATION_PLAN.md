@@ -12604,9 +12604,11 @@ contents and the pages render in the chosen language, the disclaimer falls back
 to English, and there are no page errors.
 
 **Not done.** The translations were written without a native-speaker review;
-treat them as a solid first version. The older Russian, Turkish and Chinese
-texts were kept where they were structurally correct, so their wording and depth
-still differ from English in places (some are older, shorter explanations).
+treat them as a solid first version. The older Russian, Turkish and Chinese texts
+were kept where they were structurally correct (their witness, workers and
+committee pages and the Russian BitShares intro were brought to the English
+depth), so some other pages there (for example backups) still word things
+differently from English.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
