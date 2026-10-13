@@ -3,12 +3,7 @@
  * General API Settings are stored in api/apiConfig and should be imported here
  */
 
-import {
-    ioxbankAPIs,
-    cryptoBridgeAPIs,
-    pirateCashAPIs,
-    xbtsxAPIs
-} from "api/apiConfig";
+import {ioxbankAPIs, pirateCashAPIs, xbtsxAPIs} from "api/apiConfig";
 import {allowedGateway} from "branding";
 import {isGatewayTemporarilyDisabled} from "../chain/onChainConfig";
 import SettingsStore from "stores/SettingsStore";
@@ -103,23 +98,6 @@ export const availableGateways = {
         },
         landing: "https://ioxbank.com",
         wallet: "https://dex.iobanker.com/"
-    },
-    BRIDGE: {
-        id: "BRIDGE",
-        name: "CryptoBridge",
-        baseAPI: cryptoBridgeAPIs,
-        isEnabled: () => false,
-        selected: false,
-        singleWallet: true, // Has no coresponging coinType == backingCoinType specific wallet
-        addressValidatorAsset: true, // Address validator requires output_asset parameter
-        useFullAssetName: true, // Adds <gateway>.<asset> to memo and address object
-        intermediateAccount: "cryptobridge", // Fixed intermediateAccount
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "Shutdown",
-        wallet: "Shutdown"
     },
     PIRATE: {
         id: "PIRATE",

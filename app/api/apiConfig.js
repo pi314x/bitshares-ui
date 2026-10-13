@@ -29,14 +29,6 @@ export const openledgerAPIs = {
     RPC_URL: "https://openledger.info/api/"
 };
 
-export const cryptoBridgeAPIs = {
-    BASE: "https://api.crypto-bridge.org/api/v1",
-    COINS_LIST: "/coins",
-    ACTIVE_WALLETS: "/wallets",
-    MARKETS: "/markets",
-    TRADING_PAIRS: "/trading-pairs"
-};
-
 export const pirateCashAPIs = {
     BASE: "https://pirate.cash/dexapi",
     COINS_LIST: "/coins"

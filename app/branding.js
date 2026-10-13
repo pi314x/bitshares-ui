@@ -454,12 +454,7 @@ export function getAssetHideNamespaces() {
  * @returns {boolean}
  */
 export function allowedGateway(gateway) {
-    const allowedGateways = [
-        "PIRATE",
-        "XBTSX",
-        "IOB",
-        "BRIDGE" // keep to display the warning icon, permanently disabled in gateways.js
-    ];
+    const allowedGateways = ["PIRATE", "XBTSX", "IOB"];
     if (!gateway) {
         // answers the question: are any allowed?
         return allowedGateways.length > 0;
