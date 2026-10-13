@@ -12610,15 +12610,18 @@ Phase 8 (i18n) and Phase 9 (cleanup) close out the project.
 
 ## 12. Where this stands (end of the incremental migration)
 
-**Done and verified by automated gates** (tsc, eslint on changed files, Jest
-5,893 tests, Mocha 64 passing + the 5 known `CallOrder` failures, production
-build with only the 2 known `charting_library` errors): the app shell and
+**Done and verified by automated gates** (tsc, eslint over all of `app/` with
+0 errors, Jest 5,918 tests, Mocha 64 passing + the 5 known `CallOrder`
+failures, production build with only the 2 known `charting_library` errors): the app shell and
 design system; every component call site off `bitshares-ui-style-guide`
 (§7.1-7.2); `bitshares-ui-style-guide` and `antd` removed, the vendored
 stylesheet trimmed from 1.6 MB to ~99 KB with a computed-style equivalence
 proof (§7.3); React 18 with `createRoot` (§7.4); the Alt.js stores/actions as
 facades over Redux Toolkit slices; react-router 6; a local i18n shim instead
-of `counterpart`; three isolated SCSS partials as CSS Modules (§7.5).
+of `counterpart`; three isolated SCSS partials as CSS Modules (§7.5); the
+Lending menu and SameT funds (§7.8), the optional extension signing (§7.11), the
+restored menu entries and the rebuilt Spotlight page (§7.13-7.14), and the
+cleanup passes (§7.9, §7.10, §7.12).
 
 **Verified by booting the real bundle** (`scripts/smoke-boot.py`, §7.4):
 every route and the account/wallet sub-routes against a stub chain and,
@@ -12633,6 +12636,14 @@ introduced); each has a regression test or a measurable check.
 **Not done, and why:**
 - **SameT fund create/update/delete are untested on a chain** (§7.8): the
   serialization and the page logic are tested, the broadcast is not.
+- **Testing strategy items (§8) not built:** the Playwright golden-path suites
+  run by hand (`scripts/smoke-boot.py`, the wallet-lifecycle script) but are not
+  in CI; there is no visual-regression snapshot job and no packaged-Electron
+  smoke test; `test:market:ci` is still not in CI because of the 5 known
+  `CallOrder` failures (Phase 4 says to add it once those are resolved).
+- **`app/help/` has 6 languages, the UI has 10 locales** (§10, item 5): never
+  reconciled; the choice (write the 4 missing help languages, or trim the UI
+  locale list) is still open.
 - **Most legacy SCSS stays global** (§7.5): the per-theme overrides and
   shared class names make scoping a class a multi-screen change that needs a
   fixture-rich environment to verify.
