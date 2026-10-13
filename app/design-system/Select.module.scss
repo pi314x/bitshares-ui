@@ -59,13 +59,12 @@
     flex-shrink: 0;
 }
 
+// Positioned inline by Select.tsx (fixed, from the trigger's rect) and drawn in
+// a portal on <body>, above modals.
 .dropdown {
-    position: absolute;
-    z-index: 30;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    max-height: 260px;
+    z-index: 2000;
+    box-sizing: border-box;
+    max-height: min(260px, 50vh);
     overflow-y: auto;
     background: var(--raised);
     border: 1px solid var(--line);
@@ -75,9 +74,7 @@
 }
 
 .dropdownAutoWidth {
-    right: auto;
     width: max-content;
-    min-width: 100%;
 }
 
 .search {
@@ -91,6 +88,12 @@
     border: 1px solid var(--field-border);
     background: var(--field-bg);
     color: var(--ink);
+}
+
+.search:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .option {

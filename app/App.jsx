@@ -11,6 +11,7 @@ import NotificationSystem from "react-notification-system";
 import TransactionConfirm from "./components/Blockchain/TransactionConfirm";
 import WalletUnlockModal from "./components/Wallet/WalletUnlockModal";
 import BrowserSupportModal from "./components/Modal/BrowserSupportModal";
+import missingBrowserFeatures from "./lib/feature_detect/browserFeatures";
 import Deprecate from "./Deprecate";
 import Incognito from "./components/Layout/Incognito";
 import {isIncognito} from "feature_detect";
@@ -34,9 +35,7 @@ import Page404 from "./components/Page404/Page404";
 // <Switch> as its `content` prop (see the render() method).
 const AppShell = Loadable({
     loader: () =>
-        import(
-            /* webpackChunkName: "app-shell" */ "./next/NextShellContainer"
-        ),
+        import(/* webpackChunkName: "app-shell" */ "./next/NextShellContainer"),
     loading: LoadingIndicator
 });
 
@@ -123,7 +122,8 @@ const Settings = Loadable({
 
 const Help = withLegacyRouterProps(
     Loadable({
-        loader: () => import(/* webpackChunkName: "help" */ "./components/Help"),
+        loader: () =>
+            import(/* webpackChunkName: "help" */ "./components/Help"),
         loading: LoadingIndicator
     })
 );
@@ -383,15 +383,11 @@ class App extends React.Component {
             this._syncStatus.bind(this, true),
             5000
         );
-        const user_agent = navigator.userAgent.toLowerCase();
-        if (
-            !(
-                window.electron ||
-                user_agent.indexOf("firefox") > -1 ||
-                user_agent.indexOf("chrome") > -1 ||
-                user_agent.indexOf("edge") > -1
-            )
-        ) {
+        // Not the browser's name, but what it lacks: any current browser
+        // (Safari and iOS browsers included) passes.
+        const missing = missingBrowserFeatures(window);
+        if (!window.electron && missing.length) {
+            console.warn("Browser lacks: " + missing.join(", "));
             this.showBrowserSupportModal();
         }
 
@@ -547,10 +543,7 @@ class App extends React.Component {
                     <AppShell
                         content={
                             <Routes>
-                                <Route
-                                    path="/"
-                                    element={<DashboardPage />}
-                                />
+                                <Route path="/" element={<DashboardPage />} />
                                 <Route
                                     path="/account/:account_name/*"
                                     element={<AccountPage />}
@@ -575,7 +568,10 @@ class App extends React.Component {
                                     path="/settings/:tab"
                                     element={<Settings />}
                                 />
-                                <Route path="/settings" element={<Settings />} />
+                                <Route
+                                    path="/settings"
+                                    element={<Settings />}
+                                />
                                 <Route
                                     path="/invoice/:data"
                                     element={<Invoice />}
@@ -616,7 +612,10 @@ class App extends React.Component {
                                     path="/explorer/:tab"
                                     element={<Explorer />}
                                 />
-                                <Route path="/explorer" element={<Explorer />} />
+                                <Route
+                                    path="/explorer"
+                                    element={<Explorer />}
+                                />
                                 <Route
                                     path="/asset/:symbol"
                                     element={<Asset />}
@@ -663,10 +662,7 @@ class App extends React.Component {
 
                                 {/* Help routes */}
                                 <Route path="/help" element={<Help />} />
-                                <Route
-                                    path="/help/:path1"
-                                    element={<Help />}
-                                />
+                                <Route path="/help/:path1" element={<Help />} />
                                 <Route
                                     path="/help/:path1/:path2"
                                     element={<Help />}
@@ -688,7 +684,10 @@ class App extends React.Component {
                                     path="/instant-trade/:marketID"
                                     element={<QuickTrade />}
                                 />
-                                <Route path="/pools" element={<PoolmartPage />} />
+                                <Route
+                                    path="/pools"
+                                    element={<PoolmartPage />}
+                                />
                                 <Route path="*" element={<Page404 />} />
                             </Routes>
                         }

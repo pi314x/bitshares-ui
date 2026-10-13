@@ -7,8 +7,10 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 18px 12px;
-    width: 232px;
+    padding: 14px 8px;
+    // Compact: wide enough for the longest label ("Prediction markets"),
+    // no wider, so the page keeps the space.
+    width: 184px;
     flex: none;
     min-height: 100vh;
 }
@@ -17,7 +19,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 4px 8px 18px;
+    padding: 4px 8px 14px;
 }
 
 .brandMark {
@@ -36,7 +38,7 @@
 }
 
 .group {
-    margin-top: 14px;
+    margin-top: 10px;
 }
 
 .groupLabel {
@@ -58,8 +60,10 @@
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 8px 10px;
+    padding: 6px 10px;
     border-radius: var(--radius-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
     background: transparent;
     color: var(--ink-2);
     font: inherit;
@@ -85,7 +89,7 @@
 }
 
 // Phone and small tablet (the reference mockup's own breakpoint): the rail is an
-// off-canvas drawer opened from the top bar's menu button instead of a 232px
+// off-canvas drawer opened from the top bar's menu button instead of a 184px
 // column that leaves a phone about 150px for the page. `.rail.rail` and
 // `.rail.rail.railOpen` match the specificity of the base rule above; the old
 // version of this block used a single `.rail`, lost to `.rail.rail` and never

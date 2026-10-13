@@ -80,6 +80,7 @@
             "__UI_API__": null,
             "__TESTNET__": false,
             "__DEPRECATED__": false,
+            "__CHART_ENGINE__": "auto",
             "DEFAULT_SYMBOL": "BTS",
             "__GIT_BRANCH__": "test",
             "__DEV__": true
@@ -195,6 +196,7 @@
         "jsonschema": "^1.2.4",
         "jspdf": "^4.2.1",
         "jspdf-autotable": "^3.1.1",
+        "lightweight-charts": "^5.2.1",
         "lodash-es": "^4.18.1",
         "lzma": "2.1.6",
         "moment": "^2.29.4",

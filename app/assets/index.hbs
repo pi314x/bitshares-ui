@@ -12,25 +12,65 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; worker-src 'self' blob:; script-src https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/ 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' *; font-src 'self' data: https://at.alicdn.com; img-src 'self' data:;">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
+        /* First paint, before any script or stylesheet of the app has loaded.
+           Values mirror app/design-system/_palette.scss (dark and light). */
+        :root {
+            --boot-bg: #0b0f14;
+            --boot-ink: #e9eef5;
+            --boot-muted: #8794a7;
+            --boot-accent: #16b8f3;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --boot-bg: #ffffff;
+                --boot-ink: #111827;
+                --boot-muted: #646e82;
+                --boot-accent: #0074a6;
+            }
+        }
+
         body {
-            background-color: #2a2a2a;
+            margin: 0;
+            background-color: var(--boot-bg);
         }
 
         .centerDiv {
-            width: 140px;
-            border-radius: 5px;
-            color: lightgrey;
-            padding: 10px;
-            height: 50px;
             position: absolute;
-            margin-top: -25px;
-            margin-left: -70px;
-            top: 50%;
-            left: 50%;
-            font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-            Helvetica, Arial, "Lucida Grande", sans-serif;
-            font-weight: 100;
-            font-size: 44px;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 0;
+            color: var(--boot-muted);
+            font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        .centerDiv .boot-ring {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 3px solid var(--boot-muted);
+            border-top-color: var(--boot-accent);
+            opacity: 0.9;
+            animation: boot-spin 0.9s linear infinite;
+        }
+
+        @keyframes boot-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .centerDiv .boot-ring {
+                animation-duration: 3s;
+            }
         }
     </style>
     {{#if ELECTRON}}
@@ -53,7 +93,7 @@
 
 <body spellcheck="false">
     <main id="content">
-        <h1 class="centerDiv" style="">Loading...</h1>
+        <div class="centerDiv" role="status"><div class="boot-ring"></div><span>Loading</span></div>
     </main>
     <script>
         function ieVersion(uaString) {

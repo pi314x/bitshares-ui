@@ -31,3 +31,5 @@ charting_library/*
 !charting_library/charting_library.29.4.0.zip.md5
 !charting_library/package-charting-library.cjs
 !charting_library/install-charting-library.cjs
+
+__pycache__/

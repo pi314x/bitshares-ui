@@ -1,6 +1,6 @@
 import * as React from "react";
+import {createPortal} from "react-dom";
 import styles from "./Select.module.scss";
-import {useClickOutside} from "../next/hooks/useClickOutside";
 
 // Fifth component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md), following `Modal`/`Tooltip`/
@@ -146,7 +146,64 @@ function SelectBase({
         if (next) setQuery("");
     };
 
-    const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
+    // The list is drawn in a portal on <body>, positioned from the trigger, so
+    // no container (a modal body with overflow, a card, a table cell) can clip
+    // it. Hence "outside" means outside both the trigger and the list.
+    const ref = React.useRef<HTMLDivElement>(null);
+    const listRef = React.useRef<HTMLDivElement>(null);
+    const [box, setBox] = React.useState<{
+        top: number;
+        left: number;
+        width: number;
+        up: boolean;
+    } | null>(null);
+
+    const place = React.useCallback(() => {
+        const rect = ref.current?.getBoundingClientRect();
+        if (!rect) return;
+        const room = window.innerHeight - rect.bottom;
+        // Open upwards when there is little room below and more above.
+        const up = room < 240 && rect.top > room;
+        setBox({
+            top: up ? rect.top : rect.bottom,
+            left: rect.left,
+            width: rect.width,
+            up
+        });
+    }, []);
+
+    React.useLayoutEffect(() => {
+        if (!open) return;
+        place();
+        window.addEventListener("resize", place);
+        window.addEventListener("scroll", place, true);
+        return () => {
+            window.removeEventListener("resize", place);
+            window.removeEventListener("scroll", place, true);
+        };
+    }, [open, place]);
+
+    React.useEffect(() => {
+        if (!open) return;
+        const onPointer = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (
+                !ref.current?.contains(target) &&
+                !listRef.current?.contains(target)
+            ) {
+                setOpen(false);
+            }
+        };
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onPointer);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onPointer);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
 
     React.useEffect(() => {
         if (open && showSearch) searchRef.current?.focus();
@@ -204,58 +261,76 @@ function SelectBase({
                     </span>
                 ) : null}
             </button>
-            {open ? (
-                <div
-                    className={[
-                        styles.dropdown,
-                        dropdownMatchSelectWidth === false
-                            ? styles.dropdownAutoWidth
-                            : "",
-                        dropdownClassName
-                    ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    role="listbox"
-                >
-                    {showSearch ? (
-                        <input
-                            ref={searchRef}
-                            className={styles.search}
-                            value={query}
-                            onChange={e => {
-                                setQuery(e.target.value);
-                                if (onSearch) onSearch(e.target.value);
-                            }}
-                        />
-                    ) : null}
-                    {visibleOptions.length === 0 ? (
-                        <div className={styles.empty}>{notFoundContent}</div>
-                    ) : (
-                        visibleOptions.map(option => (
-                            <div
-                                key={option.key}
-                                role="option"
-                                aria-selected={option.value === currentValue}
-                                className={[
-                                    styles.option,
-                                    option.value === currentValue
-                                        ? styles.optionActive
-                                        : "",
-                                    option.disabled
-                                        ? styles.optionDisabled
-                                        : "",
-                                    option.className
-                                ]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                onClick={() => choose(option)}
-                            >
-                                {option.label}
-                            </div>
-                        ))
-                    )}
-                </div>
-            ) : null}
+            {open && box
+                ? createPortal(
+                      <div
+                          ref={listRef}
+                          style={{
+                              position: "fixed",
+                              left: box.left,
+                              ...(box.up
+                                  ? {bottom: window.innerHeight - box.top + 4}
+                                  : {top: box.top + 4}),
+                              ...(dropdownMatchSelectWidth === false
+                                  ? {minWidth: box.width}
+                                  : {width: box.width})
+                          }}
+                          className={[
+                              styles.dropdown,
+                              dropdownMatchSelectWidth === false
+                                  ? styles.dropdownAutoWidth
+                                  : "",
+                              dropdownClassName
+                          ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          role="listbox"
+                      >
+                          {showSearch ? (
+                              <input
+                                  ref={searchRef}
+                                  className={styles.search}
+                                  value={query}
+                                  onChange={e => {
+                                      setQuery(e.target.value);
+                                      if (onSearch) onSearch(e.target.value);
+                                  }}
+                              />
+                          ) : null}
+                          {visibleOptions.length === 0 ? (
+                              <div className={styles.empty}>
+                                  {notFoundContent}
+                              </div>
+                          ) : (
+                              visibleOptions.map(option => (
+                                  <div
+                                      key={option.key}
+                                      role="option"
+                                      aria-selected={
+                                          option.value === currentValue
+                                      }
+                                      className={[
+                                          styles.option,
+                                          option.value === currentValue
+                                              ? styles.optionActive
+                                              : "",
+                                          option.disabled
+                                              ? styles.optionDisabled
+                                              : "",
+                                          option.className
+                                      ]
+                                          .filter(Boolean)
+                                          .join(" ")}
+                                      onClick={() => choose(option)}
+                                  >
+                                      {option.label}
+                                  </div>
+                              ))
+                          )}
+                      </div>,
+                      document.body
+                  )
+                : null}
         </div>
     );
 }

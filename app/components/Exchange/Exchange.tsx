@@ -190,7 +190,7 @@ import MyMarkets from "./MyMarkets";
 import MarketPicker from "./MarketPicker";
 import ConfirmOrderModal from "./ConfirmOrderModal";
 import Personalize from "./Personalize";
-import TradingViewPriceChart from "./TradingViewPriceChart";
+import TradingViewPriceChart from "./ExchangePriceChart"; // TradingView or the built-in chart
 import DepthHighChart from "./DepthHighChart";
 import LoadingIndicator from "../LoadingIndicator";
 import BorrowModal from "../Modal/BorrowModal";

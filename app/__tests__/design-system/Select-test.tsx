@@ -163,7 +163,7 @@ describe("design-system/Select", () => {
     });
 
     it("lets the dropdown grow past the trigger's width when dropdownMatchSelectWidth is false", () => {
-        const {getByRole, container} = render(
+        const {getByRole} = render(
             <Select
                 value="BTS"
                 onChange={() => {}}
@@ -173,9 +173,40 @@ describe("design-system/Select", () => {
             </Select>
         );
         fireEvent.click(getByRole("button"));
-        const dropdown = container.querySelector(
+        // The list is portalled to <body> so no container can clip it.
+        const dropdown = document.body.querySelector(
             '[role="listbox"]'
         ) as HTMLElement;
         expect(dropdown.className).toMatch(/dropdownAutoWidth/);
+    });
+
+    it("draws the list on <body>, outside a clipping container", () => {
+        const {getByRole, container} = render(
+            <div style={{overflow: "hidden"}}>
+                <Select value="BTS" onChange={() => {}}>
+                    <Select.Option value="BTS">BTS</Select.Option>
+                </Select>
+            </div>
+        );
+        fireEvent.click(getByRole("button"));
+        const list = document.body.querySelector('[role="listbox"]');
+        expect(list).toBeTruthy();
+        expect(container.contains(list)).toBe(false);
+    });
+
+    it("selects an option by click and closes (portal outside-click safe)", () => {
+        const onChange = jest.fn();
+        const {getByRole, getByText} = render(
+            <Select value="BTS" onChange={onChange}>
+                <Select.Option value="BTS">BTS</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+            </Select>
+        );
+        fireEvent.click(getByRole("button"));
+        const option = getByText("USD");
+        fireEvent.mouseDown(option);
+        fireEvent.click(option);
+        expect(onChange).toHaveBeenCalledWith("USD");
+        expect(document.body.querySelector('[role="listbox"]')).toBeNull();
     });
 });

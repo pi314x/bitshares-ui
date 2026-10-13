@@ -12610,6 +12610,28 @@ committee pages and the Russian BitShares intro were brought to the English
 depth), so some other pages there (for example backups) still word things
 differently from English.
 
+### 7.17 Chart fallback, loaders, dropdowns, browser check, narrower rail
+
+- **Price chart without the TradingView library.** `ExchangePriceChart` picks
+  TradingView when `charting_library.esm.js` is bundled and otherwise the
+  built-in `LightweightPriceChart` (open-source `lightweight-charts`, candles and
+  volume from the market's `priceData`). Without the licensed file the import is
+  aliased to an empty module (webpack), so the build no longer fails. The choice:
+  build default `--env chartEngine=auto|tradingview|lightweight`, per user the
+  `chartEngine` view setting (a toggle on the chart when both exist).
+- **Loaders.** `LoadingIndicator` is an SVG ring / three soft dots on the tokens
+  (CSS Module); the pre-JS splash in `index.hbs` follows the system light/dark
+  scheme and shows a ring instead of Helvetica "Loading...".
+- **Dropdowns** are drawn in a portal on `<body>` (fixed, from the trigger's
+  rect, flips upward near the bottom edge), so a modal body can no longer clip
+  the list - this was the awkward deposit/withdraw select.
+- **Browser notice** is decided by missing capabilities
+  (`lib/feature_detect/browserFeatures.js`), not by user-agent names; Safari and
+  iOS browsers no longer get "Unsupported browser".
+- **Left rail** 232px -> 184px.
+- **Not verified:** the trade page's phone layout (the Exchange does not load
+  data in the sandbox), and the built-in chart against live data.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

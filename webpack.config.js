@@ -112,6 +112,10 @@ module.exports = function(env) {
             __UI_API__: JSON.stringify(env.apiUrl),
             __TESTNET__: !!env.testnet,
             __DEPRECATED__: !!env.deprecated,
+            // Deployment default for the exchange price chart: "auto" (TradingView
+            // when its library is bundled, else the built-in chart), "tradingview"
+            // or "lightweight". Users can still switch in the chart's own toggle.
+            __CHART_ENGINE__: JSON.stringify(env.chartEngine || "auto"),
             DEFAULT_SYMBOL: "BTS",
             __GIT_BRANCH__: JSON.stringify(git.branch())
         }),
@@ -274,6 +278,20 @@ module.exports = function(env) {
         // uses. See app/lib/i18n/counterpartShim.js's header.
         counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
     };
+    // The licensed TradingView library is not part of the repository. Without
+    // it the import is aliased to an empty module (app/components/Exchange/
+    // tradingViewMissing.js) so the build succeeds and the exchange shows the
+    // built-in chart instead.
+    if (
+        !fs.existsSync(
+            path.resolve(root_dir, "charting_library/charting_library.esm.js")
+        )
+    ) {
+        alias["../../../charting_library/charting_library.esm$"] = path.resolve(
+            root_dir,
+            "app/components/Exchange/tradingViewMissing.js"
+        );
+    }
     var https = false;
     if (env.https) {
         https = {
