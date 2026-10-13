@@ -3177,5 +3177,13 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "残高の推移",
+        "over_period": "(表示期間)",
+        "based_on": "このアカウントの直近 %(count)s 件の操作から作成しています。",
+        "unresolved": "%(count)s 件の操作は読み取れず、線に含まれていません。",
+        "older": "さらに古いものを読み込む",
+        "loading": "読み込み中..."
     }
 }

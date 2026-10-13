@@ -26,6 +26,7 @@
 // none are declared or accepted here either, matching this migration's
 // established treatment of unread route props elsewhere, e.g.
 // `PredictionMarkets/PMAssetsContainer.tsx`).
+import {CurrentAccountBalanceChart} from "../Account/BalanceHistoryChart";
 import * as React from "react";
 import LoadingIndicator from "../LoadingIndicator";
 import LoginSelector from "../LoginSelector";
@@ -70,6 +71,7 @@ function DashboardPageCore({
             <div className="grid-block no-padding">
                 <div className="grid-content app-tables no-padding">
                     <div className="content-block small-12">
+                        <CurrentAccountBalanceChart />
                         <div className="tabs-container generic-bordered-box dash-panel">
                             <Tabs
                                 defaultActiveTab={1}

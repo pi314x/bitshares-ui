@@ -3177,5 +3177,13 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "Solde dans le temps",
+        "over_period": "sur la période affichée",
+        "based_on": "Construit à partir des %(count)s dernières opérations de ce compte.",
+        "unresolved": "%(count)s opération(s) n'ont pas pu être lues et ne figurent pas dans la courbe.",
+        "older": "Charger plus ancien",
+        "loading": "Chargement..."
     }
 }

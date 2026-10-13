@@ -3184,5 +3184,13 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "Balance over time",
+        "over_period": "over the period shown",
+        "based_on": "Built from the last %(count)s operations of this account.",
+        "unresolved": "%(count)s operation(s) could not be read and are not in the line.",
+        "older": "Load older",
+        "loading": "Loading..."
     }
 }

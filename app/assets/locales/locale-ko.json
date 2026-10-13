@@ -3177,5 +3177,13 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "시간에 따른 잔액",
+        "over_period": "표시된 기간 동안",
+        "based_on": "이 계정의 최근 %(count)s개 작업으로 구성했습니다.",
+        "unresolved": "%(count)s개의 작업을 읽지 못해 선에 포함되지 않았습니다.",
+        "older": "이전 항목 불러오기",
+        "loading": "불러오는 중..."
     }
 }

@@ -41,6 +41,7 @@
 // `ChainStore.requestAllDataForAccount(...)` is called directly in the
 // component body (not in an effect), exactly as the original class does
 // in `render()` - preserved verbatim, including running on every render.
+import BalanceHistoryChart from "./BalanceHistoryChart";
 import * as React from "react";
 import Immutable from "immutable";
 import Translate from "react-translate-component";
@@ -382,6 +383,7 @@ function AccountOverview(props: AccountOverviewCoreProps) {
     return (
         <div className="grid-content app-tables no-padding">
             <div className="content-block small-12">
+                <BalanceHistoryChart accountId={account.get("id")} />
                 <div className="tabs-container generic-bordered-box">
                     <Tabs
                         defaultActiveTab={0}

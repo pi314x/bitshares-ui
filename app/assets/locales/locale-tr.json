@@ -3177,5 +3177,13 @@
         "wif_associated_accounts": "İlişkili Hesap(lar): ",
         "wif_import_error": "Lütfen geçerli bir WIF girin",
         "wif_length_error": "Yanlış giriş uzunluğu"
+    },
+    "balance_history": {
+        "title": "Zaman içinde bakiye",
+        "over_period": "gösterilen dönemde",
+        "based_on": "Bu hesabın son %(count)s işleminden oluşturuldu.",
+        "unresolved": "%(count)s işlem okunamadı ve çizgide yer almıyor.",
+        "older": "Eskileri yükle",
+        "loading": "Yükleniyor..."
     }
 }

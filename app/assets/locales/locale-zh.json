@@ -3183,5 +3183,13 @@
         "wif_associated_accounts": "关联账户(s)：",
         "wif_import_error": "请输入有效的WIF-钱包导入格式",
         "wif_length_error": "输入长度不正确"
+    },
+    "balance_history": {
+        "title": "余额随时间变化",
+        "over_period": "(所示期间)",
+        "based_on": "根据该账户最近 %(count)s 笔操作构建。",
+        "unresolved": "有 %(count)s 笔操作无法读取，未计入曲线。",
+        "older": "加载更早的",
+        "loading": "加载中..."
     }
 }
