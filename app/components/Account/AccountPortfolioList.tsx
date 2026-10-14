@@ -242,6 +242,9 @@ import WithdrawModal from "../Modal/WithdrawModalNew";
 import ZfApi from "common/zfApi";
 import ReserveAssetModal from "../Modal/ReserveAssetModal";
 import CustomTable from "../Utility/CustomTable";
+import {PortfolioRowActions, RowAction} from "./PortfolioRowActions";
+import {useElementWidth} from "../../next/hooks/useElementWidth";
+import styles from "./AccountPortfolioList.module.scss";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import Translate from "react-translate-component";
@@ -682,6 +685,12 @@ function AccountPortfolioListCore({
         });
     };
 
+    // The table must fit its panel: how many columns there is room for follows
+    // the width of the list's own box (a viewport media query cannot say, the
+    // panel is narrower than the window by the menu and its inset).
+    const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+    const room = boxWidth === null ? 1000 : boxWidth;
+
     const getHeader = (atLeastOneHas: any) => {
         // Preserved verbatim: `this.props.core_asset` is not a real prop
         // of this component (see header comment) - `settings.get("unit")`
@@ -728,7 +737,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: <Translate content="account.inOrders" />,
                 dataIndex: "inOrders",
                 align: "right",
@@ -749,7 +757,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: <Translate content="account.inVestingBalances" />,
                 dataIndex: "inVesting",
                 align: "right",
@@ -770,7 +777,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: <Translate content="account.inCollateral" />,
                 dataIndex: "inCollateral",
                 align: "right",
@@ -791,7 +797,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: (
                     <span style={{whiteSpace: "nowrap"}}>
                         <Translate content="exchange.price" /> (
@@ -814,7 +819,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: <Translate content="account.hour_24_short" />,
                 dataIndex: "hour24",
                 align: "right",
@@ -824,7 +828,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-small",
                 title: (
                     <span style={{whiteSpace: "nowrap"}}>
                         <TranslateWithLinks
@@ -879,7 +882,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: atLeastOneHas.depositOnlyBTS ? (
                     <React.Fragment>
                         <Tooltip
@@ -907,7 +909,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: <Translate content="modal.withdraw.submit" />,
                 customizable: atLeastOneHas.withdraw
                     ? undefined
@@ -921,7 +922,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: <Translate content="account.trade" />,
                 dataIndex: "trade",
                 align: "center",
@@ -930,7 +930,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: <Translate content="exchange.borrow_short" />,
                 dataIndex: "borrow",
                 align: "center",
@@ -939,7 +938,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: <Translate content="account.settle" />,
                 dataIndex: "settle",
                 align: "center",
@@ -948,7 +946,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: <Translate content="modal.reserve.submit" />,
                 dataIndex: "burn",
                 align: "center",
@@ -957,7 +954,6 @@ function AccountPortfolioListCore({
                 }
             },
             {
-                className: "column-hide-medium",
                 title: (
                     <Translate
                         content={
@@ -979,7 +975,77 @@ function AccountPortfolioListCore({
                 item.defaultSortOrder = state.portfolioSortDirection;
             }
         });
-        return headerItems;
+        // One "actions" column instead of eight (send, deposit, withdraw,
+        // trade, borrow, settle, burn, hide), and the secondary figures only
+        // where there is room for them: Asset, Qty and Value are always there.
+        const ACTION_COLUMNS = [
+            "payments",
+            "deposit",
+            "withdraw",
+            "trade",
+            "borrow",
+            "settle",
+            "burn",
+            "hide"
+        ];
+        const NEEDS_ROOM: {[key: string]: number} = {
+            price: 560,
+            hour24: 620,
+            inOrders: 760,
+            percent: 820,
+            inVesting: 960,
+            inCollateral: 1040
+        };
+        const stacked = room < 420;
+        const fitted: any[] = [];
+        headerItems.forEach(item => {
+            if (ACTION_COLUMNS.indexOf(item.dataIndex) !== -1) return;
+            if (
+                NEEDS_ROOM[item.dataIndex] !== undefined &&
+                room < NEEDS_ROOM[item.dataIndex]
+            ) {
+                return;
+            }
+            // a phone: the quantity with the value under it, one column
+            if (stacked && item.dataIndex === "value") return;
+            if (stacked && item.dataIndex === "balance") {
+                const valueColumn = headerItems.find(
+                    column => column.dataIndex === "value"
+                );
+                fitted.push({
+                    ...item,
+                    title: valueColumn ? (
+                        <span>
+                            {item.title} / {valueColumn.title}
+                        </span>
+                    ) : (
+                        item.title
+                    ),
+                    render: (cell: any, row: any) => (
+                        <span className={styles.qtyValue}>
+                            {item.render(cell, row)}
+                            {valueColumn &&
+                            row.value !== undefined &&
+                            typeof row.value !== "string" ? (
+                                <span className={styles.sub}>
+                                    {valueColumn.render(row.value, row)}
+                                </span>
+                            ) : null}
+                        </span>
+                    )
+                });
+                return;
+            }
+            fitted.push(item);
+        });
+        fitted.push({
+            title: "",
+            dataIndex: "actions",
+            align: "right",
+            customizable: false,
+            render: (item: any) => item
+        });
+        return fitted;
     };
 
     const _renderBalances = (
@@ -1533,7 +1599,58 @@ function AccountPortfolioListCore({
         );
     };
 
-    const balanceRows = _renderBalances(balanceList, optionalAssets, visible);
+    const balanceRows = _renderBalances(
+        balanceList,
+        optionalAssets,
+        visible
+    ).map((row: any) => {
+        const label = (key: string) => counterpart.translate(key) as string;
+        const all: RowAction[] = [
+            {key: "send", label: label("header.payments"), node: row.payments},
+            {key: "trade", label: label("account.trade"), node: row.trade},
+            {
+                key: "deposit",
+                label: label("modal.deposit.submit"),
+                node: row.deposit
+            },
+            {
+                key: "withdraw",
+                label: label("modal.withdraw.submit"),
+                node: row.withdraw
+            },
+            {
+                key: "borrow",
+                label: label("exchange.borrow_short"),
+                node: row.borrow
+            },
+            {key: "settle", label: label("account.settle"), node: row.settle},
+            {
+                key: "burn",
+                label: label("modal.reserve.submit"),
+                node: row.burn
+            },
+            {
+                key: "hide",
+                label: label(visible ? "exchange.hide" : "account.perm.show"),
+                node: row.hide
+            }
+        ];
+        // Send and Trade are in the row when there is room for them; on a
+        // phone everything is in the menu (the row keeps Asset, Qty and Value).
+        const inlineCount = room >= 480 ? 2 : room >= 420 ? 1 : 0;
+        const inline = all.slice(0, inlineCount);
+        const menu = all.slice(inlineCount);
+        return {
+            ...row,
+            actions: (
+                <PortfolioRowActions
+                    inline={inline}
+                    menu={menu}
+                    menuLabel={label("account.more_actions")}
+                />
+            )
+        };
+    });
     const atLeastOneHas: any = {};
     balanceRows.forEach(_item => {
         if (!!_item.deposit && _item.deposit !== "-") {
@@ -1549,7 +1666,7 @@ function AccountPortfolioListCore({
     });
 
     return (
-        <div>
+        <div ref={boxRef}>
             <CustomTable
                 className="table dashboard-table table-hover"
                 rows={balanceRows}

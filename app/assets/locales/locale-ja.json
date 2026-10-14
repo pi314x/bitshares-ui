@@ -479,7 +479,8 @@
             "white_by": "ホワイトリスト登録者",
             "whitelist_authorities": "ホワイトリスト権限",
             "whitelist_market_fee_sharing": "Market fee sharing whitelist"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Go back to my account",

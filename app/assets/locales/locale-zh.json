@@ -479,7 +479,8 @@
             "white_by": "被列入白名单",
             "whitelist_authorities": "白名单权限",
             "whitelist_market_fee_sharing": "白名单分享市场手续费"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "返回我的账户",

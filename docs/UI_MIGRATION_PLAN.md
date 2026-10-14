@@ -12953,6 +12953,25 @@ Personal / Hidden / Testnet with how many each holds. A row is a status dot, the
 place and the address, the latency and buttons that say what they do (Connect,
 Hide, Remove). The same markup serves the "could not connect" screen.
 
+### 7.26 The balances table fits its panel
+
+The balances table (`Account/AccountPortfolioList.tsx`) had seventeen columns and
+was wider than the portfolio's panel at any window size, so its last columns
+were cut off. It now fits by construction:
+- **One actions column.** Send and Trade are in the row; Deposit, Withdraw,
+  Borrow, Settle, Burn and Hide are in a "..." menu that names each one
+  (`Account/PortfolioRowActions.tsx`, the menu is a portal so no panel clips it).
+  The row's own links and modals are untouched: the menu forwards a click on a
+  line to the row's link. An action a row does not have is not offered.
+- **Columns by room, not by window.** The list measures its own box
+  (`useElementWidth`): Asset, Qty and Value are always shown; Price and 24h from
+  560/620px, In orders from 760, the percentage column from 820, In vesting and
+  In collateral from 960/1040. The customise-columns menu lists the columns that
+  are shown. The old viewport classes (`column-hide-small`/`-medium`) are gone
+  from this table: they hid cells and left their headers.
+- **On a phone** (under 420px) the quantity carries the value under it, and the
+  row's actions are the one menu button.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

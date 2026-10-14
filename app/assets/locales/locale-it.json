@@ -479,7 +479,8 @@
             "white_by": "Messo in whitelist da",
             "whitelist_authorities": "Autorità whitelist",
             "whitelist_market_fee_sharing": "Market fee sharing whitelist"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Go back to my account",

@@ -479,7 +479,8 @@
             "white_by": "İzin listesine alan",
             "whitelist_authorities": "Beyaz liste yetkilisi",
             "whitelist_market_fee_sharing": "Piyasa ücreti paylaşım beyaz listesi"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Hesabıma geri dön",

@@ -454,7 +454,10 @@ def main():
         for entry in [r for r in args.routes.split(",") if r]:
             # "/path@Tab label": after the route has loaded, open that tab of the
             # page (a tab strip, or its select on a phone) before the report
-            route, _, tab = entry.partition("@")
+            # "...#Label": then click the first button with that accessible name
+            # (a row's menu, say) so the shot shows what it opens
+            entry_main, _, press = entry.partition("#")
+            route, _, tab = entry_main.partition("@")
             page.evaluate(
                 "(r) => { history.pushState({}, '', r); window.dispatchEvent(new PopStateEvent('popstate')); }",
                 route,
@@ -480,6 +483,14 @@ def main():
                     else:
                         strip.locator("li", has_text=tab).first.click()
                 page.wait_for_timeout(int(args.route_wait * 1000))
+            if press:
+                button = page.get_by_role("button", name=press).first
+                if button.count():
+                    button.scroll_into_view_if_needed()
+                    button.click()
+                    page.wait_for_timeout(600)
+                else:
+                    print(f"{'':<34} (no button named {press!r})")
             if args.shots:
                 name = (route.strip("/").replace("/", "_") or "root") + (
                     "__" + tab.replace(" ", "_") if tab else ""

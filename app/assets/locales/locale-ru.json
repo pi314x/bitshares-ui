@@ -479,7 +479,8 @@
             "white_by": "Добавлен в белый список ",
             "whitelist_authorities": "Источник белого списка",
             "whitelist_market_fee_sharing": "Белый список распределения комиссии"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Вернуться в мой аккаунт",
