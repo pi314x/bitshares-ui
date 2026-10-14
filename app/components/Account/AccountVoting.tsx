@@ -151,6 +151,7 @@ import Witnesses from "./Voting/Witnesses";
 import Committee from "./Voting/Committee";
 import Workers from "./Voting/Workers";
 import CreateLockModal from "../Modal/CreateLockModal";
+import {ModalAsPage} from "../../design-system/Modal";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const WITNESSES_KEY = "witnesses";
@@ -860,13 +861,26 @@ function AccountVoting({
                         <Translate content="voting.title" component="h1" />
                         <Translate content="voting.description" component="p" />
                     </div>
-                    <div className={`ticket-row ${styles.card}`}>
-                        {increase_voting_power}
-                        <Translate
-                            content="voting.ticket_explanation"
-                            component="p"
-                        />
-                    </div>
+                    {state.isCreateLockModalVisible ? (
+                        // The lock form opens in place of the card that
+                        // offers it, not as a popup over the page.
+                        <ModalAsPage>
+                            <CreateLockModal
+                                visible={true}
+                                hideModal={hideCreateLockModal}
+                                asset={"1.3.0"}
+                                account={account}
+                            />
+                        </ModalAsPage>
+                    ) : (
+                        <div className={`ticket-row ${styles.card}`}>
+                            {increase_voting_power}
+                            <Translate
+                                content="voting.ticket_explanation"
+                                component="p"
+                            />
+                        </div>
+                    )}
                     <div className={`proxy-row ${styles.card}`}>
                         <div className={styles.proxy}>{proxyInput}</div>
                         {actionButtons}
@@ -876,11 +890,7 @@ function AccountVoting({
                 <Tabs
                     activeKey={location.pathname}
                     animated={false}
-                    style={{
-                        display: "table",
-                        height: "100%",
-                        width: "100%"
-                    }}
+                    style={{width: "100%"}}
                     onChange={onTabChange}
                 >
                     {state.tabs.map((tab: any) => {
@@ -932,16 +942,6 @@ function AccountVoting({
                     })}
                 </Tabs>
             </div>
-            {/* CreateLock Modal */}
-            {(state.isCreateLockModalVisible ||
-                state.isCreateLockModalVisibleBefore) && (
-                <CreateLockModal
-                    visible={state.isCreateLockModalVisible}
-                    hideModal={hideCreateLockModal}
-                    asset={"1.3.0"}
-                    account={account}
-                />
-            )}
         </div>
     );
 }
