@@ -35,6 +35,7 @@ import PoolGraph from "./PoolGraph";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useMediaQuery} from "../../next/hooks/useMediaQuery";
+import {useElementWidth} from "../../next/hooks/useElementWidth";
 import {selectPoolmart} from "../../store/slices/poolmartSlice";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {
@@ -56,6 +57,9 @@ const t = (key: string, params?: Record<string, any>) =>
 
 const CARDS_PER_STEP = 12;
 const TABLE_PAGE = 25;
+// below this page width the columns do not fit (measured: 1153px) and cards
+// take over
+const TABLE_MIN_WIDTH = 1200;
 
 interface Holding {
     fraction: number;
@@ -165,7 +169,13 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
     const account = useReduxState<any>(selectAccountState);
     const accountName: string | null =
         account.currentAccount || account.passwordAccount || null;
-    const phone = useMediaQuery("(max-width: 860px)");
+    const narrowViewport = useMediaQuery("(max-width: 860px)");
+    // The table's columns need about 1150px; a card per pool takes over when
+    // the page's own box is narrower (an Explorer tab is, at a 1400px
+    // viewport), not only on a phone.
+    const [pageRef, pageWidth] = useElementWidth<HTMLDivElement>();
+    const phone =
+        pageWidth === null ? narrowViewport : pageWidth < TABLE_MIN_WIDTH;
 
     const [filterAsset, setFilterAsset] = React.useState("");
     const [filterWith, setFilterWith] = React.useState("");
@@ -382,7 +392,7 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
     const loadingFirst = liquidityPools.size === 0;
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
             {yourCards.length > 0 ? (
                 <section className={styles.section}>
                     <h2 className={styles.heading}>{t("your_liquidity")}</h2>
@@ -505,12 +515,14 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                         ) : null}
                     </>
                 ) : (
-                    <Table
-                        columns={columns}
-                        rowKey="key"
-                        dataSource={sorted}
-                        pagination={{pageSize: TABLE_PAGE}}
-                    />
+                    <div className={styles.tableWrap}>
+                        <Table
+                            columns={columns}
+                            rowKey="key"
+                            dataSource={sorted}
+                            pagination={{pageSize: TABLE_PAGE}}
+                        />
+                    </div>
                 )}
                 {!loadingFirst && sorted.length === 0 ? (
                     <div className={styles.loading}>{t("no_pools")}</div>

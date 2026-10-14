@@ -29,6 +29,13 @@
     }
 }
 
+.tableWrap {
+    // a row with long symbols can still be wider than the table was measured
+    // at: scroll it rather than let the panel clip the actions
+    max-width: 100%;
+    overflow-x: auto;
+}
+
 .more {
     display: flex;
     justify-content: center;

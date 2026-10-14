@@ -1,6 +1,6 @@
 // One pool as a card, in four bands separated by hairlines: who it is (pair,
 // share asset, id), the price, the figures in two columns, the actions.
-.card {
+.card.card {
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -18,7 +18,7 @@
     border-top: 1px solid var(--line);
 }
 
-.head {
+.head.head {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -108,7 +108,7 @@
     font-size: 13px;
 }
 
-.actions {
+.actions.actions {
     display: flex;
     gap: 8px;
 

@@ -32,7 +32,7 @@
     background: var(--surface);
 }
 
-.toc {
+.toc.toc {
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -42,7 +42,7 @@
     width: 100%;
 }
 
-.group {
+.group.group {
     display: flex;
     flex-direction: column;
     gap: 4px;
