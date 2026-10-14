@@ -100,13 +100,16 @@
         min-width: 0;
     }
 
-    // row 3: node, language, lock, account
+    // the wallet chips (lock, account) sit at the top right of row 1, beside
+    // the title; the title gives way (ellipsis), they do not wrap below it
     .topbar .status {
         position: relative;
         display: flex;
-        flex: 1 1 100%;
-        flex-wrap: wrap;
-        order: 4;
+        flex: 0 1 auto;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        min-width: 0;
+        order: 2;
         gap: 8px;
     }
 }

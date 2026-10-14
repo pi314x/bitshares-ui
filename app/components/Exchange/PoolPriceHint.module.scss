@@ -3,7 +3,8 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 12px;
-    margin: 0 0 12px;
+    // room above too: the header's bottom line is right there
+    margin: 12px 0;
     padding: 8px 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius);

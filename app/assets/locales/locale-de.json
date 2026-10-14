@@ -1299,6 +1299,8 @@
         },
         "balance": "Guthaben",
         "balance_asset": "Aktuelles %(asset)s Guthaben",
+        "choose_deposit": "Einzuzahlenden Vermögenswert wählen",
+        "choose_withdraw": "Auszuzahlenden Vermögenswert wählen",
         "copy_address": "Adresse kopieren",
         "copy_memo": "Notitz kopieren",
         "deposit": "Einzahlung",

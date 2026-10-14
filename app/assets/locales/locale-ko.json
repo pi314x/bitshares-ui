@@ -1299,6 +1299,8 @@
         },
         "balance": "Balance",
         "balance_asset": "Current %(asset)s balance",
+        "choose_deposit": "입금할 자산 선택",
+        "choose_withdraw": "출금할 자산 선택",
         "copy_address": "Copy address",
         "copy_memo": "Copy memo",
         "deposit": "Deposit",

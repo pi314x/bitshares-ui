@@ -1299,6 +1299,8 @@
         },
         "balance": "当前余额",
         "balance_asset": "当前 %(asset)s 余额",
+        "choose_deposit": "选择要充值的资产",
+        "choose_withdraw": "选择要提现的资产",
         "copy_address": "复制地址",
         "copy_memo": "复制备注",
         "deposit": "充币",

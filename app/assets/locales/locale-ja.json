@@ -1299,6 +1299,8 @@
         },
         "balance": "現在の残高",
         "balance_asset": "現在の%(asset)s残高",
+        "choose_deposit": "入金する資産を選択",
+        "choose_withdraw": "出金する資産を選択",
         "copy_address": "アドレスをコピー",
         "copy_memo": "メモをコピー",
         "deposit": "入金",

@@ -39,3 +39,22 @@
 .unlocked {
     color: var(--up);
 }
+
+// Narrow phone: the padlock (amber locked, green unlocked) says it, the text
+// goes, so the title and the account chip keep their room in the top row. The
+// button keeps its accessible name and a title.
+@media (max-width: 480px) {
+    .label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .btn {
+        position: relative;
+        padding: 5px 7px;
+    }
+}

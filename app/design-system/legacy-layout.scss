@@ -89,3 +89,17 @@ body[class][class] .buy-sell-tooltip-row {
     display: block;
     width: 100%;
 }
+
+// An account page's wrapper painted the theme's "account background" behind
+// its cards: a bluish grey band between them in the light theme, on a page
+// whose other screens (Pools, Explorer, Help) show the page colour with
+// bordered cards.
+body[class][class] div.grid-content.app-tables {
+    background-color: transparent;
+}
+
+// The settings menu is the left column of the settings page, a `.grid-content`
+// with 24px of its own: its heading sat 24px further in than the page's inset.
+body[class][class] .settings-menu.grid-content {
+    padding-left: 0;
+}

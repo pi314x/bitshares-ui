@@ -1299,6 +1299,8 @@
         },
         "balance": "Mevcut Bakiye",
         "balance_asset": "Mevcut %(asset)s bakiye",
+        "choose_deposit": "Yatırılacak varlığı seçin",
+        "choose_withdraw": "Çekilecek varlığı seçin",
         "copy_address": "Adresi kopyala",
         "copy_memo": "Notu kopyala",
         "deposit": "Yatır",

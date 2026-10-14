@@ -1299,6 +1299,8 @@
         },
         "balance": "Current balance",
         "balance_asset": "Current %(asset)s balance",
+        "choose_deposit": "Choose asset to deposit",
+        "choose_withdraw": "Choose asset to withdraw",
         "copy_address": "Copy address",
         "copy_memo": "Copy memo",
         "deposit": "Deposit",

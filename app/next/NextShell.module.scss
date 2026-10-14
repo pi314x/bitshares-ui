@@ -93,6 +93,16 @@
     padding: 24px;
 }
 
+// The page's inset is this padding and no other. A screen whose root is
+// Foundation's `.grid-content` (24px of side padding of its own) sat 48px from
+// the rail, the others 24px. `.content.content` outranks the legacy sheet.
+.content.content > :global(.grid-content),
+.content.content > :global(.grid-block) > :global(.grid-content),
+.content.content > :global(.grid-container) > :global(.grid-content) {
+    padding-left: 0;
+    padding-right: 0;
+}
+
 // Behind the open navigation drawer on a phone.
 .scrim {
     position: fixed;

@@ -1,8 +1,10 @@
 .wrap {
     position: relative;
+    min-width: 0;
 }
 
 .trigger {
+    max-width: 100%;
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -22,7 +24,17 @@
     color: var(--ink);
 }
 
+.name {
+    // a long account name gives way on a phone instead of pushing the title
+    min-width: 0;
+    max-width: 11em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .caret {
+    flex: none;
     color: var(--faint);
     font-size: 10px;
 }

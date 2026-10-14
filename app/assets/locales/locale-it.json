@@ -1299,6 +1299,8 @@
         },
         "balance": "Saldo attuale",
         "balance_asset": "Saldo %(asset)s attuale",
+        "choose_deposit": "Scegli l'asset da depositare",
+        "choose_withdraw": "Scegli l'asset da prelevare",
         "copy_address": "Copy address",
         "copy_memo": "Copy memo",
         "deposit": "Deposito",

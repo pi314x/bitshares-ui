@@ -34,7 +34,7 @@ export function WalletLockButton({
             type="button"
             className={styles.btn}
             onClick={onToggle}
-            title={hint}
+            title={hint || label}
             aria-label={hint ? `${label}. ${hint}` : label}
         >
             <svg
@@ -53,7 +53,7 @@ export function WalletLockButton({
                     <path d="M5 7V5a3 3 0 0 1 5.6-1.5" />
                 )}
             </svg>
-            {label}
+            <span className={styles.label}>{label}</span>
         </button>
     );
 }

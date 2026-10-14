@@ -37,7 +37,9 @@ export function AccountSwitcher({
                 aria-expanded={open}
                 onClick={() => setOpen(o => !o)}
             >
-                {currentAccount || "No account"}
+                <span className={styles.name}>
+                    {currentAccount || "No account"}
+                </span>
                 <span className={styles.caret} aria-hidden="true">
                     ▾
                 </span>

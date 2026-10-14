@@ -806,7 +806,7 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
     return (
         <div
             className="prediction-markets grid-block vertical"
-            style={{overflow: "visible", margin: "15px"}}
+            style={{overflow: "visible", margin: "0 0 15px"}}
         >
             <div
                 className="grid-block small-12 shrink"
