@@ -72,11 +72,13 @@
 }
 
 // The same dialog shown as a page (`ModalAsPage`): a card in the flow of the
-// page, as wide as the page allows up to a readable width.
+// page, as wide as the page allows up to a readable width. Left-aligned at the
+// page's inset like every other screen (centered, its distance to the edge
+// changed with the window).
 .page {
     width: 100%;
     max-width: 640px;
-    margin: 0 auto;
+    margin: 0;
     box-sizing: border-box;
     background: var(--surface);
     border: 1px solid var(--line);

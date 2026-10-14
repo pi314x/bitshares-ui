@@ -40,6 +40,15 @@
     font-family: var(--font-display);
 }
 
+// The 24px between the menu column and the content is for the side-by-side
+// layout; with the menu above it (phone) it only pushed the content in.
+@media (max-width: 860px) {
+    .content.content {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
 // Each setting is a block of its own: a label over its control, a rule and
 // space between blocks, and controls no wider than they need to be (a
 // full-width dropdown for "English" read as a layout bug). These sections are

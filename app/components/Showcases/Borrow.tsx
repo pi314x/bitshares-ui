@@ -330,8 +330,7 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                     // verbatim, cast to satisfy `React.CSSProperties`.
                     align: "center",
                     display: "flex",
-                    paddingTop: "1rem",
-                    justifyContent: "center"
+                    justifyContent: "flex-start"
                 } as React.CSSProperties
             }
             onKeyDown={onKeyDown}
@@ -340,7 +339,7 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                 style={{
                     // a card, not a pill: 50px corners and 70% of the width
                     // left a phone a 250px column of text
-                    width: tinyScreen ? "100%" : "70%",
+                    width: "100%",
                     maxWidth: "70rem",
                     paddingTop: "1rem",
                     paddingBottom: "1rem"

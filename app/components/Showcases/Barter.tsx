@@ -1781,10 +1781,10 @@ export default function Barter(props: BarterProps) {
         <div
             className="center"
             style={{
-                padding: "10px",
+                padding: 0,
                 maxWidth: "80rem",
                 width: "100%",
-                margin: "0 auto"
+                margin: 0
             }}
         >
             <Card>

@@ -1474,8 +1474,7 @@ function QuickTradeCore(props: QuickTradeProps) {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 16,
-                minWidth: "300px",
-                marginTop: "1rem"
+                minWidth: "300px"
             }}
         >
             <SellReceive

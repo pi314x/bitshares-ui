@@ -73,8 +73,8 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
 
     console.log("state:", state);
     return (
-        <div className="grid-block" style={{paddingTop: 20}}>
-            <div className="grid-content large-9 large-offset-3 small-12">
+        <div className="grid-block">
+            <div className="grid-content large-9 small-12">
                 <Translate content="explorer.workers.create" component="h3" />
                 <form style={{maxWidth: 800}}>
                     <Translate

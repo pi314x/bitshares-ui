@@ -95,6 +95,18 @@
     padding: 24px;
 }
 
+// A page starts at the padding: the first block's own top margin (a legacy
+// card's 16px, an h1/h2/h3's 24px) is not added to it.
+.content.content > :first-child {
+    margin-top: 0;
+}
+
+.content.content h1:first-child,
+.content.content h2:first-child,
+.content.content h3:first-child {
+    margin-top: 0;
+}
+
 // The page's inset is this padding and no other. A screen whose root is
 // Foundation's `.grid-content` (24px of side padding of its own) sat 48px from
 // the rail, the others 24px. `.content.content` outranks the legacy sheet.

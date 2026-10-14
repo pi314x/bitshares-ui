@@ -2,8 +2,9 @@
 // the dialog. Tokens only.
 .page {
     max-width: 880px;
-    margin: 0 auto;
-    padding: 24px 20px 48px;
+    // the shell's content padding is the inset (left, top, bottom)
+    margin: 0;
+    padding: 0;
 }
 
 .title {

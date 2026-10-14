@@ -863,7 +863,10 @@ function CreditOfferPage() {
     return (
         <div className="grid-content app-tables no-padding">
             <div className="content-block small-12">
-                <div className="generic-bordered-box" style={{margin: "20px"}}>
+                <div
+                    className="generic-bordered-box"
+                    style={{margin: "0 0 20px"}}
+                >
                     <div className="header-selector">
                         <div className="filter inline-block">
                             <SearchInput
