@@ -368,6 +368,40 @@ describe("the connected account in the UI", () => {
         ).toBe(true);
     });
 
+    it("can be chosen and is the default even in cloud-wallet mode, and is not remembered", async () => {
+        // cloud mode pins the current account to the password account
+        reduxStore.dispatch(
+            patchState({passwordAccount: "cloudwallet"} as any)
+        );
+        (AccountStore as any).setCurrentAccount("somebody-else");
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "cloudwallet"
+        );
+
+        await useExtension();
+        // default: the extension's account
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
+        // the user can go back to the cloud account and to the extension's
+        (AccountStore as any).setCurrentAccount("cloudwallet");
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "cloudwallet"
+        );
+        (AccountStore as any).setCurrentAccount("alice");
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
+        // not persisted: the next start without the extension is not left on it
+        const stored = Object.keys(window.localStorage)
+            .filter(k => k.indexOf("currentAccount") !== -1)
+            .map(k => window.localStorage.getItem(k));
+        expect(stored.join("|")).not.toContain("alice");
+        // and a startup with the extension connected lands on its account
+        (AccountStore as any).setCurrentAccount("cloudwallet");
+        (AccountStore as any).tryToSetCurrentAccount();
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
+
+        await ExternalSignerActions.disconnect();
+        reduxStore.dispatch(patchState({passwordAccount: null} as any));
+    });
+
     it("follows the extension when the user switches account there", async () => {
         await useExtension();
         fake.emit("accountChanged", {name: "carol", id: "1.2.300"});

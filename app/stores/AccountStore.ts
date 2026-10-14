@@ -668,7 +668,19 @@ class AccountStoreFacade {
         );
     }
 
+    /** The extension's account name while it is the signer (chosen and
+     * connected), otherwise null: it is only ever used when it is available. */
+    private _extensionAccountName(): string | null {
+        if (!(ExternalSignerActions as any).isActive()) return null;
+        const linked = (ExternalSignerActions as any).getState().account;
+        return linked ? linked.accountName : null;
+    }
+
     tryToSetCurrentAccount() {
+        // With the extension connected, its account is the default one.
+        const extensionName = this._extensionAccountName();
+        if (extensionName) return this.setCurrentAccount(extensionName);
+
         const passwordAccountKey = this._getStorageKey("passwordAccount");
         const currentAccountKey = this._getStorageKey("currentAccount");
         if (ss.has(passwordAccountKey)) {
@@ -694,7 +706,15 @@ class AccountStoreFacade {
 
     setCurrentAccount(name: string | null) {
         const state = this.getState();
-        if (state.passwordAccount) name = state.passwordAccount;
+        const extensionName = this._extensionAccountName();
+        const isExtensionAccount = !!extensionName && name === extensionName;
+        // Cloud-wallet mode pins the account to the password account - except
+        // for the extension's own account, which can be switched to (it used
+        // to be forced back, so the extension account could neither be chosen
+        // nor be the default).
+        if (state.passwordAccount && !isExtensionAccount) {
+            name = state.passwordAccount;
+        }
         const key = this._getStorageKey();
         if (!name) {
             name = null;
@@ -704,7 +724,10 @@ class AccountStoreFacade {
             reduxStore.dispatch(patchState({currentAccount: name}));
         }
 
-        ss.set(key, name || null);
+        // The extension's account is not remembered: without the extension (not
+        // installed, not connected) the next start must not select an account
+        // this wallet cannot sign for.
+        if (!isExtensionAccount) ss.set(key, name || null);
     }
 
     onSetCurrentAccount(name: string) {
