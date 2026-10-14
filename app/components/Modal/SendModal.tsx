@@ -159,6 +159,9 @@ interface SendModalProps {
     to_name?: string;
     asset_id?: string;
     tabIndex?: number;
+    /** Called when the dialog has been closed (cancelled, or finished). The
+     * Send page uses it to leave the page. */
+    onHide?: () => void;
 }
 
 const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
@@ -181,7 +184,10 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             setState(prev => ({...prev, ...patch}));
 
         const showModal = () => mergeState({isModalVisible: true});
-        const hideModal = () => mergeState({isModalVisible: false});
+        const hideModal = () => {
+            mergeState({isModalVisible: false});
+            if (props.onHide) props.onHide();
+        };
 
         const _checkBalance = () => {
             const {feeAmount, amount, from_account, asset} = state;

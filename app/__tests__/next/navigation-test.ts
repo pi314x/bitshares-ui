@@ -36,7 +36,7 @@ describe("left navigation rail", () => {
         expect(labels[1]).toBe("Liquidity pools");
     });
 
-    it("keeps moving money together: send, deposit, withdraw as actions, timed transfer as a page", () => {
+    it("keeps moving money together: send, deposit, withdraw and timed transfer are pages", () => {
         const payments = NAV_GROUPS.find(g => g.label === "Payments")!;
         expect(payments.items.map(i => i.label)).toEqual([
             "Send",
@@ -44,12 +44,14 @@ describe("left navigation rail", () => {
             "Withdraw",
             "Timed transfer"
         ]);
-        expect(payments.items.map(i => i.action || i.to)).toEqual([
-            "send",
-            "deposit",
-            "withdraw",
+        // pages, not popups: every entry goes somewhere
+        expect(payments.items.map(i => i.to)).toEqual([
+            "/send",
+            "/deposit",
+            "/withdraw",
             "/timed-transfer"
         ]);
+        expect(payments.items.some(i => i.action)).toBe(false);
     });
 
     it("recognises the account voting tab as the Voting entry", () => {
@@ -97,6 +99,12 @@ describe("topbar title", () => {
         expect(crumbFromPath("/prediction")).toBe("Prediction markets");
         expect(crumbFromPath("/spotlight")).toBe("Spotlight");
         expect(crumbFromPath("/voting")).toBe("Voting");
+    });
+
+    it("names the payment pages", () => {
+        expect(crumbFromPath("/send")).toBe("Send");
+        expect(crumbFromPath("/deposit")).toBe("Deposit");
+        expect(crumbFromPath("/withdraw")).toBe("Withdraw");
     });
 
     it("spells out the hyphenated and abbreviated screens", () => {

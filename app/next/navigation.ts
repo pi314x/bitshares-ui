@@ -20,13 +20,13 @@ export const NAV_GROUPS: RailNavGroup[] = [
         ]
     },
     {
-        // Moving money. Send, Deposit and Withdraw open their dialogs (they are
-        // actions, not pages) and used to be buttons in the top bar.
+        // Moving money. Send, Deposit and Withdraw are pages of their own (the
+        // dialogs shown in the page, not over it); they used to be popups.
         label: "Payments",
         items: [
-            {label: "Send", action: "send"},
-            {label: "Deposit", action: "deposit"},
-            {label: "Withdraw", action: "withdraw"},
+            {label: "Send", to: "/send"},
+            {label: "Deposit", to: "/deposit"},
+            {label: "Withdraw", to: "/withdraw"},
             {label: "Timed transfer", to: "/timed-transfer"}
         ]
     },
@@ -66,6 +66,9 @@ const CRUMB_TITLES: Record<string, string> = {
     "credit-offer": "Credit offers",
     "samet-funds": "SameT funds",
     "timed-transfer": "Timed transfer",
+    send: "Send",
+    deposit: "Deposit",
+    withdraw: "Withdraw",
     "instant-trade": "Instant trade",
     prediction: "Prediction markets",
     "create-worker": "Create worker",

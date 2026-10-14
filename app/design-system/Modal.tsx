@@ -14,6 +14,26 @@ function useStableId(prefix: string): string {
     return idRef.current;
 }
 
+// A modal can be shown as part of the page instead of over it. Wrap it in
+// `ModalAsPage` and the first `Modal` below renders in place: no backdrop, no
+// scroll lock, no Escape handling, the page's own width. The Send, Deposit and
+// Withdraw screens are the same dialogs this way, reached from the menu rather
+// than opening over whatever was on screen. A `Modal` nested inside it (a
+// confirmation, a QR code) is an ordinary overlay again.
+const PagePresentation = React.createContext<boolean>(false);
+
+export function ModalAsPage({
+    children
+}: {
+    children?: React.ReactNode;
+}): JSX.Element {
+    return (
+        <PagePresentation.Provider value={true}>
+            {children}
+        </PagePresentation.Provider>
+    );
+}
+
 export interface ModalProps {
     visible: boolean;
     /** Omit to render a modal with no built-in way to dismiss itself
@@ -97,23 +117,24 @@ export function Modal({
     className,
     children
 }: ModalProps): JSX.Element | null {
+    const asPage = React.useContext(PagePresentation);
     const dialogRef = React.useRef<HTMLDivElement>(null);
     // Escape closes the dialog. A dropdown that is open (Select draws its list
     // on <body>, outside the dialog) takes the key first: it handles it in the
     // capture phase and stops it, so one Escape closes one thing.
     React.useEffect(() => {
-        if (!visible || !onCancel) return;
+        if (!visible || !onCancel || asPage) return;
         const onKey = (event: KeyboardEvent) => {
             if (event.key === "Escape") onCancel();
         };
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
-    }, [visible, onCancel]);
+    }, [visible, onCancel, asPage]);
     const titleId = useStableId("modal-title");
     const triggerRef = React.useRef<Element | null>(null);
 
     React.useEffect(() => {
-        if (!visible) return;
+        if (!visible || asPage) return;
         triggerRef.current = document.activeElement;
         dialogRef.current?.focus();
 
@@ -125,9 +146,32 @@ export function Modal({
                 triggerRef.current.focus();
             }
         };
-    }, [visible]);
+    }, [visible, asPage]);
 
     if (!visible) return null;
+
+    if (asPage) {
+        return (
+            <PagePresentation.Provider value={false}>
+                <section
+                    className={[styles.page, className]
+                        .filter(Boolean)
+                        .join(" ")}
+                    aria-labelledby={title !== undefined ? titleId : undefined}
+                >
+                    {title !== undefined ? (
+                        <h2 id={titleId} className={styles.pageTitle}>
+                            {title}
+                        </h2>
+                    ) : null}
+                    <div className={styles.pageBody}>{children}</div>
+                    {footer !== undefined ? (
+                        <div className={styles.pageFooter}>{footer}</div>
+                    ) : null}
+                </section>
+            </PagePresentation.Provider>
+        );
+    }
 
     return ReactDOM.createPortal(
         <div

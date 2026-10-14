@@ -75,6 +75,19 @@ const SametFundsPage = Loadable({
     loading: LoadingIndicator
 });
 
+// Send, Deposit and Withdraw as pages (the same dialogs, shown in the page)
+const paymentPage = name =>
+    Loadable({
+        loader: () =>
+            import(
+                /* webpackChunkName: "app-shell" */ "./next/PaymentPages"
+            ).then(module => module[name]),
+        loading: LoadingIndicator
+    });
+const SendPage = paymentPage("SendPage");
+const DepositPage = paymentPage("DepositPage");
+const WithdrawPage = paymentPage("WithdrawPage");
+
 const TimedTransferPage = Loadable({
     loader: () =>
         import(
@@ -574,6 +587,15 @@ class App extends React.Component {
                                 <Route
                                     path="/credit-offer"
                                     element={<CreditOfferPage />}
+                                />
+                                <Route path="/send" element={<SendPage />} />
+                                <Route
+                                    path="/deposit"
+                                    element={<DepositPage />}
+                                />
+                                <Route
+                                    path="/withdraw"
+                                    element={<WithdrawPage />}
                                 />
                                 <Route
                                     path="/timed-transfer"
