@@ -9,6 +9,7 @@ jest.mock("lightweight-charts", () => ({
     __esModule: true,
     AreaSeries: {},
     LineSeries: {},
+    LineType: {Simple: 0, WithSteps: 1, Curved: 2},
     ColorType: {Solid: "solid"},
     createChart: () => ({
         addSeries: () => ({setData: mockSetData, applyOptions: () => {}}),

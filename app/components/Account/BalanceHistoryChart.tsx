@@ -6,6 +6,7 @@ import {
     ColorType,
     IChartApi,
     ISeriesApi,
+    LineType,
     UTCTimestamp,
     createChart
 } from "lightweight-charts";
@@ -222,7 +223,7 @@ export default function BalanceHistoryChart({
     const colors = {
         wallet: token("--accent", "#16b8f3"),
         orders: token("--warn", "#e0a43a"),
-        total: token("--ink-2", "#c3ccd8")
+        total: token("--up", "#2fbf8f")
     };
 
     React.useEffect(() => {
@@ -246,20 +247,23 @@ export default function BalanceHistoryChart({
             topColor: colors.wallet + "55",
             bottomColor: colors.wallet + "00",
             lineWidth: 2,
+            lineType: LineType.Curved,
             priceLineVisible: false
         });
         // what sits in open orders
         const orders = chart.addSeries(LineSeries, {
             color: colors.orders,
             lineWidth: 2,
+            lineType: LineType.Curved,
             priceLineVisible: false,
             lastValueVisible: false
         });
-        // the whole holding: wallet and open orders
+        // the whole holding: wallet and open orders - a solid line of its own
+        // colour, so that it reads as a series like the others, not a guide
         const total = chart.addSeries(LineSeries, {
             color: colors.total,
             lineWidth: 2,
-            lineStyle: 2, // dashed
+            lineType: LineType.Curved,
             priceLineVisible: false,
             lastValueVisible: false
         });
