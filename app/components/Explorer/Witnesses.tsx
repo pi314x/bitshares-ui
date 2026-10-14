@@ -40,6 +40,7 @@ import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import "./witnesses.scss";
+import styles from "./Witnesses.module.scss";
 
 // Same untyped-legacy-component treatment as CommitteeMembers.tsx's
 // TypedSearchInput.
@@ -287,73 +288,73 @@ export default function Witnesses() {
             <div className="grid-block">
                 <div className="grid-block">
                     <div className="grid-content ">
-                        <div className="explore-witness--info">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <Translate content="explorer.witnesses.current" />
-                                        </th>
-                                        <th>
-                                            <Translate content="explorer.blocks.active_witnesses" />
-                                        </th>
-                                        <th>
-                                            <Translate content="explorer.witnesses.participation" />
-                                        </th>
-                                        <th>
-                                            <Translate content="explorer.witnesses.pay" />
-                                        </th>
-                                        <th>
-                                            <Translate content="explorer.witnesses.budget" />
-                                        </th>
-                                        <th>
-                                            <Translate content="explorer.witnesses.next_vote" />
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            {currentAccount
-                                                ? currentAccount.get("name")
-                                                : null}
-                                        </td>
-                                        <td>{witnessIds.length}</td>
-                                        <td>
-                                            {dynGlobalObject.participation}%
-                                        </td>
-                                        <td>
-                                            <FormattedAsset
-                                                amount={
-                                                    globalObject.parameters
-                                                        .witness_pay_per_block
-                                                }
-                                                asset="1.3.0"
-                                            />
-                                        </td>
-                                        <td>
-                                            {" "}
-                                            <FormattedAsset
-                                                amount={
-                                                    dynGlobalObject.witness_budget
-                                                }
-                                                asset="1.3.0"
-                                            />
-                                        </td>
-                                        <td>
-                                            {" "}
-                                            <TimeAgo
-                                                time={
-                                                    new Date(
-                                                        dynGlobalObject.next_maintenance_time +
-                                                            "Z"
-                                                    )
-                                                }
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div className={styles.stats}>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.witnesses.current" />
+                                </span>
+                                <span className={styles.value}>
+                                    {currentAccount
+                                        ? currentAccount.get("name")
+                                        : null}
+                                </span>
+                            </div>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.blocks.active_witnesses" />
+                                </span>
+                                <span className={styles.value}>
+                                    {witnessIds.length}
+                                </span>
+                            </div>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.witnesses.participation" />
+                                </span>
+                                <span className={styles.value}>
+                                    {dynGlobalObject.participation}%
+                                </span>
+                            </div>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.witnesses.pay" />
+                                </span>
+                                <span className={styles.value}>
+                                    <FormattedAsset
+                                        amount={
+                                            globalObject.parameters
+                                                .witness_pay_per_block
+                                        }
+                                        asset="1.3.0"
+                                    />
+                                </span>
+                            </div>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.witnesses.budget" />
+                                </span>
+                                <span className={styles.value}>
+                                    <FormattedAsset
+                                        amount={dynGlobalObject.witness_budget}
+                                        asset="1.3.0"
+                                    />
+                                </span>
+                            </div>
+                            <div className={styles.stat}>
+                                <span className={styles.label}>
+                                    <Translate content="explorer.witnesses.next_vote" />
+                                </span>
+                                <span className={styles.value}>
+                                    <TimeAgo
+                                        time={
+                                            new Date(
+                                                dynGlobalObject.next_maintenance_time +
+                                                    "Z"
+                                            )
+                                        }
+                                    />
+                                </span>
+                            </div>
                         </div>
 
                         <TypedSearchInput
