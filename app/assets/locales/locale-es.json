@@ -418,7 +418,7 @@
             "inactive": "Backup",
             "info": "Información",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "Unirse como testigo",
             "line": "Lìnea",
             "max_pay": "Pago total máximo",
             "missing": "Necesario",
@@ -460,7 +460,8 @@
             "witness": "Nombre del testigo",
             "worker_account": "Cuenta del trabajador",
             "workers": "Presupuestos",
-            "workers_short": "Trabajadores"
+            "workers_short": "Trabajadores",
+            "update_witness": "Actualizar testigo"
         },
         "voting": "Votación",
         "welcome": "Bienvenido a BitShares",

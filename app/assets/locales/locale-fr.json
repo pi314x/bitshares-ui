@@ -418,7 +418,7 @@
             "inactive": "Inactive",
             "info": "Info",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "Devenir témoin",
             "line": "Line",
             "max_pay": "Maximum total pay",
             "missing": "Needed",
@@ -460,7 +460,8 @@
             "witness": "Witness name",
             "worker_account": "Worker account",
             "workers": "Ouvriers",
-            "workers_short": "Workers"
+            "workers_short": "Workers",
+            "update_witness": "Mettre à jour le témoin"
         },
         "voting": "Votes",
         "welcome": "Welcome to BitShares",
@@ -812,7 +813,13 @@
         "sell": "Vendre",
         "sell_description": "Sell %(baseAsset)s %(baseName)s for %(quoteAsset)s %(quoteName)s",
         "settings": {
-            "header": "Personalize",
+            "header": {
+                "chart_options": "Options du graphique",
+                "general": "Général",
+                "order_options": "Options d'ordre",
+                "panel_grouping": "Regroupement des panneaux",
+                "title": "Personnaliser"
+            },
             "options": {
                 "grouping_1": "Group 1",
                 "grouping_2": "Group 2",

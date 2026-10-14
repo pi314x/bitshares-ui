@@ -418,7 +418,7 @@
             "inactive": "バックアップ",
             "info": "情報",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "証人になる",
             "line": "Line",
             "max_pay": "最大総支払い額",
             "missing": "Needed",
@@ -460,7 +460,8 @@
             "witness": "証人名",
             "worker_account": "ワーカーアカウント",
             "workers": "予算項目",
-            "workers_short": "ワーカー"
+            "workers_short": "ワーカー",
+            "update_witness": "証人を更新"
         },
         "voting": "投票",
         "welcome": "BitSharesへようこそ",
@@ -812,7 +813,13 @@
         "sell": "売る",
         "sell_description": "Sell %(baseAsset)s %(baseName)s for %(quoteAsset)s %(quoteName)s",
         "settings": {
-            "header": "Personalize",
+            "header": {
+                "chart_options": "チャートのオプション",
+                "general": "一般",
+                "order_options": "注文オプション",
+                "panel_grouping": "パネルのグループ化",
+                "title": "カスタマイズ"
+            },
             "options": {
                 "grouping_1": "Group 1",
                 "grouping_2": "Group 2",

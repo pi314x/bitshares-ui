@@ -418,7 +418,7 @@
             "inactive": "Inaktiv",
             "info": "Info",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "Witness beitreten",
             "line": "Linie",
             "max_pay": "Maximaler Tagessold",
             "missing": "Benötigt",
@@ -460,7 +460,8 @@
             "witness": "Zeugenname",
             "worker_account": "Arbeiter-Konto",
             "workers": "Budgetpunkte",
-            "workers_short": "Arbeiter"
+            "workers_short": "Arbeiter",
+            "update_witness": "Witness aktualisieren"
         },
         "voting": "Abstimmung",
         "welcome": "Willkommen",

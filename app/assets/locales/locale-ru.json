@@ -460,7 +460,8 @@
             "witness": "Имя заверителя",
             "worker_account": "Аккаунт работника",
             "workers": "Элементы бюджета",
-            "workers_short": "Работники"
+            "workers_short": "Работники",
+            "update_witness": "Обновить заверителя"
         },
         "voting": "Голосование",
         "welcome": "Добро пожаловать в %(wallet_name)s",

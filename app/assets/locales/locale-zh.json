@@ -460,7 +460,8 @@
             "witness": "见证人账户名",
             "worker_account": "预算项目账户",
             "workers": "预算项目",
-            "workers_short": "预算项目"
+            "workers_short": "预算项目",
+            "update_witness": "更新见证人"
         },
         "voting": "投票",
         "welcome": "欢迎来到%(wallet_name)s",

@@ -460,7 +460,8 @@
             "witness": "Tanık ismi",
             "worker_account": "İşçi hesabı",
             "workers": "Bütçe Ögeleri",
-            "workers_short": "Geliştiriciler"
+            "workers_short": "Geliştiriciler",
+            "update_witness": "Tanığı güncelle"
         },
         "voting": "Seçimler",
         "welcome": "Bitshares'e Hoşgeldiniz",
@@ -812,7 +813,13 @@
         "sell": "Satış -",
         "sell_description": "Sell %(baseAsset)s %(baseName)s for %(quoteAsset)s %(quoteName)s",
         "settings": {
-            "header": "Kişiselleştir",
+            "header": {
+                "chart_options": "Grafik seçenekleri",
+                "general": "Genel",
+                "order_options": "Emir seçenekleri",
+                "panel_grouping": "Panel gruplama",
+                "title": "Kişiselleştir"
+            },
             "options": {
                 "grouping_1": "Grup 1",
                 "grouping_2": "Grup 2",
