@@ -1,6 +1,12 @@
 import {Apis} from "bitsharesjs-ws";
 import SametFundActions from "./SametFundActions";
 import {HistoryEntry} from "../lib/common/balanceHistory";
+import {settingsAPIs} from "api/apiConfig";
+import {
+    MAIN_CHAIN_ID,
+    historyNodeCandidates,
+    olderHistoryFromOtherNodes
+} from "../lib/chain/olderHistory";
 
 /** How many operations one request asks for (the node serves at most 100). */
 export const PAGE = 100;
@@ -53,6 +59,60 @@ class BalanceHistoryActionsFacade {
                 return result;
             })
             .catch(() => ({}));
+    }
+
+    /**
+     * Operations older than the connected node keeps, from the other public
+     * nodes (see lib/chain/olderHistory.ts). `[]` when there are none or when
+     * this is not the main chain; `source` names the node that answered.
+     */
+    async getOlderFromOtherNodes(
+        accountId: string,
+        startId: string,
+        limit: number = PAGE
+    ): Promise<{rows: any[]; source: string | null}> {
+        try {
+            const api = (Apis as any).instance();
+            if (api.chain_id && api.chain_id !== MAIN_CHAIN_ID) {
+                return {rows: [], source: null};
+            }
+            const candidates = historyNodeCandidates(
+                (settingsAPIs as any).WS_NODE_LIST,
+                api.url ? [api.url] : []
+            );
+            const found = await olderHistoryFromOtherNodes(
+                accountId,
+                startId,
+                limit,
+                candidates
+            );
+            return {rows: found.rows, source: found.node};
+        } catch (error) {
+            return {rows: [], source: null};
+        }
+    }
+
+    /**
+     * A page of history with the other nodes as the fallback for what the
+     * connected one no longer has. `source` is the node the page came from when
+     * it was not the connected one.
+     */
+    async getHistoryPage(
+        accountId: string,
+        start?: string | null
+    ): Promise<{rows: HistoryEntry[]; source: string | null}> {
+        const own = await this.getHistory(accountId, start);
+        if (own.length || !start) return {rows: own, source: null};
+        const other = await this.getOlderFromOtherNodes(accountId, start);
+        return {
+            rows: other.rows.map((row: any) => ({
+                id: String(row.id),
+                op: row.op,
+                result: row.result,
+                block_num: Number(row.block_num)
+            })),
+            source: other.source
+        };
     }
 
     /** One page of the account's history, newest first, starting at `start`

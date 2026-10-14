@@ -31,6 +31,40 @@ const t = (key: string, params?: Record<string, any>) =>
 /** Pages (of 100 operations) loaded up front. */
 const AUTO_PAGES = 5;
 
+type SeriesKey = "wallet" | "orders" | "total";
+const SHOWN_KEY = "__graphene__balanceChartSeries";
+const DEFAULT_SHOWN: Record<SeriesKey, boolean> = {
+    wallet: true,
+    orders: false,
+    total: true
+};
+
+function readShown(): Record<SeriesKey, boolean> {
+    try {
+        const saved = JSON.parse(window.localStorage.getItem(SHOWN_KEY) || "");
+        return {
+            wallet: saved.wallet !== false,
+            orders: saved.orders === true,
+            total: saved.total !== false
+        };
+    } catch (e) {
+        return DEFAULT_SHOWN;
+    }
+}
+
+function writeShown(shown: Record<SeriesKey, boolean>) {
+    try {
+        window.localStorage.setItem(SHOWN_KEY, JSON.stringify(shown));
+    } catch (e) {
+        // not remembered
+    }
+}
+
+/** "wss://api.bitshares.dev/ws" -> "api.bitshares.dev" */
+function hostOf(url: string): string {
+    return url.replace(/^wss?:\/\//, "").replace(/\/.*$/, "");
+}
+
 /** A CSS custom property's current value (lightweight-charts needs colours as
  * strings, not var()). */
 function token(name: string, fallback: string): string {
@@ -72,6 +106,11 @@ export default function BalanceHistoryChart({
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [started, setStarted] = React.useState(false);
+    const [shown, setShown] = React.useState<Record<SeriesKey, boolean>>(
+        readShown
+    );
+    // a node other than the connected one supplied the older operations
+    const [source, setSource] = React.useState<string | null>(null);
 
     // balances, then the first page of history
     React.useEffect(() => {
@@ -80,6 +119,7 @@ export default function BalanceHistoryChart({
         setEntries([]);
         setTimes({});
         setNext(null);
+        setSource(null);
         setError(null);
         BalanceHistoryActions.getLockedInOrders(accountId).then(locked => {
             if (!cancelled) setLockedNow(locked || {});
@@ -120,11 +160,12 @@ export default function BalanceHistoryChart({
             pagesLeft: number = AUTO_PAGES
         ): Promise<void> => {
             setLoading(true);
-            return BalanceHistoryActions.getHistory(accountId, start)
-                .then(rows =>
+            return BalanceHistoryActions.getHistoryPage(accountId, start)
+                .then(({rows, source: from}) =>
                     BalanceHistoryActions.getBlockTimes(
                         rows.map(r => r.block_num)
                     ).then(blockTimes => {
+                        if (from) setSource(from);
                         setEntries(prev => prev.concat(rows));
                         setTimes(prev => ({...prev, ...blockTimes}));
                         const more =
@@ -174,12 +215,18 @@ export default function BalanceHistoryChart({
     // the chart
     const host = React.useRef<HTMLDivElement>(null);
     const chartRef = React.useRef<IChartApi | null>(null);
-    const lineRef = React.useRef<ISeriesApi<"Area"> | null>(null);
+    const walletRef = React.useRef<ISeriesApi<"Area"> | null>(null);
+    const ordersRef = React.useRef<ISeriesApi<"Line"> | null>(null);
     const totalRef = React.useRef<ISeriesApi<"Line"> | null>(null);
+
+    const colors = {
+        wallet: token("--accent", "#16b8f3"),
+        orders: token("--warn", "#e0a43a"),
+        total: token("--ink-2", "#c3ccd8")
+    };
 
     React.useEffect(() => {
         if (!host.current) return;
-        const accent = token("--accent", "#16b8f3");
         const chart = createChart(host.current, {
             autoSize: true,
             layout: {
@@ -194,106 +241,162 @@ export default function BalanceHistoryChart({
             timeScale: {borderVisible: false, timeVisible: true},
             crosshair: {mode: 1}
         });
-        const line = chart.addSeries(AreaSeries, {
-            lineColor: accent,
-            topColor: accent + "55",
-            bottomColor: accent + "00",
+        const wallet = chart.addSeries(AreaSeries, {
+            lineColor: colors.wallet,
+            topColor: colors.wallet + "55",
+            bottomColor: colors.wallet + "00",
             lineWidth: 2,
             priceLineVisible: false
         });
-        // the whole holding, open orders included
+        // what sits in open orders
+        const orders = chart.addSeries(LineSeries, {
+            color: colors.orders,
+            lineWidth: 2,
+            priceLineVisible: false,
+            lastValueVisible: false
+        });
+        // the whole holding: wallet and open orders
         const total = chart.addSeries(LineSeries, {
-            color: token("--muted", "#8794a7"),
-            lineWidth: 1,
+            color: colors.total,
+            lineWidth: 2,
             lineStyle: 2, // dashed
             priceLineVisible: false,
-            lastValueVisible: false,
-            crosshairMarkerVisible: false
+            lastValueVisible: false
         });
         chartRef.current = chart;
-        lineRef.current = line;
+        walletRef.current = wallet;
+        ordersRef.current = orders;
         totalRef.current = total;
         return () => {
             chart.remove();
-            chartRef.current = lineRef.current = totalRef.current = null;
+            chartRef.current = walletRef.current = null;
+            ordersRef.current = totalRef.current = null;
         };
     }, [assetId === "" ? "none" : "some"]);
 
     React.useEffect(() => {
-        if (!lineRef.current || !series || !asset) return;
-        lineRef.current.applyOptions({
-            priceFormat: {
-                type: "price",
-                precision: Math.min(asset.precision, 6),
-                minMove: 1 / Math.pow(10, Math.min(asset.precision, 6))
-            }
-        });
-        lineRef.current.setData(
-            series.points.map(p => ({
-                time: p.time as UTCTimestamp,
-                value: toNumber(p.balance, asset.precision)
-            }))
-        );
+        if (!walletRef.current || !series || !asset) return;
+        const precision = Math.min(asset.precision, 6);
+        const format = {
+            type: "price" as const,
+            precision,
+            minMove: 1 / Math.pow(10, precision)
+        };
+        const at = (p: {time: number}) => p.time as UTCTimestamp;
+        const units = (v: bigint) => toNumber(v, asset.precision);
+        if (walletRef.current) {
+            walletRef.current.applyOptions({
+                priceFormat: format,
+                visible: shown.wallet
+            });
+            walletRef.current.setData(
+                series.points.map(p => ({time: at(p), value: units(p.balance)}))
+            );
+        }
+        if (ordersRef.current) {
+            ordersRef.current.applyOptions({
+                priceFormat: format,
+                visible: shown.orders
+            });
+            ordersRef.current.setData(
+                series.points.map(p => ({time: at(p), value: units(p.locked)}))
+            );
+        }
         if (totalRef.current) {
-            const anyLocked = series.points.some(p => p.locked > BigInt(0));
+            totalRef.current.applyOptions({
+                priceFormat: format,
+                visible: shown.total
+            });
             totalRef.current.setData(
-                anyLocked
-                    ? series.points.map(p => ({
-                          time: p.time as UTCTimestamp,
-                          value: toNumber(p.balance + p.locked, asset.precision)
-                      }))
-                    : []
+                series.points.map(p => ({
+                    time: at(p),
+                    value: units(p.balance + p.locked)
+                }))
             );
         }
         chartRef.current && chartRef.current.timeScale().fitContent();
-    }, [series, asset]);
+    }, [series, asset, shown]);
+
+    const toggle = (key: SeriesKey) => {
+        setShown(prev => {
+            const next = {...prev, [key]: !prev[key]};
+            // a chart with nothing on it is not an option
+            if (!next.wallet && !next.orders && !next.total) return prev;
+            writeShown(next);
+            return next;
+        });
+    };
 
     if (!balances.length && !error) return null;
 
     const lockedUnits = BigInt(lockedNow[assetId] || "0");
+    const walletUnits = current ? BigInt(current.amount) : BigInt(0);
     const first = series && series.points.length ? series.points[0] : null;
     const change =
-        series && first && current
-            ? BigInt(current.amount) - first.balance
-            : null;
+        series && first && current ? walletUnits - first.balance : null;
+    const anyOrders =
+        lockedUnits > BigInt(0) ||
+        (series ? series.points.some(p => p.locked > BigInt(0)) : false);
+    const figure = (units: bigint) =>
+        asset
+            ? `${formatAmount(units.toString(), asset.precision)} ${
+                  asset.symbol
+              }`
+            : "-";
+
+    const choices: {key: SeriesKey; label: string; value: bigint}[] = [
+        {key: "wallet", label: t("wallet"), value: walletUnits},
+        {key: "orders", label: t("orders"), value: lockedUnits},
+        {key: "total", label: t("total"), value: walletUnits + lockedUnits}
+    ];
 
     return (
         <section className={styles.card} aria-label={t("title")}>
             <div className={styles.head}>
-                <div>
-                    <h3 className={styles.title}>{t("title")}</h3>
-                    <div>
-                        <span className={styles.value}>
-                            {asset && current
-                                ? `${formatAmount(
-                                      current.amount,
-                                      asset.precision
-                                  )} ${asset.symbol}`
-                                : "-"}
-                        </span>
-                        {change !== null && asset && change !== BigInt(0) ? (
-                            <span
-                                className={`${styles.change} ${
-                                    change > BigInt(0) ? styles.up : styles.down
+                <h3 className={styles.title}>{t("title")}</h3>
+                <div className={styles.figures} role="group">
+                    {choices.map(choice => {
+                        const unavailable =
+                            choice.key !== "wallet" && !anyOrders;
+                        return (
+                            <button
+                                key={choice.key}
+                                type="button"
+                                className={`${styles.figure} ${
+                                    shown[choice.key] && !unavailable
+                                        ? styles.figureOn
+                                        : ""
                                 }`}
+                                aria-pressed={shown[choice.key]}
+                                disabled={unavailable}
+                                title={unavailable ? t("no_orders") : undefined}
+                                onClick={() => toggle(choice.key)}
                             >
-                                {change > BigInt(0) ? "+" : ""}
-                                {formatAmount(change, asset.precision)}{" "}
-                                {t("over_period")}
-                            </span>
-                        ) : null}
-                    </div>
-                    {asset && lockedUnits > BigInt(0) ? (
-                        <div className={styles.orders}>
-                            {t("in_orders", {
-                                amount: `${formatAmount(
-                                    lockedUnits.toString(),
-                                    asset.precision
-                                )} ${asset.symbol}`
-                            })}
-                        </div>
-                    ) : null}
+                                <span className={styles.figureLabel}>
+                                    <span
+                                        className={styles.swatch}
+                                        style={{background: colors[choice.key]}}
+                                    />
+                                    {choice.label}
+                                </span>
+                                <span className={styles.figureValue}>
+                                    {figure(choice.value)}
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
+                {change !== null && asset && change !== BigInt(0) ? (
+                    <div
+                        className={`${styles.change} ${
+                            change > BigInt(0) ? styles.up : styles.down
+                        }`}
+                    >
+                        {change > BigInt(0) ? "+" : ""}
+                        {formatAmount(change, asset.precision)}{" "}
+                        {t("over_period")}
+                    </div>
+                ) : null}
             </div>
 
             {error ? (
@@ -305,13 +408,14 @@ export default function BalanceHistoryChart({
             <div className={styles.foot}>
                 <span>
                     {series
-                        ? t("based_on", {
-                              count: entries.length
-                          })
+                        ? next || loading
+                            ? t("based_on", {count: entries.length})
+                            : t("whole_history", {count: entries.length})
                         : t("loading")}
                     {series && series.unresolved > 0
                         ? ` ${t("unresolved", {count: series.unresolved})}`
                         : ""}
+                    {source ? ` ${t("from_node", {node: hostOf(source)})}` : ""}
                 </span>
                 <div className={styles.controls}>
                     <Select

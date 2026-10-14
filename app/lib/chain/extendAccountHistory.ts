@@ -17,11 +17,19 @@ export interface HistoryApi {
  * history of `accountId`. Resolves with how many were added (0 when there is
  * nothing older, or the account is not loaded).
  */
+export type OlderFallback = (
+    accountId: string,
+    startId: string,
+    limit: number
+) => Promise<any[]>;
+
 export async function extendAccountHistory(
     accountId: string,
     chainStore: any,
     historyApi: HistoryApi,
-    limit = 100
+    limit = 100,
+    /** Asked when the node has nothing older: other nodes may have more. */
+    fallback?: OlderFallback
 ): Promise<number> {
     const account = chainStore.objects_by_id.get(accountId);
     if (!account || account === true) return 0;
@@ -31,12 +39,16 @@ export async function extendAccountHistory(
     const oldest = idNumber(history.last().get("id"));
     if (!(oldest > 1)) return 0;
 
-    const rows = await historyApi.exec("get_account_history", [
+    const startId = `1.11.${oldest - 1}`;
+    let rows = await historyApi.exec("get_account_history", [
         accountId,
         "1.11.0",
         limit,
-        `1.11.${oldest - 1}`
+        startId
     ]);
+    if ((!rows || !rows.length) && fallback) {
+        rows = await fallback(accountId, startId, limit);
+    }
     if (!rows || !rows.length) return 0;
 
     // the store may have moved on while the request was out

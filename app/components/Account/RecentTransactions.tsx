@@ -59,6 +59,7 @@ import {Icon as AntIcon} from "../../design-system/Icon";
 import {ChainTypes as grapheneChainTypes, ChainStore} from "bitsharesjs";
 import {Apis} from "bitsharesjs-ws";
 import {extendAccountHistory} from "../../lib/chain/extendAccountHistory";
+import BalanceHistoryActions from "../../actions/BalanceHistoryActions";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import cnames from "classnames";
@@ -439,7 +440,14 @@ function RecentTransactionsCore({
                 extendAccountHistory(
                     id,
                     ChainStore as any,
-                    (Apis as any).instance().history_api()
+                    (Apis as any).instance().history_api(),
+                    100,
+                    (accountId, startId, limit) =>
+                        BalanceHistoryActions.getOlderFromOtherNodes(
+                            accountId,
+                            startId,
+                            limit
+                        ).then(found => found.rows)
                 )
             )
         )

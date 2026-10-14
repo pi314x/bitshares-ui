@@ -8,6 +8,7 @@ const mockSetData = jest.fn();
 jest.mock("lightweight-charts", () => ({
     __esModule: true,
     AreaSeries: {},
+    LineSeries: {},
     ColorType: {Solid: "solid"},
     createChart: () => ({
         addSeries: () => ({setData: mockSetData, applyOptions: () => {}}),
@@ -27,6 +28,11 @@ jest.mock("../../actions/BalanceHistoryActions", () => ({
         getBalances: (...a: any[]) => mockGetBalances(...a),
         getAssets: (...a: any[]) => mockGetAssets(...a),
         getHistory: (...a: any[]) => mockGetHistory(...a),
+        getHistoryPage: (...a: any[]) =>
+            Promise.resolve(mockGetHistory(...a)).then(rows => ({
+                rows,
+                source: null
+            })),
         getBlockTimes: (...a: any[]) => mockGetBlockTimes(...a),
         getLockedInOrders: (...a: any[]) => mockGetLocked(...a)
     },
@@ -98,10 +104,20 @@ describe("BalanceHistoryChart", () => {
         const text = container.textContent || "";
         expect(text).toContain("Balance over time");
         expect(text).toContain("1.50000 BTS");
-        expect(text).toContain("Built from the last 2 operations");
+        // fewer than a full page came back: that is all there is
+        expect(text).toContain("whole history (2 operations)");
         expect(text).toContain("1 operation(s) could not be read");
-        // what is locked in open orders is shown next to the balance
-        expect(text).toContain("In open orders: 0.25000 BTS");
+        // the wallet, what is in open orders and both together, as figures
+        const figures = Array.from(
+            container.querySelectorAll("button")
+        ).map(b => (b.textContent || "").replace(/\s+/g, " ").trim());
+        expect(figures).toEqual(
+            expect.arrayContaining([
+                "Wallet1.50000 BTS",
+                "Open orders0.25000 BTS",
+                "Total1.75000 BTS"
+            ])
+        );
         // two lines end where the chain says: the balance (1.5) and the whole
         // holding with what is locked in open orders (1.5 + 0.25)
         const lastValues = mockSetData.mock.calls
@@ -111,6 +127,32 @@ describe("BalanceHistoryChart", () => {
         expect(lastValues.some(v => Math.abs(v - 1.5) < 1e-5)).toBe(true);
         expect(lastValues.some(v => Math.abs(v - 1.75) < 1e-5)).toBe(true);
         expect(mockGetHistory).toHaveBeenCalledWith(ME, null);
+    });
+
+    it("lets the user choose which lines are drawn, and keeps the choice", async () => {
+        window.localStorage.removeItem("__graphene__balanceChartSeries");
+        const {container} = render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        const figure = (label: string) =>
+            Array.from(container.querySelectorAll("button")).find(b =>
+                (b.textContent || "").startsWith(label)
+            ) as HTMLButtonElement;
+        // wallet and total on, open orders off, to begin with
+        expect(figure("Wallet").getAttribute("aria-pressed")).toBe("true");
+        expect(figure("Open orders").getAttribute("aria-pressed")).toBe(
+            "false"
+        );
+        await act(async () => {
+            figure("Open orders").click();
+        });
+        expect(figure("Open orders").getAttribute("aria-pressed")).toBe("true");
+        expect(
+            JSON.parse(
+                window.localStorage.getItem(
+                    "__graphene__balanceChartSeries"
+                ) as string
+            ).orders
+        ).toBe(true);
     });
 
     it("draws nothing for an account without balances", async () => {
