@@ -5,7 +5,6 @@
 export const EXPLORER_TAB_LINKS = {
     blocks: "/explorer/blocks",
     assets: "/explorer/assets",
-    pools: "/explorer/pools",
     accounts: "/explorer/accounts",
     witnesses: "/explorer/witnesses",
     committee_members: "/explorer/committee-members",

@@ -25,7 +25,6 @@ import FeesContainer from "../Blockchain/FeesContainer";
 import BlocksContainer from "./BlocksContainer";
 import Assets from "./Assets";
 import Accounts from "./Accounts";
-import LiquidityPools from "./LiquidityPools";
 import counterpart from "counterpart";
 import MarketsContainer from "../Exchange/MarketsContainer";
 import {Tabs} from "../../design-system/Tabs";
@@ -44,12 +43,6 @@ const tabs = [
         link: EXPLORER_TAB_LINKS.assets,
         translate: "explorer.assets.title",
         content: Assets
-    },
-    {
-        name: "pools",
-        link: EXPLORER_TAB_LINKS.pools,
-        translate: "poolmart.liquidity_pools.title",
-        content: LiquidityPools
     },
     {
         name: "accounts",

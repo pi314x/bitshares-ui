@@ -320,6 +320,7 @@ def main():
     ap.add_argument("--live-node", help="relay chain calls to this node's HTTPS JSON-RPC endpoint (e.g. https://node.xbts.io/ws) instead of the canned stub")
     ap.add_argument("--account", help="pre-select this account as the current (read-only, wallet stays locked) account, so dashboard/market/account screens render with that account's data (BitShares mainnet only)")
     ap.add_argument("--dismiss", default="", help="comma-separated button labels to click when visible after boot and after each route (e.g. 'Not now' for the first-run gateway modal)")
+    ap.add_argument("--full-page", action="store_true", help="screenshots cover the whole scrollable page, not only the viewport")
     ap.add_argument("--click", default="", help="comma-separated button labels to click one by one after boot (modal/dropdown smoke; Escape is pressed after each)")
     ap.add_argument("--fonts", action="store_true", help="also fail on any visible text that is not set in IBM Plex Sans/Mono (see the module docstring)")
     ap.add_argument("--colors", action="store_true", help="also fail when more than 2%% of the painted background area is a neutral gray, i.e. a colour that bypasses the palette (see the module docstring)")
@@ -450,17 +451,41 @@ def main():
                 page.keyboard.press("Escape")
                 page.wait_for_timeout(300)
 
-        for route in [r for r in args.routes.split(",") if r]:
+        for entry in [r for r in args.routes.split(",") if r]:
+            # "/path@Tab label": after the route has loaded, open that tab of the
+            # page (a tab strip, or its select on a phone) before the report
+            route, _, tab = entry.partition("@")
             page.evaluate(
                 "(r) => { history.pushState({}, '', r); window.dispatchEvent(new PopStateEvent('popstate')); }",
                 route,
             )
             page.wait_for_timeout(int(args.route_wait * 1000))
             dismiss()
+            if tab:
+                # a tab of the page (design-system tabs, or the legacy strip and
+                # its select on a phone)
+                tabs = page.locator("#content [role=tab]").filter(has_text=tab)
+                if tabs.count():
+                    tabs.first.click()
+                else:
+                    strip = page.locator("#content .service-selector")
+                    select = strip.locator("select")
+                    if select.count():
+                        value = select.first.evaluate(
+                            "(el, t) => { const o = Array.from(el.options).find(o => o.textContent.toLowerCase().includes(t.toLowerCase())); return o ? o.value : null; }",
+                            tab,
+                        )
+                        if value is not None:
+                            select.first.select_option(value)
+                    else:
+                        strip.locator("li", has_text=tab).first.click()
+                page.wait_for_timeout(int(args.route_wait * 1000))
             if args.shots:
-                name = route.strip("/").replace("/", "_") or "root"
-                page.screenshot(path=os.path.join(args.shots, name + ".png"))
-            if report(route):
+                name = (route.strip("/").replace("/", "_") or "root") + (
+                    "__" + tab.replace(" ", "_") if tab else ""
+                )
+                page.screenshot(path=os.path.join(args.shots, name + ".png"), full_page=bool(tab) or args.full_page)
+            if report(entry):
                 print("     (tree is blank - reloading the app)")
                 boot()
                 errors.clear()

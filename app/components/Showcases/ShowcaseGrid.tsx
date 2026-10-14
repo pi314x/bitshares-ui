@@ -1,5 +1,7 @@
 // Spotlight: the hub for the features that have no menu entry of their own
-// (docs/UI_MIGRATION_PLAN.md §7.13/§7.14). Each tile is a real link or button,
+// (docs/UI_MIGRATION_PLAN.md §7.13/§7.14). A feature the left menu already
+// links to (instant trade, prediction markets, timed transfer, voting) is not
+// repeated here (§7.25). Each tile is a real link or button,
 // grouped by purpose, with the reason spelled out when it is not available
 // ("Log in to use this", "Coming soon") instead of a hover-only tooltip.
 //
@@ -44,20 +46,6 @@ interface Tile {
 
 export const TILES: Tile[] = [
     {
-        id: "instant_trade",
-        locale: "instant_trade",
-        icon: "instant-trade",
-        group: "trade",
-        to: "/instant-trade"
-    },
-    {
-        id: "prediction_market",
-        locale: "prediction_market",
-        icon: "prediction",
-        group: "trade",
-        to: "/prediction"
-    },
-    {
         id: "borrow",
         locale: "borrow",
         icon: "borrow",
@@ -91,20 +79,6 @@ export const TILES: Tile[] = [
         icon: "htlc",
         group: "payments",
         to: "/htlc"
-    },
-    {
-        id: "timed_transfer",
-        locale: "timed_transfer",
-        icon: "alarm",
-        group: "payments",
-        to: "/timed-transfer"
-    },
-    {
-        id: "voting",
-        locale: "voting",
-        icon: "voting",
-        group: "account",
-        to: name => `/account/${name}/voting`
     },
     {
         id: "paper_wallet",

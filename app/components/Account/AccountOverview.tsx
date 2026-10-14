@@ -52,9 +52,10 @@ import Proposals from "components/Account/Proposals";
 import {ChainStore} from "bitsharesjs";
 import SettingsActions from "actions/SettingsActions";
 import utils from "common/utils";
-import {Tabs, Tab} from "../Utility/Tabs";
+import {Tabs} from "../../design-system/Tabs";
+import {SubMenu} from "../../design-system/SubMenu";
+import styles from "./AccountOverview.module.scss";
 import AccountOrders from "./AccountOrders";
-import cnames from "classnames";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 import {checkMarginStatus} from "common/accountHelper";
 import BalanceWrapper from "./BalanceWrapper";
@@ -376,283 +377,285 @@ function AccountOverview(props: AccountOverviewCoreProps) {
         />
     );
 
-    // add unicode non-breaking space as subtext to Activity Tab to ensure that all titles are aligned
-    // horizontally
-    const hiddenSubText = " ";
+    const proposalsCount = account.get("proposals")
+        ? account.get("proposals").size
+        : 0;
+
+    // What the filter bar of the balances tab offers: the visible assets, the
+    // hidden ones (only when there are any) and the treemap.
+    const assetViews = [
+        {key: "active", label: counterpart.translate("account.hide_hidden")},
+        ...(hiddenBalancesList.size
+            ? [
+                  {
+                      key: "hidden",
+                      label: counterpart.translate("account.show_hidden")
+                  }
+              ]
+            : []),
+        {key: "visual", label: counterpart.translate("account.show_visual")}
+    ];
+
+    const tabs: Array<{
+        key: string;
+        title: string;
+        sub?: React.ReactNode;
+        content: React.ReactNode;
+    }> = [
+        {
+            key: "0",
+            title: counterpart.translate("account.portfolio"),
+            sub: portfolioActiveAssetsBalance,
+            content: (
+                <>
+                    <div className={styles.toolbar}>
+                        <div className={styles.filter}>
+                            <SearchInput
+                                value={state.filterValue}
+                                onChange={handleFilterInput}
+                            />
+                        </div>
+                        <SubMenu
+                            aria-label={counterpart.translate(
+                                "account.portfolio"
+                            )}
+                            items={assetViews}
+                            value={
+                                assetViews.some(v => v.key === shownAssets)
+                                    ? shownAssets
+                                    : "active"
+                            }
+                            onChange={changeShownAssets}
+                        />
+                    </div>
+                    {shownAssets != "visual" ? (
+                        <div className={styles.scroll}>
+                            {shownAssets === "hidden" && hiddenBalancesList.size
+                                ? hiddenPortfolioList
+                                : includedPortfolioList}
+                        </div>
+                    ) : (
+                        <AccountTreemap balanceObjects={includedBalancesList} />
+                    )}
+                </>
+            )
+        },
+        {
+            key: "1",
+            title: counterpart.translate("account.open_orders"),
+            sub: ordersValue,
+            content: (
+                <div className={styles.padded}>
+                    <AccountOrders {...props}>
+                        <div className={styles.total}>
+                            <span className={styles.totalLabel}>
+                                {totalValueText}
+                            </span>
+                            <span className={styles.totalValue}>
+                                {ordersValue}
+                            </span>
+                        </div>
+                    </AccountOrders>
+                </div>
+            )
+        },
+        {
+            key: "2",
+            title: counterpart.translate("account.collaterals"),
+            sub: (
+                <span className={state.globalMarginStatus}>{marginValue}</span>
+            ),
+            content: (
+                <div className={styles.scroll}>
+                    <MarginPositionsTable
+                        preferredUnit={preferredUnit}
+                        className="dashboard-table"
+                        callOrders={call_orders}
+                        account={account}
+                    >
+                        <tr className="total-value">
+                            <td>{totalValueText}</td>
+                            <td />
+                            <td>{debtValue}</td>
+                            <td className="column-hide-medium">
+                                {collateralValue}
+                            </td>
+                            <td />
+                            <td>{marginValue}</td>
+                            <td className="column-hide-small" />
+                            <td className="column-hide-small" />
+                            <td colSpan={5} />
+                        </tr>
+                    </MarginPositionsTable>
+                </div>
+            )
+        },
+        {
+            key: "3",
+            title: counterpart.translate("account.credit_offer"),
+            content: <CreditOfferAccountPage account={account} />
+        },
+        {
+            key: "4",
+            title: counterpart.translate("account.activity"),
+            content: (
+                <div className={`${styles.scroll} ${styles.wrapCells}`}>
+                    <RecentTransactions
+                        accountsList={Immutable.fromJS([account.get("id")])}
+                        compactView={false}
+                        showMore={true}
+                        fullHeight={true}
+                        limit={100}
+                        showFilters={true}
+                        dashboard
+                    />
+                </div>
+            )
+        }
+    ];
+
+    if (proposalsCount) {
+        tabs.push({
+            key: "5",
+            title: counterpart.translate("explorer.proposals.title"),
+            sub: String(proposalsCount),
+            content: (
+                <div className={styles.padded}>
+                    {settings.get("showProposedTx") && (
+                        <div
+                            onClick={toggleHideProposal}
+                            style={{cursor: "pointer"}}
+                        >
+                            <Tooltip
+                                title={counterpart.translate(
+                                    "tooltip.propose_unhide"
+                                )}
+                                placement="bottom"
+                            >
+                                <Switch
+                                    style={{margin: 16}}
+                                    checked={state.hideFishingProposals}
+                                    onChange={toggleHideProposal}
+                                />
+                                <Translate content="account.deactivate_suspicious_proposals" />
+                            </Tooltip>
+                        </div>
+                    )}
+                    {settings.get("showProposedTx") && (
+                        <Proposals
+                            className="dashboard-table"
+                            account={account}
+                            hideFishingProposals={state.hideFishingProposals}
+                        />
+                    )}
+                    {!settings.get("showProposedTx") && (
+                        <div className="padding">
+                            <div>
+                                <Translate content="account.proposed_transactions.advanced_feature" />
+                                :
+                            </div>
+                            <br />
+                            <br />
+                            <div>
+                                <Translate content="account.proposed_transactions.question1" />
+                                <Switch
+                                    style={{margin: 16}}
+                                    checked={state.question1}
+                                    onChange={toggleQ1}
+                                    checkedChildren={"Yes"}
+                                    unCheckedChildren={"No"}
+                                />
+                            </div>
+                            {state.question1 && (
+                                <div>
+                                    <Translate content="account.proposed_transactions.question2" />
+                                    <Switch
+                                        style={{margin: 16}}
+                                        checked={state.question2}
+                                        onChange={toggleQ2}
+                                        checkedChildren={"Yes"}
+                                        unCheckedChildren={"No"}
+                                    />
+                                </div>
+                            )}
+                            {state.question2 && (
+                                <div>
+                                    <Translate content="account.proposed_transactions.question3" />
+                                    <Switch
+                                        style={{margin: 16}}
+                                        checked={state.question3}
+                                        onChange={toggleQ3}
+                                        checkedChildren={"Yes"}
+                                        unCheckedChildren={"No"}
+                                    />
+                                </div>
+                            )}
+                            <br />
+                            {state.question3 && (
+                                <div
+                                    style={{
+                                        marginTop: 16,
+                                        marginBottom: 16
+                                    }}
+                                >
+                                    <Translate content="account.proposed_transactions.answered_no" />
+                                    <Button
+                                        style={{marginLeft: 16}}
+                                        onClick={showProposals}
+                                    >
+                                        <Translate content="account.proposed_transactions.show_me_proposals" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )
+        });
+    }
+
+    // the tab last used is remembered (the dashboard links to "open orders" by
+    // setting it too); a stored number past the tabs shown is the first tab
+    const savedTab = Number(viewSettings.get("overviewTab", 0));
+    const activeKey = String(
+        Number.isInteger(savedTab) && savedTab >= 0 && savedTab < tabs.length
+            ? savedTab
+            : 0
+    );
+    const onTab = (key: string) => {
+        (SettingsActions as any).changeViewSetting({
+            overviewTab: Number(key)
+        });
+    };
 
     return (
         <div className="grid-content app-tables no-padding">
             <div className="content-block small-12">
                 <BalanceHistoryChart accountId={account.get("id")} />
-                <div className="tabs-container generic-bordered-box">
+                <div className={styles.panel}>
                     <Tabs
-                        defaultActiveTab={0}
-                        segmented={false}
-                        setting="overviewTab"
-                        className="account-tabs"
-                        tabsClass="account-overview no-padding bordered-header content-block"
+                        activeKey={activeKey}
+                        animated={false}
+                        onChange={onTab}
+                        className={styles.tabs}
                     >
-                        <Tab
-                            title="account.portfolio"
-                            subText={portfolioActiveAssetsBalance}
-                        >
-                            <div className="header-selector">
-                                <div className="filter inline-block">
-                                    <SearchInput
-                                        value={state.filterValue}
-                                        onChange={handleFilterInput}
-                                    />
-                                </div>
-                                <div
-                                    className="selector inline-block"
-                                    style={{
-                                        position: "relative",
-                                        top: "8px"
-                                    }}
-                                >
-                                    <div
-                                        className={cnames("inline-block", {
-                                            inactive: shownAssets != "active"
-                                        })}
-                                        onClick={
-                                            shownAssets != "active"
-                                                ? () =>
-                                                      changeShownAssets(
-                                                          "active"
-                                                      )
-                                                : () => {}
-                                        }
-                                    >
-                                        <Translate content="account.hide_hidden" />
-                                    </div>
-                                    {hiddenBalancesList.size ? (
-                                        <div
-                                            className={cnames("inline-block", {
-                                                inactive:
-                                                    shownAssets != "hidden"
-                                            })}
-                                            onClick={
-                                                shownAssets != "hidden"
-                                                    ? () =>
-                                                          changeShownAssets(
-                                                              "hidden"
-                                                          )
-                                                    : () => {}
-                                            }
-                                        >
-                                            <Translate content="account.show_hidden" />
-                                        </div>
-                                    ) : null}
-                                    <div
-                                        className={cnames("inline-block", {
-                                            inactive: shownAssets != "visual"
-                                        })}
-                                        onClick={
-                                            shownAssets != "visual"
-                                                ? () =>
-                                                      changeShownAssets(
-                                                          "visual"
-                                                      )
-                                                : () => {}
-                                        }
-                                    >
-                                        <Translate content="account.show_visual" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {shownAssets != "visual" ? (
-                                shownAssets === "hidden" &&
-                                hiddenBalancesList.size ? (
-                                    hiddenPortfolioList
-                                ) : (
-                                    includedPortfolioList
-                                )
-                            ) : (
-                                <AccountTreemap
-                                    balanceObjects={includedBalancesList}
-                                />
-                            )}
-                        </Tab>
-
-                        <Tab title="account.open_orders" subText={ordersValue}>
-                            <AccountOrders {...props}>
-                                <div className="total-value">
-                                    <span className="text">
-                                        {totalValueText}
+                        {tabs.map(tab => (
+                            <Tabs.TabPane
+                                key={tab.key}
+                                tab={
+                                    <span className={styles.tabLabel}>
+                                        {tab.title}
+                                        {tab.sub ? (
+                                            <span className={styles.tabSub}>
+                                                {tab.sub}
+                                            </span>
+                                        ) : null}
                                     </span>
-                                    <span className="value">{ordersValue}</span>
-                                </div>
-                            </AccountOrders>
-                        </Tab>
-
-                        <Tab
-                            title="account.collaterals"
-                            subText={
-                                <span className={state.globalMarginStatus}>
-                                    {marginValue}
-                                </span>
-                            }
-                        >
-                            <div className="content-block">
-                                <div className="generic-bordered-box">
-                                    <MarginPositionsTable
-                                        preferredUnit={preferredUnit}
-                                        className="dashboard-table"
-                                        callOrders={call_orders}
-                                        account={account}
-                                    >
-                                        <tr className="total-value">
-                                            <td>{totalValueText}</td>
-                                            <td />
-                                            <td>{debtValue}</td>
-                                            <td className="column-hide-medium">
-                                                {collateralValue}
-                                            </td>
-                                            <td />
-                                            <td>{marginValue}</td>
-                                            <td className="column-hide-small" />
-                                            <td className="column-hide-small" />
-                                            <td colSpan={5} />
-                                        </tr>
-                                    </MarginPositionsTable>
-                                </div>
-                            </div>
-                        </Tab>
-
-                        <Tab
-                            title="account.credit_offer"
-                            subText={hiddenSubText}
-                        >
-                            <CreditOfferAccountPage account={account} />
-                        </Tab>
-
-                        <Tab title="account.activity" subText={hiddenSubText}>
-                            <RecentTransactions
-                                accountsList={Immutable.fromJS([
-                                    account.get("id")
-                                ])}
-                                compactView={false}
-                                showMore={true}
-                                fullHeight={true}
-                                limit={100}
-                                showFilters={true}
-                                dashboard
-                            />
-                        </Tab>
-
-                        {account.get("proposals") &&
-                            account.get("proposals").size && (
-                                <Tab
-                                    title="explorer.proposals.title"
-                                    subText={String(
-                                        account.get("proposals")
-                                            ? account.get("proposals").size
-                                            : 0
-                                    )}
-                                >
-                                    {settings.get("showProposedTx") && (
-                                        <div
-                                            onClick={toggleHideProposal}
-                                            style={{cursor: "pointer"}}
-                                        >
-                                            <Tooltip
-                                                title={counterpart.translate(
-                                                    "tooltip.propose_unhide"
-                                                )}
-                                                placement="bottom"
-                                            >
-                                                <Switch
-                                                    style={{margin: 16}}
-                                                    checked={
-                                                        state.hideFishingProposals
-                                                    }
-                                                    onChange={
-                                                        toggleHideProposal
-                                                    }
-                                                />
-                                                <Translate content="account.deactivate_suspicious_proposals" />
-                                            </Tooltip>
-                                        </div>
-                                    )}
-                                    {settings.get("showProposedTx") && (
-                                        <Proposals
-                                            className="dashboard-table"
-                                            account={account}
-                                            hideFishingProposals={
-                                                state.hideFishingProposals
-                                            }
-                                        />
-                                    )}
-                                    {!settings.get("showProposedTx") && (
-                                        <div className="padding">
-                                            <div>
-                                                <Translate content="account.proposed_transactions.advanced_feature" />
-                                                :
-                                            </div>
-                                            <br />
-                                            <br />
-                                            <div>
-                                                <Translate content="account.proposed_transactions.question1" />
-                                                <Switch
-                                                    style={{margin: 16}}
-                                                    checked={state.question1}
-                                                    onChange={toggleQ1}
-                                                    checkedChildren={"Yes"}
-                                                    unCheckedChildren={"No"}
-                                                />
-                                            </div>
-                                            {state.question1 && (
-                                                <div>
-                                                    <Translate content="account.proposed_transactions.question2" />
-                                                    <Switch
-                                                        style={{margin: 16}}
-                                                        checked={
-                                                            state.question2
-                                                        }
-                                                        onChange={toggleQ2}
-                                                        checkedChildren={"Yes"}
-                                                        unCheckedChildren={"No"}
-                                                    />
-                                                </div>
-                                            )}
-                                            {state.question2 && (
-                                                <div>
-                                                    <Translate content="account.proposed_transactions.question3" />
-                                                    <Switch
-                                                        style={{margin: 16}}
-                                                        checked={
-                                                            state.question3
-                                                        }
-                                                        onChange={toggleQ3}
-                                                        checkedChildren={"Yes"}
-                                                        unCheckedChildren={"No"}
-                                                    />
-                                                </div>
-                                            )}
-                                            <br />
-                                            {state.question3 && (
-                                                <div
-                                                    style={{
-                                                        marginTop: 16,
-                                                        marginBottom: 16
-                                                    }}
-                                                >
-                                                    <Translate content="account.proposed_transactions.answered_no" />
-                                                    <Button
-                                                        style={{
-                                                            marginLeft: 16
-                                                        }}
-                                                        onClick={showProposals}
-                                                    >
-                                                        <Translate content="account.proposed_transactions.show_me_proposals" />
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </Tab>
-                            )}
+                                }
+                            >
+                                <div className={styles.pane}>{tab.content}</div>
+                            </Tabs.TabPane>
+                        ))}
                     </Tabs>
                 </div>
             </div>

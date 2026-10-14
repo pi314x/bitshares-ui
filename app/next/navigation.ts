@@ -122,6 +122,31 @@ export const NAV_GROUPS: RailNavGroup[] = [
     }
 ];
 
+// A market's name as the trade page takes it: BASE_QUOTE.
+const MARKET_NAME = /^[A-Za-z0-9._-]+_[A-Za-z0-9._-]+$/;
+
+/**
+ * The menu with "Trade" pointing at the market the user traded last (the
+ * original header's behaviour), when there is one; the default market
+ * otherwise.
+ */
+export function withLastMarket(
+    groups: RailNavGroup[],
+    lastMarket: unknown
+): RailNavGroup[] {
+    if (typeof lastMarket !== "string" || !MARKET_NAME.test(lastMarket)) {
+        return groups;
+    }
+    return groups.map(group => ({
+        ...group,
+        items: group.items.map(item =>
+            item.to && item.to.indexOf("/market/") === 0
+                ? {...item, to: `/market/${lastMarket}`}
+                : item
+        )
+    }));
+}
+
 // Capitalized first path segment as a stand-in breadcrumb (e.g. "/market/
 // BTS_CNY" -> "Market"). Real per-route breadcrumbs/titles are a Phase 2
 // concern (each migrated screen can pass its own); this just keeps the

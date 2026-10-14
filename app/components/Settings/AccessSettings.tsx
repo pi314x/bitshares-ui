@@ -42,20 +42,27 @@
 // this is a pre-existing latent crash in that specific caller (removing
 // the active node from the SyncError screen), present before this port
 // and not something this AccessSettings.jsx port touches or fixes.
+//
+// Restructured (docs/UI_MIGRATION_PLAN.md §7.25): the page is three cards in
+// the order a person uses it - how the node is chosen (automatic or by hand),
+// the node in use with its latency, and the list of the others behind a tab
+// switch that names how many there are. A row is a status dot, where the node
+// is and its address, its latency, and the actions (connect, hide, remove) as
+// buttons that say what they do. The data logic above the markup is unchanged.
+
 import * as React from "react";
 import Translate from "react-translate-component";
 import SettingsActions from "actions/SettingsActions";
 import SettingsStore from "stores/SettingsStore";
 import willTransitionTo, {routerTransitioner} from "../../routerTransition";
-import cnames from "classnames";
-import Icon from "../Icon/Icon";
-import LoadingButton from "../Utility/LoadingButton";
+import counterpart from "counterpart";
 import {Switch} from "../../design-system/Switch";
 import {Button} from "../../design-system/Button";
+import {SubMenu} from "../../design-system/SubMenu";
 import NodeSelector from "../Utility/NodeSelector";
-import counterpart from "counterpart";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
+import styles from "./AccessSettings.module.scss";
 
 const autoSelectionUrl = "wss://fake.automatic-selection.com";
 
@@ -76,45 +83,6 @@ function activateNode(url: string) {
             willTransitionTo(false);
         }, 50);
     }
-}
-
-function AutoSelectionNode({
-    isActive,
-    connectedNode,
-    totalNodes
-}: {
-    isActive: boolean;
-    connectedNode: any;
-    totalNodes: number;
-}) {
-    return (
-        <div className="auto-node">
-            <div>
-                <Switch
-                    checked={isActive}
-                    onChange={
-                        connectedNode != null
-                            ? () =>
-                                  activateNode(
-                                      isActive
-                                          ? connectedNode.url
-                                          : autoSelectionUrl
-                                  )
-                            : () => {}
-                    }
-                />
-                <Translate
-                    component="div"
-                    style={{paddingLeft: "1rem", paddingTop: "0.2rem"}}
-                    content="settings.automatic"
-                    totalNodes={totalNodes}
-                />
-            </div>
-            <div style={{float: "right", marginBottom: "0.5rem"}}>
-                <NodeSelector />
-            </div>
-        </div>
-    );
 }
 
 function getPing(node: any) {
@@ -153,6 +121,47 @@ function getPing(node: any) {
     };
 }
 
+function AutoSelectionNode({
+    isActive,
+    connectedNode,
+    totalNodes
+}: {
+    isActive: boolean;
+    connectedNode: any;
+    totalNodes: number;
+}) {
+    return (
+        <section className={styles.card}>
+            <div className={styles.autoRow}>
+                <label className={styles.autoSwitch}>
+                    <Switch
+                        checked={isActive}
+                        onChange={
+                            connectedNode != null
+                                ? () =>
+                                      activateNode(
+                                          isActive
+                                              ? connectedNode.url
+                                              : autoSelectionUrl
+                                      )
+                                : () => {}
+                        }
+                    />
+                    <Translate
+                        component="span"
+                        className={styles.autoText}
+                        content="settings.automatic"
+                        totalNodes={totalNodes}
+                    />
+                </label>
+                <div className={styles.narrow}>
+                    <NodeSelector />
+                </div>
+            </div>
+        </section>
+    );
+}
+
 function ApiNode({
     node,
     isActive,
@@ -183,82 +192,82 @@ function ApiNode({
         title = node.region + (!!title ? " - " + title : "");
     }
 
+    const tone = ping.color ? styles[ping.color] : styles.unknown;
+
     return (
-        <div className="api-node">
-            <div className="api-node-left">
-                <p className="api-node-title">{title}</p>
-                {!!node.operator && (
-                    <p className="api-node-operator">
-                        {node.operator}
-                        &nbsp;&nbsp;&nbsp;
-                    </p>
-                )}
-                <p
-                    className="api-node-url"
-                    id={isActive ? "active_node" : undefined}
-                >
-                    {url}
-                </p>
-            </div>
-            <div>
-                <div className="api-status">
-                    <span className={ping.color || undefined}>
-                        {!!ping.rating && (
-                            <Translate content={`settings.${ping.rating}`} />
-                        )}
-                        {!!ping.toString && <p>{ping.toString}</p>}
+        <li className={`${styles.row} ${isActive ? styles.rowActive : ""}`}>
+            <span className={`${styles.dot} ${tone}`} aria-hidden="true" />
+            <div className={styles.main}>
+                <div className={styles.title}>{title || url}</div>
+                <div className={styles.meta}>
+                    <span
+                        className={styles.url}
+                        id={isActive ? "active_node" : undefined}
+                    >
+                        {url}
                     </span>
+                    {!!node.operator && (
+                        <span className={styles.operator}>{node.operator}</span>
+                    )}
                 </div>
             </div>
-            <div style={{marginTop: "-5px"}}>
+            <div className={`${styles.latency} ${tone}`}>
+                {!!ping.rating && (
+                    <Translate
+                        component="span"
+                        className={styles.rating}
+                        content={`settings.${ping.rating}`}
+                    />
+                )}
+                {!!ping.toString && (
+                    <span className={styles.ms}>{ping.toString}</span>
+                )}
+            </div>
+            <div className={styles.actions}>
                 {canBeHidden && (
-                    <a
+                    <Button
+                        size="small"
                         onClick={
                             hidden
                                 ? () => SettingsActions.showWS(url)
                                 : () => SettingsActions.hideWS(url)
                         }
                     >
-                        <Icon
-                            className={"shuffle"}
-                            name={hidden ? "eye-striked" : "eye"}
-                            title={hidden ? "icons.eye_striked" : "icons.eye"}
-                            size="1_5x"
+                        <Translate
+                            content={
+                                hidden
+                                    ? "settings.node_show"
+                                    : "settings.node_hide"
+                            }
                         />
-                    </a>
+                    </Button>
                 )}
                 {canBeRemoved && (
-                    <a onClick={() => showRemoveNodeModal(url, title)}>
-                        <Icon name={"times"} title="icons.times" size="1_5x" />
-                    </a>
+                    <Button
+                        size="small"
+                        onClick={() => showRemoveNodeModal(url, title)}
+                    >
+                        <Translate content="settings.node_remove" />
+                    </Button>
                 )}
-                <div className="api-status">
-                    {!isActive ? (
-                        <a id={url} onClick={() => activateNode(url)}>
-                            <Icon
-                                className={ping.color + " default-icon"}
-                                name={"disconnected"}
-                                title="icons.connect"
-                                size="1_5x"
-                            />
-                            <Icon
-                                className={ping.color + " hover-icon"}
-                                name={"connect"}
-                                title="icons.connect"
-                                size="1_5x"
-                            />
-                        </a>
-                    ) : (
-                        <Icon
-                            className={ping.color}
-                            name={"connected"}
-                            title="icons.connected"
-                            size="2x"
-                        />
-                    )}
-                </div>
+                {!isActive ? (
+                    <Button
+                        size="small"
+                        variant="accent"
+                        id={url}
+                        onClick={() => activateNode(url)}
+                    >
+                        <Translate content="settings.node_connect" />
+                    </Button>
+                ) : (
+                    <Translate
+                        component="span"
+                        className={styles.connected}
+                        content="settings.node_connected"
+                    />
+                )}
             </div>
-        </div>
+        </li>
     );
 }
 
@@ -267,6 +276,19 @@ interface AccessSettingsProps {
     showAddNodeModal: () => void;
     showRemoveNodeModal: (url: string, name: string) => void;
 }
+
+type NodeTab =
+    | "available_nodes"
+    | "my_nodes"
+    | "hidden_nodes"
+    | "testnet_nodes";
+
+const TABS: NodeTab[] = [
+    "available_nodes",
+    "my_nodes",
+    "hidden_nodes",
+    "testnet_nodes"
+];
 
 export default function AccessSettings({
     nodes,
@@ -278,7 +300,10 @@ export default function AccessSettings({
     const connectedNodeUrl = settingsState.settings.get("activeNode");
     const apiLatencies = settingsState.apiLatencies;
 
-    const [activeTab, setActiveTab] = React.useState("available_nodes");
+    const [activeTab, setActiveTab] = React.useState<NodeTab>(
+        "available_nodes"
+    );
+    const [pinging, setPinging] = React.useState(false);
     const [, forceRerender] = React.useState({});
 
     function getNode(node: any) {
@@ -328,21 +353,11 @@ export default function AccessSettings({
         );
     }
 
-    function renderAutoSelection(currentConnectedNode: any) {
-        return (
-            <AutoSelectionNode
-                key={autoSelectionUrl}
-                isActive={selectedNode === autoSelectionUrl}
-                connectedNode={currentConnectedNode}
-                totalNodes={getMainNetNodes().length}
-            />
-        );
-    }
-
-    function recalculateLatency(event: any, feedback: () => void) {
+    function recalculateLatency() {
+        setPinging(true);
         routerTransitioner.doLatencyUpdate(true, false, 1).finally(() => {
             forceRerender({});
-            feedback();
+            setPinging(false);
         });
     }
 
@@ -371,81 +386,77 @@ export default function AccessSettings({
             return 0;
         });
 
-    let nodesToShow: any[];
-    let onlyPersonalNodeActive = false;
-    if (activeTab === "my_nodes") {
-        nodesToShow = allNodesExceptConnected.filter((node: any) =>
+    const byTab: Record<NodeTab, any[]> = {
+        my_nodes: allNodesExceptConnected.filter((node: any) =>
             nodeIsPersonal(node)
-        );
-        onlyPersonalNodeActive =
-            !!connectedNodeIsPersonal() && nodesToShow.length === 0;
-    } else if (activeTab === "available_nodes") {
-        nodesToShow = allNodesExceptConnected.filter(
+        ),
+        available_nodes: allNodesExceptConnected.filter(
             (node: any) => node.default && !node.hidden && !isTestNet(node.url)
-        );
-    } else if (activeTab === "testnet_nodes") {
-        nodesToShow = allNodesExceptConnected.filter((node: any) =>
+        ),
+        testnet_nodes: allNodesExceptConnected.filter((node: any) =>
             isTestNet(node.url)
-        );
-    } else {
-        nodesToShow = allNodesExceptConnected.filter(
+        ),
+        hidden_nodes: allNodesExceptConnected.filter(
             (node: any) => node.hidden && !isTestNet(node.url)
-        );
-    }
+        )
+    };
+    const nodesToShow = byTab[activeTab];
+    const onlyPersonalNodeActive =
+        activeTab === "my_nodes" &&
+        !!connectedNodeIsPersonal() &&
+        nodesToShow.length === 0;
 
     const backgroundPinging =
         !!routerTransitioner &&
         (routerTransitioner as any).isBackgroundPingingInProgress();
 
     return (
-        <div style={{paddingTop: "1em"}}>
-            {renderAutoSelection(connectedNode)}
-            <div style={{clear: "both"}} />
-            <div className="active-node">
-                <LoadingButton
-                    style={{float: "right"}}
-                    isLoading={backgroundPinging}
-                    caption="settings.ping"
-                    loadingType="inside-feedback-resize"
-                    loadingMessage="settings.pinging"
-                    onClick={recalculateLatency}
-                />
-                <Translate
-                    component="h4"
-                    style={{marginLeft: "1rem"}}
-                    content="settings.active_node"
-                />
-                {renderNode(connectedNode, connectedNode)}
-            </div>
-            <div
-                className="nodes"
-                style={{
-                    position: "relative",
-                    marginBottom: "2em"
-                }}
-            >
-                <div className="grid-block shrink" style={{marginLeft: 0}}>
-                    {[
-                        "available_nodes",
-                        "my_nodes",
-                        "hidden_nodes",
-                        "testnet_nodes"
-                    ].map(key => {
-                        return (
-                            <div
-                                key={key}
-                                className={cnames("nodes-header clickable", {
-                                    inactive: activeTab !== key
-                                })}
-                                onClick={() => setActiveTab(key)}
-                            >
-                                <Translate content={"settings." + key} />
-                            </div>
-                        );
-                    })}
+        <div className={styles.page}>
+            <AutoSelectionNode
+                isActive={selectedNode === autoSelectionUrl}
+                connectedNode={connectedNode}
+                totalNodes={getMainNetNodes().length}
+            />
+
+            <section className={styles.card}>
+                <div className={styles.head}>
+                    <Translate
+                        component="h3"
+                        className={styles.heading}
+                        content="settings.active_node"
+                    />
+                    <Button
+                        loading={pinging || backgroundPinging}
+                        onClick={recalculateLatency}
+                    >
+                        <Translate
+                            content={
+                                pinging || backgroundPinging
+                                    ? "settings.pinging"
+                                    : "settings.ping"
+                            }
+                        />
+                    </Button>
                 </div>
-                {activeTab === "my_nodes" && (
-                    <div style={{paddingLeft: "1rem", paddingBottom: "1rem"}}>
+                <ul className={styles.list}>
+                    {renderNode(connectedNode, connectedNode)}
+                </ul>
+            </section>
+
+            <section className={styles.card}>
+                <div className={styles.head}>
+                    <SubMenu
+                        aria-label={counterpart.translate("settings.access")}
+                        items={TABS.map(key => ({
+                            key,
+                            label: `${counterpart.translate(
+                                "settings." + key
+                            )} ${byTab[key].length}`
+                        }))}
+                        value={activeTab}
+                        onChange={key => setActiveTab(key as NodeTab)}
+                    />
+                    {activeTab === "my_nodes" && (
                         <Button variant="accent" onClick={showAddNodeModal}>
                             <Translate
                                 id="add"
@@ -453,25 +464,33 @@ export default function AccessSettings({
                                 content="settings.add_api"
                             />
                         </Button>
-                    </div>
-                )}
+                    )}
+                </div>
                 {activeTab === "testnet_nodes" && (
                     <Translate
                         component="p"
+                        className={styles.note}
                         content={"settings.testnet_nodes_disclaimer"}
                     />
                 )}
-                {nodesToShow.map((node: any) =>
-                    renderNode(node, connectedNode)
-                )}
+                <ul className={styles.list}>
+                    {nodesToShow.map((node: any) =>
+                        renderNode(node, connectedNode)
+                    )}
+                </ul>
                 {onlyPersonalNodeActive ? (
-                    <div className="api-node">
-                        <p className="api-node-title" style={{padding: "1rem"}}>
-                            <Translate content="settings.personal_active" />
-                        </p>
-                    </div>
+                    <Translate
+                        component="p"
+                        className={styles.note}
+                        content="settings.personal_active"
+                    />
                 ) : null}
-            </div>
+                {!nodesToShow.length && !onlyPersonalNodeActive ? (
+                    <p className={styles.note}>
+                        {counterpart.translate("settings.nodes_none")}
+                    </p>
+                ) : null}
+            </section>
         </div>
     );
 }

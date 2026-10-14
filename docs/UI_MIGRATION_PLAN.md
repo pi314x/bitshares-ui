@@ -12902,6 +12902,57 @@ the menu without being asked.
   local wallet's lock otherwise); the "Connect extension" chip stays before it.
 - Still unverified: signing with the real extension (§7.11 "Not done").
 
+### 7.25 One home per page, what the original had, portfolio and nodes
+
+**A page has one menu entry** (the user asked for the duplicates to go to where
+they belong):
+- **Spotlight** no longer repeats what the left menu links to: Instant trade,
+  Prediction markets, Timed transfer and Voting are gone from its tiles (six
+  remain: Borrow, Barter, Merchant protocol, Direct debit, HTLC, Paper wallet).
+- **Liquidity pools** is one place: Explorer's *Pools* tab is gone
+  (`/explorer/pools` redirects to `/pools`) and so is the portfolio's *Pools*
+  section. What only the latter could do - create a pool, delete one, stake and
+  exchange from a table of the pools the account created - is the page's second
+  view, `/pools?view=mine` ("Created by me"); `/account/<name>/pools` redirects
+  there.
+- Left as they are on purpose: Settings > Accounts (hide/unhide an account,
+  view its keys: wallet management) next to the menu's Accounts (balances,
+  contacts, creating and importing); the portfolio's Credit management (the
+  account's own offers, rights and debts) next to Credit offers (the market of
+  offers); Explorer's Assets/Accounts/Witnesses/Committee (the chain's lists)
+  next to the portfolio's Assets and Voting (the account's own).
+
+**Compared with the original UI** (`3791e1af7`, before the migration): all 36
+original routes still exist; the 184 locale keys the original referenced and
+the current tree does not were sorted into: the seven removed gateway
+integrations (BitKapital, OpenLedger, Bitspark, BlockTrades, Citadel, GDEX,
+RuDEX: `3f84f74ac`, deliberate), strings of screens that were rebuilt under new
+keys (Spotlight tiles, scaled orders, quick trade), and real losses. The real
+losses, found that way and restored here: the **"a backup is required"** notice
+of the footer (`components/Layout/Footer.jsx`; `next/BackupNotice.tsx`, a chip
+in the top bar to `/wallet/backup/create` while the local wallet has no backup
+or changed since), **Trade opens the last market** (the header's `lastMarket`),
+and **followed accounts** (listed after the user's own in the account menu, with
+Follow/Unfollow for the account being looked at). Still missing, not restored:
+the **report-a-problem** dialog (`ReportModal`, screenshot and log to the
+clipboard; it was deleted with the footer), the **"your node is out of sync,
+reconnect?"** prompt (the block status turns amber/red instead), the **"update
+available"** notice, and the header's wallet **total value**.
+
+**Portfolio** (`Account/AccountOverview.tsx`): its five views are the design
+system's tabs (the legacy tab strip and its select are gone) with what each holds
+beside the name; the balances view has a filter and an Active / Hidden / Visual
+switch; every table scrolls inside its panel instead of being cut off; the
+activity list wraps its sentences (no id/fee columns on a phone); the credit
+view's three lists are the quiet switch the voting page uses; the chart's head is
+the title and the range on one row, the figures under it.
+
+**Settings > Nodes** (`Settings/AccessSettings.tsx`): three cards - how the node
+is chosen, the node in use with Ping, the other nodes behind Available /
+Personal / Hidden / Testnet with how many each holds. A row is a status dot, the
+place and the address, the latency and buttons that say what they do (Connect,
+Hide, Remove). The same markup serves the "could not connect" screen.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

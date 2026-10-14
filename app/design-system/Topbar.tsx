@@ -25,6 +25,9 @@ export interface TopbarProps {
     hideLocale?: boolean;
     /** "Log out" in the account menu. */
     onLogout?: () => void;
+    /** Accounts the user follows, and follow/unfollow of the current one. */
+    followedAccounts?: string[];
+    follow?: {following: boolean; onToggle: () => void};
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -60,6 +63,8 @@ export function Topbar({
     onSelectAccount,
     accountBadges,
     onLogout,
+    followedAccounts,
+    follow,
     hideConnection = false,
     hideLocale = false,
     locked,
@@ -148,6 +153,8 @@ export function Topbar({
                     onSelect={onSelectAccount}
                     badges={accountBadges}
                     onLogout={onLogout}
+                    followedAccounts={followedAccounts}
+                    follow={follow}
                 />
                 {/* the lock follows the account it unlocks */}
                 <WalletLockButton

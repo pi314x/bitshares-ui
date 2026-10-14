@@ -102,3 +102,22 @@
     border-radius: 0 0 6px 6px;
     color: var(--down);
 }
+
+// the second list of the menu: accounts the user follows
+.group {
+    margin-top: 4px;
+    padding: 8px 10px 4px;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.follow {
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    color: var(--accent);
+}

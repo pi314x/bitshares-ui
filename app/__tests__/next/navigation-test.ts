@@ -4,7 +4,7 @@
 // SameT funds) must stay reachable.
 import * as fs from "fs";
 import * as path from "path";
-import {NAV_GROUPS, crumbFromPath} from "../../next/navigation";
+import {NAV_GROUPS, crumbFromPath, withLastMarket} from "../../next/navigation";
 import {isNavItemActive} from "../../design-system/Rail";
 
 const app = fs.readFileSync(path.join(__dirname, "../../App.jsx"), "utf8");
@@ -189,5 +189,35 @@ describe("every page has one entry in the menu", () => {
         expect(activeLabels("/market/EUR_BTS")).toEqual(["Trade"]);
         expect(activeLabels("/asset/EUR")).toEqual(["Explorer"]);
         expect(activeLabels("/htlc")).toEqual(["Spotlight"]);
+    });
+});
+
+describe("withLastMarket", () => {
+    const tradeOf = (groups: typeof NAV_GROUPS) =>
+        groups
+            .reduce((all: any[], g) => all.concat(g.items), [])
+            .find(item => item.label === "Trade").to;
+
+    it("points Trade at the market the user traded last", () => {
+        expect(tradeOf(withLastMarket(NAV_GROUPS, "USD_BTS"))).toBe(
+            "/market/USD_BTS"
+        );
+    });
+
+    it("keeps the default market without a (valid) last market", () => {
+        const base = tradeOf(NAV_GROUPS);
+        [undefined, null, "", "BTS", "a/b_c", 5].forEach(value =>
+            expect(tradeOf(withLastMarket(NAV_GROUPS, value))).toBe(base)
+        );
+    });
+
+    it("leaves every other entry alone", () => {
+        const groups = withLastMarket(NAV_GROUPS, "USD_BTS");
+        const others = (g: typeof NAV_GROUPS) =>
+            g
+                .reduce((all: any[], x) => all.concat(x.items), [])
+                .filter(item => item.label !== "Trade")
+                .map(item => item.to);
+        expect(others(groups)).toEqual(others(NAV_GROUPS));
     });
 });

@@ -79,7 +79,6 @@ import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
 import CreatePoolModal from "../Modal/CreatePoolModal";
 import DeletePoolModal from "../Modal/DeletePoolModal";
-import {Tabs, Tab} from "../Utility/Tabs";
 import {List} from "immutable";
 import ApplicationApi from "api/ApplicationApi";
 import LoadingIndicator from "../LoadingIndicator";
@@ -434,15 +433,10 @@ function AccountPools({
     });
 
     return (
-        <div className="tabs-container generic-bordered-box">
-            <Tabs
-                segmented={false}
-                setting="issuedAssetsTab"
-                className="account-tabs"
-                tabsClass="account-overview bordered-header content-block"
-                contentClass="padding"
-            >
-                <Tab title="account.liquidity_pools.liquidity_pools">
+        <div className="generic-bordered-box">
+            <div className="padding">
+                {/* one tab only: no tab strip (the page's view switch names it) */}
+                <div>
                     <div className="grid-block vertical">
                         <div className="grid-content no-padding">
                             <SearchInput
@@ -557,8 +551,8 @@ function AccountPools({
                             name={account_name}
                         />
                     </div>
-                </Tab>
-            </Tabs>
+                </div>
+            </div>
         </div>
     );
 }

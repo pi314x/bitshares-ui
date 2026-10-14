@@ -666,6 +666,10 @@ class App extends React.Component {
                                 />
                                 {/* Explorer routes */}
                                 <Route
+                                    path="/explorer/pools"
+                                    element={<Navigate to="/pools" replace />}
+                                />
+                                <Route
                                     path="/explorer/:tab"
                                     element={<Explorer />}
                                 />

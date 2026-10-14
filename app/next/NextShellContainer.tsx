@@ -20,7 +20,8 @@ import {LocaleSwitcher} from "../design-system/LocaleSwitcher";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
-import {NAV_GROUPS, crumbFromPath} from "./navigation";
+import {NAV_GROUPS, crumbFromPath, withLastMarket} from "./navigation";
+import {Apis} from "bitsharesjs-ws";
 import {useReduxState} from "./hooks/useReduxState";
 import {selectAccountState} from "../store/slices/accountSlice";
 import {selectBlockchain} from "../store/slices/blockchainSlice";
@@ -46,6 +47,7 @@ import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import {logoutSession} from "./logoutSession";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
+import BackupNotice from "./BackupNotice";
 import NotificationBell from "../components/Notifications/NotificationBell";
 import TradeNotifications from "../components/Notifications/TradeNotifications";
 import SendModal from "components/Modal/SendModal";
@@ -61,6 +63,11 @@ interface AccountStoreState {
     currentAccount: string | null;
     passwordAccount: string | null;
     myActiveAccounts: ImmutableSetLike<string>;
+    /** Followed accounts: name -> {name, ...} */
+    starredAccounts: {
+        keySeq(): {toArray(): string[]};
+        has(name: string): boolean;
+    };
 }
 
 interface BlockchainStoreState {
@@ -80,6 +87,7 @@ interface ImmutableMapLike {
 
 interface SettingsStoreState {
     settings: ImmutableMapLike;
+    viewSettings: ImmutableMapLike;
     defaults: {locale: string[]};
 }
 
@@ -173,6 +181,35 @@ export default function NextShellContainer({
         extensionAccount && !localAccounts.includes(extensionAccount)
             ? [extensionAccount, ...localAccounts]
             : localAccounts;
+    // accounts the user follows and is not the owner of, after their own
+    const followedAccounts = account.starredAccounts
+        .keySeq()
+        .toArray()
+        .filter(name => !accounts.includes(name))
+        .sort();
+    const currentIsOwn = !!currentAccount && accounts.includes(currentAccount);
+    const follow =
+        currentAccount && !currentIsOwn
+            ? {
+                  following: account.starredAccounts.has(currentAccount),
+                  onToggle: () =>
+                      account.starredAccounts.has(currentAccount)
+                          ? AccountActions.removeStarAccount(currentAccount)
+                          : AccountActions.addStarAccount(currentAccount)
+              }
+            : undefined;
+    // "Trade" opens the market the user was on last, not always the default
+    let lastMarketKey = "lastMarket";
+    try {
+        const chainId = (Apis as any).instance().chain_id;
+        if (chainId) lastMarketKey += "_" + String(chainId).substr(0, 8);
+    } catch (e) {
+        // no connection yet: the default market stays
+    }
+    const navGroups = withLastMarket(
+        NAV_GROUPS,
+        settings.viewSettings.get(lastMarketKey)
+    );
     const activeNode = settings.settings.get("activeNode") as string | null;
     const themeValue = legacyThemeToThemeName(settings.settings.get("themes"));
 
@@ -225,7 +262,7 @@ export default function NextShellContainer({
     return (
         <>
             <NextShell
-                navGroups={NAV_GROUPS}
+                navGroups={navGroups}
                 crumb={crumbFromPath(location.pathname)}
                 railFooter={
                     <div
@@ -249,6 +286,8 @@ export default function NextShellContainer({
                 }
                 currentAccount={currentAccount}
                 accounts={accounts}
+                followedAccounts={followedAccounts}
+                follow={follow}
                 onSelectAccount={name =>
                     AccountActions.setCurrentAccount.defer(name)
                 }
@@ -292,6 +331,7 @@ export default function NextShellContainer({
                 chips={
                     <>
                         <AccountBrowsingMode location={location} chip />
+                        <BackupNotice />
                         <NotificationBell />
                     </>
                 }

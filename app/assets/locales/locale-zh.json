@@ -2471,7 +2471,13 @@
         "wallets": "钱包管理",
         "yes": "是",
         "signing": "Signing",
-        "signing_text": "Connect the BitShares wallet browser extension to sign with it."
+        "signing_text": "Connect the BitShares wallet browser extension to sign with it.",
+        "node_connect": "Connect",
+        "node_connected": "Connected",
+        "node_hide": "Hide",
+        "node_show": "Show",
+        "node_remove": "Remove",
+        "nodes_none": "No nodes in this list."
     },
     "showcases": {
         "barter": {

@@ -401,6 +401,34 @@ export default function BalanceHistoryChart({
         <section className={styles.card} aria-label={t("title")}>
             <div className={styles.head}>
                 <h3 className={styles.title}>{t("title")}</h3>
+                <div
+                    className={styles.ranges}
+                    role="group"
+                    aria-label={t("range")}
+                >
+                    {RANGES.map(key => (
+                        <button
+                            key={key}
+                            type="button"
+                            aria-pressed={range === key}
+                            className={`${styles.rangeBtn} ${
+                                range === key ? styles.rangeOn : ""
+                            }`}
+                            onClick={() => {
+                                setRange(key);
+                                try {
+                                    window.localStorage.setItem(RANGE_KEY, key);
+                                } catch (e) {
+                                    // not remembered
+                                }
+                            }}
+                        >
+                            {t(`range_${key}`)}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className={styles.headFigures}>
                 <div className={styles.figures} role="group">
                     {choices.map(choice => {
                         const unavailable =
@@ -432,32 +460,6 @@ export default function BalanceHistoryChart({
                             </button>
                         );
                     })}
-                </div>
-                <div
-                    className={styles.ranges}
-                    role="group"
-                    aria-label={t("range")}
-                >
-                    {RANGES.map(key => (
-                        <button
-                            key={key}
-                            type="button"
-                            aria-pressed={range === key}
-                            className={`${styles.rangeBtn} ${
-                                range === key ? styles.rangeOn : ""
-                            }`}
-                            onClick={() => {
-                                setRange(key);
-                                try {
-                                    window.localStorage.setItem(RANGE_KEY, key);
-                                } catch (e) {
-                                    // not remembered
-                                }
-                            }}
-                        >
-                            {t(`range_${key}`)}
-                        </button>
-                    ))}
                 </div>
                 {change !== null && asset && change !== BigInt(0) ? (
                     <div

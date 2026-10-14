@@ -47,11 +47,21 @@ afterEach(() => {
 });
 
 describe("Spotlight", () => {
+    it("does not repeat what the left menu already links to", () => {
+        const ids = TILES.map(tile => tile.id);
+        [
+            "instant_trade",
+            "prediction_market",
+            "timed_transfer",
+            "voting"
+        ].forEach(id => expect(ids).not.toContain(id));
+    });
+
     it("shows every tile, grouped by purpose, with the locale's titles", () => {
         setAccount("alice");
         jest.spyOn(ChainStore as any, "getAccount").mockReturnValue(account);
         const {getByText, getAllByRole} = renderGrid();
-        expect(TILES).toHaveLength(10);
+        expect(TILES).toHaveLength(6);
         ["Trade and borrow", "Payments", "Your account"].forEach(heading =>
             expect(getByText(heading)).toBeTruthy()
         );
@@ -75,22 +85,18 @@ describe("Spotlight", () => {
         const {getByTestId} = renderGrid();
         const href = (id: string) =>
             getByTestId(`tile-${id}`).getAttribute("href");
-        expect(href("instant_trade")).toBe("/instant-trade");
-        expect(href("prediction_market")).toBe("/prediction");
         expect(href("borrow")).toBe("/borrow");
         expect(href("barter")).toBe("/barter");
         expect(href("merchant_protocol")).toBe("/invoice/request");
         expect(href("direct_debit")).toBe("/direct-debit");
         expect(href("htlc")).toBe("/htlc");
-        expect(href("timed_transfer")).toBe("/timed-transfer");
-        expect(href("voting")).toBe("/account/alice/voting");
     });
 
     it("says why a tile is unavailable instead of hiding it in a tooltip", () => {
         setAccount(null);
         const {getByTestId, getAllByText, getByText} = renderGrid();
         expect(getByText("Log in to use these features.")).toBeTruthy();
-        const tile = getByTestId("tile-instant_trade");
+        const tile = getByTestId("tile-borrow");
         expect(tile.getAttribute("aria-disabled")).toBe("true");
         expect(tile.getAttribute("href")).toBeNull();
         expect(getAllByText("Log in").length).toBe(TILES.length);
@@ -102,7 +108,7 @@ describe("Spotlight", () => {
             .spyOn(ChainStore as any, "getAccount")
             .mockReturnValue(undefined);
         const {getByTestId} = renderGrid();
-        expect(getByTestId("tile-voting").getAttribute("aria-disabled")).toBe(
+        expect(getByTestId("tile-barter").getAttribute("aria-disabled")).toBe(
             "true"
         );
         get.mockReturnValue(account);
@@ -111,9 +117,7 @@ describe("Spotlight", () => {
                 callback()
             );
         });
-        expect(getByTestId("tile-voting").getAttribute("href")).toBe(
-            "/account/alice/voting"
-        );
+        expect(getByTestId("tile-barter").getAttribute("href")).toBe("/barter");
     });
 
     it("prints the paper wallet through the unchanged helper", () => {

@@ -49,7 +49,6 @@ import {selectWalletUnlockState} from "../../store/slices/walletUnlockSlice";
 
 /* Nested routes */
 import AccountAssets from "./AccountAssets";
-import AccountPools from "./AccountPools";
 import {AccountAssetCreate} from "./AccountAssetCreate";
 import AccountAssetUpdate from "./AccountAssetUpdate";
 import AccountMembership from "./AccountMembership";
@@ -65,7 +64,6 @@ import AccountOverview from "./AccountOverview";
 const ACCOUNT_SECTIONS: Array<{key: string; label: string}> = [
     {key: "", label: "Portfolio"},
     {key: "assets", label: "Assets"},
-    {key: "pools", label: "Pools"},
     {key: "member-stats", label: "Membership"},
     {key: "vesting", label: "Vesting"},
     {key: "permissions", label: "Permissions"},
@@ -206,9 +204,10 @@ function AccountPage({
                     path="assets"
                     element={<AccountAssets {...passOnProps} />}
                 />
+                {/* the account's own pools are a view of Liquidity pools */}
                 <Route
                     path="pools"
-                    element={<AccountPools {...passOnProps} />}
+                    element={<Navigate to="/pools?view=mine" replace />}
                 />
                 <Route
                     path="create-asset"

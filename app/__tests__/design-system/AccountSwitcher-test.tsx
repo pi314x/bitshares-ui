@@ -55,4 +55,49 @@ describe("design-system/AccountSwitcher", () => {
         expect(items[0].textContent).toBe("wallet-acctExtension");
         expect(items[1].textContent).toBe("init0");
     });
+
+    it("lists followed accounts after the user's own and selects them", () => {
+        const onSelect = jest.fn();
+        const {getByText, getAllByRole} = render(
+            <AccountSwitcher
+                currentAccount="init0"
+                accounts={["init0"]}
+                followedAccounts={["friend"]}
+                onSelect={onSelect}
+            />
+        );
+        fireEvent.click(getByText("init0"));
+        expect(getByText("Followed")).toBeTruthy();
+        expect(getAllByRole("menuitem").map(i => i.textContent)).toEqual([
+            "init0",
+            "friend"
+        ]);
+        fireEvent.click(getByText("friend"));
+        expect(onSelect).toHaveBeenCalledWith("friend");
+    });
+
+    it("offers to follow, then unfollow, the account being looked at", () => {
+        const onToggle = jest.fn();
+        const {getByText, rerender} = render(
+            <AccountSwitcher
+                currentAccount="stranger"
+                accounts={["init0"]}
+                onSelect={() => {}}
+                follow={{following: false, onToggle}}
+            />
+        );
+        fireEvent.click(getByText("stranger"));
+        fireEvent.click(getByText("Follow stranger"));
+        expect(onToggle).toHaveBeenCalledTimes(1);
+        rerender(
+            <AccountSwitcher
+                currentAccount="stranger"
+                accounts={["init0"]}
+                onSelect={() => {}}
+                follow={{following: true, onToggle}}
+            />
+        );
+        fireEvent.click(getByText("stranger"));
+        expect(getByText("Unfollow stranger")).toBeTruthy();
+    });
 });

@@ -28,6 +28,8 @@ export interface NextShellProps {
     onSelectAccount: (accountName: string) => void;
     accountBadges?: Record<string, string>;
     onLogout?: () => void;
+    followedAccounts?: string[];
+    follow?: {following: boolean; onToggle: () => void};
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -68,6 +70,8 @@ function ShellChrome({
     onSelectAccount,
     accountBadges,
     onLogout,
+    followedAccounts,
+    follow,
     locked,
     onToggleLock,
     lockLabel,
@@ -136,6 +140,8 @@ function ShellChrome({
                     onSelectAccount={onSelectAccount}
                     accountBadges={accountBadges}
                     onLogout={onLogout}
+                    followedAccounts={followedAccounts}
+                    follow={follow}
                     hideConnection
                     hideLocale
                     locked={locked}

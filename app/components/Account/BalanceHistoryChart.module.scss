@@ -6,18 +6,28 @@
     margin-bottom: 20px;
 }
 
+// the title and the range switch on one row ...
 .head {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px 20px;
+    gap: 8px 20px;
+    margin-bottom: 12px;
+}
+
+// ... the figures (what is drawn) and the change under them
+.headFigures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
     margin-bottom: 12px;
 }
 
 // `.card .title`: the legacy global sheet sizes every h3
 .card .title {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -126,7 +136,7 @@
 
 .chart {
     width: 100%;
-    height: 260px;
+    height: 240px;
 }
 
 .foot {

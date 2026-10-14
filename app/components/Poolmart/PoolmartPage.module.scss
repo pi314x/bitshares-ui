@@ -6,3 +6,8 @@
     border-radius: 10px;
     background: var(--surface);
 }
+
+// the view switch sits above the list, with the page's own 16px rhythm
+.views {
+    margin-bottom: 16px;
+}
