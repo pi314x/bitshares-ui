@@ -1,0 +1,83 @@
+// Layout fixes for the legacy screens' Foundation grid, loaded once from the
+// entry like legacy-controls.scss.
+//
+// `.grid-block.vertical` is a column that *wraps* (`flex-flow: column wrap`).
+// In a wrapping column, an item's width is not stretched to the container: the
+// line is as wide as its widest item, so one wide table or one row of filters
+// made the whole block (and every sibling in it) as wide as that content and
+// pushed it past the screen's edge, where the page's overflow hid it. Capping
+// the items at the container's width lets a wide table scroll inside its own
+// scroller and a row of filters wrap, as they were written to.
+.grid-block.vertical > * {
+    max-width: 100%;
+}
+
+// The account pages' tab bar carries its action buttons (Reset / Publish /
+// Create paper wallet, ...) as a last `<li>`. On a phone that cell was a
+// right-aligned run of buttons of different widths, one of them wrapping its
+// label over three lines. They form a row of their own under the tabs and
+// share its width. `body[class][class]` as in legacy-controls.scss: the
+// per-page rules are `div.account-tabs.with-buttons ul > li...` (0,4,3).
+@media (max-width: 640px) {
+    body[class][class] {
+        // the bar is a table (`ul.account-overview { display: table }`), which
+        // keeps the action buttons in the select's row; make it a column
+        div.account-tabs ul.account-overview {
+            display: block;
+
+            > li {
+                display: block;
+                width: 100%;
+            }
+        }
+
+        div.account-tabs ul > li.tabs-action-buttons {
+            display: block;
+            width: 100%;
+            padding: 8px 0 0;
+            margin: 0;
+            text-align: left;
+
+            > div,
+            .action-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            button.button,
+            > div > button.button {
+                flex: 1 1 auto;
+                min-width: 0;
+                margin: 0;
+            }
+        }
+    }
+}
+
+// AccountSelector's outer wrapper is a Tooltip, which is `inline-block`: the
+// selector (and the right-aligned "#id" label above it, pulled up over the
+// field's caption with a negative margin) was as wide as its content, so on a
+// narrow card the id printed over the caption.
+body[class][class] .input-area {
+    display: block;
+    width: 100%;
+}
+
+// A search box, radio buttons and switches on one non-wrapping line (the
+// prediction markets list) was 440px wide on a phone and pushed the page
+// sideways.
+@media (max-width: 640px) {
+    body[class][class] .header-selector > .filter-block {
+        float: none;
+        flex-wrap: wrap;
+        gap: 8px 0;
+
+        > span {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 0;
+        }
+    }
+}
