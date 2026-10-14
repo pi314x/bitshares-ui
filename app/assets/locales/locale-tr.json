@@ -3185,6 +3185,16 @@
         "unresolved": "%(count)s işlem okunamadı ve çizgide yer almıyor.",
         "older": "Eskileri yükle",
         "loading": "Yükleniyor...",
-        "in_orders": "Açık emirlerde: %(amount)s"
+        "in_orders": "Açık emirlerde: %(amount)s",
+        "wallet": "Cüzdan",
+        "orders": "Açık emirler",
+        "total": "Toplam",
+        "no_orders": "Bu dönemde açık emir yok",
+        "whole_history": "Hesabın tüm geçmişinden oluşturuldu (%(count)s işlem).",
+        "from_node": "Daha eski işlemler %(node)s düğümünden geldi."
+    },
+    "toolbar": {
+        "rows": "%(count)s satır",
+        "search": "Ara"
     }
 }

@@ -3185,6 +3185,16 @@
         "unresolved": "%(count)s 件の操作は読み取れず、線に含まれていません。",
         "older": "さらに古いものを読み込む",
         "loading": "読み込み中...",
-        "in_orders": "未約定の注文中: %(amount)s"
+        "in_orders": "未約定の注文中: %(amount)s",
+        "wallet": "ウォレット",
+        "orders": "未約定の注文",
+        "total": "合計",
+        "no_orders": "この期間に未約定の注文はありません",
+        "whole_history": "アカウントの全履歴から作成しています（%(count)s 件の操作）。",
+        "from_node": "古い操作は %(node)s から取得しました。"
+    },
+    "toolbar": {
+        "rows": "%(count)s 行",
+        "search": "検索"
     }
 }

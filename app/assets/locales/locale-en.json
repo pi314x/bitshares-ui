@@ -3192,6 +3192,16 @@
         "unresolved": "%(count)s operation(s) could not be read and are not in the line.",
         "older": "Load older",
         "loading": "Loading...",
-        "in_orders": "In open orders: %(amount)s"
+        "in_orders": "In open orders: %(amount)s",
+        "wallet": "Wallet",
+        "orders": "Open orders",
+        "total": "Total",
+        "no_orders": "No open orders in this period",
+        "whole_history": "Built from the account's whole history (%(count)s operations).",
+        "from_node": "Older operations come from %(node)s."
+    },
+    "toolbar": {
+        "rows": "%(count)s rows",
+        "search": "Search"
     }
 }

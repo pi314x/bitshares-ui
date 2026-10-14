@@ -3191,6 +3191,16 @@
         "unresolved": "有 %(count)s 笔操作无法读取，未计入曲线。",
         "older": "加载更早的",
         "loading": "加载中...",
-        "in_orders": "挂单中：%(amount)s"
+        "in_orders": "挂单中：%(amount)s",
+        "wallet": "钱包",
+        "orders": "未成交订单",
+        "total": "合计",
+        "no_orders": "此期间没有未成交订单",
+        "whole_history": "根据账户的完整历史生成（%(count)s 个操作）。",
+        "from_node": "更早的操作来自 %(node)s。"
+    },
+    "toolbar": {
+        "rows": "%(count)s 行",
+        "search": "搜索"
     }
 }

@@ -50,10 +50,11 @@ import ls from "common/localStorage";
 import {Apis} from "bitsharesjs-ws";
 import {Radio} from "../../design-system/Radio";
 import {Table} from "../../design-system/Table";
-import {Select} from "../../design-system/Select";
 import {Icon} from "../../design-system/Icon";
 import {List} from "../../design-system/List";
 import SearchInput from "../Utility/SearchInput";
+import RowsSelect from "../Utility/RowsSelect";
+import {Toolbar} from "../../design-system/Toolbar";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -287,30 +288,16 @@ export default function Assets() {
             <div className="grid-block vertical">
                 <div className="grid-block main-content small-12 medium-10 medium-offset-1 main-content vertical">
                     <div className="generic-bordered-box">
-                        <div style={{textAlign: "left", marginBottom: "24px"}}>
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    width: "0px",
-                                    marginTop: "2px",
-                                    float: "left",
-                                    fontSize: "18px"
-                                }}
-                            >
-                                {isLoading ? <Icon type="loading" /> : null}
-                            </span>
-                            <TypedSearchInput
-                                value={filterSearch}
-                                style={{width: "200px"}}
-                                onChange={handleFilterChange}
-                            />
+                        <Toolbar>
+                            <Toolbar.Grow>
+                                <TypedSearchInput
+                                    value={filterSearch}
+                                    onChange={handleFilterChange}
+                                />
+                            </Toolbar.Grow>
                             <Radio.Group
                                 value={activeFilter}
                                 onChange={toggleFilter}
-                                style={{
-                                    marginBottom: "7px",
-                                    marginLeft: "24px"
-                                }}
                             >
                                 <Radio value={"market"}>
                                     <Translate content="explorer.assets.market" />
@@ -322,31 +309,14 @@ export default function Assets() {
                                     <Translate content="explorer.assets.prediction" />
                                 </Radio>
                             </Radio.Group>
-
-                            <Select
-                                style={{width: "150px", marginLeft: "24px"}}
-                                value={rowsOnPage}
-                                onChange={value =>
-                                    setRowsOnPage(value as string)
-                                }
-                            >
-                                <Select.Option key={"10"} value={"10"}>
-                                    10 rows
-                                </Select.Option>
-                                <Select.Option key={"25"} value={"25"}>
-                                    25 rows
-                                </Select.Option>
-                                <Select.Option key={"50"} value={"50"}>
-                                    50 rows
-                                </Select.Option>
-                                <Select.Option key={"100"} value={"100"}>
-                                    100 rows
-                                </Select.Option>
-                                <Select.Option key={"200"} value={"200"}>
-                                    200 rows
-                                </Select.Option>
-                            </Select>
-                        </div>
+                            <Toolbar.End>
+                                {isLoading ? <Icon type="loading" /> : null}
+                                <RowsSelect
+                                    value={rowsOnPage}
+                                    onChange={setRowsOnPage}
+                                />
+                            </Toolbar.End>
+                        </Toolbar>
 
                         {activeFilter === "prediction" ? (
                             <List

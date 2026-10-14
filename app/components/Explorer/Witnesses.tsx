@@ -34,6 +34,7 @@ import Translate from "react-translate-component";
 import FormattedAsset from "../Utility/FormattedAsset";
 import TimeAgo from "../Utility/TimeAgo";
 import SearchInput from "../Utility/SearchInput";
+import {Toolbar} from "../../design-system/Toolbar";
 import SettingsActions from "actions/SettingsActions";
 import utils from "common/utils";
 import {useReduxState} from "../../next/hooks/useReduxState";
@@ -357,18 +358,17 @@ export default function Witnesses() {
                             </div>
                         </div>
 
-                        <TypedSearchInput
-                            placeholder={counterpart.translate(
-                                "explorer.witnesses.filter_by_name"
-                            )}
-                            value={filterWitness}
-                            onChange={onFilter}
-                            style={{
-                                width: "200px",
-                                marginBottom: "12px",
-                                marginTop: "4px"
-                            }}
-                        />
+                        <Toolbar>
+                            <Toolbar.Grow>
+                                <TypedSearchInput
+                                    placeholder={counterpart.translate(
+                                        "explorer.witnesses.filter_by_name"
+                                    )}
+                                    value={filterWitness}
+                                    onChange={onFilter}
+                                />
+                            </Toolbar.Grow>
+                        </Toolbar>
 
                         <Table
                             rowClassName={getRowClassName}

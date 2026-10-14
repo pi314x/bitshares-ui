@@ -3191,6 +3191,16 @@
         "unresolved": "%(count)s Operation(en) konnten nicht gelesen werden und fehlen in der Linie.",
         "older": "Ältere laden",
         "loading": "Wird geladen...",
-        "in_orders": "In offenen Aufträgen: %(amount)s"
+        "in_orders": "In offenen Aufträgen: %(amount)s",
+        "wallet": "Wallet",
+        "orders": "Offene Aufträge",
+        "total": "Gesamt",
+        "no_orders": "Keine offenen Aufträge in diesem Zeitraum",
+        "whole_history": "Aus der gesamten Historie des Kontos erstellt (%(count)s Operationen).",
+        "from_node": "Ältere Operationen stammen von %(node)s."
+    },
+    "toolbar": {
+        "rows": "%(count)s Zeilen",
+        "search": "Suchen"
     }
 }

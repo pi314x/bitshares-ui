@@ -40,6 +40,7 @@ import {Table} from "../../design-system/Table";
 import SettingsActions from "actions/SettingsActions";
 import FormattedAsset from "../Utility/FormattedAsset";
 import SearchInput from "../Utility/SearchInput";
+import {Toolbar} from "../../design-system/Toolbar";
 import LoadingIndicator from "../LoadingIndicator";
 import utils from "common/utils";
 import {useReduxState} from "../../next/hooks/useReduxState";
@@ -178,18 +179,17 @@ export default function CommitteeMembers() {
             <div className="grid-block vertical medium-horizontal">
                 <div className="grid-block vertical">
                     <div className="grid-content">
-                        <TypedSearchInput
-                            placeholder={counterpart.translate(
-                                "explorer.witnesses.filter_by_name"
-                            )}
-                            value={filterCommitteeMember}
-                            onChange={onFilter}
-                            style={{
-                                width: "200px",
-                                marginBottom: "12px",
-                                marginTop: "4px"
-                            }}
-                        />
+                        <Toolbar>
+                            <Toolbar.Grow>
+                                <TypedSearchInput
+                                    placeholder={counterpart.translate(
+                                        "explorer.witnesses.filter_by_name"
+                                    )}
+                                    value={filterCommitteeMember}
+                                    onChange={onFilter}
+                                />
+                            </Toolbar.Grow>
+                        </Toolbar>
                         <Table
                             columns={columns}
                             dataSource={dataSource}

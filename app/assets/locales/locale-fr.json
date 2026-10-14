@@ -3185,6 +3185,16 @@
         "unresolved": "%(count)s opération(s) n'ont pas pu être lues et ne figurent pas dans la courbe.",
         "older": "Charger plus ancien",
         "loading": "Chargement...",
-        "in_orders": "Dans les ordres ouverts : %(amount)s"
+        "in_orders": "Dans les ordres ouverts : %(amount)s",
+        "wallet": "Portefeuille",
+        "orders": "Ordres ouverts",
+        "total": "Total",
+        "no_orders": "Aucun ordre ouvert sur cette période",
+        "whole_history": "Construit à partir de tout l'historique du compte (%(count)s opérations).",
+        "from_node": "Les opérations plus anciennes viennent de %(node)s."
+    },
+    "toolbar": {
+        "rows": "%(count)s lignes",
+        "search": "Rechercher"
     }
 }

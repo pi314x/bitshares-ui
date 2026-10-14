@@ -3185,6 +3185,16 @@
         "unresolved": "%(count)s개의 작업을 읽지 못해 선에 포함되지 않았습니다.",
         "older": "이전 항목 불러오기",
         "loading": "불러오는 중...",
-        "in_orders": "미체결 주문: %(amount)s"
+        "in_orders": "미체결 주문: %(amount)s",
+        "wallet": "지갑",
+        "orders": "미체결 주문",
+        "total": "합계",
+        "no_orders": "이 기간에는 미체결 주문이 없습니다",
+        "whole_history": "계정의 전체 내역으로 만들었습니다(작업 %(count)s개).",
+        "from_node": "이전 작업은 %(node)s에서 가져왔습니다."
+    },
+    "toolbar": {
+        "rows": "%(count)s행",
+        "search": "검색"
     }
 }

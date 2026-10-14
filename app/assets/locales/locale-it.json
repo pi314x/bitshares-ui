@@ -3185,6 +3185,16 @@
         "unresolved": "%(count)s operazione/i non hanno potuto essere lette e non sono nella linea.",
         "older": "Carica più vecchie",
         "loading": "Caricamento...",
-        "in_orders": "In ordini aperti: %(amount)s"
+        "in_orders": "In ordini aperti: %(amount)s",
+        "wallet": "Portafoglio",
+        "orders": "Ordini aperti",
+        "total": "Totale",
+        "no_orders": "Nessun ordine aperto in questo periodo",
+        "whole_history": "Ricavato dall'intera cronologia del conto (%(count)s operazioni).",
+        "from_node": "Le operazioni più vecchie provengono da %(node)s."
+    },
+    "toolbar": {
+        "rows": "%(count)s righe",
+        "search": "Cerca"
     }
 }

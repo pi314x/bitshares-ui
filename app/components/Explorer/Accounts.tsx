@@ -27,8 +27,10 @@ import Icon from "../Icon/Icon";
 import BalanceComponent from "../Utility/BalanceComponent";
 import LoadingIndicator from "../LoadingIndicator";
 import {Table} from "../../design-system/Table";
-import {Select} from "../../design-system/Select";
 import SearchInput from "../Utility/SearchInput";
+import counterpart from "counterpart";
+import RowsSelect from "../Utility/RowsSelect";
+import {Toolbar} from "../../design-system/Toolbar";
 import {ChainStore} from "bitsharesjs";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
@@ -237,52 +239,29 @@ export default function Accounts() {
             <div className="grid-block vertical">
                 <div className="grid-block main-content small-12 medium-10 medium-offset-1 main-content vertical">
                     <div className="generic-bordered-box">
-                        <div style={{textAlign: "left", marginBottom: "24px"}}>
-                            <TypedSearchInput
-                                placeholder={"Search"}
-                                value={searchTerm}
-                                style={{width: "200px"}}
-                                onChange={onSearchChange}
-                            />
-
-                            <Select
-                                style={{width: "150px", marginLeft: "24px"}}
-                                value={rowsOnPage}
-                                onChange={value =>
-                                    setRowsOnPage(value as string)
-                                }
-                            >
-                                <Select.Option key={"10"} value={"10"}>
-                                    10 rows
-                                </Select.Option>
-                                <Select.Option key={"25"} value={"25"}>
-                                    25 rows
-                                </Select.Option>
-                                <Select.Option key={"50"} value={"50"}>
-                                    50 rows
-                                </Select.Option>
-                                <Select.Option key={"100"} value={"100"}>
-                                    100 rows
-                                </Select.Option>
-                                <Select.Option key={"200"} value={"200"}>
-                                    200 rows
-                                </Select.Option>
-                            </Select>
-
-                            <div
-                                style={{
-                                    display: "inline-block",
-                                    marginLeft: "24px"
-                                }}
-                            >
-                                {searchTerm && searchTerm.length == 0 ? (
-                                    <Translate content="account.start_typing_to_search" />
-                                ) : null}
-                            </div>
-                        </div>
+                        <Toolbar>
+                            <Toolbar.Grow>
+                                <TypedSearchInput
+                                    placeholder={counterpart.translate(
+                                        "toolbar.search"
+                                    )}
+                                    value={searchTerm}
+                                    onChange={onSearchChange}
+                                />
+                            </Toolbar.Grow>
+                            {searchTerm && searchTerm.length == 0 ? (
+                                <Translate content="account.start_typing_to_search" />
+                            ) : null}
+                            <Toolbar.End>
+                                <RowsSelect
+                                    value={rowsOnPage}
+                                    onChange={setRowsOnPage}
+                                />
+                            </Toolbar.End>
+                        </Toolbar>
 
                         <Table
-                            style={{width: "100%", marginTop: "16px"}}
+                            style={{width: "100%"}}
                             rowKey="accountId"
                             columns={columns}
                             dataSource={dataSource}
