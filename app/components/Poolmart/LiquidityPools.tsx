@@ -31,6 +31,7 @@ import PoolStakeModal from "../Modal/PoolStakeModal";
 import AccountStore from "../../stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {PoolCard, PoolCardData} from "./PoolCard";
+import {Holding, useMyHoldings} from "./useMyHoldings";
 import PoolGraph from "./PoolGraph";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -44,7 +45,6 @@ import {
     formatPercent,
     formatPrice,
     poolMetrics,
-    shareOfPool,
     sortPools
 } from "../../lib/common/poolMetrics";
 import styles from "./LiquidityPools.module.scss";
@@ -60,12 +60,6 @@ const TABLE_PAGE = 25;
 // below this page width the columns do not fit (measured: 1153px) and cards
 // take over
 const TABLE_MIN_WIDTH = 1200;
-
-interface Holding {
-    fraction: number;
-    amountA: number;
-    amountB: number;
-}
 
 /** A pool from the node, with its assets resolved, as the list needs it. */
 function toCard(pool: any, yours: Holding | null): PoolCardData | null {
@@ -91,72 +85,6 @@ function toCard(pool: any, yours: Holding | null): PoolCardData | null {
         yours,
         valueUnit: symbolA
     };
-}
-
-/** What `accountName` holds of the pools it has share tokens of. */
-function useMyHoldings(
-    accountName: string | null
-): {
-    pools: any[];
-    holdings: {[poolId: string]: Holding};
-} {
-    useChainStoreTick();
-    const account: any = accountName
-        ? (ChainStore as any).getAccount(accountName)
-        : null;
-    const balances: {[assetId: string]: string} =
-        account && typeof account.get === "function" && account.get("balances")
-            ? account.get("balances").toJS()
-            : {};
-    const key = Object.keys(balances)
-        .sort()
-        .join(",");
-    const [pools, setPools] = React.useState<any[]>([]);
-    React.useEffect(() => {
-        if (!key) {
-            setPools([]);
-            return;
-        }
-        let cancelled = false;
-        (PoolmartActions as any)
-            .getPoolsByShareAssets(key.split(","))
-            .then((found: any[]) => {
-                if (!cancelled) setPools(found);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [key]);
-
-    const holdings: {[poolId: string]: Holding} = {};
-    const mine: any[] = [];
-    pools.forEach(pool => {
-        const balanceId = balances[pool.share_asset];
-        const balanceObject = balanceId
-            ? (ChainStore as any).getObject(balanceId)
-            : null;
-        const shareAsset: any = (ChainStore as any).getAsset(pool.share_asset);
-        const dynamic: any =
-            shareAsset && typeof shareAsset.get === "function"
-                ? (ChainStore as any).getObject(
-                      shareAsset.get("dynamic_asset_data_id")
-                  )
-                : null;
-        if (!balanceObject || !dynamic || !pool.asset_a_obj) return;
-        const unit = Math.pow(10, shareAsset.get("precision"));
-        const shares = Number(balanceObject.get("balance")) / unit;
-        const supply = Number(dynamic.get("current_supply")) / unit;
-        if (!(shares > 0)) return;
-        const m = poolMetrics(
-            pool,
-            pool.asset_a_obj.get("precision"),
-            pool.asset_b_obj.get("precision")
-        );
-        const share = shareOfPool(shares, supply, m.reserveA, m.reserveB);
-        holdings[pool.id] = share;
-        mine.push(pool);
-    });
-    return {pools: mine, holdings};
 }
 
 interface LiquidityPoolsCoreProps {

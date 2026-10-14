@@ -145,3 +145,29 @@
     text-align: center;
     color: var(--muted);
 }
+
+// 1D / 1W / 1M / All: which part of the loaded history is in view
+.ranges {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    align-self: center;
+}
+
+.ranges .rangeBtn {
+    min-height: var(--control-h-sm, 30px);
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.ranges .rangeOn {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}

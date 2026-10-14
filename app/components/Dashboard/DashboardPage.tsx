@@ -26,7 +26,7 @@
 // none are declared or accepted here either, matching this migration's
 // established treatment of unread route props elsewhere, e.g.
 // `PredictionMarkets/PMAssetsContainer.tsx`).
-import {CurrentAccountBalanceChart} from "../Account/BalanceHistoryChart";
+import Desk from "./Desk/Desk";
 import * as React from "react";
 import LoadingIndicator from "../LoadingIndicator";
 import LoginSelector from "../LoginSelector";
@@ -44,6 +44,7 @@ interface DashboardPageCoreProps {
     myHiddenAccounts: any;
     accountsReady: boolean;
     passwordAccount: any;
+    currentAccount: any;
     preferredBases: any;
 }
 
@@ -52,6 +53,7 @@ function DashboardPageCore({
     myHiddenAccounts,
     accountsReady,
     passwordAccount,
+    currentAccount,
     preferredBases
 }: DashboardPageCoreProps) {
     if (!accountsReady) {
@@ -66,55 +68,76 @@ function DashboardPageCore({
         return <LoginSelector />;
     }
 
+    const accountNames: string[] = [];
+    const addName = (name: any) => {
+        if (
+            name &&
+            typeof name === "string" &&
+            accountNames.indexOf(name) === -1
+        ) {
+            accountNames.push(name);
+        }
+    };
+    addName(currentAccount);
+    addName(passwordAccount);
+    myActiveAccounts.forEach(addName);
+
+    const markets = (
+        <div className="tabs-container generic-bordered-box dash-panel">
+            <Tabs
+                defaultActiveTab={1}
+                segmented={false}
+                setting="dashboardTab"
+                className="account-tabs"
+                tabsClass="account-overview no-padding bordered-header content-block"
+            >
+                <Tab title="dashboard.starred_markets">
+                    <StarredMarkets />
+                </Tab>
+                {preferredBases.map((q: any) => {
+                    const title = (
+                        <span>
+                            <img
+                                className="column-hide-small"
+                                style={{
+                                    maxWidth: 30,
+                                    marginRight: 5
+                                }}
+                                src={`${__BASE_URL__}asset-symbols/${q
+                                    .replace(/^BTC/, "OPEN.BTC")
+                                    .toLowerCase()}.png`}
+                            />
+                            &nbsp;
+                            {q}
+                        </span>
+                    );
+
+                    return (
+                        <Tab key={q} title={title}>
+                            <FeaturedMarkets
+                                quotes={[q].concat(
+                                    (getPossibleGatewayPrefixes as any)([q])
+                                )}
+                            />
+                        </Tab>
+                    );
+                })}
+            </Tabs>
+        </div>
+    );
+
     return (
-        <div className="grid-block page-layout">
+        <div className="grid-block page-layout desk-page">
             <div className="grid-block no-padding">
                 <div className="grid-content app-tables no-padding">
                     <div className="content-block small-12">
-                        <CurrentAccountBalanceChart />
-                        <div className="tabs-container generic-bordered-box dash-panel">
-                            <Tabs
-                                defaultActiveTab={1}
-                                segmented={false}
-                                setting="dashboardTab"
-                                className="account-tabs"
-                                tabsClass="account-overview no-padding bordered-header content-block"
-                            >
-                                <Tab title="dashboard.starred_markets">
-                                    <StarredMarkets />
-                                </Tab>
-                                {preferredBases.map((q: any) => {
-                                    const title = (
-                                        <span>
-                                            <img
-                                                className="column-hide-small"
-                                                style={{
-                                                    maxWidth: 30,
-                                                    marginRight: 5
-                                                }}
-                                                src={`${__BASE_URL__}asset-symbols/${q
-                                                    .replace(/^BTC/, "OPEN.BTC")
-                                                    .toLowerCase()}.png`}
-                                            />
-                                            &nbsp;
-                                            {q}
-                                        </span>
-                                    );
-
-                                    return (
-                                        <Tab key={q} title={title}>
-                                            <FeaturedMarkets
-                                                quotes={[q].concat(
-                                                    (getPossibleGatewayPrefixes as any)(
-                                                        [q]
-                                                    )
-                                                )}
-                                            />
-                                        </Tab>
-                                    );
-                                })}
-                            </Tabs>
-                        </div>
+                        <Desk
+                            accountName={
+                                currentAccount || passwordAccount || null
+                            }
+                            accountNames={accountNames}
+                            markets={markets}
+                        />
                     </div>
                 </div>
             </div>
@@ -130,6 +153,7 @@ function DashboardPage() {
         myActiveAccounts,
         myHiddenAccounts,
         passwordAccount,
+        currentAccount,
         accountsLoaded,
         refsLoaded
     } = accountState;
@@ -139,6 +163,7 @@ function DashboardPage() {
             myActiveAccounts={myActiveAccounts}
             myHiddenAccounts={myHiddenAccounts}
             passwordAccount={passwordAccount}
+            currentAccount={currentAccount}
             accountsReady={accountsLoaded && refsLoaded}
             preferredBases={settingsState.preferredBases}
         />

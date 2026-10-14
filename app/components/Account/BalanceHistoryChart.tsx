@@ -61,6 +61,27 @@ function writeShown(shown: Record<SeriesKey, boolean>) {
     }
 }
 
+type RangeKey = "1d" | "1w" | "1m" | "all";
+const RANGES: RangeKey[] = ["1d", "1w", "1m", "all"];
+const RANGE_SECONDS: Record<RangeKey, number> = {
+    "1d": 86400,
+    "1w": 7 * 86400,
+    "1m": 30 * 86400,
+    all: 0
+};
+const RANGE_KEY = "__graphene__balanceChartRange";
+
+function readRange(): RangeKey {
+    try {
+        const saved = window.localStorage.getItem(RANGE_KEY) || "";
+        return (RANGES as string[]).indexOf(saved) !== -1
+            ? (saved as RangeKey)
+            : "all";
+    } catch (e) {
+        return "all";
+    }
+}
+
 /** "wss://api.bitshares.dev/ws" -> "api.bitshares.dev" */
 function hostOf(url: string): string {
     return url.replace(/^wss?:\/\//, "").replace(/\/.*$/, "");
@@ -112,6 +133,7 @@ export default function BalanceHistoryChart({
     );
     // a node other than the connected one supplied the older operations
     const [source, setSource] = React.useState<string | null>(null);
+    const [range, setRange] = React.useState<RangeKey>(readRange);
 
     // balances, then the first page of history
     React.useEffect(() => {
@@ -318,8 +340,21 @@ export default function BalanceHistoryChart({
                 }))
             );
         }
-        chartRef.current && chartRef.current.timeScale().fitContent();
-    }, [series, asset, shown]);
+        const chart = chartRef.current;
+        if (chart) {
+            const points = series.points;
+            const span = RANGE_SECONDS[range];
+            const last = points.length ? points[points.length - 1].time : 0;
+            if (span && points.length > 1 && last - span > points[0].time) {
+                chart.timeScale().setVisibleRange({
+                    from: (last - span) as UTCTimestamp,
+                    to: last as UTCTimestamp
+                });
+            } else {
+                chart.timeScale().fitContent();
+            }
+        }
+    }, [series, asset, shown, range]);
 
     const toggle = (key: SeriesKey) => {
         setShown(prev => {
@@ -335,7 +370,15 @@ export default function BalanceHistoryChart({
 
     const lockedUnits = BigInt(lockedNow[assetId] || "0");
     const walletUnits = current ? BigInt(current.amount) : BigInt(0);
-    const first = series && series.points.length ? series.points[0] : null;
+    // the balance at the start of the chosen range: the last point at or
+    // before it (the balance carried into the period), else the first point
+    let first = series && series.points.length ? series.points[0] : null;
+    if (series && series.points.length && RANGE_SECONDS[range]) {
+        const lastTime = series.points[series.points.length - 1].time;
+        const startAt = lastTime - RANGE_SECONDS[range];
+        const before = series.points.filter(p => p.time <= startAt);
+        if (before.length) first = before[before.length - 1];
+    }
     const change =
         series && first && current ? walletUnits - first.balance : null;
     const anyOrders =
@@ -389,6 +432,32 @@ export default function BalanceHistoryChart({
                             </button>
                         );
                     })}
+                </div>
+                <div
+                    className={styles.ranges}
+                    role="group"
+                    aria-label={t("range")}
+                >
+                    {RANGES.map(key => (
+                        <button
+                            key={key}
+                            type="button"
+                            aria-pressed={range === key}
+                            className={`${styles.rangeBtn} ${
+                                range === key ? styles.rangeOn : ""
+                            }`}
+                            onClick={() => {
+                                setRange(key);
+                                try {
+                                    window.localStorage.setItem(RANGE_KEY, key);
+                                } catch (e) {
+                                    // not remembered
+                                }
+                            }}
+                        >
+                            {t(`range_${key}`)}
+                        </button>
+                    ))}
                 </div>
                 {change !== null && asset && change !== BigInt(0) ? (
                     <div

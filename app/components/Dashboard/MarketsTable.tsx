@@ -99,6 +99,8 @@
 // market listing rows and toggles UI-only settings (star/hide/flip a
 // market via `SettingsActions`) - no wallet unlock, key handling, or
 // transaction signing anywhere in it.
+import {Sparkline} from "./Sparkline";
+import {useSparklines} from "./useSparklines";
 import * as React from "react";
 import {ChainStore} from "bitsharesjs";
 import Translate from "react-translate-component";
@@ -369,6 +371,14 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
                 }
             },
             {
+                title: <Translate content="exchange.trend_7d" />,
+                dataIndex: "spark",
+                align: "right",
+                render: (item: any) => (
+                    <span className="column-hide-small">{item}</span>
+                )
+            },
+            {
                 title: <Translate content="account.hour_24_short" />,
                 dataIndex: "hour_24",
                 align: "right",
@@ -570,11 +580,25 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
                     />
                 </Tooltip>
             ),
+            spark: <Sparkline prices={sparks[marketID]} />,
             basePrecision: basePrecision
         };
     }
 
     const {markets, showHidden, filter} = state;
+
+    // price shapes for the busiest markets only: one history call each
+    const busiest = markets
+        .filter((m: any) => m.marketStats && m.marketStats.volumeBase > 0)
+        .slice()
+        .sort(
+            (a: any, b: any) =>
+                (b.marketStats.volumeBase || 0) -
+                (a.marketStats.volumeBase || 0)
+        )
+        .slice(0, 20)
+        .map((m: any) => ({base: m.base, quote: m.quote}));
+    const sparks = useSparklines(busiest);
 
     const marketRows = markets
         .filter((m: any) => {

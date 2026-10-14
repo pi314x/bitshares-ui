@@ -17,6 +17,12 @@
 // Import-order matters: `createSlice` freezes each slice's initial state at
 // definition time, so this module must be evaluated before any slice
 // module. Import it first in `app/index.js` and in `reduxStore.ts`.
-import {setAutoFreeze} from "immer";
+import {enableMapSet, setAutoFreeze} from "immer";
 
 setAutoFreeze(false);
+
+// Slices hold native `Map`s (the blockchain slice's `blockHeaders`). Reading
+// one inside a reducer makes immer draft it, which throws "[Immer] The plugin
+// for 'MapSet' has not been loaded" without this - and every block header
+// fetched for a timestamp (BlockDate, the recent-activity lists) was lost.
+enableMapSet();
