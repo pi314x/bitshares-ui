@@ -3191,6 +3191,7 @@
         "based_on": "Built from the last %(count)s operations of this account.",
         "unresolved": "%(count)s operation(s) could not be read and are not in the line.",
         "older": "Load older",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "in_orders": "In open orders: %(amount)s"
     }
 }

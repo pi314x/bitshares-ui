@@ -30,6 +30,31 @@ class BalanceHistoryActionsFacade {
         return SametFundActions.getAssets(ids);
     }
 
+    /** What the account has locked in open orders, per asset id (smallest
+     * unit, as strings). Empty when the node cannot say. */
+    getLockedInOrders(accountId: string): Promise<{[assetId: string]: string}> {
+        return db()
+            .exec("get_full_accounts", [[accountId], false])
+            .then((rows: any[]) => {
+                const full = rows && rows[0] && rows[0][1];
+                const out: {[assetId: string]: bigint} = {};
+                ((full && full.limit_orders) || []).forEach((order: any) => {
+                    const asset =
+                        order.sell_price &&
+                        order.sell_price.base &&
+                        order.sell_price.base.asset_id;
+                    if (asset && order.for_sale != null) {
+                        out[asset] =
+                            (out[asset] || BigInt(0)) + BigInt(order.for_sale);
+                    }
+                });
+                const result: {[assetId: string]: string} = {};
+                Object.keys(out).forEach(k => (result[k] = out[k].toString()));
+                return result;
+            })
+            .catch(() => ({}));
+    }
+
     /** One page of the account's history, newest first, starting at `start`
      * (inclusive; omitted = the newest operation). */
     getHistory(

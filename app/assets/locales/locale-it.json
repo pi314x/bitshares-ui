@@ -3184,6 +3184,7 @@
         "based_on": "Costruito dalle ultime %(count)s operazioni di questo account.",
         "unresolved": "%(count)s operazione/i non hanno potuto essere lette e non sono nella linea.",
         "older": "Carica più vecchie",
-        "loading": "Caricamento..."
+        "loading": "Caricamento...",
+        "in_orders": "In ordini aperti: %(amount)s"
     }
 }

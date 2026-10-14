@@ -20,13 +20,15 @@ const mockGetBalances = jest.fn();
 const mockGetAssets = jest.fn();
 const mockGetHistory = jest.fn();
 const mockGetBlockTimes = jest.fn();
+const mockGetLocked = jest.fn();
 jest.mock("../../actions/BalanceHistoryActions", () => ({
     __esModule: true,
     default: {
         getBalances: (...a: any[]) => mockGetBalances(...a),
         getAssets: (...a: any[]) => mockGetAssets(...a),
         getHistory: (...a: any[]) => mockGetHistory(...a),
-        getBlockTimes: (...a: any[]) => mockGetBlockTimes(...a)
+        getBlockTimes: (...a: any[]) => mockGetBlockTimes(...a),
+        getLockedInOrders: (...a: any[]) => mockGetLocked(...a)
     },
     olderStart: () => null
 }));
@@ -78,6 +80,7 @@ beforeEach(() => {
         }
     ]);
     mockGetBlockTimes.mockResolvedValue({10: 1000, 20: 2000});
+    mockGetLocked.mockResolvedValue({"1.3.0": "25000"});
 });
 
 const flush = async () => {
@@ -97,10 +100,16 @@ describe("BalanceHistoryChart", () => {
         expect(text).toContain("1.50000 BTS");
         expect(text).toContain("Built from the last 2 operations");
         expect(text).toContain("1 operation(s) could not be read");
-        // the series ends at the real balance
-        const points =
-            mockSetData.mock.calls[mockSetData.mock.calls.length - 1][0];
-        expect(points[points.length - 1].value).toBeCloseTo(1.5, 5);
+        // what is locked in open orders is shown next to the balance
+        expect(text).toContain("In open orders: 0.25000 BTS");
+        // two lines end where the chain says: the balance (1.5) and the whole
+        // holding with what is locked in open orders (1.5 + 0.25)
+        const lastValues = mockSetData.mock.calls
+            .map(([points]) => points[points.length - 1])
+            .filter(Boolean)
+            .map(p => p.value);
+        expect(lastValues.some(v => Math.abs(v - 1.5) < 1e-5)).toBe(true);
+        expect(lastValues.some(v => Math.abs(v - 1.75) < 1e-5)).toBe(true);
         expect(mockGetHistory).toHaveBeenCalledWith(ME, null);
     });
 

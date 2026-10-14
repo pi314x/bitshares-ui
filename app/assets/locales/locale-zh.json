@@ -3190,6 +3190,7 @@
         "based_on": "根据该账户最近 %(count)s 笔操作构建。",
         "unresolved": "有 %(count)s 笔操作无法读取，未计入曲线。",
         "older": "加载更早的",
-        "loading": "加载中..."
+        "loading": "加载中...",
+        "in_orders": "挂单中：%(amount)s"
     }
 }

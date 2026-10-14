@@ -2,6 +2,7 @@ import * as React from "react";
 import counterpart from "counterpart";
 import {
     AreaSeries,
+    LineSeries,
     ColorType,
     IChartApi,
     ISeriesApi,
@@ -26,6 +27,9 @@ import styles from "./BalanceHistoryChart.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
     counterpart.translate(`balance_history.${key}`, params);
+
+/** Pages (of 100 operations) loaded up front. */
+const AUTO_PAGES = 5;
 
 /** A CSS custom property's current value (lightweight-charts needs colours as
  * strings, not var()). */
@@ -62,6 +66,9 @@ export default function BalanceHistoryChart({
     const [entries, setEntries] = React.useState<HistoryEntry[]>([]);
     const [times, setTimes] = React.useState<{[block: number]: number}>({});
     const [next, setNext] = React.useState<string | null>(null);
+    const [lockedNow, setLockedNow] = React.useState<{
+        [assetId: string]: string;
+    }>({});
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [started, setStarted] = React.useState(false);
@@ -74,6 +81,9 @@ export default function BalanceHistoryChart({
         setTimes({});
         setNext(null);
         setError(null);
+        BalanceHistoryActions.getLockedInOrders(accountId).then(locked => {
+            if (!cancelled) setLockedNow(locked || {});
+        });
         BalanceHistoryActions.getBalances(accountId)
             .then(rows =>
                 BalanceHistoryActions.getAssets(rows.map(r => r.asset_id)).then(
@@ -102,8 +112,13 @@ export default function BalanceHistoryChart({
         };
     }, [accountId]);
 
+    // One request returns at most 100 operations (the node's limit); the
+    // first load goes back several pages, "Load older" continues from there.
     const loadPage = React.useCallback(
-        (start: string | null) => {
+        (
+            start: string | null,
+            pagesLeft: number = AUTO_PAGES
+        ): Promise<void> => {
             setLoading(true);
             return BalanceHistoryActions.getHistory(accountId, start)
                 .then(rows =>
@@ -112,8 +127,16 @@ export default function BalanceHistoryChart({
                     ).then(blockTimes => {
                         setEntries(prev => prev.concat(rows));
                         setTimes(prev => ({...prev, ...blockTimes}));
-                        setNext(rows.length >= 100 ? olderStart(rows) : null);
+                        const more =
+                            rows.length >= 100 ? olderStart(rows) : null;
+                        setNext(more);
+                        return more;
                     })
+                )
+                .then(more =>
+                    more && pagesLeft > 1
+                        ? loadPage(more, pagesLeft - 1)
+                        : undefined
                 )
                 .catch(err => setError(String((err && err.message) || err)))
                 .then(() => {
@@ -143,14 +166,16 @@ export default function BalanceHistoryChart({
             accountId,
             assetId,
             times,
-            Math.floor(Date.now() / 1000)
+            Math.floor(Date.now() / 1000),
+            BigInt(lockedNow[assetId] || "0")
         );
-    }, [asset, current, entries, times, accountId, assetId]);
+    }, [asset, current, entries, times, accountId, assetId, lockedNow]);
 
     // the chart
     const host = React.useRef<HTMLDivElement>(null);
     const chartRef = React.useRef<IChartApi | null>(null);
     const lineRef = React.useRef<ISeriesApi<"Area"> | null>(null);
+    const totalRef = React.useRef<ISeriesApi<"Line"> | null>(null);
 
     React.useEffect(() => {
         if (!host.current) return;
@@ -176,11 +201,21 @@ export default function BalanceHistoryChart({
             lineWidth: 2,
             priceLineVisible: false
         });
+        // the whole holding, open orders included
+        const total = chart.addSeries(LineSeries, {
+            color: token("--muted", "#8794a7"),
+            lineWidth: 1,
+            lineStyle: 2, // dashed
+            priceLineVisible: false,
+            lastValueVisible: false,
+            crosshairMarkerVisible: false
+        });
         chartRef.current = chart;
         lineRef.current = line;
+        totalRef.current = total;
         return () => {
             chart.remove();
-            chartRef.current = lineRef.current = null;
+            chartRef.current = lineRef.current = totalRef.current = null;
         };
     }, [assetId === "" ? "none" : "some"]);
 
@@ -199,11 +234,23 @@ export default function BalanceHistoryChart({
                 value: toNumber(p.balance, asset.precision)
             }))
         );
+        if (totalRef.current) {
+            const anyLocked = series.points.some(p => p.locked > BigInt(0));
+            totalRef.current.setData(
+                anyLocked
+                    ? series.points.map(p => ({
+                          time: p.time as UTCTimestamp,
+                          value: toNumber(p.balance + p.locked, asset.precision)
+                      }))
+                    : []
+            );
+        }
         chartRef.current && chartRef.current.timeScale().fitContent();
     }, [series, asset]);
 
     if (!balances.length && !error) return null;
 
+    const lockedUnits = BigInt(lockedNow[assetId] || "0");
     const first = series && series.points.length ? series.points[0] : null;
     const change =
         series && first && current
@@ -236,21 +283,16 @@ export default function BalanceHistoryChart({
                             </span>
                         ) : null}
                     </div>
-                </div>
-                <div className={styles.controls}>
-                    <Select
-                        className={styles.select}
-                        value={assetId}
-                        onChange={value => {
-                            setAssetId(String(value));
-                        }}
-                    >
-                        {balances.map(b => (
-                            <Select.Option key={b.asset_id} value={b.asset_id}>
-                                {assets[b.asset_id].symbol}
-                            </Select.Option>
-                        ))}
-                    </Select>
+                    {asset && lockedUnits > BigInt(0) ? (
+                        <div className={styles.orders}>
+                            {t("in_orders", {
+                                amount: `${formatAmount(
+                                    lockedUnits.toString(),
+                                    asset.precision
+                                )} ${asset.symbol}`
+                            })}
+                        </div>
+                    ) : null}
                 </div>
             </div>
 
@@ -271,11 +313,30 @@ export default function BalanceHistoryChart({
                         ? ` ${t("unresolved", {count: series.unresolved})}`
                         : ""}
                 </span>
-                {next ? (
-                    <Button disabled={loading} onClick={() => loadPage(next)}>
-                        {loading ? t("loading") : t("older")}
-                    </Button>
-                ) : null}
+                <div className={styles.controls}>
+                    <Select
+                        className={styles.select}
+                        value={assetId}
+                        onChange={value => {
+                            setAssetId(String(value));
+                        }}
+                    >
+                        {balances.map(b => (
+                            <Select.Option key={b.asset_id} value={b.asset_id}>
+                                {assets[b.asset_id].symbol}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                    {next ? (
+                        <Button
+                            className={styles.older}
+                            disabled={loading}
+                            onClick={() => loadPage(next, 1)}
+                        >
+                            {loading ? t("loading") : t("older")}
+                        </Button>
+                    ) : null}
+                </div>
             </div>
         </section>
     );

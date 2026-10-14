@@ -3184,6 +3184,7 @@
         "based_on": "이 계정의 최근 %(count)s개 작업으로 구성했습니다.",
         "unresolved": "%(count)s개의 작업을 읽지 못해 선에 포함되지 않았습니다.",
         "older": "이전 항목 불러오기",
-        "loading": "불러오는 중..."
+        "loading": "불러오는 중...",
+        "in_orders": "미체결 주문: %(amount)s"
     }
 }

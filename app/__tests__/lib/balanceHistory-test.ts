@@ -32,7 +32,11 @@ describe("operationDelta", () => {
             [0, {from: ME, to: OTHER, amount: asset(1000), fee: asset(20)}],
             1
         );
-        expect(delta(out)).toEqual({delta: BigInt(-1020), unresolved: false});
+        expect(delta(out)).toEqual({
+            delta: BigInt(-1020),
+            locked: BigInt(0),
+            unresolved: false
+        });
         const incoming = entry(
             "1.11.2",
             [0, {from: OTHER, to: ME, amount: asset(500), fee: asset(20)}],
@@ -40,6 +44,7 @@ describe("operationDelta", () => {
         );
         expect(delta(incoming)).toEqual({
             delta: BigInt(500),
+            locked: BigInt(0),
             unresolved: false
         });
     });
@@ -148,6 +153,7 @@ describe("operationDelta", () => {
         );
         expect(delta(expiry, USD, orders)).toEqual({
             delta: BigInt(700),
+            locked: BigInt(-700),
             unresolved: false
         });
     });
@@ -314,6 +320,107 @@ describe("buildBalanceSeries", () => {
 
     it("has a single point for an account with no history", () => {
         const series = buildBalanceSeries([], BigInt(7), ME, BTS, {}, 5000);
-        expect(series.points).toEqual([{time: 5000, balance: BigInt(7)}]);
+        expect(series.points).toEqual([
+            {time: 5000, balance: BigInt(7), locked: BigInt(0)}
+        ]);
+    });
+});
+
+describe("open orders in the series", () => {
+    it("tracks what an order locks, what fills take out of it and what expiry returns", () => {
+        // an order locks 1000 USD, a fill takes 400, the rest (600) is cancelled
+        const entriesNewestFirst = [
+            entry(
+                "4",
+                [2, {fee_paying_account: ME, order: "1.7.1", fee: asset(0)}],
+                40,
+                [2, asset(600, USD)]
+            ),
+            entry(
+                "3",
+                [
+                    4,
+                    {
+                        order_id: "1.7.1",
+                        account_id: ME,
+                        pays: asset(400, USD),
+                        receives: asset(20),
+                        fee: asset(0)
+                    }
+                ],
+                30
+            ),
+            entry(
+                "2",
+                [
+                    1,
+                    {
+                        seller: ME,
+                        amount_to_sell: asset(1000, USD),
+                        min_to_receive: asset(50),
+                        fee: asset(0)
+                    }
+                ],
+                20,
+                [1, "1.7.1"]
+            ),
+            entry(
+                "1",
+                [
+                    0,
+                    {
+                        from: OTHER,
+                        to: ME,
+                        amount: asset(1500, USD),
+                        fee: asset(0)
+                    }
+                ],
+                10
+            )
+        ];
+        const series = buildBalanceSeries(
+            entriesNewestFirst,
+            BigInt(1100), // available now: 1500 - 1000 + 600
+            ME,
+            USD,
+            {10: 1000, 20: 2000, 30: 3000, 40: 4000},
+            5000,
+            BigInt(0) // nothing locked any more
+        );
+        const row = (t: number) => series.points.find(p => p.time === t) as any;
+        expect([Number(row(1000).balance), Number(row(1000).locked)]).toEqual([
+            1500,
+            0
+        ]);
+        // created: 500 available, 1000 locked - the holding is unchanged
+        expect([Number(row(2000).balance), Number(row(2000).locked)]).toEqual([
+            500,
+            1000
+        ]);
+        // 400 of the order filled: 600 still locked
+        expect([Number(row(3000).balance), Number(row(3000).locked)]).toEqual([
+            500,
+            600
+        ]);
+        // cancelled: 600 back, nothing locked
+        expect([Number(row(4000).balance), Number(row(4000).locked)]).toEqual([
+            1100,
+            0
+        ]);
+    });
+
+    it("ends at the locked amount the chain reports now", () => {
+        const series = buildBalanceSeries(
+            [],
+            BigInt(700),
+            ME,
+            BTS,
+            {},
+            5000,
+            BigInt(300)
+        );
+        expect(series.points).toEqual([
+            {time: 5000, balance: BigInt(700), locked: BigInt(300)}
+        ]);
     });
 });

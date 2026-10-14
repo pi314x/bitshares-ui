@@ -3190,6 +3190,7 @@
         "based_on": "Aus den letzten %(count)s Operationen dieses Kontos aufgebaut.",
         "unresolved": "%(count)s Operation(en) konnten nicht gelesen werden und fehlen in der Linie.",
         "older": "Ältere laden",
-        "loading": "Wird geladen..."
+        "loading": "Wird geladen...",
+        "in_orders": "In offenen Aufträgen: %(amount)s"
     }
 }

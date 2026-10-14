@@ -3184,6 +3184,7 @@
         "based_on": "Bu hesabın son %(count)s işleminden oluşturuldu.",
         "unresolved": "%(count)s işlem okunamadı ve çizgide yer almıyor.",
         "older": "Eskileri yükle",
-        "loading": "Yükleniyor..."
+        "loading": "Yükleniyor...",
+        "in_orders": "Açık emirlerde: %(amount)s"
     }
 }

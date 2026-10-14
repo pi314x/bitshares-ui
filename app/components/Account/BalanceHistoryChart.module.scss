@@ -45,15 +45,31 @@
     color: var(--down);
 }
 
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
+.orders {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
 }
 
-.select {
-    min-width: 160px;
+// The currency dropdown and "Load older" sit together at the right of the
+// footer and are the same size.
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.card .select,
+.card .older {
+    width: 148px;
+    min-width: 148px;
+    height: var(--control-h);
+    box-sizing: border-box;
+}
+
+.card .older {
+    justify-content: center;
 }
 
 .chart {

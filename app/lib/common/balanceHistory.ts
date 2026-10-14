@@ -119,6 +119,9 @@ export interface HistoryEntry {
 
 export interface Resolved {
     delta: bigint;
+    /** The change in what is locked in the account's open orders, in this
+     * asset (an order locks its sale amount when it is created). */
+    locked: bigint;
     /** The operation touches the asset but this code cannot say how much. */
     unresolved: boolean;
 }
@@ -166,6 +169,7 @@ export function operationDelta(
 ): Resolved {
     const [id, d] = entry.op;
     let delta = BigInt(0);
+    let locked = BigInt(0);
     let handled = true;
     const add = (amount: any) => {
         delta += big(amount);
@@ -182,8 +186,10 @@ export function operationDelta(
                 add(d.amount.amount);
             break;
         case OP.limit_order_create: {
-            if (d.seller === accountId && isAsset(d.amount_to_sell, assetId))
+            if (d.seller === accountId && isAsset(d.amount_to_sell, assetId)) {
                 sub(d.amount_to_sell.amount);
+                locked += big(d.amount_to_sell.amount);
+            }
             // remember what is locked in the order, to refund an expiry
             const orderId =
                 entry.result && entry.result[0] === 1 ? entry.result[1] : null;
@@ -199,11 +205,16 @@ export function operationDelta(
             const tracked = orders.remaining[d.order];
             if (entry.result && entry.result[0] === 2) {
                 // cancelled by the user: the result is the refunded amount
-                if (isAsset(entry.result[1], assetId))
+                if (isAsset(entry.result[1], assetId)) {
                     add(entry.result[1].amount);
+                    locked -= big(entry.result[1].amount);
+                }
             } else if (tracked) {
                 // expired or culled: refund what was still for sale
-                if (tracked.assetId === assetId) add(tracked.amount);
+                if (tracked.assetId === assetId) {
+                    add(tracked.amount);
+                    locked -= tracked.amount;
+                }
             } else {
                 handled = false;
             }
@@ -216,6 +227,8 @@ export function operationDelta(
             // left the balance when the order was created.
             if (isAsset(d.receives, assetId)) add(d.receives.amount);
             if (isAsset(d.fee, assetId)) sub(d.fee.amount);
+            // what the fill took out of the order's locked amount
+            if (isAsset(d.pays, assetId)) locked -= big(d.pays.amount);
             const tracked = orders.remaining[d.order_id];
             if (tracked && d.pays) {
                 tracked.amount -= big(d.pays.amount);
@@ -304,7 +317,7 @@ export function operationDelta(
                     (a: any) => isAsset(a, assetId) && sub(a.amount)
                 );
                 // the operation's own fee is part of `fees`
-                return {delta, unresolved: false};
+                return {delta, locked, unresolved: false};
             }
             handled = false;
         }
@@ -318,14 +331,18 @@ export function operationDelta(
     }
 
     const unresolved = !handled && mentions(d, assetId);
-    return {delta, unresolved};
+    return {delta, locked, unresolved};
 }
 
 export interface SeriesPoint {
     /** Unix seconds. */
     time: number;
-    /** Smallest-unit balance after this point. */
+    /** Smallest-unit balance (available, not locked in orders) after this
+     * point. */
     balance: bigint;
+    /** What was locked in the account's open orders, in this asset. The whole
+     * holding is `balance + locked`. */
+    locked: bigint;
 }
 
 export interface BalanceSeries {
@@ -348,7 +365,9 @@ export function buildBalanceSeries(
     accountId: string,
     assetId: string,
     blockTimes: {[block: number]: number},
-    nowSec: number
+    nowSec: number,
+    /** What is locked in open orders now, in this asset (default none). */
+    lockedNow = BigInt(0)
 ): BalanceSeries {
     const chronological = entriesNewestFirst.slice().reverse();
     const orders = newOrderTracker();
@@ -359,43 +378,60 @@ export function buildBalanceSeries(
 
     let unresolved = 0;
     let applied = 0;
-    // balance after each entry, from the end backwards
+    // balance and locked amount after each entry, from the end backwards
     const after: bigint[] = new Array(deltas.length);
+    const lockedAfter: bigint[] = new Array(deltas.length);
     let running = currentBalance;
+    let runningLocked = lockedNow;
     for (let i = deltas.length - 1; i >= 0; i--) {
         after[i] = running;
+        lockedAfter[i] = runningLocked;
         running -= deltas[i].delta;
+        runningLocked -= deltas[i].locked;
+        // history cannot make the locked amount negative; a gap (an order
+        // older than what was loaded) would otherwise show as one
+        if (runningLocked < BigInt(0)) runningLocked = BigInt(0);
         if (deltas[i].unresolved) unresolved++;
         else if (deltas[i].delta !== BigInt(0)) applied++;
     }
 
     const points: SeriesPoint[] = [];
-    const push = (time: number, balance: bigint) => {
+    const push = (time: number, balance: bigint, locked: bigint) => {
         const last = points[points.length - 1];
-        if (last && last.time === time) last.balance = balance;
-        else points.push({time, balance});
+        if (last && last.time === time) {
+            last.balance = balance;
+            last.locked = locked;
+        } else points.push({time, balance, locked});
     };
 
     // the balance before the oldest loaded operation, at that operation's time
     if (deltas.length) {
         const firstTime = blockTimes[deltas[0].entry.block_num];
-        if (firstTime !== undefined) push(firstTime - 1, running);
+        if (firstTime !== undefined)
+            push(firstTime - 1, running, runningLocked);
     }
     deltas.forEach((row, i) => {
         const time = blockTimes[row.entry.block_num];
-        if (time !== undefined && row.delta !== BigInt(0)) push(time, after[i]);
+        if (
+            time !== undefined &&
+            (row.delta !== BigInt(0) || row.locked !== BigInt(0))
+        )
+            push(time, after[i], lockedAfter[i]);
     });
     push(
         Math.max(nowSec, points.length ? points[points.length - 1].time : 0),
-        currentBalance
+        currentBalance,
+        lockedNow
     );
 
     // times must be strictly increasing for the chart
     const strict: SeriesPoint[] = [];
     points.forEach(p => {
         const last = strict[strict.length - 1];
-        if (last && p.time <= last.time) last.balance = p.balance;
-        else strict.push(p);
+        if (last && p.time <= last.time) {
+            last.balance = p.balance;
+            last.locked = p.locked;
+        } else strict.push(p);
     });
     return {points: strict, unresolved, applied};
 }
