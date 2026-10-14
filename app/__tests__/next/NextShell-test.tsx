@@ -45,6 +45,25 @@ describe("next/NextShell", () => {
         expect(getByText("init0")).toBeTruthy();
     });
 
+    it("puts the connection and the head block in one chip at the end that opens the nodes page", () => {
+        const {getByText, getByRole, queryByText} = renderShell({
+            statusDock: <span>#115,209,838 3s</span>
+        });
+        const chip = getByRole("link", {name: /Nodes: connected/});
+        expect(chip.getAttribute("href")).toBe("/settings/access");
+        // the state and the block are in that one chip
+        expect(chip.textContent).toContain("Connected");
+        expect(chip.textContent).toContain("#115,209,838");
+        // it is the last row of the shell, after the content
+        const content = getByText("screen content");
+        expect(
+            content.compareDocumentPosition(chip) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        // and the top bar no longer carries a connection chip
+        expect(queryByText("node selector")).toBeNull();
+    });
+
     it("shows the given crumb and rail footer, not a hardcoded label", () => {
         const {getByText} = renderShell({
             crumb: "Market · BTS_CNY",

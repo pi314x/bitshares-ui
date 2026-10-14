@@ -4,12 +4,11 @@
 // see NextShellContainer.tsx for why (it's the one that reads the real
 // Alt.js stores and is what App.jsx actually mounts at /next).
 import * as React from "react";
-import {useLocation} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import {ThemeProvider} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
 import {Rail, RailNavGroup} from "../design-system/Rail";
 import {Topbar} from "../design-system/Topbar";
-import {NodePicker} from "../design-system/NodePicker";
 import styles from "./NextShell.module.scss";
 import "../design-system/theme.scss";
 import "../design-system/fonts";
@@ -150,26 +149,31 @@ function ShellChrome({
                 {/* the very end of the page: a row of its own after the
                     content (never over it), the same place at every width */}
                 <div className={styles.status} role="contentinfo">
-                    <NodePicker
-                        className={styles.node}
-                        placement="top"
-                        connected={connectionStatus === "open"}
-                        label={
-                            <>
-                                <span className={styles.nodeText}>
-                                    {connectionStatus === "open"
-                                        ? "Connected"
-                                        : connectionStatus || "Connecting…"}
-                                </span>
-                                {statusDock}
-                            </>
-                        }
+                    <Link
+                        to="/settings/access"
+                        className={styles.chip}
+                        title={activeNode || "Nodes"}
+                        aria-label={`Nodes: ${
+                            connectionStatus === "open"
+                                ? "connected"
+                                : connectionStatus || "connecting"
+                        }`}
                     >
-                        <div className={styles.nodeNote}>
-                            {activeNode || "No node selected"}
-                        </div>
-                        {nodeSelector}
-                    </NodePicker>
+                        <span
+                            className={`${styles.chipDot} ${
+                                connectionStatus === "open"
+                                    ? styles.chipDotOk
+                                    : styles.chipDotWarn
+                            }`}
+                            aria-hidden="true"
+                        />
+                        <span className={styles.nodeText}>
+                            {connectionStatus === "open"
+                                ? "Connected"
+                                : connectionStatus || "Connecting…"}
+                        </span>
+                        {statusDock}
+                    </Link>
                 </div>
             </div>
         </div>

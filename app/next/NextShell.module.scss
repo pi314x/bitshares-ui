@@ -36,14 +36,46 @@
     background: transparent;
 }
 
-// One chip: connection state, then the head block. Fixed-width characters and a
-// fixed width for the state ("Connected", "Connecting…", "closed" take the same
-// room), so nothing in it moves when a value changes.
-.node > button {
+// One chip, a link to the nodes page: connection state, then the head block.
+// Fixed-width characters and a fixed width for the state ("Connected",
+// "Connecting…", "closed" take the same room), so nothing in it moves when a
+// value changes.
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
     font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
-    gap: 10px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.chip:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.chipDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.chipDotOk {
+    background: var(--up);
+    box-shadow: 0 0 0 3px var(--up-wash);
+}
+
+.chipDotWarn {
+    background: var(--warn);
 }
 
 .nodeText {
