@@ -12788,6 +12788,39 @@ phone. What it found and changed:
   slow relay is not fully attributed (the crash screen only shows when the page
   is empty).
 
+### 7.21 The dashboard as a desk
+
+The dashboard (`components/Dashboard/Desk/`) used to be a balance chart and
+market tabs. It is now what a trading desk's home needs:
+
+- **Summary**: total value of wallet, pool shares, open orders and collateral,
+  minus debt, in a unit chosen on the page (`settings.unit`). An asset with no
+  market price is *not* counted and is said so; a missing price for an order or
+  a position says the total is incomplete (a missing debt would otherwise read
+  as a bigger total).
+- **Attention strip** (`lib/common/desk.ts`): positions near or below the
+  maintenance ratio (ratio at the feed and how far the collateral's price may
+  fall), orders that expire within a day, a node whose last block is old; four
+  lines, the rest on request.
+- **Holdings** (largest first, share bars, Trade link) and **Positions** (open
+  orders and next expiry, pool shares valued through the pool, borrowed with
+  ratio and distance to the call). Cards can be hidden; the choice stays in this
+  browser (`__graphene__deskCards`).
+- **Recent activity**, an **accounts overview** with totals (more than one
+  account), 1D/1W/1M/All on the balance chart, and a 7D price line for the
+  busiest markets in the market tables (hourly buckets: the node keeps 15s, 1m,
+  5m, 30m, 1h and 1d, and answers a 6h request with nothing).
+- Valuation reuses `next/dashboard/balanceCalculations` and the market-stats
+  subscription; no new price source. Claiming vesting balances is not on the
+  dashboard (it stays on the account's vesting page).
+- Found on the way: block headers (operation timestamps) were never stored,
+  because the blockchain slice keeps a native `Map` and immer's MapSet plugin
+  was not enabled (`store/immerConfig.ts`).
+- **Not built**: price alerts and profit/loss (cost basis needs the whole
+  account history; `node.xbts.io` keeps 100 operations per account), widget
+  re-ordering (cards can only be shown or hidden), and the pool-vs-order-book
+  price per market row (it is on the trade page).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

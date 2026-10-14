@@ -185,69 +185,6 @@ export function orderSummary(
     return {count: orders.length, nextExpiryMs, expiringSoon};
 }
 
-// ------------------------------------------------------------------ vesting
-
-/** A vesting balance as the node returns it (`get_vesting_balances`). */
-export interface VestingBalance {
-    id: string;
-    balance: {amount: number | string; asset_id: string};
-    policy?: [number, any];
-}
-
-export interface VestingClaim {
-    id: string;
-    assetId: string;
-    /** what can be withdrawn now, smallest units */
-    units: number;
-    /** 0..1 of the balance */
-    percent: number;
-}
-
-/**
- * What of a vesting balance can be claimed at `nowSec`. The chain evaluates the
- * policy when a claim is made; this mirrors the page's own estimate
- * (AccountVesting): policy 0 is linear with a cliff, policy 1 is coin-days.
- */
-export function vestingClaim(
-    item: VestingBalance,
-    nowSec: number
-): VestingClaim {
-    const balance = Number(item.balance.amount);
-    const base = {id: item.id, assetId: item.balance.asset_id};
-    const at = (iso: string) =>
-        Math.floor(new Date(iso + "Z").getTime() / 1000);
-    let percent = 1;
-    const policy = item.policy;
-    if (policy && policy[0] === 1) {
-        const p = policy[1];
-        const start = at(p.start_claim);
-        if (start > 0) {
-            percent = nowSec - start < p.vesting_seconds ? 0 : 1;
-        } else {
-            const earned =
-                parseFloat(p.coin_seconds_earned) +
-                balance * (nowSec - at(p.coin_seconds_earned_last_update));
-            percent =
-                p.vesting_seconds === 0 || balance === 0
-                    ? 1
-                    : Math.min(1, earned / (p.vesting_seconds * balance));
-        }
-    } else if (policy && policy[0] === 0) {
-        const p = policy[1];
-        const elapsed = Math.max(nowSec - at(p.begin_timestamp), 0);
-        const vested =
-            elapsed >= p.vesting_duration_seconds
-                ? 1
-                : elapsed < p.vesting_cliff_seconds
-                ? 0
-                : elapsed / p.vesting_duration_seconds;
-        const claimed = p.begin_balance > 0 ? 1 - balance / p.begin_balance : 0;
-        percent = Math.max(vested - claimed, 0);
-    }
-    if (!Number.isFinite(percent)) percent = 0;
-    return {...base, units: Math.floor(balance * percent), percent};
-}
-
 // ---------------------------------------------------------------- attention
 
 export type AttentionLevel = "danger" | "warn" | "info";
@@ -255,7 +192,7 @@ export type AttentionLevel = "danger" | "warn" | "info";
 export interface AttentionItem {
     key: string;
     level: AttentionLevel;
-    kind: "margin" | "called" | "expiring" | "vesting" | "stale";
+    kind: "margin" | "called" | "expiring" | "stale";
     /** values for the message */
     params: {[name: string]: string | number};
 }
@@ -269,7 +206,6 @@ const LEVEL_ORDER: {[level in AttentionLevel]: number} = {
 export function attentionItems(input: {
     risks: Array<PositionRisk & {symbol: string}>;
     expiringOrders: number;
-    vesting: Array<{symbol: string; amount: number}>;
     blockAgeSeconds: number | null;
 }): AttentionItem[] {
     const items: AttentionItem[] = [];
@@ -301,27 +237,6 @@ export function attentionItems(input: {
             level: "info",
             kind: "expiring",
             params: {count: input.expiringOrders}
-        });
-    }
-    // one line, however many balances: an account can hold dozens of tiny ones
-    const claimable = input.vesting.filter(v => v.amount > 0);
-    if (claimable.length === 1) {
-        items.push({
-            key: "vesting",
-            level: "info",
-            kind: "vesting",
-            params: {
-                count: 1,
-                symbol: claimable[0].symbol,
-                amount: claimable[0].amount
-            }
-        });
-    } else if (claimable.length > 1) {
-        items.push({
-            key: "vesting",
-            level: "info",
-            kind: "vesting",
-            params: {count: claimable.length}
         });
     }
     if (input.blockAgeSeconds !== null && input.blockAgeSeconds > 120) {

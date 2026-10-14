@@ -1,12 +1,10 @@
 // What the desk cards show, gathered in one place: the account's balances,
-// open orders, borrow positions, pool shares and vesting balances, valued in
+// open orders, borrow positions and pool shares, valued in
 // the unit the user chose. The chain is read through the same stores and
 // valuation code the rest of the app uses (ChainStore, MarketsStore stats,
 // next/dashboard/balanceCalculations); this file only collects and shapes it.
-import * as React from "react";
 import {List} from "immutable";
 import {ChainStore} from "bitsharesjs";
-import {Apis} from "bitsharesjs-ws";
 import {useChainStoreTick} from "../../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../../next/hooks/useReduxState";
 import {useMarketStatsSubscription} from "../../../next/hooks/useMarketStatsSubscription";
@@ -20,13 +18,10 @@ import {
     OrderSummary,
     PositionInput,
     PositionRisk,
-    VestingBalance,
-    VestingClaim,
     attentionItems,
     holdingRows,
     orderSummary,
-    positionRisk,
-    vestingClaim
+    positionRisk
 } from "../../../lib/common/desk";
 
 export interface DeskPosition {
@@ -66,10 +61,12 @@ export interface DeskData {
     };
     holdings: HoldingRow[];
     unpriced: number;
+    /** an open order, a collateral or a debt has no price yet: the total is
+     * not the whole picture (a missing debt would read as a bigger total) */
+    incomplete: boolean;
     orders: OrderSummary & {value: number | null};
     positions: DeskPosition[];
     pools: DeskPool[];
-    vesting: Array<VestingClaim & {symbol: string; amount: number}>;
     attention: AttentionItem[];
 }
 
@@ -81,10 +78,10 @@ const EMPTY: DeskData = {
     parts: {wallet: 0, pools: 0, orders: 0, collateral: 0, debt: 0},
     holdings: [],
     unpriced: 0,
+    incomplete: false,
     orders: {count: 0, nextExpiryMs: null, expiringSoon: 0, value: null},
     positions: [],
     pools: [],
-    vesting: [],
     attention: []
 };
 
@@ -104,8 +101,7 @@ export function useDeskData(
     accountName: string | null,
     options: {light?: boolean} = {}
 ): DeskData {
-    // `light`: the totals only (a row of the accounts card): no vesting call,
-    // no pool lookup
+    // `light`: the totals only (a row of the accounts card): no pool lookup
     const light = !!options.light;
     useChainStoreTick();
     const settings = useReduxState<any>(selectSettingsState);
@@ -119,29 +115,6 @@ export function useDeskData(
         ? (ChainStore as any).getAccount(accountName)
         : null;
     const accountId: string | null = isMap(account) ? account.get("id") : null;
-
-    // vesting balances come from the node, not the account object
-    const [vestingRaw, setVestingRaw] = React.useState<VestingBalance[]>([]);
-    React.useEffect(() => {
-        if (!accountId || light) {
-            setVestingRaw([]);
-            return;
-        }
-        let cancelled = false;
-        (Apis as any)
-            .instance()
-            .db_api()
-            .exec("get_vesting_balances", [accountId])
-            .then((found: VestingBalance[]) => {
-                if (!cancelled) setVestingRaw(found || []);
-            })
-            .catch(() => {
-                if (!cancelled) setVestingRaw([]);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [accountId, light]);
 
     const mine = useMyHoldings(light ? null : accountName);
 
@@ -282,6 +255,9 @@ export function useDeskData(
     // ---- borrow positions
     let collateralValue = 0;
     let debtValue = 0;
+    let incomplete = Object.keys(orderUnits).some(
+        id => valueOf(id, orderUnits[id]) === null
+    );
     const positions: DeskPosition[] = [];
     callObjects.forEach(call => {
         const collateralId: string = call.getIn([
@@ -296,8 +272,11 @@ export function useDeskData(
         if (!collateralAsset || !isMap(debtAsset)) return;
         const collateralUnits = parseInt(call.get("collateral"), 10);
         const debtUnits = parseInt(call.get("debt"), 10);
-        collateralValue += valueOf(collateralId, collateralUnits) || 0;
-        debtValue += valueOf(debtId, debtUnits) || 0;
+        const collateralWorth = valueOf(collateralId, collateralUnits);
+        const debtWorth = valueOf(debtId, debtUnits);
+        if (collateralWorth === null || debtWorth === null) incomplete = true;
+        collateralValue += collateralWorth || 0;
+        debtValue += debtWorth || 0;
 
         const feedPrice: any = debtAsset.getIn([
             "bitasset",
@@ -338,27 +317,6 @@ export function useDeskData(
         });
     });
 
-    // ---- vesting
-    const nowSec = Math.floor(Date.now() / 1000);
-    const vesting = vestingRaw
-        .filter(v => v.balance && Number(v.balance.amount) > 0)
-        .map(v => {
-            const claim = vestingClaim(v, nowSec);
-            const asset = (ChainStore as any).getAsset(claim.assetId);
-            const precision = isMap(asset) ? asset.get("precision") : 0;
-            return {
-                ...claim,
-                symbol: isMap(asset)
-                    ? (asset.get("symbol") as string)
-                    : claim.assetId,
-                amount: claim.units / Math.pow(10, precision)
-            };
-        });
-    const vestingBySymbol: {[symbol: string]: number} = {};
-    vesting.forEach(v => {
-        vestingBySymbol[v.symbol] = (vestingBySymbol[v.symbol] || 0) + v.amount;
-    });
-
     // ---- totals
     const parts = {
         wallet: sum(holdings.map(h => h.value)),
@@ -380,10 +338,6 @@ export function useDeskData(
             symbol: p.debtSymbol
         })),
         expiringOrders: orderInfo.expiringSoon,
-        vesting: Object.keys(vestingBySymbol).map(symbol => ({
-            symbol,
-            amount: vestingBySymbol[symbol]
-        })),
         blockAgeSeconds: headBlockAge(Date.now())
     });
 
@@ -399,13 +353,13 @@ export function useDeskData(
         parts,
         holdings,
         unpriced,
+        incomplete,
         orders: {
             ...orderInfo,
             value: orderInfo.count ? sum(ordersValue) : null
         },
         positions,
         pools,
-        vesting,
         attention
     };
 }

@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s orders expire within a day",
         "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
         "attention_stale": "The node's latest block is %(minutes)s minutes old",
-        "attention_vesting": "%(amount)s %(symbol)s can be claimed",
-        "attention_vesting_many": "有 %(count)s 笔归属余额可领取",
         "backed_by": "backed by %(amount)s %(symbol)s",
         "borrow_none": "没有借贷头寸",
         "borrowed": "借出",
@@ -682,6 +680,7 @@
         "debt": "债务",
         "distance": "price may fall %(percent)s",
         "holdings": "持仓",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
         "more_n": "还有 %(count)s 项",
         "no_holdings": "暂无持仓",
         "no_price": "无价格",
@@ -708,9 +707,6 @@
         "unit": "计价单位",
         "unpriced": "%(count)s without a price are not counted",
         "value": "价值",
-        "vesting": "Vesting",
-        "vesting_claimable": "Claimable now",
-        "vesting_none": "没有可领取的内容",
         "wallet": "钱包"
     },
     "errors": {

@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s orders expire within a day",
         "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
         "attention_stale": "The node's latest block is %(minutes)s minutes old",
-        "attention_vesting": "%(amount)s %(symbol)s can be claimed",
-        "attention_vesting_many": "%(count)s件のベスティング残高を請求できます",
         "backed_by": "backed by %(amount)s %(symbol)s",
         "borrow_none": "借入ポジションはありません",
         "borrowed": "借入",
@@ -682,6 +680,7 @@
         "debt": "負債",
         "distance": "price may fall %(percent)s",
         "holdings": "保有資産",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
         "more_n": "ほか%(count)s件",
         "no_holdings": "保有資産はありません",
         "no_price": "価格なし",
@@ -708,9 +707,6 @@
         "unit": "評価通貨",
         "unpriced": "%(count)s without a price are not counted",
         "value": "評価額",
-        "vesting": "Vesting",
-        "vesting_claimable": "Claimable now",
-        "vesting_none": "請求できるものはありません",
         "wallet": "ウォレット"
     },
     "errors": {

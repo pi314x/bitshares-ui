@@ -59,7 +59,6 @@ const data = (overrides: any = {}) => ({
     orders: {count: 2, nextExpiryMs: null, expiringSoon: 0, value: 34.5},
     positions: [],
     pools: [],
-    vesting: [],
     attention: [],
     ...overrides
 });

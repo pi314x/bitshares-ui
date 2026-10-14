@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s orders expire within a day",
         "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
         "attention_stale": "The node's latest block is %(minutes)s minutes old",
-        "attention_vesting": "%(amount)s %(symbol)s can be claimed",
-        "attention_vesting_many": "Можно получить %(count)s вестинговых балансов",
         "backed_by": "backed by %(amount)s %(symbol)s",
         "borrow_none": "Нет позиций займа",
         "borrowed": "Заём",
@@ -682,6 +680,7 @@
         "debt": "Долг",
         "distance": "price may fall %(percent)s",
         "holdings": "Активы",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
         "more_n": "ещё %(count)s",
         "no_holdings": "Пока ничего нет",
         "no_price": "нет цены",
@@ -708,9 +707,6 @@
         "unit": "Стоимость в",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Стоимость",
-        "vesting": "Vesting",
-        "vesting_claimable": "Claimable now",
-        "vesting_none": "Нечего получать",
         "wallet": "Кошелёк"
     },
     "errors": {

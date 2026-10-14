@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s Orders laufen innerhalb eines Tages ab",
         "attention_margin": "Ihre %(symbol)s-Position: Besicherungsgrad %(ratio)s; der Preis darf um %(distance)s fallen, bevor sie aufgerufen wird",
         "attention_stale": "Der letzte Block des Nodes ist %(minutes)s Minuten alt",
-        "attention_vesting": "%(amount)s %(symbol)s können abgeholt werden",
-        "attention_vesting_many": "%(count)s Vesting-Beträge können abgeholt werden",
         "backed_by": "besichert mit %(amount)s %(symbol)s",
         "borrow_none": "Keine Kredit-Positionen",
         "borrowed": "Geliehen",
@@ -682,6 +680,7 @@
         "debt": "Schulden",
         "distance": "Preis darf um %(percent)s fallen",
         "holdings": "Bestände",
+        "incomplete": "Für eine Order oder Position gibt es noch keinen Preis - der Gesamtwert ist unvollständig",
         "more_n": "+%(count)s weitere",
         "no_holdings": "Noch nichts im Bestand",
         "no_price": "kein Preis",
@@ -708,9 +707,6 @@
         "unit": "Wert in",
         "unpriced": "%(count)s ohne Preis sind nicht eingerechnet",
         "value": "Wert",
-        "vesting": "Vesting",
-        "vesting_claimable": "Jetzt abholbar",
-        "vesting_none": "Nichts abzuholen",
         "wallet": "Wallet"
     },
     "errors": {

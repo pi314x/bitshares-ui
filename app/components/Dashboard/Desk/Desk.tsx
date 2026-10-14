@@ -1,5 +1,5 @@
 // The dashboard as a desk: what the account is worth, what needs attention,
-// what it holds, what is open (orders, pools, borrowed, vesting) and what it
+// what it holds, what is open (orders, pools, borrowed) and what it
 // did lately. Every number is read from the chain through useDeskData; this
 // file lays the cards out. Cards can be hidden (remembered in this browser).
 import * as React from "react";
@@ -177,6 +177,9 @@ function Summary({
                     </Select>
                 </div>
             </div>
+            {data.incomplete ? (
+                <div className={styles.note}>{t("incomplete")}</div>
+            ) : null}
             {data.unpriced > 0 ? (
                 <div className={styles.note}>
                     {t("unpriced", {count: data.unpriced})}
@@ -206,16 +209,6 @@ function attentionText(item: AttentionItem): string {
             });
         case "expiring":
             return t("attention_expiring", {count: p.count});
-        case "vesting":
-            return Number(p.count) > 1
-                ? t("attention_vesting_many", {count: p.count})
-                : t("attention_vesting", {
-                      symbol: p.symbol,
-                      amount: fmt(
-                          Number(p.amount),
-                          amountDigits(Number(p.amount))
-                      )
-                  });
         default:
             return t("attention_stale", {minutes: p.minutes});
     }
@@ -234,8 +227,6 @@ function attentionTarget(
         }
         case "expiring":
             return `/account/${accountName}/orders`;
-        case "vesting":
-            return `/account/${accountName}/vesting`;
         default:
             return data.accountId ? "/settings/access" : null;
     }
@@ -296,7 +287,6 @@ function Attention({
 // ----------------------------------------------------------------- holdings
 
 const SHOWN_ROWS = 8;
-const VESTING_SHOWN = 4;
 const POOLS_SHOWN = 5;
 
 function Holdings({
@@ -435,20 +425,6 @@ function Positions({
                   minute: "2-digit"
               })
             : null;
-    // one row per asset: an account can hold dozens of small balances
-    const claimableBySymbol: {[symbol: string]: number} = {};
-    data.vesting.forEach(v => {
-        if (v.amount > 0) {
-            claimableBySymbol[v.symbol] =
-                (claimableBySymbol[v.symbol] || 0) + v.amount;
-        }
-    });
-    const claimable = Object.keys(claimableBySymbol).map(symbol => ({
-        id: symbol,
-        symbol,
-        amount: claimableBySymbol[symbol]
-    }));
-
     return (
         <>
             <div className={styles.section}>
@@ -565,40 +541,6 @@ function Positions({
                     ))
                 ) : (
                     <div className={styles.muted}>{t("borrow_none")}</div>
-                )}
-            </div>
-
-            <div className={styles.section}>
-                <div className={styles.sectionHead}>
-                    <span className={styles.sectionTitle}>{t("vesting")}</span>
-                    <TypedLink to={`/account/${accountName}/vesting`}>
-                        {t("open")}
-                    </TypedLink>
-                </div>
-                {claimable.length ? (
-                    <div className={styles.muted}>{t("vesting_claimable")}</div>
-                ) : null}
-                {claimable.length
-                    ? claimable.slice(0, VESTING_SHOWN).map(v => (
-                          <div className={styles.row} key={v.id}>
-                              <span>{v.symbol}</span>
-                              <span className={styles.num}>
-                                  {fmt(v.amount, amountDigits(v.amount))}
-                              </span>
-                          </div>
-                      ))
-                    : null}
-                {claimable.length > VESTING_SHOWN ? (
-                    <div className={styles.muted}>
-                        <TypedLink to={`/account/${accountName}/vesting`}>
-                            {t("more_n", {
-                                count: claimable.length - VESTING_SHOWN
-                            })}
-                        </TypedLink>
-                    </div>
-                ) : null}
-                {claimable.length ? null : (
-                    <div className={styles.muted}>{t("vesting_none")}</div>
                 )}
             </div>
         </>

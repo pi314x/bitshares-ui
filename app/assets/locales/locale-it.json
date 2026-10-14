@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s orders expire within a day",
         "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
         "attention_stale": "The node's latest block is %(minutes)s minutes old",
-        "attention_vesting": "%(amount)s %(symbol)s can be claimed",
-        "attention_vesting_many": "%(count)s saldi in vesting possono essere riscossi",
         "backed_by": "backed by %(amount)s %(symbol)s",
         "borrow_none": "Nessuna posizione di prestito",
         "borrowed": "Preso in prestito",
@@ -682,6 +680,7 @@
         "debt": "Debito",
         "distance": "price may fall %(percent)s",
         "holdings": "Possedimenti",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
         "more_n": "+%(count)s altri",
         "no_holdings": "Ancora niente",
         "no_price": "nessun prezzo",
@@ -708,9 +707,6 @@
         "unit": "Valore in",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Valore",
-        "vesting": "Vesting",
-        "vesting_claimable": "Claimable now",
-        "vesting_none": "Niente da riscuotere",
         "wallet": "Portafoglio"
     },
     "errors": {

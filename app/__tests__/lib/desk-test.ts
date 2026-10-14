@@ -3,7 +3,6 @@ import {
     positionRisk,
     orderSummary,
     expiryMs,
-    vestingClaim,
     attentionItems,
     PositionInput
 } from "../../lib/common/desk";
@@ -132,63 +131,6 @@ describe("orders", () => {
     });
 });
 
-describe("vestingClaim", () => {
-    const iso = (sec: number) =>
-        new Date(sec * 1000).toISOString().replace(/\.\d+Z$/, "");
-    const now = Math.floor(Date.UTC(2026, 9, 14) / 1000);
-
-    it("linear policy: nothing before the cliff, a share after, all at the end", () => {
-        const begin = now - 10 * 86400;
-        const item = (dur: number, cliff: number, left: number) => ({
-            id: "1.13.1",
-            balance: {amount: left, asset_id: "1.3.0"},
-            policy: [
-                0,
-                {
-                    begin_timestamp: iso(begin),
-                    vesting_cliff_seconds: cliff,
-                    vesting_duration_seconds: dur,
-                    begin_balance: 1000
-                }
-            ] as [number, any]
-        });
-        expect(
-            vestingClaim(item(20 * 86400, 15 * 86400, 1000), now).units
-        ).toBe(0);
-        expect(vestingClaim(item(20 * 86400, 0, 1000), now).units).toBe(500);
-        // half already claimed: the vested half is gone, nothing more yet
-        expect(vestingClaim(item(20 * 86400, 0, 500), now).units).toBe(0);
-        expect(vestingClaim(item(5 * 86400, 0, 1000), now).units).toBe(1000);
-    });
-
-    it("coin-days policy with a start claim: all or nothing", () => {
-        const make = (start: number, period: number) => ({
-            id: "1.13.2",
-            balance: {amount: "400", asset_id: "1.3.0"},
-            policy: [
-                1,
-                {
-                    start_claim: iso(start),
-                    vesting_seconds: period,
-                    coin_seconds_earned: "0",
-                    coin_seconds_earned_last_update: iso(start)
-                }
-            ] as [number, any]
-        });
-        expect(vestingClaim(make(now - 100, 1000), now).units).toBe(0);
-        expect(vestingClaim(make(now - 5000, 1000), now).units).toBe(400);
-    });
-
-    it("no policy: all of it", () => {
-        expect(
-            vestingClaim(
-                {id: "1.13.3", balance: {amount: 77, asset_id: "1.3.0"}},
-                now
-            ).units
-        ).toBe(77);
-    });
-});
-
 describe("attentionItems", () => {
     it("orders by urgency and drops what is fine", () => {
         const items = attentionItems({
@@ -219,18 +161,13 @@ describe("attentionItems", () => {
                 }
             ],
             expiringOrders: 2,
-            vesting: [
-                {symbol: "BTS", amount: 12.5},
-                {symbol: "USD", amount: 0}
-            ],
             blockAgeSeconds: 400
         });
         expect(items.map(i => i.kind)).toEqual([
             "called",
             "margin",
             "stale",
-            "expiring",
-            "vesting"
+            "expiring"
         ]);
         expect(items[0].level).toBe("danger");
         expect(items[2].params.minutes).toBe(6);
@@ -241,38 +178,8 @@ describe("attentionItems", () => {
             attentionItems({
                 risks: [],
                 expiringOrders: 0,
-                vesting: [],
                 blockAgeSeconds: 3
             })
         ).toEqual([]);
-    });
-});
-
-describe("attentionItems vesting", () => {
-    const base = {risks: [], expiringOrders: 0, blockAgeSeconds: 1};
-
-    it("names the balance when there is one", () => {
-        const items = attentionItems({
-            ...base,
-            vesting: [{symbol: "BTS", amount: 12.5}]
-        });
-        expect(items).toHaveLength(1);
-        expect(items[0].params).toEqual({
-            count: 1,
-            symbol: "BTS",
-            amount: 12.5
-        });
-    });
-
-    it("is one line for many balances", () => {
-        const items = attentionItems({
-            ...base,
-            vesting: Array.from({length: 23}, (_, i) => ({
-                symbol: "A" + i,
-                amount: 1
-            }))
-        });
-        expect(items).toHaveLength(1);
-        expect(items[0].params.count).toBe(23);
     });
 });

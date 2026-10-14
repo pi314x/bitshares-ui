@@ -663,8 +663,6 @@
         "attention_expiring": "%(count)s orders expire within a day",
         "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
         "attention_stale": "The node's latest block is %(minutes)s minutes old",
-        "attention_vesting": "%(amount)s %(symbol)s can be claimed",
-        "attention_vesting_many": "%(count)s vesting bakiyesi talep edilebilir",
         "backed_by": "backed by %(amount)s %(symbol)s",
         "borrow_none": "Borç pozisyonu yok",
         "borrowed": "Borç alınan",
@@ -682,6 +680,7 @@
         "debt": "Borç",
         "distance": "price may fall %(percent)s",
         "holdings": "Varlıklar",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
         "more_n": "+%(count)s tane daha",
         "no_holdings": "Henüz varlık yok",
         "no_price": "fiyat yok",
@@ -708,9 +707,6 @@
         "unit": "Değer birimi",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Değer",
-        "vesting": "Vesting",
-        "vesting_claimable": "Claimable now",
-        "vesting_none": "Talep edilecek bir şey yok",
         "wallet": "Cüzdan"
     },
     "errors": {
