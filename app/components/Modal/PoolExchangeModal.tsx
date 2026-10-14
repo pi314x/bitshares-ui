@@ -1,156 +1,127 @@
-// TypeScript/functional-component port of the legacy PoolExchangeModal.jsx
-// (Phase 8, docs/UI_MIGRATION_PLAN.md), part of the same batch as
-// PoolStakeModal.tsx (both wrap a single required `pool:
-// ChainTypes.ChainLiquidityPool.isRequired` chain prop and share the same
-// `connect(BindToChainState(...), {listenTo: [AccountStore], getProps})`
-// shape).
+// The swap dialog for a liquidity pool, laid out like the swap screens people
+// know: "You pay" on top, "You receive" below, an arrow between them, and the
+// details (price, price impact, fee, the least that will be accepted) under
+// both. Typing in either field works out the other: sell 100 and see what it
+// buys, or ask for 13 and see what it costs.
 //
-// Security-sensitive per AGENTS.md: `onSubmit` submits an on-chain
-// `liquidity_pool_exchange` transaction via
-// `ApplicationApi.liquidityPoolExchange()`, which (see
-// `app/api/ApplicationApi.js`) builds the operation and calls
-// `WalletDb.process_transaction()` - transcribed verbatim.
+// The quote is the chain's own arithmetic in integers (lib/common/poolSwap.ts)
+// at the pool's current balances; the transaction carries `amount_to_sell` and
+// a `min_to_receive` reduced by the slippage the user accepts. The same sale is
+// walked through the order book (lib/common/priceCompare.ts) to say where the
+// price is better.
 //
-// Structural change: `connect(BindToChainState(PoolExchangeModal), {
-// listenTo: [AccountStore], getProps})` becomes a single
-// `PoolExchangeModalContainer` that (a) reads `account` via
-// `useReduxState(selectAccountState)` (see `useReduxState.ts`) and (b) resolves
-// `pool` the way `BindToChainState.jsx`'s `chain_liquidity_pools` block
-// does - `await ChainStore.getLiquidityPoolsByShareAsset([pool])`, taking
-// `pools.first()` if any were returned, else `null` - the one
-// asynchronous ChainTypes resolution in this codebase (every other
-// ChainTypes.* resolution is a synchronous cache read). The effect's
-// dependency array is `[pool, tick]` (`tick` from `useChainStoreTick()`)
-// so the fetch re-runs both when the `pool` id prop changes AND on every
-// chain-store tick, matching the original's continuous per-update
-// re-resolution (`Wrapper.update()` runs from both
-// `ChainStore.subscribe` and `UNSAFE_componentWillReceiveProps`), not
-// just a prop-change trigger. The `cancelled` flag is a defensive
-// addition against a stale response landing after a newer request
-// started; it changes nothing observable here, since the original's
-// `await` ran synchronously per class-instance update cycle in the same
-// single-threaded execution model. While `resolvedPool === undefined`
-// (still resolving), the Container renders a blank `<span />`, matching
-// `BindToChainState.jsx`'s `render()` gating (only `undefined` blocks; a
-// resolved `null` renders through) for a required prop with no
-// `tempComponent`/`show_loader` configured (neither applies to this
-// file).
-//
-// Dropped as confirmed dead (grep-verified, not assumed):
-// - The `Immutable` import: appears only on its own `import` line,
-//   nowhere else in the file.
-// - `state.isModalVisible` and `componentWillReceiveProps` (which only
-//   ever re-synced it from the `isModalVisible` prop): every real caller
-//   - `Poolmart/LiquidityPools.jsx`, `Explorer/LiquidityPools.tsx`,
-//   `Account/AccountPools.tsx` - renders this component as
-//   `{state.isExchangeModalVisible && <PoolExchangeModal
-//   isModalVisible={state.isExchangeModalVisible} .../>}`, i.e.
-//   conditionally *mounts/unmounts* the whole component rather than
-//   updating an already-mounted instance's `isModalVisible` prop - the
-//   exact same situation already documented in `DeletePoolModal.tsx`.
-//   `isModalVisible` is therefore always `true` for this component's
-//   entire mounted lifetime, so this port reads the `isModalVisible`
-//   prop directly in `render()` instead of mirroring it into state.
-// - `switchAsset`'s entire tail (everything after its one `setState`
-//   call - the `ChainStore.getAccount` lookup, the asset/balance
-//   computation, and the `{amountToSell, minToReceive}` object it
-//   built): `switchAsset` is used only as `<Button
-//   onClick={this.switchAsset}>`, whose return value React discards, so
-//   nothing ever reads what that tail computed. (`getPairs()`, which has
-//   the identical body, is kept - it's actually called for its return
-//   value, both in `render()` and in the two "use available balance"
-//   click handlers.)
-// - In `onChangeAmountToSell`/`onChangeMinToReceive`: the `account` prop
-//   destructure and the `accountObj = ChainStore.getAccount(account)`
-//   lookup it fed - never read afterward in either function (the
-//   equivalent lookup already happens live in `getPairs()`, called on
-//   every render, so dropping this redundant one changes nothing
-//   observable); and the shadowing `const {amountToSellTag,
-//   minToReceiveTag} = this.state;` destructure placed right after the
-//   reset `setState` in both functions - every later reference in both
-//   functions uses the earlier `tmp1`/`tmp2` locals instead, never these
-//   two names.
-// - Within `onChangeAmountToSell`'s AMM fee-percentage math, traced
-//   variable-by-variable to see what actually reaches the final
-//   `setState({amountToSell, minToReceive})`: `maker_fee_a`,
-//   `maker_fee_b`, `taker_fee_percenta`, the `flagsb()` helper (only fed
-//   `tmp_delta_a`), `taker_market_fee_percenta()`/
-//   `taker_market_fee_percent_a` (only used for the never-referenced-
-//   again `tmp_delta_a`/`tmp_a` chain), `tmp_delta_a`, `tmp_a`, and
-//   `tmp_delta_b_floor`/`tmp_b_ceil`/`max_mar`/`tmp_b_taker_ceil`/`total`
-//   (all of which only fed `total`, which is itself never read again) -
-//   none of these reach the `setState` call. The kept half (`flagsa()`,
-//   `taker_market_fee_percentb()`, `tmp_delta_b`, `tmp_b`,
-//   `taker_market_fee_percent_b`, `max_market_feeb`, `poolamountbp`) is
-//   exactly what the final `setState` computes from, preserved verbatim,
-//   including a pre-existing bug: `flagsa()` has no final `else` branch
-//   (only three `if`s, all guarded), so it can return `undefined` when
-//   none match, and `Number(undefined)` (`NaN`) then silently propagates
-//   into `tmp_delta_b`.
-// - `onChangeMinToReceive` is more extreme: its final `setState` is just
-//   `{minToReceive: Number(e.amount)}` - tracing every one of the ~150
-//   lines of AMM math between its two `setState` calls shows NONE of it
-//   (not `tmp1`/`tmp2`, not `asset_a`/`asset_b`, not any of the
-//   `maker_`/`taker_`/`flags`/`tmp_delta_`/`tmp_` values) is read by that
-//   final call or anywhere else in the function - it is entirely dead
-//   computation with no side effects (pure `Immutable.Map`/`Big` reads
-//   and arithmetic). This port keeps only the two `setState` calls that
-//   are the function's sole observable effect.
-//
-// Preserved, not "fixed": `state.fee` is read in `render()`
-// (`{this.state.fee && (...)}`) but is grep-confirmed to never be set to
-// anything but `null` anywhere in the file - so that block never
-// actually renders. Kept as real (permanently-`null`) state, matching
-// this migration's established treatment of read-but-never-toggled
-// fields (see `ReportModal.tsx`'s `loadingImage`/`logsCopySuccess`, also
-// cited in `DirectDebitClaimModal.tsx`).
-//
-// Mechanical-only changes: the redundant constructor `.bind(this)` calls
-// (plus the separate `onSubmit = () => {...}` class-property idiom they
-// partly duplicate) have no hooks equivalent/need and are dropped -
-// ordinary closures inside a function component don't need binding.
-// `mergeState`/`state` replace `this.setState`/`this.state` per this
-// migration's established pattern; no `stateRef` mirror is needed here,
-// since every function below is redefined fresh on each render and
-// therefore always closes over that render's current `state` (the same
-// guarantee `this.state` gave the original class).
-//
-// TS-forced casts: `bignumber.js` ships no type declarations and isn't
-// among the ambient `declare module` shims in
-// `app/types/vendor-shims.d.ts`, so every `new big(...)` becomes `new
-// (big as any)(...)`, matching the established precedent in
-// `AccountAssetCreate.tsx`. `ApplicationApi.liquidityPoolExchange` is
-// likewise cast `(ApplicationApi as any)`, matching
-// `CreateLockModal.tsx`'s `(ApplicationApi as any).createTicket`
-// precedent (this file's untyped `.js` module's inferred call signature
-// otherwise doesn't line up with how it's actually invoked here).
+// Signing: `onSubmit` calls `ApplicationApi.liquidityPoolExchange(account, pool,
+// sellSymbol, amountToSell, receiveSymbol, minToReceive)` exactly as the dialog
+// always did; nothing else here builds or signs a transaction. Stable pools use
+// another curve, which is not computed here: they keep the two plain fields
+// (amount to sell and the least to receive, both typed by hand).
 import * as React from "react";
+import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
-import big from "bignumber.js";
 import counterpart from "counterpart";
-import {Form} from "../../design-system/Form";
+import {Apis} from "bitsharesjs-ws";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
-import {Row} from "../../design-system/Row";
-import {Col} from "../../design-system/Col";
 import {Alert} from "../../design-system/Alert";
 import ApplicationApi from "api/ApplicationApi";
-import AmountSelector from "../Utility/AmountSelectorStyleGuide";
-import Icon from "../Icon/Icon";
-import AccountBalance from "../Account/AccountBalance";
 import AssetName from "../Utility/AssetName";
 import {ChainStore} from "bitsharesjs";
+import {estimateFeeAsync} from "common/trxHelper";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {
+    MarketFee,
+    NO_MARKET_FEE,
+    SwapPool,
+    SwapQuote,
+    minReceive,
+    priceImpact,
+    quoteExactIn,
+    quoteExactOut
+} from "../../lib/common/poolSwap";
+import {
+    BookFill,
+    BookOrder,
+    compareVenues,
+    fillFromOrderBook
+} from "../../lib/common/priceCompare";
+import {formatPercent, formatPrice} from "../../lib/common/poolMetrics";
+import styles from "./PoolExchangeModal.module.scss";
 
-interface PoolExchangeModalState {
-    amountToSellTag: string;
-    minToReceiveTag: string;
-    amountToSell: any;
-    minToReceive: any;
-    fee: any;
-    err: any;
+const t = (key: string, params?: Record<string, any>) =>
+    counterpart.translate(`poolmart.swap.${key}`, params);
+
+const SLIPPAGE_CHOICES = [0.001, 0.005, 0.01];
+
+// 10^n as a BigInt. Not `**`: the build turns that into Math.pow, which cannot
+// take a BigInt.
+function pow10(n: number): bigint {
+    return BigInt("1" + "0".repeat(n));
+}
+
+/** "12.5" -> smallest units (BigInt), null for text that is not an amount or
+ * has more decimals than the asset has. */
+function parseUnits(text: string, precision: number): bigint | null {
+    if (!/^\d*\.?\d*$/.test(text) || text === "" || text === ".") return null;
+    const [whole, fraction = ""] = text.split(".");
+    if (fraction.length > precision) return null;
+    return (
+        BigInt(whole || "0") * pow10(precision) +
+        BigInt((fraction + "0".repeat(precision)).slice(0, precision) || "0")
+    );
+}
+
+/** Smallest units -> "12.5" (no trailing zeros). */
+function formatUnits(units: bigint, precision: number): string {
+    const base = pow10(precision);
+    const whole = units / base;
+    const fraction = (units % base).toString().padStart(precision, "0");
+    const trimmed = fraction.replace(/0+$/, "");
+    return trimmed ? `${whole}.${trimmed}` : `${whole}`;
+}
+
+function marketFeeOf(asset: any): MarketFee {
+    const options = asset.get("options");
+    if (!options) return NO_MARKET_FEE;
+    const flags = Number(options.get("flags") || 0);
+    const extensions = options.get("extensions");
+    const taker =
+        extensions && extensions.get && extensions.get("taker_fee_percent");
+    return {
+        charges: flags % 2 === 1,
+        makerPercent: Number(options.get("market_fee_percent") || 0),
+        takerPercent:
+            taker === undefined || taker === null ? null : Number(taker),
+        max: BigInt(String(options.get("max_market_fee") || 0))
+    };
+}
+
+/** The open limit orders of the pair, refreshed while the dialog is open. */
+function useOrderBook(payId: string, receiveId: string): BookOrder[] | null {
+    const [orders, setOrders] = React.useState<BookOrder[] | null>(null);
+    React.useEffect(() => {
+        let cancelled = false;
+        setOrders(null);
+        const load = () =>
+            (Apis as any)
+                .instance()
+                .db_api()
+                .exec("get_limit_orders", [payId, receiveId, 300])
+                .then((rows: BookOrder[]) => {
+                    if (!cancelled) setOrders(rows || []);
+                })
+                .catch(() => {
+                    if (!cancelled) setOrders(null);
+                });
+        load();
+        const timer = setInterval(load, 15000);
+        return () => {
+            cancelled = true;
+            clearInterval(timer);
+        };
+    }, [payId, receiveId]);
+    return orders;
 }
 
 interface PoolExchangeModalCoreProps {
@@ -166,407 +137,449 @@ function PoolExchangeModalCore({
     isModalVisible,
     onHideModal
 }: PoolExchangeModalCoreProps) {
-    const [state, setState] = React.useState<PoolExchangeModalState>({
-        amountToSellTag: "a",
-        minToReceiveTag: "b",
-        amountToSell: null,
-        minToReceive: null,
-        fee: null,
-        err: null
-    });
+    useChainStoreTick();
+    // which side of the pool is sold
+    const [sold, setSold] = React.useState<"a" | "b">("a");
+    // the field the user is typing in, and what is typed there
+    const [active, setActive] = React.useState<"pay" | "receive">("pay");
+    const [typed, setTyped] = React.useState("");
+    // stable pools: the least to receive, typed by hand
+    const [manualMin, setManualMin] = React.useState("");
+    const [slippage, setSlippage] = React.useState(0.005);
+    const [customSlippage, setCustomSlippage] = React.useState("");
+    const [error, setError] = React.useState<string | null>(null);
+    const [submitting, setSubmitting] = React.useState(false);
+    const [feeReserve, setFeeReserve] = React.useState<bigint>(BigInt(0));
 
-    const mergeState = (patch: Partial<PoolExchangeModalState>) => {
-        setState(prev => ({...prev, ...patch}));
+    const valid = !!pool && pool.size !== 0;
+    const bought: "a" | "b" = sold === "a" ? "b" : "a";
+    const assetIn = valid ? pool.get(`asset_${sold}`) : null;
+    const assetOut = valid ? pool.get(`asset_${bought}`) : null;
+
+    // the fee of the exchange operation, kept back when everything of the core
+    // asset is offered
+    React.useEffect(() => {
+        let cancelled = false;
+        estimateFeeAsync("liquidity_pool_exchange")
+            .then((fee: number) => {
+                if (!cancelled) setFeeReserve(BigInt(Math.ceil(fee || 0)));
+            })
+            .catch(() => undefined);
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const idIn: string = assetIn ? assetIn.get("id") : "";
+    const idOut: string = assetOut ? assetOut.get("id") : "";
+    const book = useOrderBook(idIn, idOut);
+
+    if (!valid || !assetIn || !assetOut) return null;
+
+    const precisionIn: number = assetIn.get("precision");
+    const precisionOut: number = assetOut.get("precision");
+    const symbolIn: string = assetIn.get("symbol");
+    const symbolOut: string = assetOut.get("symbol");
+    const stable =
+        pool.get("pool_type") === 1 || pool.get("pool_type") === "stable";
+
+    const swapPool: SwapPool = {
+        balanceIn: BigInt(String(pool.get(`balance_${sold}`))),
+        balanceOut: BigInt(String(pool.get(`balance_${bought}`))),
+        takerFeePercent: Number(pool.get("taker_fee_percent") || 0),
+        feeIn: marketFeeOf(assetIn),
+        feeOut: marketFeeOf(assetOut),
+        stable
     };
 
-    const hideModal = () => {
-        onHideModal();
+    const balanceOf = (asset: any): bigint => {
+        const accountObject: any = (ChainStore as any).getAccount(account);
+        if (!accountObject || typeof accountObject.getIn !== "function") {
+            return BigInt(0);
+        }
+        const balanceId = accountObject.getIn(["balances", asset.get("id")]);
+        const balanceObject = balanceId
+            ? (ChainStore as any).getObject(balanceId)
+            : null;
+        return balanceObject
+            ? BigInt(String(balanceObject.get("balance")))
+            : BigInt(0);
+    };
+    const balanceIn = balanceOf(assetIn);
+    const balanceOut = balanceOf(assetOut);
+
+    // ---- the two fields: one typed, the other worked out -----------------
+    const typedUnits = parseUnits(
+        typed,
+        active === "pay" ? precisionIn : precisionOut
+    );
+    let quote: SwapQuote | null = null;
+    if (!stable && typedUnits !== null) {
+        quote =
+            active === "pay"
+                ? quoteExactIn(swapPool, typedUnits)
+                : quoteExactOut(swapPool, typedUnits);
+    }
+    const payUnits: bigint | null = stable
+        ? parseUnits(typed, precisionIn)
+        : quote
+        ? quote.pay
+        : null;
+    const minUnits: bigint | null = stable
+        ? parseUnits(manualMin, precisionOut)
+        : quote
+        ? minReceive(quote.receive, slippage)
+        : null;
+
+    const payText =
+        active === "pay" || stable
+            ? typed
+            : quote
+            ? formatUnits(quote.pay, precisionIn)
+            : "";
+    const receiveText =
+        active === "receive"
+            ? typed
+            : quote
+            ? formatUnits(quote.receive, precisionOut)
+            : "";
+
+    const impact = quote ? priceImpact(quote) : null;
+    const price =
+        quote && quote.pay > BigInt(0)
+            ? Number(quote.receive) /
+              Math.pow(10, precisionOut) /
+              (Number(quote.pay) / Math.pow(10, precisionIn))
+            : null;
+
+    // ---- the order book against the pool ---------------------------------
+    let bookFill: BookFill | null = null;
+    if (quote && book) {
+        bookFill = fillFromOrderBook(
+            book,
+            idIn,
+            idOut,
+            quote.pay,
+            swapPool.feeOut
+        );
+    }
+    const venues =
+        quote && bookFill ? compareVenues(quote.receive, bookFill) : null;
+
+    // ---- what the button says ----------------------------------------------
+    let blocker: string | null = null;
+    if (!account) blocker = t("log_in");
+    else if (!typed) blocker = t("enter_amount");
+    else if (typedUnits === null) blocker = t("enter_amount");
+    else if (!stable && !quote) blocker = t("cannot_fill");
+    else if (stable && !minUnits) blocker = t("enter_minimum");
+    else if (payUnits !== null && payUnits > balanceIn) {
+        blocker = t("insufficient", {asset: symbolIn});
+    }
+
+    // Switching the direction keeps the numbers the user typed: each amount
+    // stays with its asset, so what was typed as "pay" is now the amount
+    // to receive in that same asset, and the other side is worked out again.
+    const onFlip = () => {
+        setSold(bought);
+        if (stable) {
+            // two typed amounts: they trade places with their assets
+            setTyped(manualMin);
+            setManualMin(typed);
+        } else {
+            setActive(active === "pay" ? "receive" : "pay");
+        }
+        setError(null);
+    };
+
+    const onType = (side: "pay" | "receive", text: string) => {
+        const precision = side === "pay" ? precisionIn : precisionOut;
+        if (!/^\d*\.?\d*$/.test(text)) return;
+        const fraction = text.split(".")[1];
+        if (fraction !== undefined && fraction.length > precision) return;
+        setActive(side);
+        setTyped(text);
+        setError(null);
+    };
+
+    const onMax = () => {
+        let units = balanceIn;
+        // the fee is paid in the core asset: keep it back when that is sold
+        if (idIn === "1.3.0" && units > feeReserve) units -= feeReserve;
+        setActive("pay");
+        setTyped(formatUnits(units, precisionIn));
+        setError(null);
     };
 
     const onSubmit = () => {
-        const {
-            amountToSellTag,
-            minToReceiveTag,
-            amountToSell,
-            minToReceive
-        } = state;
-        if (!amountToSell || !minToReceive) {
-            mergeState({
-                err: counterpart.translate("exchange.no_data")
-            });
-            return;
-        }
-        mergeState({
-            err: null
-        });
-        const amountToSellPrecision = new (big as any)(10).toPower(
-            new (big as any)(
-                pool.getIn([`asset_${amountToSellTag}`, "precision"])
-            )
-        );
-        const minToReceivePrecision = new (big as any)(10).toPower(
-            new (big as any)(
-                pool.getIn([`asset_${minToReceiveTag}`, "precision"])
-            )
-        );
-
+        if (blocker || payUnits === null || minUnits === null) return;
+        setError(null);
+        setSubmitting(true);
         (ApplicationApi as any)
             .liquidityPoolExchange(
                 account,
                 pool.get("id"),
-                pool.getIn([`asset_${amountToSellTag}`, "symbol"]),
-                Math.round(parseFloat(amountToSell) * amountToSellPrecision),
-                pool.getIn([`asset_${minToReceiveTag}`, "symbol"]),
-                Math.round(parseFloat(minToReceive) * minToReceivePrecision)
+                symbolIn,
+                Number(payUnits),
+                symbolOut,
+                Number(minUnits)
             )
             .then(() => {
-                console.log("exchange:");
-                hideModal();
+                setSubmitting(false);
+                onHideModal();
             })
             .catch((e: any) => {
+                setSubmitting(false);
                 console.error("exchange:", e);
             });
     };
 
-    const switchAsset = () => {
-        const tmp1 = state.amountToSellTag;
-        const tmp2 = state.minToReceiveTag;
-        mergeState({
-            amountToSellTag: tmp2,
-            minToReceiveTag: tmp1,
-            amountToSell: null,
-            minToReceive: null,
-            fee: null
-        });
-    };
-
-    const getPairs = () => {
-        const {amountToSellTag, minToReceiveTag} = state;
-        const accountObj = (ChainStore as any).getAccount(account);
-
-        const asset_a = pool.get(`asset_${amountToSellTag}`);
-        const asset_b = pool.get(`asset_${minToReceiveTag}`);
-        const precision_a = asset_a.get("precision");
-        const precision_b = asset_b.get("precision");
-
-        const balances_a = accountObj.getIn(["balances", asset_a.get("id")]);
-        const balances_b = accountObj.getIn(["balances", asset_b.get("id")]);
-
-        let balance_a = new (big as any)(0);
-        let balance_b = new (big as any)(0);
-
-        if (balances_a) {
-            const balObj_A = (ChainStore as any).getObject(balances_a);
-            balance_a = new (big as any)(balObj_A.get("balance")).dividedBy(
-                new (big as any)(10).toPower(precision_a)
-            );
-        }
-
-        if (balances_b) {
-            const balObj_B = (ChainStore as any).getObject(balances_b);
-            balance_b = new (big as any)(balObj_B.get("balance")).dividedBy(
-                new (big as any)(10).toPower(precision_b)
-            );
-        }
-
-        if (pool === null || pool === undefined) return null;
-        return {
-            amountToSell: {
-                id: pool.getIn([`asset_${amountToSellTag}`, "id"]),
-                balance: balance_a,
-                name: pool.getIn([`asset_${amountToSellTag}`, "symbol"]),
-                precision: precision_a
-            },
-            minToReceive: {
-                id: pool.getIn([`asset_${minToReceiveTag}`, "id"]),
-                balance: balance_b,
-                name: pool.getIn([`asset_${minToReceiveTag}`, "symbol"]),
-                precision: precision_b
-            }
-        };
-    };
-
-    const onChangeAmountToSell = (e: any) => {
-        const tmp1 = state.amountToSellTag;
-        const tmp2 = state.minToReceiveTag;
-        mergeState({
-            amountToSellTag: tmp1,
-            minToReceiveTag: tmp2,
-            amountToSell: null,
-            minToReceive: null,
-            fee: null
-        });
-
-        const asset_a = pool.get(`asset_${tmp1}`);
-        const asset_b = pool.get(`asset_${tmp2}`);
-
-        const poolamounta = Number(pool.get(`balance_${tmp1}`));
-        const poolamountap = Number(
-            new (big as any)(10).toPower(
-                pool.get(`asset_${tmp1}`).get("precision")
-            )
-        );
-        const poolamountb = Number(pool.get(`balance_${tmp2}`));
-        const poolamountbp = Number(
-            new (big as any)(10).toPower(
-                pool.get(`asset_${tmp2}`).get("precision")
-            )
-        );
-
-        const maker_market_fee_percenta = asset_a.getIn([
-            "options",
-            "market_fee_percent"
-        ]);
-        const maker_market_fee_percentb = asset_b.getIn([
-            "options",
-            "market_fee_percent"
-        ]);
-
-        const assetaflags = asset_a.getIn(["options", "flags"]);
-        const assetbflags = asset_b.getIn(["options", "flags"]);
-
-        const max_market_feea = asset_a.getIn(["options", "max_market_fee"]);
-        const max_market_feeb = asset_b.getIn(["options", "max_market_fee"]);
-
-        const taker_fee_percentb = asset_b.getIn([
-            "options",
-            "extensions",
-            "taker_fee_percent"
-        ]);
-
-        function flagsa() {
-            if (assetaflags % 2 == 0) {
-                return 0;
-            }
-            if (maker_market_fee_percenta === 0) {
-                return 0;
-            }
-            if (maker_market_fee_percenta > 0) {
-                return Math.min(
-                    Number(max_market_feea),
-                    Math.ceil(
-                        Number(e.amount) *
-                            Number(poolamountap) *
-                            (Number(maker_market_fee_percenta) / 10000)
-                    )
-                );
-            }
-        }
-
-        function taker_market_fee_percentb() {
-            if (assetbflags % 2 == 0) {
-                return 0;
-            }
-            if (
-                typeof taker_fee_percentb == "undefined" &&
-                maker_market_fee_percentb > 0
-            ) {
-                return Number(maker_market_fee_percentb) / 10000;
-            }
-            if (
-                typeof taker_fee_percentb == "undefined" &&
-                maker_market_fee_percentb === 0
-            ) {
-                return 0;
-            } else {
-                return Number(taker_fee_percentb) / 10000;
-            }
-        }
-
-        const tmp_delta_b =
-            Number(poolamountb) -
-            Math.ceil(
-                (Number(poolamountb) * Number(poolamounta)) /
-                    (Number(poolamounta) +
-                        (Number(e.amount) * Number(poolamountap) -
-                            Number(flagsa())))
-            );
-
-        const tmp_b =
-            (Number(tmp_delta_b) * Number(pool.get("taker_fee_percent"))) /
-            10000;
-
-        const taker_market_fee_percent_b = Number(taker_market_fee_percentb());
-
-        mergeState({
-            amountToSell: Number(e.amount),
-            minToReceive:
-                (Number(tmp_delta_b) -
-                    Math.floor(Number(tmp_b)) -
-                    Math.ceil(
-                        Math.min(
-                            Number(max_market_feeb),
-                            Math.ceil(
-                                Math.ceil(
-                                    Number(tmp_delta_b) *
-                                        Number(taker_market_fee_percent_b)
-                                )
-                            )
-                        )
-                    )) /
-                Number(poolamountbp)
-        });
-    };
-
-    const onChangeMinToReceive = (e: any) => {
-        mergeState({
-            minToReceive: null,
-            fee: null
-        });
-
-        mergeState({
-            minToReceive: Number(e.amount)
-        });
-    };
-
-    if (!pool || pool.size === 0) return null;
-    const {amountToSell, minToReceive} = state;
-    const pairs = getPairs();
+    const customValue = parseFloat(customSlippage);
+    const customActive =
+        customSlippage !== "" &&
+        Number.isFinite(customValue) &&
+        !SLIPPAGE_CHOICES.includes(slippage);
 
     return (
         <Modal
             visible={isModalVisible}
-            onCancel={hideModal}
+            onCancel={onHideModal}
+            title={t("title")}
             footer={[
                 <Button
-                    key={"submit"}
-                    disabled={!account}
-                    onClick={account ? onSubmit : undefined}
+                    key="submit"
+                    variant="accent"
+                    disabled={!!blocker || submitting}
+                    onClick={onSubmit}
                 >
-                    {counterpart.translate("wallet.submit")}
+                    {blocker || t("submit")}
                 </Button>,
-                <Button
-                    key={"Cancel"}
-                    onClick={hideModal}
-                    style={{marginLeft: "20px"}}
-                >
+                <Button key="cancel" onClick={onHideModal}>
                     <Translate component="span" content="transfer.cancel" />
                 </Button>
             ]}
         >
-            {pool.get("virtual_value") > 0 && (
-                <Form>
-                    {pairs !== null && (
-                        <Row className="mt-10 mb-10">
-                            <Col span={24}>
-                                <h4>
-                                    {counterpart.translate(
-                                        "poolmart.liquidity_pools.amount_to_sell"
-                                    )}
-                                </h4>
-                                <AmountSelector
-                                    assets={[pairs.amountToSell.name]}
-                                    asset={pairs.amountToSell.name}
-                                    onChange={onChangeAmountToSell}
-                                    amount={amountToSell}
-                                />
-                                {account && (
-                                    <div style={{textAlign: "right"}}>
-                                        <span>
-                                            {counterpart.translate(
-                                                "transfer.available"
-                                            )}
-                                            :{" "}
-                                        </span>
-                                        <a
-                                            onClick={e => {
-                                                e.preventDefault();
-                                                const pairs = getPairs();
-
-                                                onChangeAmountToSell({
-                                                    amount: pairs!.amountToSell.balance.toNumber(),
-                                                    asset: null
-                                                });
-                                            }}
-                                        >
-                                            <AccountBalance
-                                                account={account}
-                                                asset={pairs.amountToSell.name}
-                                            />
-                                        </a>
-                                    </div>
-                                )}
-                            </Col>
-                            <Col
-                                span={24}
-                                className="mt-10 mb-10"
-                                style={{textAlign: "center"}}
-                            >
-                                <Button onClick={switchAsset}>
-                                    <Icon name="arrow-up-down" size="1_5x" />
-                                </Button>
-                            </Col>
-                            <Col span={24}>
-                                <h4>
-                                    {counterpart.translate(
-                                        "poolmart.liquidity_pools.min_to_receive"
-                                    )}
-                                </h4>
-                                <AmountSelector
-                                    assets={[pairs.minToReceive.name]}
-                                    asset={pairs.minToReceive.name}
-                                    amount={minToReceive}
-                                    onChange={onChangeMinToReceive}
-                                />
-                                {account && (
-                                    <div style={{textAlign: "right"}}>
-                                        <span>
-                                            {counterpart.translate(
-                                                "transfer.available"
-                                            )}
-                                            :{" "}
-                                        </span>
-                                        <a
-                                            onClick={e => {
-                                                e.preventDefault();
-                                                const pairs = getPairs();
-                                                onChangeMinToReceive({
-                                                    amount: pairs!.minToReceive.balance.toNumber(),
-                                                    asset: null
-                                                });
-                                            }}
-                                        >
-                                            <AccountBalance
-                                                account={account}
-                                                asset={pairs.minToReceive.name}
-                                            />
-                                        </a>
-                                    </div>
-                                )}
-                            </Col>
-                            {state.fee && (
-                                <Col span={24} style={{textAlign: "right"}}>
-                                    <span>
-                                        {counterpart.translate(
-                                            "poolmart.liquidity_pools.taker_fee_percent"
-                                        )}
-                                        :{" "}
-                                    </span>
-                                    {`${state.fee} `}
-                                    <AssetName
-                                        noTip
-                                        name={pairs.minToReceive.name}
-                                    />
-                                </Col>
-                            )}
-                            {state.err && (
-                                <Col span={24} className="mt-10 mb-10">
-                                    <Alert message={state.err} type="error" />
-                                </Col>
-                            )}
-                        </Row>
-                    )}
-                </Form>
-            )}
-            {pool.get("virtual_value") == 0 && (
+            {pool.get("virtual_value") == 0 ? (
                 <div>
-                    <Row>
-                        <Col span={24}>
-                            {counterpart.translate(
-                                "poolmart.liquidity_pools.need_stake_first"
+                    {counterpart.translate(
+                        "poolmart.liquidity_pools.need_stake_first"
+                    )}
+                </div>
+            ) : (
+                <div className={styles.swap}>
+                    <div className={styles.field}>
+                        <div className={styles.fieldHead}>
+                            <span>{t("you_pay")}</span>
+                            {account ? (
+                                <button
+                                    type="button"
+                                    className={styles.balance}
+                                    onClick={onMax}
+                                >
+                                    {t("balance")}:{" "}
+                                    {formatUnits(balanceIn, precisionIn)}{" "}
+                                    <span className={styles.max}>
+                                        {t("max")}
+                                    </span>
+                                </button>
+                            ) : null}
+                        </div>
+                        <div className={styles.fieldBody}>
+                            <input
+                                className={styles.amount}
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder="0.0"
+                                value={payText}
+                                onChange={e => onType("pay", e.target.value)}
+                                aria-label={t("you_pay")}
+                            />
+                            <span className={styles.asset}>
+                                <AssetName name={symbolIn} noTip />
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className={styles.flipRow}>
+                        <button
+                            type="button"
+                            className={styles.flip}
+                            onClick={onFlip}
+                            aria-label={t("flip")}
+                            title={t("flip")}
+                        >
+                            ⇅
+                        </button>
+                    </div>
+
+                    <div className={styles.field}>
+                        <div className={styles.fieldHead}>
+                            <span>
+                                {stable ? t("min_receive") : t("you_receive")}
+                            </span>
+                            {account ? (
+                                <span className={styles.balanceStatic}>
+                                    {t("balance")}:{" "}
+                                    {formatUnits(balanceOut, precisionOut)}
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className={styles.fieldBody}>
+                            <input
+                                className={styles.amount}
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder="0.0"
+                                value={stable ? manualMin : receiveText}
+                                onChange={e =>
+                                    stable
+                                        ? /^\d*\.?\d*$/.test(e.target.value) &&
+                                          setManualMin(e.target.value)
+                                        : onType("receive", e.target.value)
+                                }
+                                aria-label={t("you_receive")}
+                            />
+                            <span className={styles.asset}>
+                                <AssetName name={symbolOut} noTip />
+                            </span>
+                        </div>
+                    </div>
+
+                    {stable ? (
+                        <div className={styles.note}>{t("stable_manual")}</div>
+                    ) : null}
+
+                    {quote ? (
+                        <dl className={styles.details}>
+                            <dt>{t("price")}</dt>
+                            <dd>
+                                1 <AssetName name={symbolIn} noTip /> ={" "}
+                                {formatPrice(price)}{" "}
+                                <AssetName name={symbolOut} noTip />
+                            </dd>
+                            <dt>{t("price_impact")}</dt>
+                            <dd
+                                className={
+                                    impact !== null && impact > 0.05
+                                        ? styles.warn
+                                        : undefined
+                                }
+                            >
+                                {impact === null ? "-" : formatPercent(impact)}
+                            </dd>
+                            <dt>{t("pool_fee")}</dt>
+                            <dd>
+                                {swapPool.takerFeePercent / 100}%
+                                {quote.poolFee > BigInt(0)
+                                    ? ` (${formatUnits(
+                                          quote.poolFee,
+                                          precisionOut
+                                      )} ${symbolOut})`
+                                    : ""}
+                            </dd>
+                            <dt>{t("min_received")}</dt>
+                            <dd>
+                                {minUnits !== null
+                                    ? formatUnits(minUnits, precisionOut)
+                                    : "-"}{" "}
+                                <AssetName name={symbolOut} noTip />
+                            </dd>
+                        </dl>
+                    ) : null}
+
+                    {quote ? (
+                        <div className={styles.slippage}>
+                            <span>{t("slippage")}</span>
+                            <div className={styles.chips}>
+                                {SLIPPAGE_CHOICES.map(choice => (
+                                    <button
+                                        key={choice}
+                                        type="button"
+                                        className={`${styles.chip} ${
+                                            slippage === choice &&
+                                            customSlippage === ""
+                                                ? styles.chipOn
+                                                : ""
+                                        }`}
+                                        onClick={() => {
+                                            setSlippage(choice);
+                                            setCustomSlippage("");
+                                        }}
+                                    >
+                                        {choice * 100}%
+                                    </button>
+                                ))}
+                                <input
+                                    className={`${styles.chip} ${
+                                        customActive ? styles.chipOn : ""
+                                    }`}
+                                    inputMode="decimal"
+                                    placeholder="%"
+                                    value={customSlippage}
+                                    aria-label={t("slippage")}
+                                    onChange={e => {
+                                        const text = e.target.value;
+                                        if (!/^\d*\.?\d*$/.test(text)) return;
+                                        setCustomSlippage(text);
+                                        const v = parseFloat(text);
+                                        if (
+                                            Number.isFinite(v) &&
+                                            v >= 0 &&
+                                            v <= 50
+                                        ) {
+                                            setSlippage(v / 100);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {venues && bookFill && quote ? (
+                        <div
+                            className={`${styles.venues} ${
+                                venues.better === "book"
+                                    ? styles.venueBook
+                                    : styles.venuePool
+                            }`}
+                        >
+                            {venues.better === "pool" ? (
+                                <span>
+                                    {t("better_pool", {
+                                        percent: formatPercent(venues.advantage)
+                                    })}
+                                </span>
+                            ) : venues.better === "book" ? (
+                                <span>
+                                    {t("better_book", {
+                                        percent: formatPercent(
+                                            venues.advantage
+                                        ),
+                                        amount: `${formatUnits(
+                                            bookFill.receive,
+                                            precisionOut
+                                        )} ${symbolOut}`
+                                    })}{" "}
+                                    <Link
+                                        to={`/market/${symbolOut}_${symbolIn}`}
+                                        onClick={onHideModal}
+                                    >
+                                        {t("open_order_book")}
+                                    </Link>
+                                </span>
+                            ) : (
+                                <span>{t("same_price")}</span>
                             )}
-                        </Col>
-                    </Row>
+                            {!bookFill.complete ? (
+                                <span className={styles.muted}>
+                                    {" "}
+                                    {t("book_too_thin")}
+                                </span>
+                            ) : null}
+                        </div>
+                    ) : null}
+
+                    {error ? <Alert message={error} type="error" /> : null}
                 </div>
             )}
         </Modal>
