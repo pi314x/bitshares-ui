@@ -148,12 +148,24 @@ export function Modal({
         };
     }, [visible, asPage]);
 
+    const pageRef = React.useRef<HTMLElement>(null);
+    React.useEffect(() => {
+        if (!visible || !asPage) return;
+        // a dialog that opens above the part of the page that is on screen
+        // (a transaction to confirm) must not be somewhere out of sight
+        const node = pageRef.current;
+        if (node && typeof node.scrollIntoView === "function") {
+            node.scrollIntoView({block: "start", behavior: "smooth"});
+        }
+    }, [visible, asPage]);
+
     if (!visible) return null;
 
     if (asPage) {
         return (
             <PagePresentation.Provider value={false}>
                 <section
+                    ref={pageRef}
                     className={[styles.page, className]
                         .filter(Boolean)
                         .join(" ")}

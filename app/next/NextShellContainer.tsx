@@ -44,6 +44,7 @@ import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import SendModal from "components/Modal/SendModal";
+import TransactionConfirm from "components/Blockchain/TransactionConfirm";
 import DepositModal from "components/Modal/DepositModal";
 import WithdrawModal from "components/Modal/WithdrawModalNew";
 
@@ -243,6 +244,8 @@ export default function NextShellContainer({
                 content={
                     <>
                         <AccountBrowsingMode location={location} />
+                        {/* "Confirm this transaction": in the page, not a popup */}
+                        <TransactionConfirm inline />
                         {content}
                     </>
                 }
