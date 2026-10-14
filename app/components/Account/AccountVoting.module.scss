@@ -1,3 +1,15 @@
+.page.page {
+    // The shell already insets the page (24px, as Explorer and Pools have it).
+    // Foundation's `.grid-content` and the legacy `.padding` of the header added
+    // their own on top: the title sat at 40px and the tab strip at 24px.
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.page.page .head {
+    padding: 0;
+}
+
 // Voting page header: the title and what voting is, then two cards - the lock
 // (more voting power) and the proxy with the publish/reset actions. These were
 // floated buttons next to paragraphs, so text ran under them.

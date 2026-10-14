@@ -137,6 +137,7 @@ import Immutable from "immutable";
 import Translate from "react-translate-component";
 import accountUtils from "common/account_utils";
 import {ChainStore, FetchChainObjects} from "bitsharesjs";
+import {fetchObjectsPartial} from "../../lib/chain/fetchObjectsPartial";
 import ApplicationApi from "api/ApplicationApi";
 import AccountSelector from "./AccountSelector";
 import Icon from "../Icon/Icon";
@@ -389,11 +390,16 @@ function AccountVoting({
         } else {
             lastIdx = parseInt(vote_ids[vote_ids.length - 1].split(".")[2], 10);
         }
-        (FetchChainObjects as any)(
-            (ChainStore as any).getObject,
-            vote_ids,
-            5000,
-            {}
+        fetchObjectsPartial<any>(
+            () =>
+                (FetchChainObjects as any)(
+                    (ChainStore as any).getObject,
+                    vote_ids,
+                    5000,
+                    {}
+                ),
+            () =>
+                vote_ids.map((id: string) => (ChainStore as any).getObject(id))
         ).then((vote_objs: any) => {
             currentRef.current = current.concat(
                 Immutable.List(
@@ -854,7 +860,7 @@ function AccountVoting({
     );
 
     return (
-        <div className="main-content grid-content">
+        <div className={`main-content grid-content ${styles.page}`}>
             <div className="voting">
                 <div className={`padding ${styles.head}`}>
                     <div className={styles.title}>

@@ -65,7 +65,9 @@ function getWitnessOrCommittee(type: string, acct: any) {
     return {
         url,
         votes,
-        id: account.get("id")
+        // the witness/committee object is looked up by account and may not be
+        // there yet
+        id: account ? account.get("id") : null
     };
 }
 
@@ -303,7 +305,12 @@ export default function VotingAccountsList({
 
     const header = getHeader();
 
-    const resolvedItems = items.map((id: string) => ChainStore.getObject(id));
+    // `items` is an Immutable.List of account ids (the caller keeps it that
+    // way); the rows below need an array: `item_rows.length` is undefined on a
+    // List, which left the witness and committee tables empty for good.
+    const ids: string[] =
+        typeof items.toArray === "function" ? items.toArray() : items;
+    const resolvedItems = ids.map((id: string) => ChainStore.getObject(id));
 
     const item_rows = resolvedItems
         .filter((i: any) => {
