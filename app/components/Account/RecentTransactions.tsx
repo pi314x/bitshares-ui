@@ -57,6 +57,8 @@ import Translate from "react-translate-component";
 import JSONModal from "components/Modal/JSONModal";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import {ChainTypes as grapheneChainTypes, ChainStore} from "bitsharesjs";
+import {Apis} from "bitsharesjs-ws";
+import {extendAccountHistory} from "../../lib/chain/extendAccountHistory";
 import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import cnames from "classnames";
@@ -121,6 +123,8 @@ interface RecentTransactionsState {
     esNodeCustom: boolean;
     esNode: any;
     visibleId: any;
+    /** The node had nothing older for the last "load older" request. */
+    historyExhausted: boolean;
 }
 
 interface RecentTransactionsCoreProps {
@@ -161,7 +165,8 @@ function RecentTransactionsCore({
         showModal: false,
         esNodeCustom: false,
         esNode: esWrapperList.length > 0 ? esWrapperList[0].url : null,
-        visibleId: ""
+        visibleId: "",
+        historyExhausted: false
     });
 
     const mergeState = (partial: Partial<RecentTransactionsState>) => {
@@ -422,6 +427,36 @@ function RecentTransactionsCore({
 
     const hideFee = false;
 
+    // Show what the store has; when all of it is shown, ask the node for the
+    // next 100 older operations (its limit per request) and show those too.
+    const onLoadOlder = () => {
+        mergeState({fetchingAccountHistory: true});
+        const ids: string[] = accountsList
+            .filter(Boolean)
+            .map((account: any) => account.get("id"));
+        Promise.all(
+            ids.map(id =>
+                extendAccountHistory(
+                    id,
+                    ChainStore as any,
+                    (Apis as any).instance().history_api()
+                )
+            )
+        )
+            .then(added => added.reduce((a, b) => a + b, 0))
+            .catch(() => -1)
+            .then(added =>
+                setState(prev => ({
+                    ...prev,
+                    fetchingAccountHistory: false,
+                    accountHistoryError:
+                        added < 0 ? true : prev.accountHistoryError,
+                    historyExhausted: added === 0,
+                    limit: added > 0 ? prev.limit + added : prev.limit
+                }))
+            );
+    };
+
     const display_history = history.length
         ? history.slice(0, limit).map((o: any) => {
               return getDataSource(o, current_account_id);
@@ -542,6 +577,18 @@ function RecentTransactionsCore({
                             </Tooltip>
                         ) : null}
                     </div>
+                    {historyCount > 0 &&
+                    historyCount <= state.limit &&
+                    !state.historyExhausted ? (
+                        <Button
+                            className="inline-block"
+                            style={{marginLeft: "1rem"}}
+                            disabled={state.fetchingAccountHistory}
+                            onClick={onLoadOlder}
+                        >
+                            {counterpart.translate("balance_history.older")}
+                        </Button>
+                    ) : null}
                     {state.accountHistoryError && (
                         <div
                             className="has-error"

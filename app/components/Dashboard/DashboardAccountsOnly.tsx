@@ -221,7 +221,7 @@ function Accounts(props: AccountsProps) {
                     <Tab title="account.recent">
                         <RecentTransactions
                             accountsList={myActiveAccounts}
-                            limit={10}
+                            limit={100}
                             compactView={false}
                             fullHeight={true}
                             showFilters={true}
