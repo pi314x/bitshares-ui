@@ -303,7 +303,11 @@ function Holdings({
     const digits = valueDigits(data.unit && data.unit.symbol);
 
     if (!data.holdings.length) {
-        return <div className={styles.empty}>{t("no_holdings")}</div>;
+        return (
+            <div className={styles.empty}>
+                {data.loading ? "…" : t("no_holdings")}
+            </div>
+        );
     }
     return (
         <>
@@ -453,7 +457,9 @@ function Positions({
                         </span>
                     </div>
                 ) : (
-                    <div className={styles.muted}>{t("orders_none")}</div>
+                    <div className={styles.muted}>
+                        {data.loading ? "…" : t("orders_none")}
+                    </div>
                 )}
             </div>
 
@@ -481,7 +487,9 @@ function Positions({
                         </div>
                     ))
                 ) : (
-                    <div className={styles.muted}>{t("pools_none")}</div>
+                    <div className={styles.muted}>
+                        {data.loading ? "…" : t("pools_none")}
+                    </div>
                 )}
                 {data.pools.length > POOLS_SHOWN ? (
                     <div className={styles.muted}>
@@ -540,7 +548,9 @@ function Positions({
                         </div>
                     ))
                 ) : (
-                    <div className={styles.muted}>{t("borrow_none")}</div>
+                    <div className={styles.muted}>
+                        {data.loading ? "…" : t("borrow_none")}
+                    </div>
                 )}
             </div>
         </>

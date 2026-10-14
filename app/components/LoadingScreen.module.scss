@@ -4,6 +4,9 @@
 .screen {
     position: fixed;
     inset: 0;
+    // above the app's own loaders and dialogs: while this screen is up (it
+    // stays until the app has its data) nothing else may show through
+    z-index: 10000;
     display: flex;
     flex-direction: column;
     align-items: center;

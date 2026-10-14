@@ -120,10 +120,16 @@ export function useDeskData(
 
     // ---- raw material from the account object
     const balanceUnits: {[assetId: string]: number} = {};
+    // balance objects arrive one by one after the account: until they are all
+    // there the lists are not empty, they are not complete yet
+    let pendingBalances = 0;
     if (isMap(account) && account.get("balances")) {
         account.get("balances").forEach((balanceId: string) => {
             const balance: any = (ChainStore as any).getObject(balanceId);
-            if (!isMap(balance) || !balance.get("balance")) return;
+            if (!isMap(balance) || !balance.get("balance")) {
+                if (!isMap(balance)) pendingBalances++;
+                return;
+            }
             balanceUnits[balance.get("asset_type")] = parseInt(
                 balance.get("balance"),
                 10
@@ -342,7 +348,7 @@ export function useDeskData(
     });
 
     return {
-        loading: false,
+        loading: pendingBalances > 0,
         accountId,
         unit: {
             id: unitAssetId,

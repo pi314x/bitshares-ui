@@ -42,6 +42,8 @@ import LogsActions from "actions/LogsActions";
 import ExternalSignerActions from "actions/ExternalSignerActions";
 import {startExternalAccountSync} from "stores/ExternalAccountSync";
 import NodeSelector from "./components/Utility/NodeSelector";
+import {selectAccountState} from "./store/slices/accountSlice";
+import {READY_MAX_MS, accountsReady, coverVisible} from "./lib/common/startup";
 /*
  * Electron does not support browserHistory, so we need to use hashHistory.
  * The same is true for servers without configuration options, such as Github Pages
@@ -85,7 +87,9 @@ class AppInit extends React.Component {
             status: "",
             extendeLogText: [], // used to cache logs when not mounted
             nodeFilterHasChanged: false,
-            showNodeFilter: false
+            showNodeFilter: false,
+            // the account lists have been read: the app can show something
+            appReady: false
         };
         this.mounted = true;
         this.persistentLogEnabled = false;
@@ -205,6 +209,7 @@ class AppInit extends React.Component {
                     apiError: false,
                     syncError: null
                 });
+                this._watchReady();
                 // Optional extension-based signing (off unless the user chose it):
                 // look for the extension now that the chain id is known.
                 startExternalAccountSync();
@@ -244,8 +249,34 @@ class AppInit extends React.Component {
         SettingsStore.listen(this._onStoreChange);
     }
 
+    // The start-up screen stays until the account state has been read (or
+    // READY_MAX_MS), so the app does not appear with a second spinner of its
+    // own. See lib/common/startup.ts.
+    _watchReady() {
+        const done = () => {
+            this._stopWatchingReady();
+            if (this.mounted) this.setState({appReady: true});
+        };
+        const check = () => {
+            if (accountsReady(selectAccountState(reduxStore.getState()))) {
+                done();
+            }
+        };
+        this._unsubscribeReady = reduxStore.subscribe(check);
+        this._readyTimer = setTimeout(done, READY_MAX_MS);
+        check();
+    }
+
+    _stopWatchingReady() {
+        if (this._unsubscribeReady) this._unsubscribeReady();
+        if (this._readyTimer) clearTimeout(this._readyTimer);
+        this._unsubscribeReady = null;
+        this._readyTimer = null;
+    }
+
     componentWillUnmount() {
         this.mounted = false;
+        this._stopWatchingReady();
         IntlStore.unlisten(this._onStoreChange);
         WalletManagerStore.unlisten(this._onStoreChange);
         SettingsStore.unlisten(this._onStoreChange);
@@ -296,37 +327,57 @@ class AppInit extends React.Component {
             ""
         );
 
-        if (!apiConnected) {
-            return (
-                <div
-                    style={{backgroundColor: !theme ? "#2a2a2a" : null}}
-                    className={theme}
-                >
-                    <div id="content-wrapper">
-                        <div className="grid-frame vertical">
-                            <BodyClassName className={theme}>
-                                {!apiError ? (
-                                    this._renderLoadingScreen(apiServer, theme)
-                                ) : syncError ? (
-                                    <SyncError />
-                                ) : (
-                                    <InitError />
-                                )}
-                            </BodyClassName>
+        // One stable tree: the app, the start-up screen and the error screens
+        // are siblings in fixed places, so the start-up screen is the same
+        // element before and after the connection opens (no remount, no second
+        // spinner).
+        const cover = coverVisible({
+            apiConnected,
+            apiError,
+            appReady: this.state.appReady
+        });
+        return (
+            <React.Fragment>
+                {apiConnected ? (
+                    <RootIntl
+                        {...this.props}
+                        {...this.state}
+                        locale={locale}
+                        walletMode={walletMode}
+                        theme={theme}
+                        apiServer={apiServer}
+                    />
+                ) : null}
+                {cover || (!apiConnected && apiError) ? (
+                    <div
+                        style={{backgroundColor: !theme ? "#2a2a2a" : null}}
+                        className={theme}
+                    >
+                        <div id="content-wrapper">
+                            <div className="grid-frame vertical">
+                                {/* once the app is mounted it sets the body's
+                                    theme class itself; a second owner would
+                                    take it off the body when this screen
+                                    goes (the buttons turned upper case) */}
+                                <BodyClassName
+                                    className={apiConnected ? undefined : theme}
+                                >
+                                    {!apiError ? (
+                                        this._renderLoadingScreen(
+                                            apiServer,
+                                            theme
+                                        )
+                                    ) : syncError ? (
+                                        <SyncError />
+                                    ) : (
+                                        <InitError />
+                                    )}
+                                </BodyClassName>
+                            </div>
                         </div>
                     </div>
-                </div>
-            );
-        }
-        return (
-            <RootIntl
-                {...this.props}
-                {...this.state}
-                locale={locale}
-                walletMode={walletMode}
-                theme={theme}
-                apiServer={apiServer}
-            />
+                ) : null}
+            </React.Fragment>
         );
     }
 }
