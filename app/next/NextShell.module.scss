@@ -31,7 +31,9 @@
     justify-content: flex-end;
     gap: 8px;
     margin: 0;
-    padding: 8px 24px;
+    // the top bar's own padding (12px 24px; 10px 12px on a phone): the chip is
+    // as far from the right edge and the bottom as the account chip is at the top
+    padding: 12px 24px;
     border-top: 1px solid var(--line);
     background: transparent;
 }
@@ -116,8 +118,9 @@
         padding: 16px 12px;
     }
 
-    .status {
-        padding: 6px 12px;
+    // `.status.status`: the base rule above has two classes
+    .status.status {
+        padding: 10px 12px;
     }
 }
 
