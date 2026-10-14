@@ -51,6 +51,20 @@ describe("design-system/Topbar", () => {
         expect(onToggleLock).toHaveBeenCalledTimes(1);
     });
 
+    it("puts the lock after the account menu", () => {
+        const {getByText} = renderTopbar({
+            locked: true,
+            currentAccount: "init0"
+        });
+        const account = getByText("init0");
+        const lock = getByText("Locked");
+        // DOCUMENT_POSITION_FOLLOWING: the lock comes later in the document
+        expect(
+            account.compareDocumentPosition(lock) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+    });
+
     it("switches accounts through the real AccountSwitcher, not a static label", () => {
         const onSelectAccount = jest.fn();
         const {getByText} = renderTopbar({
@@ -93,12 +107,12 @@ describe("design-system/Topbar", () => {
 
     it("shows the extension action only when one is given, and runs it on click", () => {
         const {queryByText, rerender, getByText} = renderTopbar();
-        expect(queryByText("Use extension")).toBeNull();
+        expect(queryByText("Connect extension")).toBeNull();
         const onClick = jest.fn();
         const {getByText: byText} = renderTopbar({
-            extensionAction: {label: "Use extension", onClick}
+            extensionAction: {label: "Connect extension", onClick}
         });
-        fireEvent.click(byText("Use extension"));
+        fireEvent.click(byText("Connect extension"));
         expect(onClick).toHaveBeenCalledTimes(1);
         void rerender;
         void getByText;

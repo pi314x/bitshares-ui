@@ -16,6 +16,8 @@
 // path - grep-confirmed.
 import walletUnlockStore from "../stores/WalletUnlockStore";
 import ExternalSignerActions from "./ExternalSignerActions";
+import {reduxStore} from "../store/reduxStore";
+import {selectAccountState} from "../store/slices/accountSlice";
 
 class WalletUnlockActionsFacade {
     /** If you get resolved then the wallet is or was just unlocked.  If you get
@@ -37,14 +39,21 @@ class WalletUnlockActionsFacade {
 
     /**
      * `unlock()` for the step before a transaction is built and signed. When
-     * the wallet extension is the chosen, connected signer there is nothing to
-     * unlock locally (the extension asks for its own approval), so this
-     * resolves at once; otherwise it is exactly `unlock()`. Screens that need
-     * the local wallet itself (viewing keys, decrypting memos, backups) keep
-     * calling `unlock()`.
+     * the account chosen in the account menu is the one the wallet extension
+     * is connected as, there is nothing to unlock locally (the extension asks
+     * for its own approval), so this resolves at once; for any other account it
+     * is exactly `unlock()`. Screens that need the local wallet itself (viewing
+     * keys, decrypting memos, backups) keep calling `unlock()`.
      */
     unlockForSigning(): Promise<void> {
-        if ((ExternalSignerActions as any).isActive()) return Promise.resolve();
+        const current = selectAccountState(reduxStore.getState()) as any;
+        if (
+            (ExternalSignerActions as any).isSigningFor(
+                current.currentAccount || current.passwordAccount
+            )
+        ) {
+            return Promise.resolve();
+        }
         return this.unlock();
     }
 

@@ -45,13 +45,16 @@ theme, wallet lock) is already migrated** — `app/next/NextShellContainer`
 class-component/Alt.js internals inside that new shell — that's Phases 2+.
 
 **Signing** defaults to the local wallet (`WalletDb`). Settings -> Signing can
-switch to the BitShares wallet browser extension
+connect the BitShares wallet browser extension
 (`pi314x/bitshares-wallet-browser-extension`, `app/wallet-extension/`,
-`app/actions/ExternalSignerActions.ts`); `WalletDb.process_transaction` delegates
-to it only when it is chosen and connected. The app never sees a key in that
-mode, and memos, non-core fee assets and unbroadcast signing are refused on
-purpose. Read `docs/UI_MIGRATION_PLAN.md` §7.11 (and the extension's source, not
-only its README) before changing any of it; keep `isActive()` false by default.
+`app/actions/ExternalSignerActions.ts`); there is no "signing method" setting:
+the account chosen in the account menu signs, `WalletDb.process_transaction`
+delegates a transaction to the extension only when it is connected and the
+transaction acts for its account, and every other account signs locally. The app
+never sees a key in that mode, and memos, non-core fee assets and unbroadcast
+signing are refused on purpose. Read `docs/UI_MIGRATION_PLAN.md` §7.11 and §7.24
+(and the extension's source, not only its README) before changing any of it;
+keep `isActive()` false until the user connects the extension.
 
 The left rail's entries live in `app/next/navigation.ts` (a test checks every
 entry points at a route registered in `App.jsx`); add a screen to the menu

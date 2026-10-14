@@ -668,8 +668,8 @@ class AccountStoreFacade {
         );
     }
 
-    /** The extension's account name while it is the signer (chosen and
-     * connected), otherwise null: it is only ever used when it is available. */
+    /** The extension's account name while the extension is connected,
+     * otherwise null: it is only ever used when it is available. */
     private _extensionAccountName(): string | null {
         if (!(ExternalSignerActions as any).isActive()) return null;
         const linked = (ExternalSignerActions as any).getState().account;
@@ -677,9 +677,13 @@ class AccountStoreFacade {
     }
 
     tryToSetCurrentAccount() {
-        // With the extension connected, its account is the default one.
+        // The extension's account, when the user chose it, stays the chosen one
+        // (it is not remembered below, so it would otherwise be replaced by the
+        // last local account whenever this runs, e.g. on unlock).
         const extensionName = this._extensionAccountName();
-        if (extensionName) return this.setCurrentAccount(extensionName);
+        if (extensionName && this.getState().currentAccount === extensionName) {
+            return;
+        }
 
         const passwordAccountKey = this._getStorageKey("passwordAccount");
         const currentAccountKey = this._getStorageKey("currentAccount");

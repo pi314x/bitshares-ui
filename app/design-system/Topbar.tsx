@@ -135,11 +135,6 @@ export function Topbar({
                     />
                 )}
                 {chips}
-                <WalletLockButton
-                    locked={locked}
-                    onToggle={onToggleLock}
-                    label={lockLabel}
-                />
                 {extensionAction && (
                     <ExtensionChip
                         label={extensionAction.label}
@@ -153,6 +148,12 @@ export function Topbar({
                     onSelect={onSelectAccount}
                     badges={accountBadges}
                     onLogout={onLogout}
+                />
+                {/* the lock follows the account it unlocks */}
+                <WalletLockButton
+                    locked={locked}
+                    onToggle={onToggleLock}
+                    label={lockLabel}
                 />
             </div>
         </header>

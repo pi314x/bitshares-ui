@@ -1292,15 +1292,14 @@
     },
     "externalSigner": {
         "title": "Wallet extension",
-        "intro": "Sign with the BitShares wallet browser extension instead of a wallet stored in this browser. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key.",
-        "method": "Signing method",
-        "local": "Local wallet (default)",
-        "extension": "Wallet extension",
+        "intro": "Sign with the BitShares wallet browser extension. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key. The account chosen in the account menu is the one that signs: the extension's account through the extension, any other account through the wallet stored in this browser.",
         "status_unknown": "Looking for the extension...",
         "status_unavailable": "The BitShares wallet extension was not found in this browser.",
         "status_disconnected": "The extension was found but is not connected.",
         "status_connecting": "Waiting for you to approve the connection in the extension...",
         "status_connected": "Connected as %(account)s.",
+        "signing_extension": "Transactions for %(account)s are signed by the wallet extension.",
+        "signing_local": "Transactions for %(account)s are signed by the wallet stored in this browser.",
         "locked": "The extension is locked. Unlock it before signing.",
         "connect": "Connect",
         "disconnect": "Disconnect",
@@ -2472,7 +2471,7 @@
         "wallets": "Billeteras",
         "yes": "Si",
         "signing": "Signing",
-        "signing_text": "Choose how transactions are signed: with the wallet stored in this browser, or with the BitShares wallet browser extension."
+        "signing_text": "Connect the BitShares wallet browser extension to sign with it."
     },
     "showcases": {
         "barter": {

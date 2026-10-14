@@ -197,11 +197,11 @@ export class WalletDb {
         broadcast: any,
         extra_keys: any[] = []
     ) {
-        // The user chose the wallet extension, it is connected, and this
-        // transaction acts for its account: it holds the key, asks for its own
-        // approval and broadcasts, so none of the local unlock/sign path below
-        // applies. A transaction for another (local wallet) account takes the
-        // local path. Off by default.
+        // The wallet extension is connected and this transaction acts for its
+        // account: it holds the key, asks for its own approval and broadcasts,
+        // so none of the local unlock/sign path below applies. A transaction for
+        // another (local wallet) account takes the local path. Not connected
+        // (the default) means this branch is never taken.
         if ((ExternalSignerActions as any).shouldSign(tr)) {
             return (ExternalSignerActions as any).processTransaction(
                 tr,

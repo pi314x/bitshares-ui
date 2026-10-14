@@ -134,38 +134,40 @@ export default function NextShellContainer({
     const intl = useReduxState<IntlStoreState>(selectIntlState);
     const location = useLocation();
     const navigate = useNavigate();
-    // While the wallet extension is the signer, the local wallet's lock state is
-    // moot: the pill says so and leads to the signing settings instead.
-    const extensionSigning = useReduxState(selectExternalSigningActive);
+    const currentAccount = account.currentAccount || account.passwordAccount;
+    // The account chosen in the menu is the one that signs: the wallet
+    // extension's account through the extension, every other account through the
+    // local wallet. The extension's account is one of the choices while it is
+    // connected (its keys are not in the local wallet, so it is not in
+    // `myActiveAccounts`).
+    const extensionConnected = useReduxState(selectExternalSigningActive);
     const externalSigner = useReduxState(selectExternalSigner);
-    // The extension is installed (the provider answered), is not the signer, and
-    // the user has not asked for it yet: offer the one-click switch. Local
-    // signing stays the default; this only ever acts on a click.
+    const extensionAccount =
+        extensionConnected && externalSigner.account
+            ? externalSigner.account.accountName
+            : null;
+    // The extension signs for the chosen account: the local wallet's lock state
+    // is moot, the pill says so and leads to the signing settings instead.
+    const extensionSigning =
+        !!extensionAccount && currentAccount === extensionAccount;
+    // The extension is installed (the provider answered) and not connected: one
+    // click connects it. Nothing is connected without a click.
     const extensionAction =
-        !extensionSigning &&
+        !extensionConnected &&
         (externalSigner.status === "disconnected" ||
             externalSigner.status === "connecting")
             ? {
                   label:
                       externalSigner.status === "connecting"
                           ? "Connecting…"
-                          : "Use extension",
+                          : "Connect extension",
                   disabled: externalSigner.status === "connecting",
                   onClick: () => {
-                      ExternalSignerActions.setPreference("extension");
                       ExternalSignerActions.connect();
                   }
               }
             : undefined;
 
-    const currentAccount = account.currentAccount || account.passwordAccount;
-    // The extension's account is one of the choices while it is the signer (its
-    // keys are not in the local wallet, so it is not in `myActiveAccounts`).
-    // Accounts of the local wallet stay selectable and sign locally.
-    const extensionAccount =
-        extensionSigning && externalSigner.account
-            ? externalSigner.account.accountName
-            : null;
     const localAccounts = account.myActiveAccounts.toArray();
     const accounts =
         extensionAccount && !localAccounts.includes(extensionAccount)

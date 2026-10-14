@@ -1,9 +1,11 @@
 // The optional extension-signing path wired into the app (Phase 6): detection,
-// connecting, the choice between local and extension signing, and the one place
-// it hooks into `WalletDb.process_transaction`. Uses the real stores and the
-// real `ExternalSignerActions`; only the extension (a fake `window.bitsharesWallet`)
-// and the idb layer are stubbed. The point of most tests: with the default
-// preference nothing changes, and with the extension nothing local is touched.
+// connecting, which account signs (the one chosen in the account menu: the
+// extension's through the extension, any other through the local wallet), and
+// the one place it hooks into `WalletDb.process_transaction`. Uses the real
+// stores and the real `ExternalSignerActions`; only the extension (a fake
+// `window.bitsharesWallet`) and the idb layer are stubbed. The point of most
+// tests: while the extension is not connected nothing changes, and for its
+// account nothing local is touched.
 jest.mock("idb-instance", () => ({
     __esModule: true,
     default: {instance: () => ({db: () => ({transaction: () => ({})})})}
@@ -57,6 +59,13 @@ beforeEach(() => {
     fake = makeFakeProvider({connected: true});
     win.bitsharesWallet = fake.provider;
     reduxStore.dispatch(patchExternalSigner({...initialExternalSignerState}));
+    reduxStore.dispatch(
+        patchState({
+            currentAccount: null,
+            passwordAccount: null,
+            myActiveAccounts: (Immutable as any).Set()
+        } as any)
+    );
     window.localStorage.clear();
 });
 
@@ -66,40 +75,63 @@ afterEach(() => {
 });
 
 async function useExtension() {
-    ExternalSignerActions.setPreference("extension");
     await ExternalSignerActions.connect();
 }
 
-describe("choosing the signing method", () => {
-    it("is the local wallet by default, even with a connected extension", async () => {
-        await ExternalSignerActions.connect();
-        expect(ExternalSignerActions.getState().status).toBe("connected");
+/** A local wallet account next to the extension's, chosen in the account menu. */
+function chooseLocalAccount(name = "localwallet") {
+    const state = (AccountStore as any).getState();
+    reduxStore.dispatch(
+        patchState({
+            myActiveAccounts: state.myActiveAccounts.add(name)
+        } as any)
+    );
+    (AccountStore as any).setCurrentAccount(name);
+}
+
+describe("connecting the extension", () => {
+    it("is not connected by default, so nothing signs with it", async () => {
+        expect(ExternalSignerActions.getState().status).toBe("unknown");
         expect(ExternalSignerActions.isActive()).toBe(false);
+        expect(ExternalSignerActions.isSigningFor("alice")).toBe(false);
     });
 
-    it("is the extension only when chosen AND connected", async () => {
-        ExternalSignerActions.setPreference("extension");
-        expect(ExternalSignerActions.isActive()).toBe(false);
+    it("signs for its own account only while it is connected", async () => {
         await ExternalSignerActions.connect();
         expect(ExternalSignerActions.isActive()).toBe(true);
+        expect(ExternalSignerActions.isSigningFor("alice")).toBe(true);
+        // every other account is the local wallet's to sign
+        expect(ExternalSignerActions.isSigningFor("localwallet")).toBe(false);
+        expect(ExternalSignerActions.isSigningFor(null)).toBe(false);
         await ExternalSignerActions.disconnect();
         expect(ExternalSignerActions.isActive()).toBe(false);
+        expect(ExternalSignerActions.isSigningFor("alice")).toBe(false);
     });
 
-    it("remembers the choice and restores an earlier approval silently", async () => {
-        ExternalSignerActions.setPreference("extension");
-        reduxStore.dispatch(
-            patchExternalSigner({...initialExternalSignerState})
+    it("has no signing-method preference any more", async () => {
+        await ExternalSignerActions.connect();
+        expect((ExternalSignerActions.getState() as any).preference).toBe(
+            undefined
         );
+        expect((ExternalSignerActions as any).setPreference).toBe(undefined);
+    });
+
+    it("restores an earlier approval silently", async () => {
         await ExternalSignerActions.init();
-        expect(ExternalSignerActions.getState().preference).toBe("extension");
         expect(ExternalSignerActions.isActive()).toBe(true);
         expect(fake.calls.map(c => c.method)).not.toContain("connect");
     });
 
+    it("stays disconnected on start-up when it was never approved", async () => {
+        fake = makeFakeProvider({connected: false});
+        win.bitsharesWallet = fake.provider;
+        await ExternalSignerActions.init();
+        expect(ExternalSignerActions.getState().status).toBe("disconnected");
+        expect(ExternalSignerActions.isActive()).toBe(false);
+    });
+
     it("reports a missing extension instead of throwing", async () => {
         delete win.bitsharesWallet;
-        ExternalSignerActions.setPreference("extension");
         await ExternalSignerActions.connect();
         const state = ExternalSignerActions.getState();
         expect(state.status).toBe("unavailable");
@@ -110,7 +142,6 @@ describe("choosing the signing method", () => {
     it("keeps the app disconnected when the extension is on another network", async () => {
         fake = makeFakeProvider({chainId: "00".repeat(32)});
         win.bitsharesWallet = fake.provider;
-        ExternalSignerActions.setPreference("extension");
         await ExternalSignerActions.connect();
         expect(ExternalSignerActions.isActive()).toBe(false);
         expect(ExternalSignerActions.getState().error).toMatch(
@@ -139,8 +170,7 @@ describe("WalletDb.process_transaction", () => {
         expect((notification() as any).message).toMatch(/sent/i);
     });
 
-    it("keeps using the local wallet when the extension was not chosen", async () => {
-        await ExternalSignerActions.connect(); // connected, but preference is local
+    it("keeps using the local wallet while the extension is not connected", async () => {
         const unlock = jest
             .spyOn(WalletUnlockActions as any, "unlock")
             .mockRejectedValue("stop here");
@@ -208,15 +238,21 @@ describe("WalletDb.process_transaction", () => {
         });
     });
 
-    it("unlockForSigning skips the local unlock only for the extension", async () => {
+    it("unlockForSigning skips the local unlock only for the extension's account", async () => {
         const unlock = jest
             .spyOn(WalletUnlockActions as any, "unlock")
             .mockResolvedValue(undefined);
         await (WalletUnlockActions as any).unlockForSigning();
         expect(unlock).toHaveBeenCalledTimes(1);
+        // connected, and its account is the chosen one: nothing to unlock
         await useExtension();
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
         await (WalletUnlockActions as any).unlockForSigning();
         expect(unlock).toHaveBeenCalledTimes(1);
+        // connected, but a local wallet account is the chosen one: unlock it
+        chooseLocalAccount();
+        await (WalletUnlockActions as any).unlockForSigning();
+        expect(unlock).toHaveBeenCalledTimes(2);
     });
 
     it.each([
@@ -329,7 +365,7 @@ describe("the connected account in the UI", () => {
                 chainAccount("1.2.101")
             )
         ).toBe("none");
-        ExternalSignerActions.setPreference("local");
+        await ExternalSignerActions.disconnect();
         expect(
             (AccountStore as any).getMyAuthorityForAccount(
                 chainAccount("1.2.100")
@@ -337,7 +373,7 @@ describe("the connected account in the UI", () => {
         ).toBe("none");
     });
 
-    it("makes it the current account while connected and takes it away afterwards", async () => {
+    it("makes it the current account when the user connects, and takes it away afterwards", async () => {
         await useExtension();
         const state = (AccountStore as any).getState();
         expect(state.myActiveAccounts.has("alice")).toBe(true);
@@ -368,7 +404,7 @@ describe("the connected account in the UI", () => {
         ).toBe(true);
     });
 
-    it("can be chosen and is the default even in cloud-wallet mode, and is not remembered", async () => {
+    it("can be chosen even in cloud-wallet mode, and is not remembered", async () => {
         // cloud mode pins the current account to the password account
         reduxStore.dispatch(
             patchState({passwordAccount: "cloudwallet"} as any)
@@ -379,7 +415,7 @@ describe("the connected account in the UI", () => {
         );
 
         await useExtension();
-        // default: the extension's account
+        // the user connected it just now: its account is the chosen one
         expect((AccountStore as any).getState().currentAccount).toBe("alice");
         // the user can go back to the cloud account and to the extension's
         (AccountStore as any).setCurrentAccount("cloudwallet");
@@ -393,13 +429,43 @@ describe("the connected account in the UI", () => {
             .filter(k => k.indexOf("currentAccount") !== -1)
             .map(k => window.localStorage.getItem(k));
         expect(stored.join("|")).not.toContain("alice");
-        // and a startup with the extension connected lands on its account
-        (AccountStore as any).setCurrentAccount("cloudwallet");
-        (AccountStore as any).tryToSetCurrentAccount();
-        expect((AccountStore as any).getState().currentAccount).toBe("alice");
 
         await ExternalSignerActions.disconnect();
         reduxStore.dispatch(patchState({passwordAccount: null} as any));
+    });
+
+    it("does not take the choice away from the user", async () => {
+        // a start-up restore (not a click) puts the extension's account into the
+        // menu but leaves the account the user was on
+        chooseLocalAccount();
+        await ExternalSignerActions.init();
+        expect(ExternalSignerActions.isActive()).toBe(true);
+        const state = (AccountStore as any).getState();
+        expect(state.myActiveAccounts.has("alice")).toBe(true);
+        expect(state.currentAccount).toBe("localwallet");
+        // neither does anything that re-selects the default account
+        (AccountStore as any).tryToSetCurrentAccount();
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "localwallet"
+        );
+        // choosing the extension's account makes it the signer, and it stays
+        (AccountStore as any).setCurrentAccount("alice");
+        (AccountStore as any).tryToSetCurrentAccount();
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
+    });
+
+    it("is the current account after a restore only when there is no other", async () => {
+        await ExternalSignerActions.init();
+        expect((AccountStore as any).getState().currentAccount).toBe("alice");
+    });
+
+    it("leaves a local account chosen when the extension is disconnected", async () => {
+        await useExtension();
+        chooseLocalAccount();
+        await ExternalSignerActions.disconnect();
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "localwallet"
+        );
     });
 
     it("follows the extension when the user switches account there", async () => {
@@ -409,10 +475,48 @@ describe("the connected account in the UI", () => {
             accountName: "carol",
             accountId: "1.2.300"
         });
+        // it was the chosen account, so the new one is
+        expect((AccountStore as any).getState().currentAccount).toBe("carol");
         // an event with a made-up id is ignored
         fake.emit("accountChanged", {name: "mallory", id: "oops"});
         expect(ExternalSignerActions.getState().account!.accountName).toBe(
             "carol"
         );
+    });
+});
+
+describe("the account menu decides who signs", () => {
+    it("signs the extension account's transaction with the extension and a local one locally", async () => {
+        await useExtension();
+        chooseLocalAccount();
+        // the extension's account is in the menu, a local one is chosen:
+        // a transaction for the extension's account still goes to it ...
+        const unlock = jest
+            .spyOn(WalletUnlockActions as any, "unlock")
+            .mockRejectedValue("stop here");
+        jest.spyOn(console, "error").mockImplementation(() => {});
+        await (WalletDb as any).process_transaction(transferTx(), null, true);
+        expect(signCalls()).toHaveLength(1);
+        expect(unlock).not.toHaveBeenCalled();
+        // ... and one for a local account is never offered to it
+        await (WalletDb as any).process_transaction(
+            transferTx({from: "1.2.999"}),
+            null,
+            true
+        );
+        expect(signCalls()).toHaveLength(1);
+        expect(unlock).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not follow the extension to another account while a local one is chosen", async () => {
+        await useExtension();
+        chooseLocalAccount();
+        fake.emit("accountChanged", {name: "carol", id: "1.2.300"});
+        expect((AccountStore as any).getState().currentAccount).toBe(
+            "localwallet"
+        );
+        expect(
+            (AccountStore as any).getState().myActiveAccounts.has("carol")
+        ).toBe(true);
     });
 });

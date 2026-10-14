@@ -12363,21 +12363,25 @@ accepts `amount` as a number or string). The app therefore uses only
 `connect`, `checkConnection`, `getChainId`, `isLocked`, `signTransaction` and
 `disconnect` on `window.bitsharesWallet`, and never `window.beet`.
 
-**What it does.** *Settings -> Signing* lets the user choose the **local wallet
-(default)** or the **wallet extension** and connect it. While the extension is
-chosen *and* connected:
+**What it does.** There is no "signing method" setting (§7.24): the account
+chosen in the account menu is the one that signs. *Settings -> Signing* only
+connects or disconnects the extension and says which of the two signs for the
+chosen account. While the extension is connected:
 - `WalletDb.process_transaction` (the one place every screen signs through)
-  hands the transaction's operations to the extension, which shows its own
-  approval dialog, signs with its own key and broadcasts. No local unlock, no
-  key in this app. `WalletUnlockActions.unlockForSigning()` (used by
-  `ApplicationApi`) skips the local unlock only in this mode; screens that need
-  the local wallet itself (viewing keys, memo decryption, backup) still call
-  `unlock()`.
+  hands a transaction whose operations act for the extension's account to the
+  extension, which shows its own approval dialog, signs with its own key and
+  broadcasts. No local unlock, no key in this app. A transaction for any other
+  account (one of the local wallet's) takes the local path unchanged.
+  `WalletUnlockActions.unlockForSigning()` (used by `ApplicationApi`) skips the
+  local unlock only while the chosen account is the extension's; screens that
+  need the local wallet itself (viewing keys, memo decryption, backup) still
+  call `unlock()`.
 - The extension's account is treated as the user's own in the UI
   (`stores/ExternalAccountSync.ts`, plus one guarded early return in
   `AccountStore.getMyAuthorityForAccount`), so Send, Trade, ... are enabled for
-  it. Nothing is persisted but the preference; the link is restored silently
-  (`checkConnection`) at startup. The top-bar lock pill reads "Extension".
+  it. Nothing is persisted; the link is restored silently (`checkConnection`)
+  at startup. The top-bar lock pill reads "Extension" while the chosen account
+  is the extension's, and the local wallet's lock state otherwise.
 
 **Checked on every signing call** (`wallet-extension/adapter.ts`): the extension
 is unlocked, on the same chain id as this app, and connected as the account the
@@ -12865,6 +12869,38 @@ market tabs. It is now what a trading desk's home needs:
   transaction stays in the page.
 - The toasts are cards with the kind's colour in an icon chip and a line that
   runs out with the time they stay.
+
+### 7.24 Extension signing: the chosen account signs, no setting
+
+The extension had two controls that could disagree: the *Signing method* radio
+in Settings (local wallet | wallet extension, persisted) and the account menu.
+Choosing the extension's account in the menu with the radio on "local wallet"
+signed locally, and the extension's `accountChanged` event or a re-login moved
+the menu without being asked.
+
+- **The setting is gone** (`externalSignerSlice.preference`, `setPreference`,
+  the `__graphene__signingMethod` key, the radio). The extension is *connected*
+  or not; connecting is still a click (Settings -> Signing, or the top bar's
+  "Connect extension"), and a restore at start-up only re-links an approval the
+  extension already holds (it never prompts). A user who never connected it
+  sees no change.
+- **Who signs follows the account:** the extension's account (as
+  `ExternalSignerActions.isSigningFor(name)`) goes through the extension, every
+  other account through the local wallet. Per transaction this was already
+  decided by the operations' acting account (`shouldSign`); `unlockForSigning`
+  now decides by the chosen account instead of "extension connected".
+- **The menu is not overridden** (`ExternalAccountSync`, `AccountStore`): the
+  extension's account becomes the chosen one only when the user connects it
+  just now, when nothing is chosen yet (extension-only users after a restore),
+  or when the extension switches account and the old one was the chosen one.
+  `tryToSetCurrentAccount` keeps a chosen extension account; disconnecting
+  leaves a chosen local account alone.
+- Settings -> Signing shows "Transactions for X are signed by the wallet
+  extension / the wallet stored in this browser".
+- The top bar's lock pill now comes **after** the account menu (it reads as the
+  state of the account just chosen: "Extension" for the extension's account, the
+  local wallet's lock otherwise); the "Connect extension" chip stays before it.
+- Still unverified: signing with the real extension (§7.11 "Not done").
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

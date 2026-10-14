@@ -16,17 +16,16 @@
     margin-bottom: 20px;
 }
 
-.label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-2);
-}
-
 .status {
     margin: 0;
     color: var(--ink);
+}
+
+// which of the two signs for the account chosen in the account menu
+.signing {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
 }
 
 .actions {

@@ -5,8 +5,10 @@
 // Security properties (AGENTS.md: wallet signing is security-sensitive):
 //   - the app never sees a key; the extension signs after the user approves in
 //     its own dialog;
-//   - the default is the local wallet; the extension is used only when the user
-//     chose it AND it is connected;
+//   - the extension is used only while it is connected, and only for the
+//     account it is connected as: the account chosen in the account menu signs,
+//     so a transaction for any other (local wallet) account takes the local
+//     path; there is no separate "signing method" setting to get out of step;
 //   - the chain, lock state and connected account are re-checked on every
 //     signing call (`wallet-extension/adapter.ts`);
 //   - what the extension cannot do faithfully is refused here, not attempted:
@@ -17,11 +19,9 @@
 //     inviting a blind retry.
 import counterpart from "counterpart";
 import {Apis} from "bitsharesjs-ws";
-import ls from "common/localStorage";
 import {reduxStore} from "../store/reduxStore";
 import {
     ExternalSignerState,
-    SigningPreference,
     patchExternalSigner,
     selectExternalSigner,
     selectExternalSigningActive
@@ -46,28 +46,6 @@ import {
 } from "../wallet-extension/types";
 import NotificationActions from "./NotificationActions";
 
-const STORAGE_KEY = "__graphene__";
-const PREFERENCE_KEY = "signingMethod";
-
-function readPreference(): SigningPreference {
-    try {
-        return (ls as any)(STORAGE_KEY).get(PREFERENCE_KEY, "local") ===
-            "extension"
-            ? "extension"
-            : "local";
-    } catch (e) {
-        return "local";
-    }
-}
-
-function writePreference(preference: SigningPreference) {
-    try {
-        (ls as any)(STORAGE_KEY).set(PREFERENCE_KEY, preference);
-    } catch (e) {
-        // not persisted; the choice still holds for this session
-    }
-}
-
 const t = (key: string, params?: Record<string, string>) =>
     (counterpart as any).translate(key, params);
 
@@ -79,7 +57,7 @@ class ExternalSignerActionsFacade {
         return selectExternalSigner(reduxStore.getState());
     }
 
-    /** True when the next transaction is to be signed by the extension. */
+    /** True while the extension is connected (it signs for its own account). */
     isActive(): boolean {
         return selectExternalSigningActive(reduxStore.getState());
     }
@@ -99,12 +77,22 @@ class ExternalSignerActionsFacade {
         return chainId;
     }
 
-    /** Looks for the extension, loads the saved preference, restores a link. */
+    /**
+     * Whether `accountName` (the account chosen in the account menu) is the one
+     * the extension signs for. Nothing else is: its other accounts, and every
+     * account of the local wallet, sign locally.
+     */
+    isSigningFor(accountName: string | null | undefined): boolean {
+        if (!accountName || !this.isActive()) return false;
+        const account = this.getState().account;
+        return !!account && account.accountName === accountName;
+    }
+
     /**
      * Whether *this* transaction is the extension's to sign: the extension is
-     * the chosen, connected signer, and the transaction does not act for some
-     * other account (one of the local wallet's). The latter goes through the
-     * local wallet, so the account switcher can hold both kinds of account.
+     * connected, and the transaction does not act for some other account (one of
+     * the local wallet's). The latter goes through the local wallet, so the
+     * account menu can hold both kinds of account.
      */
     shouldSign(tr: any): boolean {
         if (!this.isActive()) return false;
@@ -116,19 +104,21 @@ class ExternalSignerActionsFacade {
         );
     }
 
+    /**
+     * Looks for the extension and re-links an earlier approval (silently: the
+     * extension answers for itself, nothing is asked). A user who never
+     * connected it finds it "disconnected" and nothing changes.
+     */
     async init(): Promise<void> {
-        this.patch({preference: readPreference()});
         const provider = await waitForProvider();
         this.patch({status: provider ? "disconnected" : "unavailable"});
-        if (provider && this.getState().preference === "extension") {
-            await this.restore();
-        }
+        if (provider) await this.restore();
     }
 
     async restore(): Promise<void> {
         try {
             const account = await this.signer.restore(this.chainId());
-            if (account) this.onConnected(account);
+            if (account) this.onConnected(account, false);
         } catch (e) {
             this.patch({error: toSignerError(e).message});
         }
@@ -138,7 +128,7 @@ class ExternalSignerActionsFacade {
         this.patch({status: "connecting", error: null});
         try {
             const account = await this.signer.connect(this.chainId());
-            this.onConnected(account);
+            this.onConnected(account, true);
         } catch (e) {
             const error = toSignerError(e);
             this.patch({
@@ -158,17 +148,14 @@ class ExternalSignerActionsFacade {
         this.patch({
             status: findProvider() ? "disconnected" : "unavailable",
             account: null,
-            error: null
+            error: null,
+            makeCurrent: false
         });
     }
 
-    setPreference(preference: SigningPreference) {
-        writePreference(preference);
-        this.patch({preference});
-    }
-
-    private onConnected(account: ExternalSignerAccount) {
-        this.patch({status: "connected", account, error: null});
+    /** `makeCurrent`: the user connected it just now, so its account is theirs to use. */
+    private onConnected(account: ExternalSignerAccount, makeCurrent: boolean) {
+        this.patch({status: "connected", account, error: null, makeCurrent});
         this.subscribe(findProvider());
     }
 
@@ -182,7 +169,8 @@ class ExternalSignerActionsFacade {
                 /^1\.2\.\d+$/.test(data.id)
             ) {
                 this.patch({
-                    account: {accountName: data.name, accountId: data.id}
+                    account: {accountName: data.name, accountId: data.id},
+                    makeCurrent: false
                 });
             }
         };

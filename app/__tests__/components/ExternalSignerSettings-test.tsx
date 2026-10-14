@@ -6,6 +6,7 @@ import localeEn from "../../assets/locales/locale-en.json";
 import ExternalSignerSettings from "../../components/Settings/ExternalSignerSettings";
 import ExternalSignerActions from "../../actions/ExternalSignerActions";
 import {reduxStore} from "../../store/reduxStore";
+import {patchState} from "../../store/slices/accountSlice";
 import {
     initialExternalSignerState,
     patchExternalSigner
@@ -51,21 +52,18 @@ afterEach(() => {
 });
 
 describe("Settings -> Signing", () => {
-    it("shows only the choice while the local wallet is selected", () => {
-        const {queryByText, getByLabelText} = render(
+    it("has no signing-method choice, only the connection", () => {
+        const {queryByText, queryByLabelText, getByText} = render(
             <ExternalSignerSettings />
         );
-        expect(queryByText("Connect")).toBeNull();
-        expect(
-            (getByLabelText(/Local wallet/i) as HTMLInputElement).checked
-        ).toBe(true);
+        expect(queryByLabelText(/Local wallet/i)).toBeNull();
+        expect(queryByLabelText(/Wallet extension/i)).toBeNull();
+        expect(queryByText(/Signing method/i)).toBeNull();
+        expect(getByText("Connect")).toBeTruthy();
     });
 
     it("connects the extension and says which account it is connected as", async () => {
-        const {getByLabelText, getByText, getByTestId} = render(
-            <ExternalSignerSettings />
-        );
-        fireEvent.click(getByLabelText(/Wallet extension/i));
+        const {getByText, getByTestId} = render(<ExternalSignerSettings />);
         expect(getByTestId("signer-status").textContent).toMatch(
             /not connected/i
         );
@@ -81,12 +79,34 @@ describe("Settings -> Signing", () => {
         expect(ExternalSignerActions.isActive()).toBe(true);
     });
 
+    it("says which of the two signs for the chosen account", async () => {
+        const {getByText, getByTestId} = render(<ExternalSignerSettings />);
+        await act(async () => {
+            fireEvent.click(getByText("Connect"));
+        });
+        // the extension's account is the chosen one (the account sync, which
+        // this component test does not start, does that after a connect)
+        act(() => {
+            reduxStore.dispatch(patchState({currentAccount: "alice"} as any));
+        });
+        await waitFor(() =>
+            expect(getByTestId("signer-for").textContent).toBe(
+                "Transactions for alice are signed by the wallet extension."
+            )
+        );
+        act(() => {
+            reduxStore.dispatch(
+                patchState({currentAccount: "localwallet"} as any)
+            );
+        });
+        expect(getByTestId("signer-for").textContent).toBe(
+            "Transactions for localwallet are signed by the wallet stored in this browser."
+        );
+    });
+
     it("says so when the extension is not installed", async () => {
         delete win.bitsharesWallet;
-        const {getByLabelText, getByText, findByText} = render(
-            <ExternalSignerSettings />
-        );
-        fireEvent.click(getByLabelText(/Wallet extension/i));
+        const {getByText, findByText} = render(<ExternalSignerSettings />);
         await act(async () => {
             fireEvent.click(getByText("Connect"));
         });
@@ -94,15 +114,18 @@ describe("Settings -> Signing", () => {
     });
 
     it("lists what is not supported with the extension", () => {
-        const {getByLabelText, getByText} = render(<ExternalSignerSettings />);
-        fireEvent.click(getByLabelText(/Wallet extension/i));
+        const {getByText} = render(<ExternalSignerSettings />);
         expect(getByText(/memos/i)).toBeTruthy();
     });
 
-    it("goes back to the local wallet", () => {
-        const {getByLabelText} = render(<ExternalSignerSettings />);
-        fireEvent.click(getByLabelText(/Wallet extension/i));
-        fireEvent.click(getByLabelText(/Local wallet/i));
-        expect(ExternalSignerActions.getState().preference).toBe("local");
+    it("disconnects", async () => {
+        const {getByText} = render(<ExternalSignerSettings />);
+        await act(async () => {
+            fireEvent.click(getByText("Connect"));
+        });
+        await act(async () => {
+            fireEvent.click(getByText("Disconnect"));
+        });
+        expect(ExternalSignerActions.isActive()).toBe(false);
     });
 });
