@@ -1,6 +1,6 @@
 import * as React from "react";
 import {render, fireEvent} from "@testing-library/react";
-import {Modal} from "../../design-system/Modal";
+import {Modal, ModalAsPage} from "../../design-system/Modal";
 import {Select} from "../../design-system/Select";
 
 describe("design-system/Modal", () => {
@@ -145,6 +145,77 @@ describe("design-system/Modal", () => {
             expect(onCancel).not.toHaveBeenCalled();
             fireEvent.keyDown(document.body, {key: "Escape"});
             expect(onCancel).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("as a page", () => {
+        it("renders in place, with no dialog role, backdrop or scroll lock", () => {
+            document.body.style.overflow = "";
+            const {container, queryByRole, getByText} = render(
+                <div id="page">
+                    <ModalAsPage>
+                        <Modal
+                            visible
+                            title="Send"
+                            footer={<button>Go</button>}
+                        >
+                            <p>Form</p>
+                        </Modal>
+                    </ModalAsPage>
+                </div>
+            );
+            expect(queryByRole("dialog")).toBeNull();
+            // inside the page's own element, not in a portal on <body>
+            expect(container.querySelector("#page")!.textContent).toContain(
+                "Form"
+            );
+            expect(getByText("Send").tagName).toBe("H2");
+            expect(document.body.style.overflow).not.toBe("hidden");
+        });
+
+        it("keeps a dialog opened inside it an ordinary overlay", () => {
+            const {getByRole, getByText} = render(
+                <ModalAsPage>
+                    <Modal visible title="Page">
+                        <Modal visible title="Nested">
+                            <p>Inner</p>
+                        </Modal>
+                    </Modal>
+                </ModalAsPage>
+            );
+            expect(getByRole("dialog")).toBeTruthy();
+            expect(getByText("Inner")).toBeTruthy();
+        });
+
+        it("opens as an overlay while another dialog is open over the page", () => {
+            const {queryAllByRole, rerender} = render(
+                <div>
+                    <Modal visible title="Send dialog">
+                        <p>Open</p>
+                    </Modal>
+                    <ModalAsPage>
+                        <Modal visible title="Unlock">
+                            <p>Password</p>
+                        </Modal>
+                    </ModalAsPage>
+                </div>
+            );
+            // both are dialogs: the unlock did not hide behind the first
+            expect(queryAllByRole("dialog")).toHaveLength(2);
+            // with the other closed it is part of the page again
+            rerender(
+                <div>
+                    <Modal visible={false} title="Send dialog">
+                        <p>Open</p>
+                    </Modal>
+                    <ModalAsPage>
+                        <Modal visible title="Unlock">
+                            <p>Password</p>
+                        </Modal>
+                    </ModalAsPage>
+                </div>
+            );
+            expect(queryAllByRole("dialog")).toHaveLength(0);
         });
     });
 });

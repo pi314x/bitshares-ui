@@ -86,7 +86,11 @@ import BackupActions, {
 import AccountActions from "actions/AccountActions";
 import SettingsActions from "actions/SettingsActions";
 import {Apis} from "bitsharesjs-ws";
-import {Modal} from "../../design-system/Modal";
+import {Modal, ModalAsPage} from "../../design-system/Modal";
+import {
+    registerInlineHost,
+    useHasInlineHost
+} from "../../lib/common/inlineHost";
 import {Button} from "../../design-system/Button";
 import {Form} from "../../design-system/Form";
 import {Input} from "../../design-system/Input";
@@ -727,6 +731,30 @@ function WalletUnlockModal({
     );
 }
 
-export default function WalletUnlockModalContainer(props: any) {
+export const WALLET_UNLOCK_HOST = "wallet-unlock";
+
+/**
+ * `inline`: the unlock dialog as part of the page (the app shell shows it at
+ * the top of its content, like the transaction confirmation). Without
+ * `inline` this is the global instance, which stays out of the way while a
+ * host exists - two live instances would both answer the same unlock request.
+ */
+export default function WalletUnlockModalContainer({
+    inline = false,
+    ...props
+}: any) {
+    const hostPresent = useHasInlineHost(WALLET_UNLOCK_HOST);
+    React.useEffect(
+        () => (inline ? registerInlineHost(WALLET_UNLOCK_HOST) : undefined),
+        [inline]
+    );
+    if (inline) {
+        return (
+            <ModalAsPage>
+                <WalletUnlockModal {...props} />
+            </ModalAsPage>
+        );
+    }
+    if (hostPresent) return null;
     return <WalletUnlockModal {...props} />;
 }

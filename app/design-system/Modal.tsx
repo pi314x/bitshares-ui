@@ -21,6 +21,36 @@ function useStableId(prefix: string): string {
 // than opening over whatever was on screen. A `Modal` nested inside it (a
 // confirmation, a QR code) is an ordinary overlay again.
 const PagePresentation = React.createContext<boolean>(false);
+// Set below a dialog that is shown in the page: what opens from inside it
+// (a QR code over the transaction to confirm) is an overlay, but not "another
+// dialog over the page" that would push its parent out of the page.
+const NestedInPage = React.createContext<boolean>(false);
+
+// How many dialogs are open over the page right now (the ordinary ones, not
+// those shown in the page). A dialog that is asked to show in the page while
+// another one is open over it would end up hidden behind that one's backdrop
+// - "unlock your wallet" while the Send dialog is open - so it opens as an
+// overlay then.
+let overlaysOpen = 0;
+const overlayListeners = new Set<() => void>();
+
+function useOverlaysOpen(): number {
+    return React.useSyncExternalStore(
+        listener => {
+            overlayListeners.add(listener);
+            return () => {
+                overlayListeners.delete(listener);
+            };
+        },
+        () => overlaysOpen,
+        () => 0
+    );
+}
+
+function setOverlaysOpen(delta: number) {
+    overlaysOpen += delta;
+    overlayListeners.forEach(listener => listener());
+}
 
 export function ModalAsPage({
     children
@@ -117,7 +147,10 @@ export function Modal({
     className,
     children
 }: ModalProps): JSX.Element | null {
-    const asPage = React.useContext(PagePresentation);
+    const asPageRequested = React.useContext(PagePresentation);
+    const nestedInPage = React.useContext(NestedInPage);
+    const overlays = useOverlaysOpen();
+    const asPage = asPageRequested && overlays === 0;
     const dialogRef = React.useRef<HTMLDivElement>(null);
     // Escape closes the dialog. A dropdown that is open (Select draws its list
     // on <body>, outside the dialog) takes the key first: it handles it in the
@@ -132,6 +165,13 @@ export function Modal({
     }, [visible, onCancel, asPage]);
     const titleId = useStableId("modal-title");
     const triggerRef = React.useRef<Element | null>(null);
+
+    React.useEffect(() => {
+        if (!visible || asPageRequested || nestedInPage) return;
+        // an ordinary dialog: it counts as open over the page
+        setOverlaysOpen(1);
+        return () => setOverlaysOpen(-1);
+    }, [visible, asPageRequested, nestedInPage]);
 
     React.useEffect(() => {
         if (!visible || asPage) return;
@@ -163,25 +203,29 @@ export function Modal({
 
     if (asPage) {
         return (
-            <PagePresentation.Provider value={false}>
-                <section
-                    ref={pageRef}
-                    className={[styles.page, className]
-                        .filter(Boolean)
-                        .join(" ")}
-                    aria-labelledby={title !== undefined ? titleId : undefined}
-                >
-                    {title !== undefined ? (
-                        <h2 id={titleId} className={styles.pageTitle}>
-                            {title}
-                        </h2>
-                    ) : null}
-                    <div className={styles.pageBody}>{children}</div>
-                    {footer !== undefined ? (
-                        <div className={styles.pageFooter}>{footer}</div>
-                    ) : null}
-                </section>
-            </PagePresentation.Provider>
+            <NestedInPage.Provider value={true}>
+                <PagePresentation.Provider value={false}>
+                    <section
+                        ref={pageRef}
+                        className={[styles.page, className]
+                            .filter(Boolean)
+                            .join(" ")}
+                        aria-labelledby={
+                            title !== undefined ? titleId : undefined
+                        }
+                    >
+                        {title !== undefined ? (
+                            <h2 id={titleId} className={styles.pageTitle}>
+                                {title}
+                            </h2>
+                        ) : null}
+                        <div className={styles.pageBody}>{children}</div>
+                        {footer !== undefined ? (
+                            <div className={styles.pageFooter}>{footer}</div>
+                        ) : null}
+                    </section>
+                </PagePresentation.Provider>
+            </NestedInPage.Provider>
         );
     }
 
