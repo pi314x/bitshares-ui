@@ -217,3 +217,43 @@ export function neighbours(graph: PoolGraph, assetId: string): Set<string> {
     });
     return out;
 }
+
+export interface GraphView {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+
+/**
+ * The view of a two-finger pinch on the graph. `start` is the view, the
+ * distance between the fingers and the graph point between them when the second
+ * finger touched down; `a` and `b` are the fingers now (client coordinates) and
+ * `box` is the graph's box on screen. Fingers apart zoom in; the point that was
+ * between the fingers stays between them, so the picture also follows a pinch
+ * that moves. The view never leaves the graph and never gets narrower than
+ * `minWidth`.
+ */
+export function pinchView(
+    start: {view: GraphView; distance: number; anchor: {x: number; y: number}},
+    a: {x: number; y: number},
+    b: {x: number; y: number},
+    box: {left: number; top: number; width: number; height: number},
+    size: {width: number; height: number},
+    minWidth = 120
+): GraphView {
+    const distance = Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+    const w = Math.min(
+        size.width,
+        Math.max(minWidth, (start.view.w * start.distance) / distance)
+    );
+    const h = (w / size.width) * size.height;
+    const fx = ((a.x + b.x) / 2 - box.left) / box.width;
+    const fy = ((a.y + b.y) / 2 - box.top) / box.height;
+    return {
+        x: Math.min(size.width - w, Math.max(0, start.anchor.x - fx * w)),
+        y: Math.min(size.height - h, Math.max(0, start.anchor.y - fy * h)),
+        w,
+        h
+    };
+}

@@ -1413,6 +1413,8 @@
         "please_generate_address": "Bitte, eine neue Adresse anfordern!",
         "purchase": "Kauf von %(asset)s",
         "purchase_1": "Schnell und einfacher Kauf von %(outputAsset)s durch die Einzahlung von %(inputAsset)s aus einer externen Wallet. Diese Dienstleistung wird Ihnen durch <a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a> zur Verfügung gestellt.",
+        "purchase_notice": "%(inputAsset)s zu dieser Adresse gesendet erscheinen als %(outputAsset)s.",
+        "purchase_notice_memo": "Notitz <b>erforderlich</b> zur richtigen Weiterleitung Ihres Kontos.",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "Annahme Konto:",
         "scan_qr": "QR-Code einlesen",

@@ -5,7 +5,8 @@ import {
     GraphNode,
     buildGraph,
     layoutGraph,
-    neighbours
+    neighbours,
+    pinchView
 } from "../../lib/common/poolGraph";
 import {poolMetrics, poolValueInBts} from "../../lib/common/poolMetrics";
 import styles from "./PoolGraph.module.scss";
@@ -37,7 +38,7 @@ const FULL: View = {x: 0, y: 0, w: WIDTH, h: HEIGHT};
 // pool a line between its two assets, so the hubs (BTS, the gateway
 // stablecoins) show and so do the assets that can only be reached through
 // one. Pools valued in BTS draw thicker the more they hold. Click an asset to
-// see its pools; drag to move, wheel or +/- to zoom.
+// see its pools; drag to move, wheel, +/- or a two-finger pinch to zoom.
 export default function PoolGraph({
     pools,
     onShowAsset
@@ -47,6 +48,22 @@ export default function PoolGraph({
     const [view, setView] = React.useState<View>(FULL);
     const drag = React.useRef<{x: number; y: number; view: View} | null>(null);
     const svg = React.useRef<SVGSVGElement>(null);
+    // The fingers (or the mouse) on the graph: one pans, two pinch.
+    const pointers = React.useRef(new Map<number, {x: number; y: number}>());
+    const pinch = React.useRef<{
+        distance: number;
+        view: View;
+        anchor: {x: number; y: number};
+    } | null>(null);
+    // where a press started and on which asset: a press that did not move is a
+    // click on that asset (the graph holds the pointer, so a node never gets
+    // its own click)
+    const press = React.useRef<{
+        x: number;
+        y: number;
+        node: string | null;
+        moved: boolean;
+    } | null>(null);
 
     // only the set of pools matters for the layout, not their balances
     const signature = pools.map(p => p.id).join(",");
@@ -165,14 +182,69 @@ export default function PoolGraph({
                 aria-label={t("title")}
                 onWheel={onWheel}
                 onPointerDown={e => {
-                    drag.current = {x: e.clientX, y: e.clientY, view};
+                    pointers.current.set(e.pointerId, {
+                        x: e.clientX,
+                        y: e.clientY
+                    });
+                    const node = (e.target as Element).closest
+                        ? (e.target as Element).closest("[data-node]")
+                        : null;
+                    if (pointers.current.size === 2) {
+                        // a second finger: from now on a pinch
+                        const [a, b] = Array.from(pointers.current.values());
+                        const mid = toGraph((a.x + b.x) / 2, (a.y + b.y) / 2);
+                        pinch.current = {
+                            distance: Math.max(
+                                1,
+                                Math.hypot(a.x - b.x, a.y - b.y)
+                            ),
+                            view,
+                            anchor: mid
+                        };
+                        drag.current = null;
+                        if (press.current) press.current.moved = true;
+                    } else {
+                        drag.current = {x: e.clientX, y: e.clientY, view};
+                        press.current = {
+                            x: e.clientX,
+                            y: e.clientY,
+                            node: node ? node.getAttribute("data-node") : null,
+                            moved: false
+                        };
+                    }
                     (e.currentTarget as any).setPointerCapture &&
                         (e.currentTarget as any).setPointerCapture(e.pointerId);
                 }}
                 onPointerMove={e => {
+                    if (pointers.current.has(e.pointerId)) {
+                        pointers.current.set(e.pointerId, {
+                            x: e.clientX,
+                            y: e.clientY
+                        });
+                    }
+                    const box = svg.current!.getBoundingClientRect();
+                    const p = pinch.current;
+                    if (p && pointers.current.size >= 2) {
+                        const [a, b] = Array.from(pointers.current.values());
+                        setView(
+                            pinchView(p, a, b, box, {
+                                width: WIDTH,
+                                height: HEIGHT
+                            })
+                        );
+                        return;
+                    }
                     const d = drag.current;
                     if (!d) return;
-                    const box = svg.current!.getBoundingClientRect();
+                    if (
+                        press.current &&
+                        Math.hypot(
+                            e.clientX - press.current.x,
+                            e.clientY - press.current.y
+                        ) > 6
+                    ) {
+                        press.current.moved = true;
+                    }
                     const dx = ((e.clientX - d.x) / box.width) * d.view.w;
                     const dy = ((e.clientY - d.y) / box.height) * d.view.h;
                     setView({
@@ -187,11 +259,39 @@ export default function PoolGraph({
                         )
                     });
                 }}
-                onPointerUp={() => {
+                onPointerUp={e => {
+                    const was = press.current;
+                    pointers.current.delete(e.pointerId);
+                    pinch.current = null;
+                    const rest = Array.from(pointers.current.values());
+                    if (rest.length === 1) {
+                        // one finger lifted from a pinch: the other keeps
+                        // panning from where it is, with no jump
+                        drag.current = {x: rest[0].x, y: rest[0].y, view};
+                        return;
+                    }
                     drag.current = null;
+                    press.current = null;
+                    // a press that did not move, on an asset: select it
+                    if (was && !was.moved && was.node) {
+                        setSelected(sel =>
+                            sel === was.node ? null : was.node
+                        );
+                    }
                 }}
-                onPointerLeave={() => {
+                onPointerCancel={e => {
+                    pointers.current.delete(e.pointerId);
+                    pinch.current = null;
                     drag.current = null;
+                    press.current = null;
+                }}
+                onPointerLeave={e => {
+                    // the graph holds the pointer while it is down; this is the
+                    // mouse leaving without a press
+                    if (e.pointerType === "mouse" && e.buttons === 0) {
+                        pointers.current.delete(e.pointerId);
+                        drag.current = null;
+                    }
                 }}
             >
                 <g>
@@ -241,14 +341,9 @@ export default function PoolGraph({
                                     node.id === selected ? styles.picked : ""
                                 } ${dim ? styles.dim : ""}`}
                                 transform={`translate(${node.x} ${node.y})`}
+                                data-node={node.id}
                                 onMouseEnter={() => setHover(node.id)}
                                 onMouseLeave={() => setHover(null)}
-                                onPointerDown={e => e.stopPropagation()}
-                                onClick={() =>
-                                    setSelected(
-                                        node.id === selected ? null : node.id
-                                    )
-                                }
                             >
                                 <circle r={radius} />
                                 {showLabel ? (

@@ -115,11 +115,52 @@ function themeNameToLegacyTheme(theme: ThemeName): string {
     return theme === "light" ? "lightTheme" : "darkTheme";
 }
 
+// Sun and moon: the theme the button switches to.
+const SunIcon = () => (
+    <svg
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        aria-hidden="true"
+    >
+        <circle cx="8" cy="8" r="3" />
+        <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />
+    </svg>
+);
+
+const MoonIcon = () => (
+    <svg
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+    >
+        <path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.6 5.6 0 1 0 6.8 6.8z" />
+    </svg>
+);
+
+// An icon button beside the language: the footer of the menu is one row, so
+// it never takes the room of two entries (and stays on screen).
 function RailThemeToggle() {
     const {theme, toggleTheme} = useTheme();
+    const label = theme === "dark" ? "Light theme" : "Dark theme";
     return (
-        <Button onClick={toggleTheme} style={{width: "100%"}}>
-            {theme === "dark" ? "Light theme" : "Dark theme"}
+        <Button
+            onClick={toggleTheme}
+            aria-label={label}
+            title={label}
+            style={{width: 40, padding: 0, flex: "none"}}
+        >
+            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
         </Button>
     );
 }
@@ -268,19 +309,21 @@ export default function NextShellContainer({
                     <div
                         style={{
                             display: "flex",
-                            flexDirection: "column",
+                            alignItems: "center",
                             gap: 8
                         }}
                     >
-                        <LocaleSwitcher
-                            block
-                            placement="top"
-                            currentLocale={intl.currentLocale}
-                            locales={settings.defaults.locale}
-                            onSelect={locale =>
-                                IntlActions.switchLocale(locale)
-                            }
-                        />
+                        <div style={{flex: "1 1 auto", minWidth: 0}}>
+                            <LocaleSwitcher
+                                block
+                                placement="top"
+                                currentLocale={intl.currentLocale}
+                                locales={settings.defaults.locale}
+                                onSelect={locale =>
+                                    IntlActions.switchLocale(locale)
+                                }
+                            />
+                        </div>
                         <RailThemeToggle />
                     </div>
                 }

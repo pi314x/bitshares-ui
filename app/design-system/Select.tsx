@@ -17,6 +17,10 @@ export interface SelectOptionProps {
      * visibility checkboxes), which uses it purely for its own padding
      * hook, not anything antd-DOM-structure-dependent. */
     className?: string;
+    /** What the closed select shows when this option is the chosen one, where
+     * that is not the option's children (a name without the balance that sits
+     * beside it in the list). */
+    triggerLabel?: React.ReactNode;
     children?: React.ReactNode;
 }
 
@@ -46,6 +50,7 @@ export interface SelectOptionData {
     disabled?: boolean;
     className?: string;
     label: React.ReactNode;
+    triggerLabel?: React.ReactNode;
     text: string;
 }
 
@@ -60,6 +65,7 @@ function collectOptions(children: React.ReactNode): SelectOptionData[] {
             disabled: props.disabled,
             className: props.className,
             label: props.children,
+            triggerLabel: props.triggerLabel,
             text: optionText(props.children)
         });
     });
@@ -254,7 +260,9 @@ function SelectBase({
             >
                 <span className={selected ? styles.value : styles.placeholder}>
                     {selected
-                        ? optionLabelProp === "value"
+                        ? selected.triggerLabel !== undefined
+                            ? selected.triggerLabel
+                            : optionLabelProp === "value"
                             ? String(selected.value)
                             : selected.label
                         : placeholder}

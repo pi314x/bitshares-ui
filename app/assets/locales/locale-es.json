@@ -1413,6 +1413,8 @@
         "please_generate_address": "Por favor, obtenga una nueva dirección",
         "purchase": "Compra %(asset)s",
         "purchase_1": "Compra rápida y fácil %(outputAsset)s usando %(inputAsset)s de una billetera externa. Este servicio es provisto por <a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a>",
+        "purchase_notice": "%(inputAsset)s enviado a esta dirección aparecerá como %(outputAsset)s",
+        "purchase_notice_memo": "Memo <b>required</b> para un enrutamiento adecuado a su cuenta",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "Cuenta que recibe:",
         "scan_qr": "Escanear QR",

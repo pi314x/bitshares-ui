@@ -309,6 +309,42 @@ LAYOUT_JS = """() => {
 }"""
 
 
+CONTAIN_JS = """() => {
+  // Elements that stick out of the bordered or filled box they sit in (a card,
+  // a panel, the menu): what a person sees as "goes beyond the borders". Boxes
+  // that scroll or clip on purpose are skipped, and so is what scrolls inside.
+  const boxy = el => {
+    const cs = getComputedStyle(el);
+    const bg = cs.backgroundColor;
+    const filled = bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+    const bordered = ['Top','Right','Bottom','Left'].some(s => parseFloat(cs['border' + s + 'Width']) > 0 && cs['border' + s + 'Style'] !== 'none');
+    return filled || bordered;
+  };
+  const out = [];
+  const seen = new Set();
+  for (const el of document.querySelectorAll('body *')) {
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+    if (!r.width || !r.height || cs.visibility === 'hidden' || cs.display === 'none' || cs.position === 'fixed' || cs.position === 'absolute') continue;
+    // nearest ancestor that draws a box
+    let box = null;
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (/(auto|scroll)/.test(ps.overflowX)) { box = null; break; }
+      if (boxy(p)) { box = p; break; }
+    }
+    if (!box) continue;
+    const b = box.getBoundingClientRect();
+    if (r.right > b.right + 2 || r.left < b.left - 2) {
+      const key = box.tagName + '.' + String(box.className).split(' ')[0];
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' [' + Math.round(r.left) + ',' + Math.round(r.right) + '] in ' + key + ' [' + Math.round(b.left) + ',' + Math.round(b.right) + ']');
+    }
+  }
+  return out.slice(0, 8);
+}"""
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("dist", help="built bundle directory (contains index.html)")
@@ -327,6 +363,9 @@ def main():
     ap.add_argument("--locale", choices=sorted(LOCALE_NAMES), help="switch the app to this UI locale after boot, through the language menu (for example de), to check translated screens and help pages")
     ap.add_argument("--viewport", default="1400x900", help="browser size WIDTHxHEIGHT; at 860px or less the page is loaded as a touch phone (for example 390x844)")
     ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
+    ap.add_argument("--probe", default="", help="JavaScript (an arrow function) evaluated on each route after any #button press; its result is printed (for finding what covers an element)")
+    ap.add_argument("--pinch", default="", help="CSS selector: on each route, do a two-finger pinch-out on that element (touch events through the devtools protocol) and print its viewBox before and after")
+    ap.add_argument("--contain", action="store_true", help="also fail on an element that sticks out of the card, panel or menu it is in (what reads as 'goes beyond the borders')")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
 
@@ -404,6 +443,13 @@ def main():
                 for c, a in sorted(gray.items(), key=lambda kv: -kv[1])[:4]:
                     print(f"      neutral {c} ({100.0 * a / total:.1f}%) e.g. {census['sample'].get(c, '')}")
                 if share > 2.0:
+                    failed = True
+            if args.contain:
+                pokes = page.evaluate(CONTAIN_JS)
+                print(f"{'':<34} contain: " + ("ok" if not pokes else str(len(pokes)) + " out of their box"))
+                for line in pokes:
+                    print("      beyond:", line)
+                if pokes:
                     failed = True
             if args.layout:
                 lay = page.evaluate(LAYOUT_JS)
@@ -483,14 +529,48 @@ def main():
                     else:
                         strip.locator("li", has_text=tab).first.click()
                 page.wait_for_timeout(int(args.route_wait * 1000))
-            if press:
-                button = page.get_by_role("button", name=press).first
-                if button.count():
-                    button.scroll_into_view_if_needed()
-                    button.click()
-                    page.wait_for_timeout(600)
+            # "#Trigger=Option&Trigger2=Option2": open a dropdown and pick an
+            # option, then the next; a step without "=" just presses a button
+            for step in [x for x in press.split("&") if x]:
+                trigger, _, choose = step.partition("=")
+                button = page.get_by_role("button", name=trigger).first
+                if not button.count():
+                    print(f"{'':<34} (no button named {trigger!r})")
+                    break
+                button.scroll_into_view_if_needed()
+                # on a phone a touch, like a finger (touch events first, then
+                # the click the browser synthesises from the tap)
+                (button.tap if phone else button.click)()
+                page.wait_for_timeout(600)
+                if choose:
+                    option = page.get_by_role("option", name=choose, exact=True).first
+                    if option.count():
+                        (option.tap if phone else option.click)()
+                        page.wait_for_timeout(1500)
+                    else:
+                        print(f"{'':<34} (no option {choose!r})")
+            if args.pinch:
+                target = page.locator(args.pinch).first
+                if target.count():
+                    target.scroll_into_view_if_needed()
+                    rect = target.bounding_box()
+                    cx, cy = rect["x"] + rect["width"] / 2, rect["y"] + rect["height"] / 2
+                    before = target.get_attribute("viewBox")
+                    cdp = page.context.new_cdp_session(page)
+
+                    def touch(kind, points):
+                        cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": [{"x": x, "y": y, "id": i} for i, (x, y) in enumerate(points)]})
+
+                    touch("touchStart", [(cx - 20, cy), (cx + 20, cy)])
+                    for step in range(1, 11):
+                        touch("touchMove", [(cx - 20 - step * 6, cy), (cx + 20 + step * 6, cy)])
+                    touch("touchEnd", [])
+                    page.wait_for_timeout(300)
+                    print(f"{'':<34} pinch: {before} -> {target.get_attribute('viewBox')}")
                 else:
-                    print(f"{'':<34} (no button named {press!r})")
+                    print(f"{'':<34} (nothing matches {args.pinch!r})")
+            if args.probe:
+                print(f"{'':<34} probe:", page.evaluate(args.probe))
             if args.shots:
                 name = (route.strip("/").replace("/", "_") or "root") + (
                     "__" + tab.replace(" ", "_") if tab else ""

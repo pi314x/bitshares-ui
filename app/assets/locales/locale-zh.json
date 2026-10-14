@@ -1413,6 +1413,8 @@
         "please_generate_address": "请使用新地址",
         "purchase": "购买 %(asset)s",
         "purchase_1": "快速简便地从外部钱包使用 %(inputAsset)s 购买 %(outputAsset)s 。这项服务由 <a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a> 提供",
+        "purchase_notice": "转账到这个地址的 %(inputAsset)s 将成为 %(outputAsset)s",
+        "purchase_notice_memo": "<b>需要正确填写备注</b>以便将资产存入您的账户中",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "收款账户：",
         "scan_qr": "扫描二维码，手机支付",

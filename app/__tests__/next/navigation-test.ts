@@ -27,7 +27,9 @@ describe("left navigation rail", () => {
             expect.arrayContaining(["Instant trade", "Prediction markets"])
         );
         // the old header's Spotlight hub: barter, HTLC, direct debit, ...
-        expect(labels("More")).toEqual(["Spotlight", "Help"]);
+        expect(labels("More")).toEqual(["Spotlight", "Settings", "Help"]);
+        // settings are not an everyday page: they are under More, not Account
+        expect(labels("Account")).not.toContain("Settings");
     });
 
     it("keeps the explorer out of the markets group", () => {

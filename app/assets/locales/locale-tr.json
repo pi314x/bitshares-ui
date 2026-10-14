@@ -1413,6 +1413,8 @@
         "please_generate_address": "Please, get new address ",
         "purchase": "%(asset)s satın al",
         "purchase_1": "%(inputAsset)s kullanarak hızlı ve kolayca %(outputAsset)s satın almak için burayı kullanabilirsiniz. Bu hizmet <a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a> tarafından sağlanmaktadır.",
+        "purchase_notice": "%(inputAsset)s sent to this address will show up as %(outputAsset)s",
+        "purchase_notice_memo": "Memo <b>required</b> for proper routing to your account",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "Alacak hesap:",
         "scan_qr": "Karekod Tara",

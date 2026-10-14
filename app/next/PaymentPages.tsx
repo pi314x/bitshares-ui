@@ -7,6 +7,7 @@ import {selectGateway} from "../store/slices/gatewaySlice";
 import SendModal from "../components/Modal/SendModal";
 import DepositModal from "../components/Modal/DepositModal";
 import WithdrawModal from "../components/Modal/WithdrawModalNew";
+import styles from "./PaymentPages.module.scss";
 
 // Send, Deposit and Withdraw as pages of their own (menu: Payments). They are
 // the same dialogs as before - same forms, same transaction flow - shown in the
@@ -41,7 +42,7 @@ export function SendPage(): JSX.Element {
         sendRef.current && sendRef.current.show();
     }, []);
     return (
-        <div className="send-page">
+        <div className={`send-page ${styles.page}`}>
             <ModalAsPage>
                 <SendModal
                     id="send_page"
@@ -61,16 +62,18 @@ export function DepositPage(): JSX.Element {
     const accountName = useCurrentAccount();
     const gateway = useReduxState<any>(selectGateway);
     return (
-        <ModalAsPage>
-            <DepositModal
-                visible={true}
-                hideModal={leave}
-                showModal={() => undefined}
-                modalId="deposit_page"
-                account={accountName}
-                backedCoins={gateway.backedCoins}
-            />
-        </ModalAsPage>
+        <div className={styles.page}>
+            <ModalAsPage>
+                <DepositModal
+                    visible={true}
+                    hideModal={leave}
+                    showModal={() => undefined}
+                    modalId="deposit_page"
+                    account={accountName}
+                    backedCoins={gateway.backedCoins}
+                />
+            </ModalAsPage>
+        </div>
     );
 }
 
@@ -78,14 +81,16 @@ export function WithdrawPage(): JSX.Element {
     const leave = useLeave();
     const gateway = useReduxState<any>(selectGateway);
     return (
-        <ModalAsPage>
-            <WithdrawModal
-                visible={true}
-                hideModal={leave}
-                showModal={() => undefined}
-                modalId="withdraw_page"
-                backedCoins={gateway.backedCoins}
-            />
-        </ModalAsPage>
+        <div className={styles.page}>
+            <ModalAsPage>
+                <WithdrawModal
+                    visible={true}
+                    hideModal={leave}
+                    showModal={() => undefined}
+                    modalId="withdraw_page"
+                    backedCoins={gateway.backedCoins}
+                />
+            </ModalAsPage>
+        </div>
     );
 }

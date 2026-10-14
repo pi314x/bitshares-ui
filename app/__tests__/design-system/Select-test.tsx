@@ -210,3 +210,18 @@ describe("design-system/Select", () => {
         expect(document.body.querySelector('[role="listbox"]')).toBeNull();
     });
 });
+
+describe("design-system/Select option triggerLabel", () => {
+    it("shows the option's triggerLabel in the closed select, not its row", () => {
+        const {getByRole} = render(
+            <Select value="g1" style={{width: 200}}>
+                <Select.Option value="g1" triggerLabel="PirateCash">
+                    PirateCash <span>12.00 BTC</span>
+                </Select.Option>
+                <Select.Option value="g2">Other</Select.Option>
+            </Select>
+        );
+        expect(getByRole("button").textContent).toContain("PirateCash");
+        expect(getByRole("button").textContent).not.toContain("12.00");
+    });
+});

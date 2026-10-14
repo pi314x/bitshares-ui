@@ -1413,6 +1413,8 @@
         "please_generate_address": "新しいアドレスを取得",
         "purchase": "%(asset)sを買う",
         "purchase_1": "外部ウォレットの%(inputAsset)sで%(outputAsset)sを素早く簡単に買います。このサービスは<a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a>によって提供されます。",
+        "purchase_notice": "このアドレスに送信された%(inputAsset)sは%(outputAsset)sとして表示されます。",
+        "purchase_notice_memo": "Memo <b>required</b> for proper routing to your account",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "受け取りアカウント:",
         "scan_qr": "QRをスキャン",

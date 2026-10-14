@@ -68,24 +68,7 @@ import {Tooltip} from "../../design-system/Tooltip";
 import {Input} from "../../design-system/Input";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
-
-const EqualWidthContainer = ({children}: {children: any[]}) => (
-    <div
-        style={{
-            display: "flex",
-            justifyContent: "center"
-        }}
-    >
-        <div
-            style={{
-                display: "grid",
-                gridTemplateColumns: children.map(() => "1fr").join(" ")
-            }}
-        >
-            {children}
-        </div>
-    </div>
-);
+import {SubMenu} from "../../design-system/SubMenu";
 
 const getUninitializedFeeAmount = () =>
     new (Asset as any)({amount: 0, asset_id: "1.3.0"});
@@ -632,25 +615,31 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                 >
                     <div className="grid-block vertical no-overflow">
                         <div className="content-block">
-                            <EqualWidthContainer>
-                                <Button
-                                    variant={propose ? "default" : "accent"}
-                                    onClick={onPropose}
-                                >
-                                    <Translate content="transfer.send" />
-                                </Button>
-                                <Button
-                                    variant={propose ? "accent" : "default"}
-                                    onClick={onPropose}
-                                >
-                                    <Translate content="propose" />
-                                </Button>
-                            </EqualWidthContainer>
+                            <SubMenu
+                                aria-label={counterpart.translate(
+                                    "transfer.send"
+                                )}
+                                items={[
+                                    {
+                                        key: "send",
+                                        label: counterpart.translate(
+                                            "transfer.send"
+                                        )
+                                    },
+                                    {
+                                        key: "propose",
+                                        label: counterpart.translate("propose")
+                                    }
+                                ]}
+                                value={propose ? "propose" : "send"}
+                                onChange={key => {
+                                    if ((key === "propose") !== !!propose) {
+                                        onPropose();
+                                    }
+                                }}
+                            />
                         </div>
-                        <div
-                            className="content-block"
-                            style={{textAlign: "center"}}
-                        >
+                        <div className="content-block">
                             <Translate
                                 content={
                                     propose

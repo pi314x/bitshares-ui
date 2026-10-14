@@ -1413,6 +1413,8 @@
         "please_generate_address": "Пожалуйста, получите новый адрес ",
         "purchase": "Покупка %(asset)s",
         "purchase_1": "Покупайте %(outputAsset)s легко и просто, используя %(inputAsset)s с внешнего кошелька. Этот сервис предоставляется <a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'><a href='https://blocktrades.us/' target='blank' rel='noopener noreferrer'>Blocktrades</a>",
+        "purchase_notice": "%(inputAsset)s, отправленные на этот адрес, будут отображаться как %(outputAsset)s",
+        "purchase_notice_memo": "Для правильной маршрутизации к вашему аккаунту <b>требуется</b> мемо",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "Аккаунт получателя:",
         "scan_qr": "Сканировать QR-код",

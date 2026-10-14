@@ -421,8 +421,13 @@ function DepositModalContent({
         props: {backedCoins},
         state: stateRef.current
     });
+    // the gateway answers "unknown" (as the address, or as the address field)
+    // when it has none for this account: that is not an address to show
     const isAddressValid =
-        depositAddress && depositAddress !== "unknown" && !depositAddress.error;
+        !!depositAddress &&
+        depositAddress !== "unknown" &&
+        depositAddress.address !== "unknown" &&
+        !depositAddress.error;
 
     let minDeposit = 0;
     if (!!backingAsset) {

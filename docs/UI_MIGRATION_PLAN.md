@@ -12471,7 +12471,7 @@ reachable through it (prediction markets, barter, HTLC, direct debit, paper
 wallet, merchant protocol) were reachable only by typing the URL. The rail now
 has (`app/next/navigation.ts`):
 
-- **Account:** Dashboard, Accounts, **Voting**, Settings
+- **Account:** Dashboard, Portfolio, Accounts, **Voting** (Settings moved to **More**, §7.25)
 - **Markets:** Trade, **Instant trade**, Liquidity pools, **Prediction markets**, Explorer
 - **Lending:** Credit offers, SameT funds
 - **More:** **Spotlight**
@@ -12939,6 +12939,8 @@ clipboard; it was deleted with the footer), the **"your node is out of sync,
 reconnect?"** prompt (the block status turns amber/red instead), the **"update
 available"** notice, and the header's wallet **total value**.
 
+**Settings is in the More group** of the menu (with Spotlight and Help), no longer under Account (the user's call: it is not something used every day).
+
 **Portfolio** (`Account/AccountOverview.tsx`): its five views are the design
 system's tabs (the legacy tab strip and its select are gone) with what each holds
 beside the name; the balances view has a filter and an Active / Hidden / Visual
@@ -12971,6 +12973,42 @@ were cut off. It now fits by construction:
   from this table: they hid cells and left their headers.
 - **On a phone** (under 420px) the quantity carries the value under it, and the
   row's actions are the one menu button.
+
+### 7.27 Payments pages, rail footer, pinch zoom
+
+- **Payments are one design** (`next/PaymentPages.module.scss`): Send, Deposit,
+  Withdraw and Timed transfer are one 760px column at the page's inset, the form
+  as a card (title, fields one under the other at a 16px rhythm, actions in the
+  footer), one label style, inputs the width of the column (the design system's
+  480px cap left them two thirds wide). Timed transfer is the card itself in the
+  page now (it opened a dialog over the page), with the claim link and the three
+  steps under it. Send's *Send / Propose* is the quiet two-way switch of the
+  other pages, left-aligned.
+- **Deposit and Withdraw: the gateway select showed its placeholder after a
+  choice.** `assetGatewayMixin.gatewaySelector` swapped the chosen gateway's id
+  for its name, which matched none of the options (their values are ids), so the
+  select looked as if nothing had been chosen although the address was fetched.
+  The id is kept and the closed select shows the name (`Select.Option
+  triggerLabel`). The same swap had made the "gateway disabled" checks read
+  `gatewayStatus[name]`. `gateway.purchase_notice` and `purchase_notice_memo`
+  had been dropped from the locales with the removed gateways: restored from the
+  original files, in all ten languages (the deposit page printed *missing
+  translation*). An address of "unknown" is no longer drawn as a QR code.
+- **The menu's footer is one row and stays on screen**: language and a sun/moon
+  button (the theme), sticky at the bottom of the rail, so on a short window the
+  entries scroll under it instead of the theme button being pushed below the
+  fold. On a window under 940px the entries take 4px less padding each.
+- **SameT funds**: the table is the page's width, edge to edge like Credit
+  offers, not inset in a bordered card.
+- **Settings** is in the More group.
+- **Liquidity pool graph**: two fingers pinch it in and out like a photo (the
+  point between the fingers stays between them, so a pinch that moves also
+  moves the picture), one finger pans, a press that did not move selects an
+  asset (`lib/common/poolGraph.ts` `pinchView`, tested). Checked on a phone
+  viewport with real touch events: 1000x700 -> 250x175 for a pinch of 100px.
+- `smoke-boot`: `--contain` (what sticks out of its card), `--probe`,
+  `--pinch SELECTOR`, and `route#Trigger=Option&Trigger2=Option2` to drive
+  dropdowns (touch on a phone viewport).
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

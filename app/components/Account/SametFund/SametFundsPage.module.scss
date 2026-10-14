@@ -43,11 +43,11 @@
     font-size: 13px;
 }
 
+// The list is the page's own width, edge to edge like the credit offers table
+// (it used to sit in a bordered card with an inset, a table narrower than the
+// one on the page next to it).
 .card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 4px 16px 16px;
+    padding: 0;
 }
 
 .num {

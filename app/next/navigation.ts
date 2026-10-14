@@ -32,12 +32,6 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 icon: "voting",
                 to: "/voting",
                 match: /^\/(voting|create-worker|account\/[^/]+\/voting)(\/|$)/
-            },
-            {
-                label: "Settings",
-                icon: "settings",
-                to: "/settings",
-                match: /^\/(settings|wallet)(\/|$)/
             }
         ]
     },
@@ -111,6 +105,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 to: "/spotlight",
                 // the features the hub links to
                 match: /^\/(spotlight|borrow|barter|direct-debit|htlc)(\/|$)/
+            },
+            {
+                label: "Settings",
+                icon: "settings",
+                to: "/settings",
+                match: /^\/(settings|wallet)(\/|$)/
             },
             {
                 label: "Help",

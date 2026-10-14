@@ -1,4 +1,9 @@
-import {buildGraph, layoutGraph, neighbours} from "../../lib/common/poolGraph";
+import {
+    buildGraph,
+    layoutGraph,
+    neighbours,
+    pinchView
+} from "../../lib/common/poolGraph";
 
 const symbols: Record<string, string> = {
     "1.3.0": "BTS",
@@ -105,5 +110,78 @@ describe("layoutGraph", () => {
             )
         );
         expect(g.nodes).toHaveLength(2);
+    });
+});
+
+describe("pinchView", () => {
+    const size = {width: 1000, height: 700};
+    const box = {left: 0, top: 0, width: 500, height: 350};
+    const full = {x: 0, y: 0, w: 1000, h: 700};
+    // the fingers touched down 100px apart, with the graph point (500, 350)
+    // between them
+    const start = {view: full, distance: 100, anchor: {x: 500, y: 350}};
+
+    it("zooms in when the fingers move apart, around the point between them", () => {
+        const view = pinchView(
+            start,
+            {x: 200, y: 175},
+            {x: 300, y: 175},
+            box,
+            size
+        );
+        // 100px -> 100px: nothing changed
+        expect(view).toEqual(full);
+        const apart = pinchView(
+            start,
+            {x: 150, y: 175},
+            {x: 350, y: 175},
+            box,
+            size
+        );
+        expect(apart.w).toBe(500);
+        expect(apart.h).toBe(350);
+        // the midpoint of the fingers is still the graph point (500, 350)
+        expect(apart.x + (250 / 500) * apart.w).toBeCloseTo(500);
+        expect(apart.y + (175 / 350) * apart.h).toBeCloseTo(350);
+    });
+
+    it("zooms out when the fingers move together, never past the whole graph", () => {
+        const zoomed = {
+            view: {x: 250, y: 175, w: 500, h: 350},
+            distance: 200,
+            anchor: {x: 500, y: 350}
+        };
+        const together = pinchView(
+            zoomed,
+            {x: 225, y: 175},
+            {x: 275, y: 175},
+            box,
+            size
+        );
+        expect(together.w).toBe(1000);
+        expect(together.x).toBe(0);
+        expect(together.y).toBe(0);
+    });
+
+    it("stops at the narrowest view and stays inside the graph", () => {
+        const view = pinchView(
+            start,
+            {x: 0, y: 175},
+            {x: 500, y: 175},
+            box,
+            size
+        );
+        expect(view.w).toBe(200);
+        expect(view.x).toBeGreaterThanOrEqual(0);
+        expect(view.x + view.w).toBeLessThanOrEqual(1000);
+        const narrow = pinchView(
+            start,
+            {x: 0, y: 175},
+            {x: 500, y: 175},
+            box,
+            size,
+            250
+        );
+        expect(narrow.w).toBe(250);
     });
 });
