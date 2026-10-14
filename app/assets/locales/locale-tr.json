@@ -3266,5 +3266,22 @@
     "toolbar": {
         "rows": "%(count)s satır",
         "search": "Ara"
+    },
+    "help_page": {
+        "title": "Yardım",
+        "search": "Yardımda ara",
+        "contents": "İçindekiler",
+        "previous": "Önceki",
+        "next": "Sonraki",
+        "no_match": "Yardımda eşleşen bir şey yok.",
+        "groups": {
+            "start": "Başlarken",
+            "account": "Hesap",
+            "payments": "Ödemeler",
+            "markets": "Piyasalar",
+            "assets": "Varlıklar",
+            "network": "Ağ",
+            "reference": "Başvuru"
+        }
     }
 }

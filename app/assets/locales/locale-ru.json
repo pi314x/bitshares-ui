@@ -3272,5 +3272,22 @@
     "toolbar": {
         "rows": "%(count)s строк",
         "search": "Поиск"
+    },
+    "help_page": {
+        "title": "Помощь",
+        "search": "Поиск по справке",
+        "contents": "Содержание",
+        "previous": "Назад",
+        "next": "Далее",
+        "no_match": "В справке ничего не найдено.",
+        "groups": {
+            "start": "Начало работы",
+            "account": "Аккаунт",
+            "payments": "Платежи",
+            "markets": "Рынки",
+            "assets": "Активы",
+            "network": "Сеть",
+            "reference": "Справочник"
+        }
     }
 }

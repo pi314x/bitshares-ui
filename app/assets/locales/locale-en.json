@@ -3273,5 +3273,22 @@
     "toolbar": {
         "rows": "%(count)s rows",
         "search": "Search"
+    },
+    "help_page": {
+        "title": "Help",
+        "search": "Search the help",
+        "contents": "Contents",
+        "previous": "Previous",
+        "next": "Next",
+        "no_match": "Nothing in the help matches this.",
+        "groups": {
+            "start": "Getting started",
+            "account": "Account",
+            "payments": "Payments",
+            "markets": "Markets",
+            "assets": "Assets",
+            "network": "Network",
+            "reference": "Reference"
+        }
     }
 }

@@ -3266,5 +3266,22 @@
     "toolbar": {
         "rows": "%(count)s lignes",
         "search": "Rechercher"
+    },
+    "help_page": {
+        "title": "Aide",
+        "search": "Rechercher dans l'aide",
+        "contents": "Sommaire",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "no_match": "Rien dans l'aide ne correspond.",
+        "groups": {
+            "start": "Pour commencer",
+            "account": "Compte",
+            "payments": "Paiements",
+            "markets": "Marchés",
+            "assets": "Actifs",
+            "network": "Réseau",
+            "reference": "Référence"
+        }
     }
 }

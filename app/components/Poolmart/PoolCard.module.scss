@@ -1,20 +1,27 @@
+// One pool as a card, in four bands separated by hairlines: who it is (pair,
+// share asset, id), the price, the figures in two columns, the actions.
 .card {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 14px 16px;
+    min-width: 0;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--surface);
-    min-width: 0;
+    overflow: hidden;
+}
+
+.card > * {
+    padding: 12px 16px;
+}
+
+.card > * + * {
+    border-top: 1px solid var(--line);
 }
 
 .head {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 4px 12px;
+    flex-direction: column;
+    gap: 2px;
 }
 
 // `.card .pair`: the legacy sheet sizes every h3
@@ -24,7 +31,7 @@
     align-items: baseline;
     gap: 4px 6px;
     margin: 0;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 600;
     letter-spacing: -0.01em;
 }
@@ -44,32 +51,34 @@
 
 .meta {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 2px 12px;
     font-size: 12px;
     color: var(--muted);
 }
 
 .price {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px 16px;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 15px;
 }
 
 .priceInverse {
     color: var(--muted);
+    font-size: 13px;
 }
 
 .facts {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 10px 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
 }
 
 .fact {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     min-width: 0;
 }
 
@@ -81,6 +90,7 @@
 
 .factValue {
     font-size: 14px;
+    line-height: 1.4;
     overflow-wrap: anywhere;
 }
 
@@ -94,8 +104,6 @@
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 4px 12px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
     background: var(--accent-wash);
     font-size: 13px;
 }

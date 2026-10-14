@@ -3272,5 +3272,22 @@
     "toolbar": {
         "rows": "%(count)s filas",
         "search": "Buscar"
+    },
+    "help_page": {
+        "title": "Ayuda",
+        "search": "Buscar en la ayuda",
+        "contents": "Contenido",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "no_match": "Nada en la ayuda coincide.",
+        "groups": {
+            "start": "Primeros pasos",
+            "account": "Cuenta",
+            "payments": "Pagos",
+            "markets": "Mercados",
+            "assets": "Activos",
+            "network": "Red",
+            "reference": "Referencia"
+        }
     }
 }

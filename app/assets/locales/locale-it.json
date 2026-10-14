@@ -3266,5 +3266,22 @@
     "toolbar": {
         "rows": "%(count)s righe",
         "search": "Cerca"
+    },
+    "help_page": {
+        "title": "Aiuto",
+        "search": "Cerca nell'aiuto",
+        "contents": "Indice",
+        "previous": "Precedente",
+        "next": "Successivo",
+        "no_match": "Niente nell'aiuto corrisponde.",
+        "groups": {
+            "start": "Per iniziare",
+            "account": "Conto",
+            "payments": "Pagamenti",
+            "markets": "Mercati",
+            "assets": "Asset",
+            "network": "Rete",
+            "reference": "Riferimento"
+        }
     }
 }

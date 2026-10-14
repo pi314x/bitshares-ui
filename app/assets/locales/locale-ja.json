@@ -3266,5 +3266,22 @@
     "toolbar": {
         "rows": "%(count)s 行",
         "search": "検索"
+    },
+    "help_page": {
+        "title": "ヘルプ",
+        "search": "ヘルプを検索",
+        "contents": "目次",
+        "previous": "前へ",
+        "next": "次へ",
+        "no_match": "一致する項目がありません。",
+        "groups": {
+            "start": "はじめに",
+            "account": "アカウント",
+            "payments": "支払い",
+            "markets": "マーケット",
+            "assets": "アセット",
+            "network": "ネットワーク",
+            "reference": "リファレンス"
+        }
     }
 }

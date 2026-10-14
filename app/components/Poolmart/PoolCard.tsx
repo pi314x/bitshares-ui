@@ -79,10 +79,13 @@ export function PoolCard({
                     ) : null}
                 </h3>
                 <div className={styles.meta}>
+                    <span>
+                        {t("share_asset")}:{" "}
+                        <TypedLink to={`/asset/${pool.shareSymbol}`}>
+                            <AssetName name={pool.shareSymbol} noTip />
+                        </TypedLink>
+                    </span>
                     <span>{pool.id}</span>
-                    <TypedLink to={`/asset/${pool.shareSymbol}`}>
-                        <AssetName name={pool.shareSymbol} noTip />
-                    </TypedLink>
                 </div>
             </header>
 

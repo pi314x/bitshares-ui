@@ -3266,5 +3266,22 @@
     "toolbar": {
         "rows": "%(count)s행",
         "search": "검색"
+    },
+    "help_page": {
+        "title": "도움말",
+        "search": "도움말 검색",
+        "contents": "목차",
+        "previous": "이전",
+        "next": "다음",
+        "no_match": "일치하는 도움말이 없습니다.",
+        "groups": {
+            "start": "시작하기",
+            "account": "계정",
+            "payments": "결제",
+            "markets": "마켓",
+            "assets": "자산",
+            "network": "네트워크",
+            "reference": "참고"
+        }
     }
 }
