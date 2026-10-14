@@ -170,6 +170,20 @@ gate at all.
   across locales when adding user-facing strings (English is the source of
   truth).
 
+## Dialogs and layout
+
+- Prefer showing a dialog **in the page**: wrap it in `ModalAsPage` (see
+  `docs/UI_MIGRATION_PLAN.md` §7.19) rather than opening it over the screen.
+  Global ones (transaction confirmation, wallet unlock) are hosted by the shell
+  through `lib/common/inlineHost.ts`.
+- Use `design-system/Toolbar` for the fields and buttons above a list, and keep
+  the 16px inset from a panel's edge (do not stack `.grid-content` paddings).
+- BigInt: never `**` (the build turns it into `Math.pow`); use
+  `BigInt("1" + "0".repeat(n))` or a loop.
+- A legacy rule like `body[class][class] ...` or `.darkTheme .table > ...`
+  outranks a plain module class: raise specificity (`.a.a`,
+  `body[class][class] .x`) rather than `!important`.
+
 ## Help pages
 
 - `app/help/<locale>/**/*.md` is the in-app help (`HelpContent`), one folder per

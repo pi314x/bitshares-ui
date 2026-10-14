@@ -12696,6 +12696,59 @@ What changed after §7.17, in the order a user meets it.
   overflow on the 36 routes tried. **Not verified:** real WebKit (not installed
   in the sandbox), so Safari-specific rendering is by inspection only.
 
+### 7.19 Dialogs in the page, liquidity pools, status bar, structure pass
+
+- **Dialogs are shown in the page, not over it.** `ModalAsPage`
+  (`design-system/Modal.tsx`) presents the first `Modal` below it as a card in
+  the flow: no backdrop, no scroll lock. Send, Deposit and Withdraw are pages
+  (`/send`, `/deposit`, `/withdraw`, `next/PaymentPages.tsx`) wrapping the same
+  dialogs; the transaction confirmation and the wallet unlock are hosted by the
+  shell at the top of its content (`lib/common/inlineHost.ts`: the global popup
+  instance stays out of the way while a host exists, so only one instance
+  answers a request). A dialog asked to show in the page while an ordinary
+  dialog is open over it opens as an overlay instead (it would hide behind the
+  backdrop); a dialog opened from inside a page-shown one stays an overlay
+  without pushing its parent out. An unlock request that was open when the user
+  chose another menu item is withdrawn with the page.
+- **Liquidity pools** (`/pools`, and the explorer's Pools tab, which is the same
+  screen). `lib/common/poolMetrics.ts`: reserves, price both ways, pool value,
+  24h volume and fees from the node's `with_statistics`, the holder's share.
+  Table on a wide screen, a card per pool on a phone; "Your liquidity" from the
+  account's share-token balances; filters by asset (either side), pair and share
+  asset; with no filter the node's `list_liquidity_pools`. A Graph view
+  (`lib/common/poolGraph.ts`, a small deterministic force layout) shows how the
+  assets are connected through pools.
+- **Pool swap** (`Modal/PoolExchangeModal.tsx`): pay / receive fields, typing in
+  either works out the other; the quote is the chain's own integer arithmetic
+  for a constant-product pool (`lib/common/poolSwap.ts`, mirrors
+  `liquidity_pool_exchange_evaluator::do_evaluate` including both assets'
+  market fees; stable pools are not computed and keep two typed fields).
+  `quoteExactOut` searches `quoteExactIn`, since the chain has no exact-out
+  operation. Slippage is applied to `min_to_receive`; the same amount is walked
+  through the pair's order book (`lib/common/priceCompare.ts`) and the dialog
+  says which venue pays more. The trade page has the small-amount version of the
+  same comparison under its header. No `**` with BigInt anywhere: the build turns
+  it into `Math.pow`, which throws on a BigInt.
+- **Status bar.** The connection and the head block are one chip, the last row of
+  every page (after the content, so it covers nothing; the same place at every
+  width), in fixed-width characters with fixed part widths so nothing moves; it
+  links to the nodes page (`/settings/access`). The wallet chip draws a padlock
+  and the account menu has "Log out".
+- **Older history.** A node keeps only as many operations per account as its
+  operator set. `lib/chain/olderHistory.ts` asks the other public nodes of the
+  list for what the connected node no longer has (their own websocket; main chain
+  only), for the balance chart's "Load older" and Recent activity.
+- **Structure pass.** Explorer tabs keep one 16px inset (`Explorer.module.scss`
+  `.pane`) and use the full width; the trade page's panels are a card grid on a
+  wide screen (`design-system/exchange-layout.scss`); the market list has no
+  scroll box of its own; voting has sub-menus (Witnesses: Votes / Join / Update;
+  Committee: Votes / Join) instead of popups and a structured Workers tab; the
+  help follows the menu (`components/Help/helpStructure.ts`, new overview page).
+  Buttons keep vertical padding so a two-line label has air.
+- **Verified here** in Chromium (desktop and iPhone emulation) against a live
+  node; the swap arithmetic by unit tests (it is not broadcast-tested from this
+  environment); real WebKit not available.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero
