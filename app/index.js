@@ -3,6 +3,7 @@ import "./design-system/fonts";
 import "./design-system/theme.scss";
 import "./design-system/legacy-controls.scss";
 import "./design-system/legacy-layout.scss";
+import "./design-system/exchange-layout.scss";
 import React from "react";
 import {createRoot} from "react-dom/client";
 import {ChainStore} from "bitsharesjs";

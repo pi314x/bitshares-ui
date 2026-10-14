@@ -1,0 +1,86 @@
+// The trade page, desktop: panels are cards in a grid instead of one long
+// column. Everything is scoped to `.market-layout` (the trade page's own
+// container), so nothing else is touched.
+//
+//   chart                                     (full width)
+//   buy form          | sell form             (side by side when there is room)
+//   buy orders        | sell orders           (the order book, two halves)
+//   trades            | my orders
+//
+// The panels were laid out by Foundation width classes (`small-12`, `medium-6`)
+// and `order-N` classes in a wrapping flex row; the grid below takes over the
+// placement and keeps the `order-N` classes, so the user's panel settings
+// (which panel is shown, in which order) still apply.
+.market-layout {
+    #CenterContent > .grid-block.no-overflow.wrap.shrink {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 0 0;
+        // cards of one row are one height
+        align-items: stretch;
+
+        // every panel: one card
+        > * {
+            box-sizing: border-box;
+            width: auto;
+            max-width: none;
+            min-width: 0;
+            margin: 0;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            overflow: hidden;
+        }
+
+        // the order book is two cards (bids, asks) inside one block
+        > .orderbook {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            overflow: visible;
+
+            > * {
+                box-sizing: border-box;
+                min-width: 0;
+                margin: 0;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-lg);
+                background: var(--surface);
+                overflow: hidden;
+            }
+        }
+    }
+}
+
+@media (min-width: 1280px) {
+    .market-layout #CenterContent > .grid-block.no-overflow.wrap.shrink {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        // the order book spans both columns, its two halves side by side
+        > .orderbook {
+            grid-column: 1 / -1;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+}
+
+// The order book's four number columns (total, base, quote, price) in half the
+// width: smaller figures that do not run into each other, kept on one line.
+body[class][class] .market-layout .orderbook table td,
+body[class][class] .market-layout .orderbook table th {
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+// The market header (pair, price, 24h figures) had no air above it.
+body[class][class] .top-bar {
+    padding-top: 16px;
+    padding-bottom: 8px;
+}
