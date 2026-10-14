@@ -54,9 +54,6 @@ interface AccountOrdersCoreProps {
     settings?: any;
     marketDirections: any;
     viewSettings: any;
-    /** The page of its own (not a tab of the account overview): it gets a
-     * title, and each list is a card. */
-    standalone?: boolean;
     [key: string]: any;
 }
 
@@ -768,14 +765,7 @@ function AccountOrders(props: AccountOrdersCoreProps) {
 
     // the filter, the grouping switch and the actions for the selected orders
     const toolbar = (
-        <div
-            className={props.standalone ? styles.toolbar : "header-selector"}
-            style={
-                props.standalone
-                    ? undefined
-                    : {display: "inline-block", width: "100%"}
-            }
-        >
+        <div className={styles.toolbar}>
             <div className="filter-block">
                 <div className="filter">
                     <Input
@@ -814,70 +804,34 @@ function AccountOrders(props: AccountOrdersCoreProps) {
         </div>
     );
 
-    if (props.standalone) {
-        const ordersCount = account.get("orders").size;
-        return (
-            <div className={styles.page}>
-                <div className={styles.head}>
-                    <h1 className={styles.title}>
-                        {counterpart.translate("desk.open_orders")}
-                    </h1>
+    // the filter row, then a card per list (market orders, settle orders)
+    return (
+        <div className={styles.page}>
+            {toolbar}
+            <section className={styles.card}>
+                <div className={styles.cardHead}>
+                    <h2 className={styles.cardTitle}>
+                        <Translate content="account.market_orders" />
+                    </h2>
                     <span className={styles.count}>
-                        {ordersCount + settleOrdersCount}
+                        {account.get("orders").size}
                     </span>
                 </div>
-                {toolbar}
+                <div className={styles.cardBody}>{tables}</div>
+            </section>
+            {settleOrdersCount > 0 ? (
                 <section className={styles.card}>
                     <div className={styles.cardHead}>
                         <h2 className={styles.cardTitle}>
-                            <Translate content="account.market_orders" />
+                            <Translate content="account.settle_orders" />
                         </h2>
-                        <span className={styles.count}>{ordersCount}</span>
+                        <span className={styles.count}>
+                            {settleOrdersCount}
+                        </span>
                     </div>
-                    <div className={styles.cardBody}>{tables}</div>
+                    <div className={styles.cardBody}>{settleOrdersTable}</div>
                 </section>
-                {settleOrdersCount > 0 ? (
-                    <section className={styles.card}>
-                        <div className={styles.cardHead}>
-                            <h2 className={styles.cardTitle}>
-                                <Translate content="account.settle_orders" />
-                            </h2>
-                            <span className={styles.count}>
-                                {settleOrdersCount}
-                            </span>
-                        </div>
-                        <div className={styles.cardBody}>
-                            {settleOrdersTable}
-                        </div>
-                    </section>
-                ) : null}
-            </div>
-        );
-    }
-
-    return (
-        <div
-            className="grid-content no-overflow no-padding"
-            style={{paddingBottom: 15}}
-        >
-            {toolbar}
-
-            <div>
-                {settleOrdersCount > 0 && (
-                    <div className="header-selector">
-                        <Translate content="account.market_orders" />
-                    </div>
-                )}
-                {tables}
-            </div>
-            {settleOrdersCount > 0 && (
-                <div className="grid-wrapper" key="settleGroupedTable">
-                    <div className="header-selector">
-                        <Translate content="account.settle_orders" />
-                    </div>
-                    {settleOrdersTable}
-                </div>
-            )}
+            ) : null}
         </div>
     );
 }

@@ -77,7 +77,9 @@
 // changed with the window).
 .page {
     width: 100%;
-    max-width: 640px;
+    // the pages that were dialogs (send, deposit, withdraw, a lock) use the room
+    // the page has, up to a width fields still read well at
+    max-width: 1040px;
     margin: 0;
     box-sizing: border-box;
     background: var(--surface);

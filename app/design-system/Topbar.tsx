@@ -42,6 +42,8 @@ export interface TopbarProps {
      * it is installed and not the signer). Omit it and nothing shows.
      */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
+    /** Small chips shown before the lock (view-only notice, notifications). */
+    chips?: React.ReactNode;
     /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
     onOpenNav?: () => void;
     navOpen?: boolean;
@@ -70,6 +72,7 @@ export function Topbar({
     onShowDeposit,
     onShowWithdraw,
     extensionAction,
+    chips,
     onOpenNav,
     navOpen = false,
     navId
@@ -131,6 +134,7 @@ export function Topbar({
                         onSelect={onSelectLocale}
                     />
                 )}
+                {chips}
                 <WalletLockButton
                     locked={locked}
                     onToggle={onToggleLock}

@@ -19,6 +19,10 @@
         padding: 12px 0 0;
         // cards of one row are one height
         align-items: stretch;
+        // a card that comes later may fill the gap an earlier one left (the
+        // trades card has no neighbour until "my orders", which follows the
+        // order book in the order of the panels)
+        grid-auto-flow: row dense;
 
         // every panel: one card
         > * {
@@ -54,6 +58,10 @@
 
             > * {
                 box-sizing: border-box;
+                // the halves are Foundation `medium-6` columns (50% wide): in a
+                // grid cell they were half a cell
+                width: auto;
+                max-width: none;
                 min-width: 0;
                 margin: 0;
                 border: 1px solid var(--line);

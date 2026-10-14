@@ -25,6 +25,7 @@ import {Button} from "../../design-system/Button";
 import {Modal} from "../../design-system/Modal";
 import {Icon} from "../../design-system/Icon";
 import {Popover} from "../../design-system/Popover";
+import styles from "./AccountBrowsingMode.module.scss";
 import {Tooltip} from "../../design-system/Tooltip";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
@@ -32,10 +33,16 @@ import {selectSettingsState} from "../../store/slices/settingsSlice";
 
 interface AccountBrowsingModeProps {
     usernameViewIcon?: boolean;
+    /** The "view mode" notice as a small icon chip (for the top bar) instead
+     * of a button of its own above the page. */
+    chip?: boolean;
     [key: string]: any;
 }
 
-function AccountBrowsingMode({usernameViewIcon}: AccountBrowsingModeProps) {
+function AccountBrowsingMode({
+    usernameViewIcon,
+    chip
+}: AccountBrowsingModeProps) {
     const settingsState = useReduxState<any>(selectSettingsState);
     const accountState = useReduxState<any>(selectAccountState);
     const viewOnlyMode = settingsState.settings.get("viewOnlyMode");
@@ -150,7 +157,26 @@ function AccountBrowsingMode({usernameViewIcon}: AccountBrowsingModeProps) {
                         "account_browsing_mode.modal_description"
                     )}
                 </Modal>
-                {!isMyAccount() ? (
+                {!isMyAccount() && chip ? (
+                    <Tooltip
+                        placement="bottom"
+                        title={counterpart.translate(
+                            "account_browsing_mode.you_are_in_browsing_mode"
+                        )}
+                    >
+                        <button
+                            type="button"
+                            className={styles.chip}
+                            aria-label={counterpart.translate(
+                                "account_browsing_mode.view_mode"
+                            )}
+                            onClick={handleSwitchBack}
+                        >
+                            <Icon type="eye" />
+                        </button>
+                    </Tooltip>
+                ) : null}
+                {!isMyAccount() && !chip ? (
                     <Tooltip
                         placement="bottom"
                         title={counterpart.translate(

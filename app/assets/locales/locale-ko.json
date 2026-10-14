@@ -505,7 +505,7 @@
         "connected": "연결됨",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
-        "loading_title": "BitShares 시작 중",
+        "loading_title": "BitShares Desk 시작 중",
         "node_label": "노드:",
         "not_connected": "연결안됨",
         "retry": "다시 시도",

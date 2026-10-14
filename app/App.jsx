@@ -120,14 +120,6 @@ const AccountPage = Loadable({
     loading: LoadingIndicator
 });
 
-const AccountDepositWithdraw = Loadable({
-    loader: () =>
-        import(
-            /* webpackChunkName: "deposit-withdraw" */ "./components/Account/AccountDepositWithdraw"
-        ),
-    loading: LoadingIndicator
-});
-
 const News = Loadable({
     loader: () => import(/* webpackChunkName: "news" */ "./components/News"),
     loading: LoadingIndicator
@@ -619,7 +611,7 @@ class App extends React.Component {
                                 />
                                 <Route
                                     path="/deposit-withdraw"
-                                    element={<AccountDepositWithdraw />}
+                                    element={<Navigate to="/deposit" replace />}
                                 />
                                 <Route
                                     path="/create-account/*"
@@ -639,6 +631,15 @@ class App extends React.Component {
                                     element={<AccountRegistrationRoute />}
                                 />
                                 <Route path="/news" element={<News />} />
+                                <Route
+                                    path="/portfolio"
+                                    element={
+                                        <Navigate
+                                            to={`/account/${accountName}/overview`}
+                                            replace
+                                        />
+                                    }
+                                />
                                 <Route
                                     path="/voting"
                                     element={

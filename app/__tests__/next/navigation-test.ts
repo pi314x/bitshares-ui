@@ -5,6 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {NAV_GROUPS, crumbFromPath} from "../../next/navigation";
+import {isNavItemActive} from "../../design-system/Rail";
 
 const app = fs.readFileSync(path.join(__dirname, "../../App.jsx"), "utf8");
 
@@ -33,9 +34,8 @@ describe("left navigation rail", () => {
         const markets = NAV_GROUPS.find(g => g.label === "Markets")!;
         expect(markets.items.map(i => i.label)).not.toContain("Explorer");
         const network = NAV_GROUPS.find(g => g.label === "Network")!;
-        expect(network.items).toEqual([
-            {label: "Explorer", icon: "explorer", to: "/explorer"}
-        ]);
+        expect(network.items.map(i => i.label)).toEqual(["Explorer"]);
+        expect(network.items[0].to).toBe("/explorer");
     });
 
     it("puts the liquidity pools right behind the order book trade entry", () => {
@@ -147,12 +147,47 @@ describe("rail icons", () => {
 
 describe("crumbs of an account's pages", () => {
     it("names the page, not just 'Account'", () => {
-        expect(crumbFromPath("/account/alice/orders")).toBe("Open orders");
         expect(crumbFromPath("/account/alice/vesting")).toBe("Vesting");
         expect(crumbFromPath("/account/alice/signedmessages")).toBe(
             "Signed messages"
         );
-        expect(crumbFromPath("/account/alice")).toBe("Account");
-        expect(crumbFromPath("/account/alice/overview")).toBe("Account");
+        expect(crumbFromPath("/account/alice")).toBe("Portfolio");
+        expect(crumbFromPath("/account/alice/overview")).toBe("Portfolio");
+        expect(crumbFromPath("/portfolio")).toBe("Portfolio");
+    });
+});
+
+describe("every page has one entry in the menu", () => {
+    const items = NAV_GROUPS.reduce<any[]>((all, g) => all.concat(g.items), []);
+    const activeLabels = (pathname: string) =>
+        items.filter(i => isNavItemActive(i, pathname)).map(i => i.label);
+
+    // the routes App.jsx registers, with their parameters filled in
+    const routes = Array.from(
+        new Set(Array.from(app.matchAll(/path="([^"]+)"/g)).map(m => m[1]))
+    )
+        .filter(p => p.startsWith("/"))
+        .map(p => p.replace(/\/\*$/, "").replace(/:[A-Za-z_]+/g, "x"));
+
+    it("finds the routes of the app", () => {
+        expect(routes.length).toBeGreaterThan(20);
+        expect(routes).toContain("/market/x");
+    });
+
+    routes.forEach(route => {
+        it(`${route} highlights exactly one entry`, () => {
+            expect(activeLabels(route)).toHaveLength(1);
+        });
+    });
+
+    it("the account's pages belong to the portfolio, its voting to Voting", () => {
+        expect(activeLabels("/account/alice")).toEqual(["Portfolio"]);
+        expect(activeLabels("/account/alice/vesting")).toEqual(["Portfolio"]);
+        expect(activeLabels("/account/alice/voting/witnesses")).toEqual([
+            "Voting"
+        ]);
+        expect(activeLabels("/market/EUR_BTS")).toEqual(["Trade"]);
+        expect(activeLabels("/asset/EUR")).toEqual(["Explorer"]);
+        expect(activeLabels("/htlc")).toEqual(["Spotlight"]);
     });
 });

@@ -41,6 +41,7 @@ import {
     useParams
 } from "react-router-dom";
 import LoadingIndicator from "../LoadingIndicator";
+import {SubMenu} from "../../design-system/SubMenu";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
@@ -58,7 +59,19 @@ import AccountSignedMessages from "./AccountSignedMessages";
 import AccountWhitelist from "./AccountWhitelist";
 import AccountVoting from "./AccountVoting";
 import AccountOverview from "./AccountOverview";
-import AccountOrders from "./AccountOrders";
+
+// The account's own pages under the menu's Portfolio entry. Reaching them from
+// the portfolio needs a way: this row. (Voting is a menu entry of its own.)
+const ACCOUNT_SECTIONS: Array<{key: string; label: string}> = [
+    {key: "", label: "Portfolio"},
+    {key: "assets", label: "Assets"},
+    {key: "pools", label: "Pools"},
+    {key: "member-stats", label: "Membership"},
+    {key: "vesting", label: "Vesting"},
+    {key: "permissions", label: "Permissions"},
+    {key: "whitelist", label: "Whitelist"},
+    {key: "signedmessages", label: "Signed messages"}
+];
 
 interface AccountPageCoreProps {
     account: any;
@@ -160,62 +173,87 @@ function AccountPage({
     // URL like v5's `Switch`/`Route` did) - `Navigate` targets stay
     // absolute (always unambiguous, matches the interpolated-string
     // style the original `Redirect`s already used).
+    const section = location.pathname.split("/")[3] || "";
+    const showSections = ACCOUNT_SECTIONS.some(s => s.key === section);
+
     return (
-        <Routes>
-            <Route index element={<AccountOverview {...passOnProps} />} />
-            <Route
-                path="overview"
-                element={<Navigate to={`/account/${account_name}`} replace />}
-            />
-            <Route path="assets" element={<AccountAssets {...passOnProps} />} />
-            <Route
-                path="orders"
-                element={<AccountOrders {...passOnProps} standalone />}
-            />
-            <Route path="pools" element={<AccountPools {...passOnProps} />} />
-            <Route
-                path="create-asset"
-                element={<AccountAssetCreate {...(passOnProps as any)} />}
-            />
-            <Route
-                path="update-asset/:asset"
-                element={<AccountAssetUpdate {...(passOnProps as any)} />}
-            />
-            <Route
-                path="member-stats"
-                element={<AccountMembership {...passOnProps} />}
-            />
-            <Route
-                path="vesting"
-                element={<AccountVesting {...passOnProps} />}
-            />
-            <Route
-                path="permissions"
-                element={<AccountPermissions {...(passOnProps as any)} />}
-            />
-            <Route
-                path="voting/:tab"
-                element={<AccountVoting {...(passOnProps as any)} />}
-            />
-            <Route
-                path="voting"
-                element={
-                    <Navigate
-                        to={`/account/${account_name}/voting/witnesses`}
-                        replace
+        <>
+            {showSections ? (
+                <div style={{marginBottom: 16}}>
+                    <SubMenu
+                        aria-label="Account"
+                        items={ACCOUNT_SECTIONS}
+                        value={section}
+                        onChange={key =>
+                            navigate(
+                                `/account/${account_name}${
+                                    key ? `/${key}` : ""
+                                }`
+                            )
+                        }
                     />
-                }
-            />
-            <Route
-                path="whitelist"
-                element={<AccountWhitelist {...passOnProps} />}
-            />
-            <Route
-                path="signedmessages"
-                element={<AccountSignedMessages {...passOnProps} />}
-            />
-            <Route path="*" element={<Page404 />} />
-        </Routes>
+                </div>
+            ) : null}
+            <Routes>
+                <Route index element={<AccountOverview {...passOnProps} />} />
+                <Route
+                    path="overview"
+                    element={
+                        <Navigate to={`/account/${account_name}`} replace />
+                    }
+                />
+                <Route
+                    path="assets"
+                    element={<AccountAssets {...passOnProps} />}
+                />
+                <Route
+                    path="pools"
+                    element={<AccountPools {...passOnProps} />}
+                />
+                <Route
+                    path="create-asset"
+                    element={<AccountAssetCreate {...(passOnProps as any)} />}
+                />
+                <Route
+                    path="update-asset/:asset"
+                    element={<AccountAssetUpdate {...(passOnProps as any)} />}
+                />
+                <Route
+                    path="member-stats"
+                    element={<AccountMembership {...passOnProps} />}
+                />
+                <Route
+                    path="vesting"
+                    element={<AccountVesting {...passOnProps} />}
+                />
+                <Route
+                    path="permissions"
+                    element={<AccountPermissions {...(passOnProps as any)} />}
+                />
+                <Route
+                    path="voting/:tab"
+                    element={<AccountVoting {...(passOnProps as any)} />}
+                />
+                <Route
+                    path="voting"
+                    element={
+                        <Navigate
+                            to={`/account/${account_name}/voting/witnesses`}
+                            replace
+                        />
+                    }
+                />
+                <Route
+                    path="whitelist"
+                    element={<AccountWhitelist {...passOnProps} />}
+                />
+                <Route
+                    path="signedmessages"
+                    element={<AccountSignedMessages {...passOnProps} />}
+                />
+                <Route path="*" element={<Page404 />} />
+            </Routes>
+        </>
     );
 }
 

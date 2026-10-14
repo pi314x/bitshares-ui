@@ -505,7 +505,7 @@
         "connected": "Connected",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
-        "loading_title": "Starting BitShares",
+        "loading_title": "Starting BitShares Desk",
         "node_label": "Node:",
         "not_connected": "Not connected",
         "retry": "Retry",

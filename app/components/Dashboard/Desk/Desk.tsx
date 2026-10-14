@@ -5,7 +5,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import Immutable from "immutable";
-import {Link, LinkProps} from "react-router-dom";
+import {Link, LinkProps, useNavigate} from "react-router-dom";
 import {Select} from "../../../design-system/Select";
 import SettingsActions from "../../../actions/SettingsActions";
 import AccountActions from "../../../actions/AccountActions";
@@ -19,6 +19,15 @@ import styles from "./Desk.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
 const TypedRecent = RecentTransactions as React.ComponentType<any>;
+
+/** The open orders are the portfolio's second tab: select it and go there. */
+function useOpenOrders(accountName: string): () => void {
+    const navigate = useNavigate();
+    return React.useCallback(() => {
+        (SettingsActions as any).changeViewSetting({overviewTab: 1});
+        navigate(`/account/${accountName}`);
+    }, [accountName, navigate]);
+}
 
 const t = (key: string, params?: Record<string, any>) =>
     counterpart.translate(`desk.${key}`, params);
@@ -237,7 +246,7 @@ function attentionTarget(
             return `/asset/${symbol}`;
         }
         case "expiring":
-            return `/account/${accountName}/orders`;
+            return null; // handled: opens the portfolio's open-orders tab
         default:
             return data.accountId ? "/settings/access" : null;
     }
@@ -253,6 +262,7 @@ function Attention({
     data: DeskData;
 }): JSX.Element | null {
     const [all, setAll] = React.useState(false);
+    const openOrders = useOpenOrders(accountName);
     if (!items.length) return null;
     const shown = all ? items : items.slice(0, ATTENTION_SHOWN);
     return (
@@ -276,7 +286,17 @@ function Attention({
                         className={`${styles.alert} ${level}`}
                     >
                         <span>{attentionText(item)}</span>
-                        {to ? <TypedLink to={to}>{t("open")}</TypedLink> : null}
+                        {to ? (
+                            <TypedLink to={to}>{t("open")}</TypedLink>
+                        ) : item.kind === "expiring" ? (
+                            <button
+                                type="button"
+                                className={styles.linkBtn}
+                                onClick={openOrders}
+                            >
+                                {t("open")}
+                            </button>
+                        ) : null}
                     </div>
                 );
             })}
@@ -434,6 +454,7 @@ function Positions({
     data: DeskData;
     accountName: string;
 }): JSX.Element {
+    const openOrders = useOpenOrders(accountName);
     const unit = data.unit ? data.unit.symbol : "";
     const digits = valueDigits(unit);
     const expiry =
@@ -452,9 +473,13 @@ function Positions({
                     <span className={styles.sectionTitle}>
                         {t("open_orders")}
                     </span>
-                    <TypedLink to={`/account/${accountName}/orders`}>
+                    <button
+                        type="button"
+                        className={styles.linkBtn}
+                        onClick={openOrders}
+                    >
                         {t("open")}
-                    </TypedLink>
+                    </button>
                 </div>
                 {data.orders.count ? (
                     <div className={styles.row}>

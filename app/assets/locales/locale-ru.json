@@ -505,7 +505,7 @@
         "connected": "Соединение установлено",
         "connecting": "Подключение к серверу API: %(server)s",
         "database": "Соединение установлено, идет инициализация локальных баз данных",
-        "loading_title": "Запуск BitShares",
+        "loading_title": "Запуск BitShares Desk",
         "node_label": "Нода:",
         "not_connected": "Нет соединения",
         "retry": "Повторить попытку",

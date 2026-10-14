@@ -505,7 +505,7 @@
         "connected": "Bağlandı",
         "connecting": "API sunucusuna bağlanma: %(server)s",
         "database": "Bağlantı kuruldu, yerel veritabanları başlatılıyor",
-        "loading_title": "BitShares başlatılıyor",
+        "loading_title": "BitShares Desk başlatılıyor",
         "node_label": "Düğüm:",
         "not_connected": "Bağlı değil",
         "retry": "Yeniden dene",

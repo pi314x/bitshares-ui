@@ -12,6 +12,13 @@ const PATHS: {[name: string]: React.ReactNode} = {
             <rect x="3.5" y="14.5" width="7" height="6" rx="1.5" />
         </>
     ),
+    portfolio: (
+        <>
+            <path d="M3.5 8A2.5 2.5 0 0 1 6 5.5h11.5A2.5 2.5 0 0 1 20 8v9a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 17V8Z" />
+            <path d="M3.5 9h13a3.5 3.5 0 0 1 3.5 3.5V15" />
+            <path d="M16.5 14.5h.01" />
+        </>
+    ),
     accounts: (
         <>
             <circle cx="9" cy="8" r="3.5" />

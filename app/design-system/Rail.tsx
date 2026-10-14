@@ -28,6 +28,18 @@ export interface RailNavItem {
     match?: RegExp;
 }
 
+/** Whether `item` is the entry of the page at `pathname`: its `match` when it
+ * has one, else its own path and the pages below it. */
+export function isNavItemActive(
+    item: {to?: string; exact?: boolean; match?: RegExp},
+    pathname: string
+): boolean {
+    if (item.match) return item.match.test(pathname);
+    if (!item.to) return false;
+    if (item.to === "/" || item.exact) return pathname === item.to;
+    return pathname === item.to || pathname.startsWith(item.to + "/");
+}
+
 export interface RailNavGroup {
     label: string;
     items: RailNavItem[];
@@ -81,7 +93,7 @@ export function Rail({
             )}
             <div className={styles.brand}>
                 <img className={styles.brandMark} src={logo} alt="BitShares" />
-                <span className={styles.brandName}>BitShares</span>
+                <span className={styles.brandName}>BitShares Desk</span>
             </div>
 
             {groups.map(group => (
@@ -112,10 +124,8 @@ export function Rail({
                                 to={item.to as string}
                                 end={item.exact}
                                 onClick={onNavigate}
-                                className={({isActive}: {isActive: boolean}) =>
-                                    (item.match
-                                      ? item.match.test(pathname)
-                                      : isActive)
+                                className={() =>
+                                    isNavItemActive(item, pathname)
                                         ? `${styles.navItem} ${styles.navItemActive}`
                                         : styles.navItem
                                 }

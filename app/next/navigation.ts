@@ -9,15 +9,36 @@ export const NAV_GROUPS: RailNavGroup[] = [
         label: "Account",
         items: [
             {label: "Dashboard", icon: "dashboard", to: "/", exact: true},
-            {label: "Accounts", icon: "accounts", to: "/accounts"},
+            // the account's portfolio: balances, open orders, margin
+            // positions, credit, activity (`/portfolio` redirects to the
+            // current account's page)
+            {
+                label: "Portfolio",
+                icon: "portfolio",
+                to: "/portfolio",
+                // /portfolio and every page of an account but its voting
+                match: /^\/(portfolio|account\/[^/]+(\/(?!voting(\/|$)).*)?$)/
+            },
+            {
+                label: "Accounts",
+                icon: "accounts",
+                to: "/accounts",
+                // adding, creating and importing accounts and wallets
+                match: /^\/(accounts|create-account|registration|login|existing-account|create-wallet-brainkey)(\/|$)/
+            },
             // `/voting` redirects to the current account's voting tab
             {
                 label: "Voting",
                 icon: "voting",
                 to: "/voting",
-                match: /^\/(voting|account\/[^/]+\/voting)(\/|$)/
+                match: /^\/(voting|create-worker|account\/[^/]+\/voting)(\/|$)/
             },
-            {label: "Settings", icon: "settings", to: "/settings"}
+            {
+                label: "Settings",
+                icon: "settings",
+                to: "/settings",
+                match: /^\/(settings|wallet)(\/|$)/
+            }
         ]
     },
     {
@@ -25,8 +46,19 @@ export const NAV_GROUPS: RailNavGroup[] = [
         // dialogs shown in the page, not over it); they used to be popups.
         label: "Payments",
         items: [
-            {label: "Send", icon: "send", to: "/send"},
-            {label: "Deposit", icon: "deposit", to: "/deposit"},
+            {
+                label: "Send",
+                icon: "send",
+                to: "/send",
+                match: /^\/(send|invoice)(\/|$)/
+            },
+            {
+                label: "Deposit",
+                icon: "deposit",
+                to: "/deposit",
+                // the old combined page redirects here
+                match: /^\/(deposit|deposit-withdraw)(\/|$)/
+            },
             {label: "Withdraw", icon: "withdraw", to: "/withdraw"},
             {label: "Timed transfer", icon: "timed", to: "/timed-transfer"}
         ]
@@ -37,7 +69,9 @@ export const NAV_GROUPS: RailNavGroup[] = [
             {
                 label: "Trade",
                 icon: "trade",
-                to: `/market/${getDefaultMarket()}`
+                to: `/market/${getDefaultMarket()}`,
+                // every market, not only the default one
+                match: /^\/market(\/|$)/
             },
             // right behind the order book: the other way to trade a pair
             {label: "Liquidity pools", icon: "pools", to: "/pools"},
@@ -56,15 +90,34 @@ export const NAV_GROUPS: RailNavGroup[] = [
         // Looking at the chain itself rather than trading on it: blocks, assets,
         // pools, accounts, witnesses, committee, markets, fees.
         label: "Network",
-        items: [{label: "Explorer", icon: "explorer", to: "/explorer"}]
+        items: [
+            {
+                label: "Explorer",
+                icon: "explorer",
+                to: "/explorer",
+                // an asset's and a block's page are the explorer's
+                match: /^\/(explorer|asset|block)(\/|$)/
+            }
+        ]
     },
     {
         // The old header's "Spotlight": a grid of the rarer features (barter,
         // HTLC, direct debit, paper wallet, ...). Nothing else links to them.
         label: "More",
         items: [
-            {label: "Spotlight", icon: "spotlight", to: "/spotlight"},
-            {label: "Help", icon: "help", to: "/help"}
+            {
+                label: "Spotlight",
+                icon: "spotlight",
+                to: "/spotlight",
+                // the features the hub links to
+                match: /^\/(spotlight|borrow|barter|direct-debit|htlc)(\/|$)/
+            },
+            {
+                label: "Help",
+                icon: "help",
+                to: "/help",
+                match: /^\/(help|news)(\/|$)/
+            }
         ]
     }
 ];
@@ -76,6 +129,7 @@ export const NAV_GROUPS: RailNavGroup[] = [
 // that the shell wraps every route, not just /next. Segments whose
 // capitalized form would read badly ("Credit-offer") get an explicit title.
 const CRUMB_TITLES: Record<string, string> = {
+    portfolio: "Portfolio",
     "credit-offer": "Credit offers",
     "samet-funds": "SameT funds",
     "timed-transfer": "Timed transfer",
@@ -101,7 +155,7 @@ const CRUMB_TITLES: Record<string, string> = {
 
 // An account's own pages: `/account/<name>/<page>` is titled by the page.
 const ACCOUNT_PAGE_TITLES: Record<string, string> = {
-    orders: "Open orders",
+    overview: "Portfolio",
     assets: "Assets",
     pools: "Liquidity pools",
     vesting: "Vesting",
@@ -117,8 +171,10 @@ export function crumbFromPath(pathname: string): string {
     const parts = pathname.split("/").filter(Boolean);
     const segment = parts[0];
     if (!segment) return "Dashboard";
-    if (segment === "account" && parts[2] && ACCOUNT_PAGE_TITLES[parts[2]]) {
-        return ACCOUNT_PAGE_TITLES[parts[2]];
+    if (segment === "account") {
+        // `/account/<name>` is the portfolio itself
+        if (!parts[2]) return "Portfolio";
+        if (ACCOUNT_PAGE_TITLES[parts[2]]) return ACCOUNT_PAGE_TITLES[parts[2]];
     }
     return (
         CRUMB_TITLES[segment] ||

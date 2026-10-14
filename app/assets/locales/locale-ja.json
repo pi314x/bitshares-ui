@@ -505,7 +505,7 @@
         "connected": "接続しました",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
-        "loading_title": "BitShares を起動しています",
+        "loading_title": "BitShares Desk を起動しています",
         "node_label": "ノード:",
         "not_connected": "接続していません",
         "retry": "再試行",

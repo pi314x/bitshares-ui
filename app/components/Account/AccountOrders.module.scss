@@ -1,25 +1,10 @@
-// The open orders as a page of its own: a title, a toolbar, and each list a
-// card - the same structure as the desk's cards. Tokens only.
+// The open orders (a tab of the portfolio): a toolbar, and each list a card -
+// the same structure as the desk's cards. Tokens only.
 .page {
     display: flex;
     flex-direction: column;
     gap: 16px;
     min-width: 0;
-}
-
-.head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-}
-
-.page .title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--ink);
 }
 
 .count {

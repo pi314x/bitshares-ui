@@ -286,9 +286,9 @@ export default function NextShellContainer({
                         value: themeNameToLegacyTheme(theme)
                     })
                 }
+                chips={<AccountBrowsingMode location={location} chip />}
                 content={
                     <>
-                        <AccountBrowsingMode location={location} />
                         {/* "Confirm this transaction": in the page, not a popup */}
                         <TransactionConfirm inline />
                         {/* and "unlock your wallet" with it */}
