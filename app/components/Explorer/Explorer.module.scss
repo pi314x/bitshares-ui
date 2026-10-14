@@ -30,6 +30,8 @@
 .pane {
     padding: 16px;
     min-width: 0;
+    // a wide table (fees, assets) scrolls inside the panel on a phone
+    overflow-x: auto;
 }
 
 .pane :global(.grid-content),

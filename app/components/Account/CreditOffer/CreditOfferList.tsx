@@ -63,6 +63,7 @@ import CreditOfferActions, {
     FEE_RATE_DENOM,
     parsingTime
 } from "../../../actions/CreditOfferActions";
+import CollateralCell from "./CollateralCell";
 import LinkToAssetById from "../../Utility/LinkToAssetById";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import moment from "moment";
@@ -219,13 +220,7 @@ function CreditOfferListCore({
             {
                 title: counterpart.translate("credit_offer.mortgage_assets"),
                 dataIndex: "acceptable_collateral",
-                render: (item: any) => {
-                    return item.map((v: any) => (
-                        <div key={v[0]}>
-                            <LinkToAssetById asset={v[0]} />
-                        </div>
-                    ));
-                }
+                render: (item: any) => <CollateralCell items={item} />
             },
             {
                 title: counterpart.translate("credit_offer.status"),

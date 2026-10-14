@@ -97,6 +97,7 @@ import {Icon as AntIcon} from "../../../design-system/Icon";
 import {Alert} from "../../../design-system/Alert";
 import assetUtils from "common/asset_utils";
 import SearchInput from "../../Utility/SearchInput";
+import CollateralCell from "./CollateralCell";
 import LinkToAssetById from "../../Utility/LinkToAssetById";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import LinkToAccountById from "../../Utility/LinkToAccountById";
@@ -397,13 +398,7 @@ function CreditOfferPage() {
                 key: "acceptable_collateral",
                 title: counterpart.translate("credit_offer.mortgage_assets"),
                 dataIndex: "acceptable_collateral",
-                render: (item: any) => {
-                    return item.map((v: any) => (
-                        <div key={v[0]}>
-                            <LinkToAssetById asset={v[0]} />
-                        </div>
-                    ));
-                }
+                render: (item: any) => <CollateralCell items={item} />
             },
             {
                 title: counterpart.translate("credit_offer.borrow"),
