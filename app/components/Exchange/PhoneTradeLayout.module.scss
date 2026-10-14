@@ -1,0 +1,105 @@
+// Phone trade screen (width < 640px), see PhoneTradeLayout.tsx.
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 12px 0 24px;
+}
+
+.card {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+// `.card .title`: the legacy sheet sizes every `h2`
+.card .title {
+    margin: 0;
+    padding: 12px 16px 0;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+}
+
+// The panels were written to be flex children of a wrapping row (`small-12`,
+// fixed paddings, their own scroll areas); in a column they just take the
+// card's width.
+.pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 8px 12px 12px;
+    box-sizing: border-box;
+
+    > * {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+// Order book and trade tables are four columns at a fixed layout; the legacy
+// 14px, on one line, cut the date off at the card's edge. Smaller, and the date
+// may break between day and time. `.pane.pane`: the theme's
+// `.darkTheme .table > tbody > tr > td` would win otherwise.
+.pane.pane :global(.table) > :global(tbody) > :global(tr) > :global(td),
+.pane.pane :global(.table) > :global(thead) > :global(tr) > :global(th) {
+    font-size: 12px;
+    white-space: normal;
+}
+
+// The order form was laid out for a 300px column: a label on the left, the
+// field on the right. A phone gets the label above the field and the field and
+// the Buy / Sell button the width of the card.
+.pane :global(.order-form) {
+    padding: 4px 0 0;
+
+    // the label and field rows wrap (`.wrap`), so the field drops under its label
+    :global(.wrap) > :global(.buy-sell-label),
+    :global(.wrap) > :global(.inputAddon),
+    :global(.grid-block) > :global(.buy-sell-label),
+    :global(.expiration-datetime-picker) {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    // the expiration row is a plain `grid-block`, which does not wrap
+    :global(.small-12.grid-block) {
+        flex-wrap: wrap;
+    }
+
+    // the date picker's anchor input is invisible but still took a row
+    :global(.expiration-datetime-picker--hidden) {
+        height: 0;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    :global(.buy-sell-label) {
+        height: auto;
+        min-height: 0;
+        padding: 10px 0 4px;
+        justify-content: flex-start;
+    }
+
+    :global(.order-submit-wrap) {
+        display: block;
+    }
+
+    :global(.order-submit) {
+        width: calc(100% - 10px);
+        min-height: 44px;
+        font-size: 15px;
+    }
+}

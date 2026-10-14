@@ -147,9 +147,9 @@ import * as React from "react";
 import {Apis} from "bitsharesjs-ws";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {Tabs} from "../../design-system/Tabs";
+import {PhoneTradeLayout, PhoneSection} from "./PhoneTradeLayout";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
-import {Collapse} from "../../design-system/Collapse";
 import cnames from "classnames";
 import translator from "counterpart";
 import guide from "intro.js";
@@ -289,7 +289,6 @@ function getInitialExchangeState(props: any) {
         hideFunctionButtons: ws.get("hideFunctionButtons", true),
         currentPeriod: ws.get("currentPeriod", 3600 * 24 * 30 * 3), // 3 months
         activePanels: ws.get("activePanels", ["left", "right"]),
-        mobileKey: [""],
         mirrorPanels: ws.get("mirrorPanels", false),
         panelTabs: ws.get("panelTabs", {
             my_history: 1,
@@ -521,9 +520,10 @@ function ExchangeInner(props: any) {
     const [activePanels, setActivePanels] = React.useState<string[]>(
         initial.current.activePanels
     );
-    const [mobileKey, setMobileKey] = React.useState<string[]>(
-        initial.current.mobileKey
-    );
+    // Phone layout: which market view (chart, depth, book, trades) and which
+    // of the user's own lists is shown; see PhoneTradeLayout.
+    const [phoneView, setPhoneView] = React.useState("tradingViewChart");
+    const [phoneOwn, setPhoneOwn] = React.useState("myOpenOrders");
     const [mirrorPanels, setMirrorPanels] = React.useState(
         initial.current.mirrorPanels
     );
@@ -782,7 +782,6 @@ function ExchangeInner(props: any) {
         setHideFunctionButtons(freshState.hideFunctionButtons);
         setCurrentPeriod(freshState.currentPeriod);
         setActivePanels(freshState.activePanels);
-        setMobileKey(freshState.mobileKey);
         setMirrorPanels(freshState.mirrorPanels);
         setPanelTabs(freshState.panelTabs);
         setPanelTabsActive(freshState.panelTabsActive);
@@ -1776,8 +1775,6 @@ function ExchangeInner(props: any) {
         return {isFrozen: false};
     };
 
-    const onChangeMobilePanel = (val: string[]) => setMobileKey(val);
-
     const {isFrozen} = isMarketFrozen();
 
     let centerContainerWidth = width;
@@ -1801,6 +1798,13 @@ function ExchangeInner(props: any) {
 
     const smallScreen = width < 850 ? true : false;
     const tinyScreen = width < 640 ? true : false;
+    // The panels a phone renders (the others are left out, not just hidden)
+    // (the settlement list only exists while the market has settle orders)
+    const phoneOwnKey =
+        phoneOwn === "settlementOrders" && marketSettleOrders.size === 0
+            ? "myOpenOrders"
+            : phoneOwn;
+    const mobileKey = tinyScreen ? [phoneView, "buySellTab", phoneOwnKey] : [];
 
     const effectiveHideScrollbars = tinyScreen ? true : hideScrollbars;
 
@@ -2895,83 +2899,86 @@ function ExchangeInner(props: any) {
             </div>
         );
     } else {
+        const own: PhoneSection[] = [
+            {
+                key: "myOpenOrders",
+                label: translator.translate("exchange.my_orders"),
+                content: myOpenOrders
+            },
+            {
+                key: "myMarketHistory",
+                label: translator.translate("exchange.my_history"),
+                content: myMarketHistory
+            },
+            ...(marketSettleOrders.size > 0
+                ? [
+                      {
+                          key: "settlementOrders",
+                          label: translator.translate("exchange.settle_orders"),
+                          content: settlementOrders
+                      }
+                  ]
+                : []),
+            {
+                key: "myMarkets",
+                label: translator.translate("exchange.market_name"),
+                content: (
+                    <>
+                        <Tabs
+                            defaultActiveKey="my-market"
+                            activeKey={tabVerticalPanel}
+                            onChange={(tab: any) =>
+                                setTabVerticalPanelState(tab)
+                            }
+                        >
+                            <Tabs.TabPane
+                                tab={translator.translate(
+                                    "exchange.market_name"
+                                )}
+                                key="my-market"
+                            />
+                            <Tabs.TabPane
+                                tab={translator.translate("exchange.more")}
+                                key="find-market"
+                            />
+                        </Tabs>
+                        {myMarkets}
+                    </>
+                )
+            }
+        ];
         actionCards = (
-            <Collapse
-                activeKey={mobileKey}
-                onChange={(val: any) => onChangeMobilePanel(val)}
-                style={{paddingRight: 8}}
-            >
-                <Collapse.Panel
-                    header={translator.translate("exchange.price_history")}
-                    key="tradingViewChart"
-                >
-                    {tradingViewChart}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.order_depth")}
-                    key="deptHighChart"
-                >
-                    {deptHighChart}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.buy_sell")}
-                    key="buySellTab"
-                >
-                    {buySellTab}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.order_book")}
-                    key="orderBook"
-                >
-                    {orderBook}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.history")}
-                    key="marketHistory"
-                >
-                    {marketHistory}
-                </Collapse.Panel>
-                {settlementOrders !== null ? (
-                    <Collapse.Panel
-                        header={translator.translate("exchange.settle_orders")}
-                        key="settlementOrders"
-                    >
-                        {settlementOrders}
-                    </Collapse.Panel>
-                ) : null}
-                <Collapse.Panel
-                    header={translator.translate("exchange.my_history")}
-                    key="myMarketHistory"
-                >
-                    {myMarketHistory}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.my_orders")}
-                    key="myOpenOrders"
-                >
-                    {myOpenOrders}
-                </Collapse.Panel>
-                <Collapse.Panel
-                    header={translator.translate("exchange.market_name")}
-                    key="myMarkets"
-                >
-                    <Tabs
-                        defaultActiveKey="my-market"
-                        activeKey={tabVerticalPanel}
-                        onChange={(tab: any) => setTabVerticalPanelState(tab)}
-                    >
-                        <Tabs.TabPane
-                            tab={translator.translate("exchange.market_name")}
-                            key="my-market"
-                        />
-                        <Tabs.TabPane
-                            tab={translator.translate("exchange.more")}
-                            key="find-market"
-                        />
-                    </Tabs>
-                    {myMarkets}
-                </Collapse.Panel>
-            </Collapse>
+            <PhoneTradeLayout
+                views={[
+                    {
+                        key: "tradingViewChart",
+                        label: translator.translate("exchange.price_history"),
+                        content: tradingViewChart
+                    },
+                    {
+                        key: "deptHighChart",
+                        label: translator.translate("exchange.order_depth"),
+                        content: deptHighChart
+                    },
+                    {
+                        key: "orderBook",
+                        label: translator.translate("exchange.order_book"),
+                        content: orderBook
+                    },
+                    {
+                        key: "marketHistory",
+                        label: translator.translate("exchange.history"),
+                        content: marketHistory
+                    }
+                ]}
+                activeView={phoneView}
+                onView={setPhoneView}
+                formTitle={translator.translate("exchange.buy_sell")}
+                form={buySellTab}
+                own={own}
+                activeOwn={phoneOwnKey}
+                onOwn={setPhoneOwn}
+            />
         );
     }
 
@@ -3205,13 +3212,6 @@ function ExchangeInner(props: any) {
                         className="grid-block vertical no-padding ps-container"
                         id="CenterContent"
                         ref={centerRef}
-                        data-intro={
-                            tinyScreen
-                                ? translator.translate(
-                                      "walkthrough.collapsed_items"
-                                  )
-                                : null
-                        }
                     >
                         {!tinyScreen ? (
                             <div>

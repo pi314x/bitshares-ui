@@ -1267,14 +1267,15 @@ function BuySellInner(props: BuySellProps) {
                             <div style={{marginTop: 10}}>
                                 <div>
                                     <Tooltip
+                                        className="order-submit-wrap"
                                         placement="top"
                                         title={disabledText ? disabledText : ""}
                                     >
                                         <Button
                                             className={
                                                 disabled
-                                                    ? undefined
-                                                    : buttonClass
+                                                    ? "order-submit"
+                                                    : `order-submit ${buttonClass}`
                                             }
                                             disabled={disabled}
                                             onClick={(e: any) =>
