@@ -237,7 +237,7 @@ export default function Accounts() {
     return (
         <div className="grid-block vertical">
             <div className="grid-block vertical">
-                <div className="grid-block main-content small-12 medium-10 medium-offset-1 main-content vertical">
+                <div className="grid-block main-content small-12 vertical">
                     <div className="generic-bordered-box">
                         <Toolbar>
                             <Toolbar.Grow>

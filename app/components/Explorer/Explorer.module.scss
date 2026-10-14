@@ -23,3 +23,17 @@
     border-radius: 10px;
     overflow: hidden;
 }
+
+// The inset every tab keeps from the edge of the panel: 16px, whatever the
+// screen inside draws. The tabs' own wrappers (Foundation's `.grid-content` has
+// 24px, the markets list 20px) used to add to it, so each tab sat differently.
+.pane {
+    padding: 16px;
+    min-width: 0;
+}
+
+.pane :global(.grid-content),
+.pane :global(.grid-wrapper) {
+    padding-left: 0;
+    padding-right: 0;
+}

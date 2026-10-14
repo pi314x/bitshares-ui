@@ -21,34 +21,13 @@ import * as React from "react";
 import MyMarkets from "./MyMarkets";
 
 export default function MarketsContainer() {
-    const wrapperRef = React.useRef<HTMLDivElement>(null);
-    const [height, setHeight] = React.useState<number | null>(null);
-
-    const setDimensions = React.useCallback(() => {
-        const newHeight = wrapperRef.current
-            ? wrapperRef.current.offsetHeight
-            : null;
-        setHeight((prev: number | null) =>
-            newHeight !== prev ? newHeight : prev
-        );
-    }, []);
-
-    React.useEffect(() => {
-        window.addEventListener("resize", setDimensions, {
-            capture: false,
-            passive: true
-        } as any);
-        setDimensions();
-        return () => {
-            window.removeEventListener("resize", setDimensions);
-        };
-    }, [setDimensions]);
-
     return (
-        <div ref={wrapperRef} className="grid-block no-overflow">
+        <div className="grid-block vertical no-overflow">
             <MyMarkets
-                style={{width: "100%", padding: 20}}
-                listHeight={height ? height : null}
+                style={{width: "100%"}}
+                // no height of its own: the list is as long as it is and the
+                // page scrolls, not a box inside the page
+                autoHeight
                 className="no-overflow"
                 headerStyle={{paddingTop: 0, borderTop: "none"}}
                 tabHeader={true}

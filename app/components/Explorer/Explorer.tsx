@@ -131,7 +131,7 @@ export default function Explorer() {
                         key={tab.link}
                         tab={counterpart.translate(tab.translate)}
                     >
-                        <div className="padding">
+                        <div className={styles.pane}>
                             <TabContent />
                         </div>
                     </Tabs.TabPane>

@@ -136,6 +136,7 @@ import {ChainValidation, ChainStore} from "bitsharesjs";
 import debounceRender from "react-debounce-render";
 import {getPossibleGatewayPrefixes, gatewayPrefixes} from "common/gateways";
 import QuoteSelectionModal from "./QuoteSelectionModal";
+import styles from "./MyMarkets.module.scss";
 import SearchInputUntyped from "../Utility/SearchInput";
 
 // SearchInput.jsx declares its optional props only via a separate
@@ -458,6 +459,8 @@ interface MyMarketsProps {
     onlyLiquid?: boolean;
     onlyStars?: boolean;
     listHeight?: any;
+    /** No fixed height: the list is as long as it is (the page scrolls). */
+    autoHeight?: boolean;
     columns: any[];
     findColumns?: any[];
     current?: string;
@@ -484,6 +487,7 @@ function MyMarketsInner(props: MyMarketsProps) {
         onlyLiquid,
         onlyStars,
         listHeight,
+        autoHeight,
         columns,
         findColumns,
         current,
@@ -904,7 +908,11 @@ function MyMarketsInner(props: MyMarketsProps) {
         minWidth: minWidth,
         minHeight: "6rem"
     };
-    if (listHeight) {
+    if (autoHeight) {
+        // the list is as long as it is; the page scrolls, not the list
+        listStyle.height = "auto";
+        listStyle.overflow = "visible";
+    } else if (listHeight) {
         listStyle.height = listHeight;
     }
 
@@ -913,7 +921,7 @@ function MyMarketsInner(props: MyMarketsProps) {
             {tabHeader ? (
                 <div
                     style={headerStyle}
-                    className="grid-block shrink left-orderbook-header bottom-header"
+                    className={`grid-block shrink left-orderbook-header bottom-header ${styles.tabHeader}`}
                 >
                     <div
                         className={starClass}
@@ -954,19 +962,15 @@ function MyMarketsInner(props: MyMarketsProps) {
             ) : null}
 
             {myMarketTab ? (
-                <div
-                    className="grid-block vertical shrink"
-                    style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "0 0.5rem 0.75rem 0.5rem"
-                    }}
-                >
-                    <div>
-                        <label style={{margin: "3px 0 0"}}>
+                <div className={styles.controls}>
+                    <div className={styles.toggles}>
+                        <label
+                            className={`${styles.toggle} ${
+                                onlyLiquid ? styles.toggleOn : ""
+                            }`}
+                        >
                             <input
-                                style={{position: "relative", top: 3}}
-                                className="no-margin"
+                                className={styles.check}
                                 type="checkbox"
                                 checked={onlyLiquid}
                                 onChange={() => {
@@ -975,112 +979,85 @@ function MyMarketsInner(props: MyMarketsProps) {
                                     });
                                 }}
                             />
-                            <span style={{paddingLeft: "0.4rem"}}>
-                                <Translate content="exchange.show_only_liquid" />
-                            </span>
+                            <Translate content="exchange.show_only_liquid" />
                         </label>
-                        <label style={{margin: "3px 0 0"}}>
+                        <label
+                            className={`${styles.toggle} ${
+                                onlyStars ? styles.toggleOn : ""
+                            }`}
+                        >
                             <input
-                                style={{position: "relative", top: 3}}
-                                className="no-margin"
+                                className={styles.check}
                                 type="checkbox"
                                 checked={onlyStars}
                                 onChange={() => {
                                     MarketsActions.toggleStars();
                                 }}
                             />
-                            <span style={{paddingLeft: "0.4rem"}}>
-                                <TranslateWithLinks
-                                    string="exchange.show_only_star_formatter"
-                                    keys={[
-                                        {
-                                            type: "icon",
-                                            value: "fi-star",
-                                            className: "gold-star",
-                                            arg: "star_icon"
-                                        }
-                                    ]}
-                                />
-                            </span>
+                            <TranslateWithLinks
+                                string="exchange.show_only_star_formatter"
+                                keys={[
+                                    {
+                                        type: "icon",
+                                        value: "fi-star",
+                                        className: "gold-star",
+                                        arg: "star_icon"
+                                    }
+                                ]}
+                            />
                         </label>
-                        <br />
                     </div>
-                    <div className="search-wrapper">
-                        <form>
-                            <div className="filter inline-block">
-                                <SearchInput
-                                    style={{
-                                        fontSize: "0.9rem",
-                                        height: "inherit",
-                                        position: "relative"
-                                    }}
-                                    className="no-margin market-filter-input"
-                                    value={myMarketFilter}
-                                    onChange={handleSearchUpdate}
-                                />
-                            </div>
-                        </form>
-                    </div>
+                    <form
+                        className={styles.search}
+                        onSubmit={e => e.preventDefault()}
+                    >
+                        <SearchInput
+                            style={{width: "100%"}}
+                            className="no-margin market-filter-input"
+                            value={myMarketFilter}
+                            onChange={handleSearchUpdate}
+                        />
+                    </form>
                 </div>
             ) : (
-                <div
-                    style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "0.75rem 0.5rem"
-                    }}
-                >
-                    <table>
-                        <tbody>
-                            <tr style={{width: "100%"}}>
-                                <td>
-                                    <AssetSelector
-                                        onAssetSelect={onFoundBaseAsset}
-                                        assets={defaultBases}
-                                        onChange={onInputBaseAsset}
-                                        asset={findBaseInput}
-                                        assetInput={findBaseInput}
-                                        tabIndex={1}
-                                        style={{
-                                            width: "100%",
-                                            paddingBottom: "1.5rem"
-                                        }}
-                                        onFound={onFoundBaseAsset}
-                                        label="exchange.quote"
-                                        noLabel
-                                        inputStyle={{fontSize: "0.9rem"}}
-                                    />
-                                </td>
-                            </tr>
-                            <tr style={{width: "100%"}}>
-                                <td>
-                                    <label>
-                                        <Translate content="account.user_issued_assets.name" />
-                                        :
-                                    </label>
-                                    <input
-                                        style={{
-                                            fontSize: "0.9rem",
-                                            position: "relative",
-                                            top: 1
-                                        }}
-                                        type="text"
-                                        value={inputValue}
-                                        onChange={e => onInputName(true, e)}
-                                        placeholder={counterpart.translate(
-                                            "exchange.search"
-                                        )}
-                                        maxLength={16}
-                                        tabIndex={2}
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div className={styles.controls}>
+                    <div className={styles.findField}>
+                        <AssetSelector
+                            onAssetSelect={onFoundBaseAsset}
+                            assets={defaultBases}
+                            onChange={onInputBaseAsset}
+                            asset={findBaseInput}
+                            assetInput={findBaseInput}
+                            tabIndex={1}
+                            style={{width: "100%"}}
+                            onFound={onFoundBaseAsset}
+                            label="exchange.quote"
+                            noLabel
+                            inputStyle={{fontSize: "0.9rem"}}
+                        />
+                    </div>
+                    <label className={styles.findField}>
+                        <span className={styles.fieldLabel}>
+                            <Translate content="account.user_issued_assets.name" />
+                        </span>
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={e => onInputName(true, e)}
+                            placeholder={counterpart.translate(
+                                "exchange.search"
+                            )}
+                            maxLength={16}
+                            tabIndex={2}
+                        />
+                    </label>
                 </div>
             )}
 
-            <ul className="mymarkets-tabs" style={{marginBottom: 0}}>
+            <ul
+                className={`mymarkets-tabs ${styles.quoteTabs}`}
+                style={{marginBottom: 0}}
+            >
                 {/* Quote edit tab */}
                 {myMarketTab && (
                     <li
