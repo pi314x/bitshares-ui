@@ -98,7 +98,10 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   TypeScript syntax (it drops `catch (e: any)` annotations; `tsconfig.json`
   sets `useUnknownInCatchVariables: false` so that is harmless). Format only
   files you author or touch; do not run it over the whole tree, and do not
-  upgrade it as a side effect.
+  upgrade it as a side effect. It also cannot parse `export type {...} from`
+  (the pre-commit hook fails); import the types from their defining module.
+- `.gitignore` has a broad `assets` rule: anything new under `app/assets/**` or
+  `app/help/*/assets/**` needs `git add -f`, or it is dropped silently.
 - Standalone preview of an `app/next` screen, without booting the full
   legacy app shell (which blocks on a live blockchain connection): `yarn
   build-preview`, then serve `build/preview/`. Use this to screenshot new

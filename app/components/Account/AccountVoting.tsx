@@ -711,8 +711,8 @@ function AccountVoting({
                 <AccountSelector
                     label="account.votes.proxy_short"
                     style={{
-                        width: "50%",
-                        maxWidth: 250,
+                        // 50% of a shrink-wrapped parent was ~100px on a phone
+                        width: "min(100%, 250px)",
                         display: "inline-block"
                     }}
                     account={state.current_proxy_input}

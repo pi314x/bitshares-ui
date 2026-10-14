@@ -12630,7 +12630,71 @@ differently from English.
   iOS browsers no longer get "Unsupported browser".
 - **Left rail** 232px -> 184px.
 - **Not verified:** the trade page's phone layout (the Exchange does not load
-  data in the sandbox), and the built-in chart against live data.
+  data in the sandbox), and the built-in chart against live data. (Both were
+  checked against a live node afterwards, see §7.18.)
+
+### 7.18 Timed transfer, phone screens, balance chart, extension accounts
+
+What changed after §7.17, in the order a user meets it.
+
+- **Timed transfer** (`/timed-transfer`, menu group *Payments* next to Send,
+  Deposit and Withdraw). BitShares has no scheduled-transfer operation; the
+  working primitive is `vesting_balance_create` (op 32) with a linear policy
+  whose cliff equals its duration, so the amount leaves the sender now and the
+  recipient can claim it only after the chosen moment. The pure arithmetic is in
+  `lib/common/timedTransfer.ts`, the dialog in `components/Account/TimedTransfer*`.
+  The extension serializes op 32 already (`[0, {begin_timestamp,
+  vesting_cliff_seconds, vesting_duration_seconds}]`). **Not broadcast-tested**
+  against a live chain from this environment.
+- **Balance over time** (`components/Account/BalanceHistoryChart.tsx`, shown on
+  the dashboard and the account overview). The series is rebuilt backwards from
+  the current balance through the account's operation history
+  (`lib/common/balanceHistory.ts`): transfers, fills (gross receive less market
+  fee), order create / cancel / expiry (an expiry's refund is the order's
+  remaining amount, tracked from its creation and fills), vesting, margin,
+  issuing, and pool and exchange operations via their `paid / received / fees`
+  result. What an operation touched but could not be read is counted and shown,
+  never guessed. Orders still open are read from `get_full_accounts` and drawn
+  as a dashed "available + in orders" line with the amount in the header. The
+  first load reads five pages of 100 operations; "Load older" reads more. The
+  node returns what it keeps: `node.xbts.io` returned exactly 100 operations for
+  the test account, so that is the depth there.
+- **Recent activity** shows up to 100 operations on the dashboard (it was 10) and
+  has "Load older": `lib/chain/extendAccountHistory.ts` asks the node for the
+  next page below the oldest operation the store holds and appends it to the
+  account's `history` in the ChainStore, so every screen that reads it (and the
+  export) sees the same list. The button hides itself once the node has nothing
+  older.
+- **Wallet extension and accounts.** While the extension is the signer its
+  account is the default current account (also in cloud-wallet mode, where the
+  password account used to pin the choice) and is not remembered, so removing
+  the extension never leaves an account the app cannot sign for. The account
+  switcher lists the extension's account, marked "Extension", next to the local
+  wallet's accounts and switches both ways; local accounts still sign locally.
+  Checked in the built bundle with a stub `window.bitsharesWallet`.
+- **Explorer** opens on the Blockchain tab, or the tab used last
+  (`Explorer/explorerTabs.ts`). The tab panel no longer forces `display: table`:
+  it made the page as wide as its widest cell (712px) on a phone.
+- **Phone trade screen** (`Exchange/PhoneTradeLayout.tsx`, below 640px). The
+  accordion of eight closed headings is three cards: the market (chart, depth,
+  order book, trades; one at a time), the order form with its Buy / Sell switch,
+  and the user's own orders / trades / markets. The form is re-laid out for the
+  width (label above field, full-width Buy / Sell). Only the shown panels render.
+- **Legacy screens** (`design-system/legacy-layout.scss`): `.grid-block.vertical`
+  is a wrapping column, so one wide table or filter row widened the whole block
+  (Pools was 1105px wide on a phone); its items are capped at the container's
+  width. The account pages' action buttons, prediction markets' filter row and
+  AccountSelector's width were fixed the same way; Barter, Borrow and the witness
+  figures were restructured. Topbar titles name hyphenated screens properly.
+- **iOS Safari.** There is no `window.Notification` there; the notification code
+  checks (`browserNotificationsSupported()`), and `index.js` shows a crash screen
+  with the error instead of a black page. The document scrolls (no inner
+  scrollers on the page), tab strips scroll inside themselves, and the bundle
+  needs iOS 14.5 or later (class fields; `.babelrc` targets the current Node).
+- **Verified here** with the built bundle in Chromium's iPhone emulation against
+  a live node (`scripts/smoke-boot.py --viewport 390x844 --layout`): no sideways
+  overflow on the 36 routes tried. **Not verified:** real WebKit (not installed
+  in the sandbox), so Safari-specific rendering is by inspection only.
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
