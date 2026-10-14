@@ -1,12 +1,13 @@
-// Seven days of price shape for a handful of markets: 6-hour buckets from the
-// node's market history, fetched a few at a time and kept for a few minutes so
-// that switching tabs does not ask again.
+// Seven days of price shape for a handful of markets: hourly buckets from the
+// node's market history (the node keeps 15s, 1m, 5m, 30m, 1h and 1d buckets; an
+// in-between size such as 6h answers with nothing), fetched a few at a time and
+// kept for a few minutes so that switching tabs does not ask again.
 import * as React from "react";
 import {Apis} from "bitsharesjs-ws";
 import {ChainStore} from "bitsharesjs";
 import {bucketPrices} from "../../lib/common/sparkline";
 
-const BUCKET_SECONDS = 6 * 3600;
+const BUCKET_SECONDS = 3600;
 const DAYS = 7;
 const TTL_MS = 5 * 60 * 1000;
 const CONCURRENCY = 3;

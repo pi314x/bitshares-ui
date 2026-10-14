@@ -297,6 +297,7 @@ function Attention({
 
 const SHOWN_ROWS = 8;
 const VESTING_SHOWN = 4;
+const POOLS_SHOWN = 5;
 
 function Holdings({
     data,
@@ -434,7 +435,19 @@ function Positions({
                   minute: "2-digit"
               })
             : null;
-    const claimable = data.vesting.filter(v => v.amount > 0);
+    // one row per asset: an account can hold dozens of small balances
+    const claimableBySymbol: {[symbol: string]: number} = {};
+    data.vesting.forEach(v => {
+        if (v.amount > 0) {
+            claimableBySymbol[v.symbol] =
+                (claimableBySymbol[v.symbol] || 0) + v.amount;
+        }
+    });
+    const claimable = Object.keys(claimableBySymbol).map(symbol => ({
+        id: symbol,
+        symbol,
+        amount: claimableBySymbol[symbol]
+    }));
 
     return (
         <>
@@ -474,7 +487,7 @@ function Positions({
                     <TypedLink to="/pools">{t("open")}</TypedLink>
                 </div>
                 {data.pools.length ? (
-                    data.pools.map(pool => (
+                    data.pools.slice(0, POOLS_SHOWN).map(pool => (
                         <div className={styles.row} key={pool.id}>
                             <span>
                                 {pool.symbolA} / {pool.symbolB}
@@ -494,6 +507,15 @@ function Positions({
                 ) : (
                     <div className={styles.muted}>{t("pools_none")}</div>
                 )}
+                {data.pools.length > POOLS_SHOWN ? (
+                    <div className={styles.muted}>
+                        <TypedLink to="/pools">
+                            {t("more_n", {
+                                count: data.pools.length - POOLS_SHOWN
+                            })}
+                        </TypedLink>
+                    </div>
+                ) : null}
             </div>
 
             <div className={styles.section}>
@@ -708,15 +730,17 @@ export default function Desk({
 
             {cards.activity && data.accountId ? (
                 <Card title={t("activity")} flush>
-                    <TypedRecent
-                        accountsList={accountList}
-                        compactView={true}
-                        showMore={true}
-                        fullHeight={true}
-                        limit={10}
-                        showFilters={false}
-                        dashboard
-                    />
+                    <div className={styles.activity}>
+                        <TypedRecent
+                            accountsList={accountList}
+                            compactView={true}
+                            showMore={true}
+                            fullHeight={true}
+                            limit={10}
+                            showFilters={false}
+                            dashboard
+                        />
+                    </div>
                 </Card>
             ) : null}
 

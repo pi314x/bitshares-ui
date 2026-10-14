@@ -394,3 +394,15 @@
     justify-content: flex-end;
     gap: 12px;
 }
+
+// The activity list is a wide table: it scrolls inside its card instead of
+// being cut off, and on a phone loses the operation id, which says little.
+.activity {
+    overflow-x: auto;
+}
+
+@media (max-width: 560px) {
+    .activity.activity :global(table) :global(tr) > :first-child {
+        display: none;
+    }
+}
