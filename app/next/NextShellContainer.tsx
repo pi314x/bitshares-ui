@@ -151,7 +151,18 @@ export default function NextShellContainer({
             : undefined;
 
     const currentAccount = account.currentAccount || account.passwordAccount;
-    const accounts = account.myActiveAccounts.toArray();
+    // The extension's account is one of the choices while it is the signer (its
+    // keys are not in the local wallet, so it is not in `myActiveAccounts`).
+    // Accounts of the local wallet stay selectable and sign locally.
+    const extensionAccount =
+        extensionSigning && externalSigner.account
+            ? externalSigner.account.accountName
+            : null;
+    const localAccounts = account.myActiveAccounts.toArray();
+    const accounts =
+        extensionAccount && !localAccounts.includes(extensionAccount)
+            ? [extensionAccount, ...localAccounts]
+            : localAccounts;
     const activeNode = settings.settings.get("activeNode") as string | null;
     const themeValue = legacyThemeToThemeName(settings.settings.get("themes"));
 
@@ -193,6 +204,11 @@ export default function NextShellContainer({
                 accounts={accounts}
                 onSelectAccount={name =>
                     AccountActions.setCurrentAccount.defer(name)
+                }
+                accountBadges={
+                    extensionAccount
+                        ? {[extensionAccount]: "Extension"}
+                        : undefined
                 }
                 connectionStatus={blockchain.rpc_connection_status}
                 activeNode={activeNode}

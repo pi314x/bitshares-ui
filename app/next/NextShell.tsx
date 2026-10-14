@@ -26,6 +26,7 @@ export interface NextShellProps {
     currentAccount: string | null;
     accounts: string[];
     onSelectAccount: (accountName: string) => void;
+    accountBadges?: Record<string, string>;
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -60,6 +61,7 @@ function ShellChrome({
     currentAccount,
     accounts,
     onSelectAccount,
+    accountBadges,
     locked,
     onToggleLock,
     lockLabel,
@@ -124,6 +126,7 @@ function ShellChrome({
                     currentAccount={currentAccount}
                     accounts={accounts}
                     onSelectAccount={onSelectAccount}
+                    accountBadges={accountBadges}
                     locked={locked}
                     onToggleLock={onToggleLock}
                     lockLabel={lockLabel}

@@ -18,6 +18,7 @@ export interface TopbarProps {
     currentAccount: string | null;
     accounts: string[];
     onSelectAccount: (accountName: string) => void;
+    accountBadges?: Record<string, string>;
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -49,6 +50,7 @@ export function Topbar({
     currentAccount,
     accounts,
     onSelectAccount,
+    accountBadges,
     locked,
     onToggleLock,
     lockLabel,
@@ -132,6 +134,7 @@ export function Topbar({
                     currentAccount={currentAccount}
                     accounts={accounts}
                     onSelect={onSelectAccount}
+                    badges={accountBadges}
                 />
             </div>
         </header>

@@ -40,4 +40,19 @@ describe("design-system/AccountSwitcher", () => {
         fireEvent.click(getByText("No account"));
         expect(getByText("No accounts")).toBeTruthy();
     });
+
+    it("marks an account with its badge in the menu", () => {
+        const {getByText, getAllByRole} = render(
+            <AccountSwitcher
+                currentAccount="init0"
+                accounts={["wallet-acct", "init0"]}
+                badges={{"wallet-acct": "Extension"}}
+                onSelect={() => {}}
+            />
+        );
+        fireEvent.click(getByText("init0"));
+        const items = getAllByRole("menuitem");
+        expect(items[0].textContent).toBe("wallet-acctExtension");
+        expect(items[1].textContent).toBe("init0");
+    });
 });

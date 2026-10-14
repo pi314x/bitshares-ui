@@ -7,6 +7,8 @@ export interface AccountSwitcherProps {
     /** The accounts this browser holds keys for (AccountStore's myActiveAccounts). */
     accounts: string[];
     onSelect: (accountName: string) => void;
+    /** A short note shown next to an account ("Extension"), by account name. */
+    badges?: Record<string, string>;
 }
 
 // Replaces the legacy Header's account dropdown for the new shell. Reads
@@ -17,7 +19,8 @@ export interface AccountSwitcherProps {
 export function AccountSwitcher({
     currentAccount,
     accounts,
-    onSelect
+    onSelect,
+    badges
 }: AccountSwitcherProps): JSX.Element {
     const [open, setOpen] = React.useState(false);
     const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
@@ -57,6 +60,11 @@ export function AccountSwitcher({
                                 }}
                             >
                                 {name}
+                                {badges && badges[name] ? (
+                                    <span className={styles.badge}>
+                                        {badges[name]}
+                                    </span>
+                                ) : null}
                             </button>
                         ))
                     )}
