@@ -92,6 +92,13 @@ describe("topbar title", () => {
         expect(crumbFromPath("/voting")).toBe("Voting");
     });
 
+    it("spells out the hyphenated and abbreviated screens", () => {
+        expect(crumbFromPath("/create-worker")).toBe("Create worker");
+        expect(crumbFromPath("/deposit-withdraw")).toBe("Deposit & withdraw");
+        expect(crumbFromPath("/direct-debit")).toBe("Direct debit");
+        expect(crumbFromPath("/htlc")).toBe("HTLC");
+    });
+
     it("keeps the capitalized-segment fallback", () => {
         expect(crumbFromPath("/")).toBe("Dashboard");
         expect(crumbFromPath("/market/BTS_USD")).toBe("Market");

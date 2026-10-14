@@ -66,7 +66,20 @@ const CRUMB_TITLES: Record<string, string> = {
     "samet-funds": "SameT funds",
     "timed-transfer": "Timed transfer",
     "instant-trade": "Instant trade",
-    prediction: "Prediction markets"
+    prediction: "Prediction markets",
+    "create-worker": "Create worker",
+    "deposit-withdraw": "Deposit & withdraw",
+    "direct-debit": "Direct debit",
+    htlc: "HTLC",
+    "create-account": "Create account",
+    "create-wallet-brainkey": "Create wallet",
+    "existing-account": "Existing account",
+    registration: "Create account",
+    login: "Log in",
+    wallet: "Wallet",
+    invoice: "Invoice",
+    asset: "Asset",
+    block: "Block"
 };
 
 export function crumbFromPath(pathname: string): string {
