@@ -189,6 +189,9 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
     const previousRef = React.useRef<any>(null);
 
     const focusDiv = () => {
+        // Focus is for the arrow-key navigation below; a touch screen has no
+        // arrow keys, and focusing the button opened its tooltip over the text.
+        if (window.innerWidth <= 800) return;
         const current = state.step;
         if (current < STEPS.length && !!nextRef.current) {
             // eslint-disable-next-line react/no-find-dom-node
@@ -335,8 +338,9 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
         >
             <Card
                 style={{
-                    borderRadius: "50px",
-                    width: "70%",
+                    // a card, not a pill: 50px corners and 70% of the width
+                    // left a phone a 250px column of text
+                    width: tinyScreen ? "100%" : "70%",
                     maxWidth: "70rem",
                     paddingTop: "1rem",
                     paddingBottom: "1rem"

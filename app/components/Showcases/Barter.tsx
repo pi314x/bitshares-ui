@@ -252,6 +252,15 @@ function referenceErrorLikeOriginal(name: string): never {
     throw new ReferenceError(`${name} is not defined`);
 }
 
+// A `Col` without a span is as wide as its content in the flex `Row`; these
+// hold a card each, which should take the row (the cards of Peer 1 and Peer 2
+// were two different widths on a phone).
+const FULL_ROW_COL: React.CSSProperties = {
+    padding: "10px",
+    flex: "1 1 100%",
+    minWidth: 0
+};
+
 interface BarterBarterItem {
     index?: number;
     from_amount?: any;
@@ -1328,7 +1337,11 @@ export default function Barter(props: BarterProps) {
 
     const account_from = (
         <Card style={{borderRadius: "10px"}}>
-            <Translate content={"showcases.barter.peer_left"} />
+            <Translate
+                component="h4"
+                style={{margin: "0 0 0.5rem"}}
+                content={"showcases.barter.peer_left"}
+            />
             <AccountSelector
                 label="showcases.barter.account"
                 placeholder="placeholder"
@@ -1367,7 +1380,11 @@ export default function Barter(props: BarterProps) {
 
     const account_to = (
         <Card style={{borderRadius: "10px"}}>
-            <Translate content={"showcases.barter.peer_right"} />
+            <Translate
+                component="h4"
+                style={{margin: "0 0 0.5rem"}}
+                content={"showcases.barter.peer_right"}
+            />
             <AccountSelector
                 label="showcases.barter.account"
                 placeholder="placeholder"
@@ -1515,7 +1532,11 @@ export default function Barter(props: BarterProps) {
 
     const totalFeeFrom = (
         <Card style={{borderRadius: "10px"}}>
-            <Translate content={"showcases.barter.peer_left"} />
+            <Translate
+                component="h4"
+                style={{margin: "0 0 0.5rem"}}
+                content={"showcases.barter.peer_left"}
+            />
             <Tooltip
                 title={counterpart.translate(
                     state.send_to_escrow
@@ -1586,7 +1607,11 @@ export default function Barter(props: BarterProps) {
 
     const totalFeeTo = (
         <Card style={{borderRadius: "10px"}}>
-            <Translate content={"showcases.barter.peer_right"} />
+            <Translate
+                component="h4"
+                style={{margin: "0 0 0.5rem"}}
+                content={"showcases.barter.peer_right"}
+            />
             <Tooltip
                 title={counterpart.translate(
                     "showcases.barter.fee_when_proposal_executes_tooltip"
@@ -1766,40 +1791,38 @@ export default function Barter(props: BarterProps) {
                 {smallScreen ? (
                     <div>
                         <Row>
-                            <Col style={{padding: "10px"}}>{intro}</Col>
+                            <Col style={FULL_ROW_COL}>{intro}</Col>
                         </Row>
                         <Row>
-                            <Col style={{padding: "10px"}}>{account_from}</Col>
+                            <Col style={FULL_ROW_COL}>{account_from}</Col>
                         </Row>
                         <Row>
-                            <Col style={{padding: "10px"}}>{account_to}</Col>
+                            <Col style={FULL_ROW_COL}>{account_to}</Col>
                         </Row>
                         <Row>
-                            <Col style={{padding: "10px"}}>{offers}</Col>
+                            <Col style={FULL_ROW_COL}>{offers}</Col>
                         </Row>
                         {escrow && (
                             <Row>
-                                <Col style={{padding: "10px"}}>{escrow}</Col>
+                                <Col style={FULL_ROW_COL}>{escrow}</Col>
                             </Row>
                         )}
                         <Row>
-                            <Col style={{padding: "10px"}}>{totalFeeFrom}</Col>
+                            <Col style={FULL_ROW_COL}>{totalFeeFrom}</Col>
                         </Row>
                         <Row>
-                            <Col style={{padding: "10px"}}>{totalFeeTo}</Col>
+                            <Col style={FULL_ROW_COL}>{totalFeeTo}</Col>
                         </Row>
                         {feeForEscrow != null && (
                             <Row>
-                                <Col style={{padding: "10px"}}>
-                                    {feeForEscrow}
-                                </Col>
+                                <Col style={FULL_ROW_COL}>{feeForEscrow}</Col>
                             </Row>
                         )}
                     </div>
                 ) : (
                     <div>
                         <Row>
-                            <Col style={{padding: "10px"}}>{intro}</Col>
+                            <Col style={FULL_ROW_COL}>{intro}</Col>
                         </Row>
                         <Row>
                             <Col span={12} style={{padding: "10px"}}>
@@ -1810,11 +1833,11 @@ export default function Barter(props: BarterProps) {
                             </Col>
                         </Row>
                         <Row>
-                            <Col style={{padding: "10px"}}>{offers}</Col>
+                            <Col style={FULL_ROW_COL}>{offers}</Col>
                         </Row>
                         {escrow && (
                             <Row>
-                                <Col style={{padding: "10px"}}>{escrow}</Col>
+                                <Col style={FULL_ROW_COL}>{escrow}</Col>
                             </Row>
                         )}
                         <Row>
