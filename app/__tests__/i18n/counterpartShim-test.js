@@ -9,7 +9,12 @@
 // that redirects the bare `"counterpart"` specifier to the shim
 // everywhere else) - it stays a devDependency for exactly this
 // purpose, never shipped in the app bundle.
-import realCounterpartModule from "../../../node_modules/counterpart/index.js";
+// `util.isDate` is gone from Node 23 on, and the real package still calls it.
+const nodeUtil = require("util");
+if (typeof nodeUtil.isDate !== "function") {
+    nodeUtil.isDate = value => value instanceof Date;
+}
+const realCounterpartModule = require("../../../node_modules/counterpart/index.js");
 import shimCounterpartModule from "lib/i18n/counterpartShim";
 
 const localeEn = require("../../assets/locales/locale-en.json");
