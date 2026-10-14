@@ -7,6 +7,54 @@
 .main {
     flex: 1;
     min-width: 0;
+    // the content grows, the status bar is the last row
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// The status bar: node and block, bottom right. It is the last row of the
+// page: in the flow after the content (so it covers nothing), pushed to the
+// bottom of the window on a short page. `.status.status` outranks the legacy
+// sheet's rules for block elements.
+.status.status {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 24px;
+    border-top: 1px solid var(--line);
+    background: transparent;
+}
+
+// One chip: connection state, then the head block. Fixed-width characters and a
+// fixed width for the state ("Connected", "Connecting…", "closed" take the same
+// room), so nothing in it moves when a value changes.
+.node > button {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    gap: 10px;
+}
+
+.nodeText {
+    display: inline-block;
+    min-width: 11ch;
+}
+
+.nodeNote {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--muted);
 }
 
 .content {
@@ -24,6 +72,10 @@
 @media (max-width: 860px) {
     .content {
         padding: 16px 12px;
+    }
+
+    .status {
+        padding: 6px 12px;
     }
 }
 

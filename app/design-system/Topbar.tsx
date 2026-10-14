@@ -19,6 +19,10 @@ export interface TopbarProps {
     accounts: string[];
     onSelectAccount: (accountName: string) => void;
     accountBadges?: Record<string, string>;
+    /** The connection chip lives in the status bar at the bottom instead. */
+    hideConnection?: boolean;
+    /** "Log out" in the account menu. */
+    onLogout?: () => void;
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -36,8 +40,6 @@ export interface TopbarProps {
      * it is installed and not the signer). Omit it and nothing shows.
      */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
-    /** The head block, shown beside the connection chip (see NextShellContainer). */
-    blockIndicator?: React.ReactNode;
     /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
     onOpenNav?: () => void;
     navOpen?: boolean;
@@ -53,6 +55,8 @@ export function Topbar({
     accounts,
     onSelectAccount,
     accountBadges,
+    onLogout,
+    hideConnection = false,
     locked,
     onToggleLock,
     lockLabel,
@@ -63,7 +67,6 @@ export function Topbar({
     onShowDeposit,
     onShowWithdraw,
     extensionAction,
-    blockIndicator,
     onOpenNav,
     navOpen = false,
     navId
@@ -97,26 +100,27 @@ export function Topbar({
                 </div>
             )}
             <div className={styles.status}>
-                <NodePicker
-                    connected={connected}
-                    label={
-                        connected
-                            ? "Connected"
-                            : connectionStatus || "Connecting…"
-                    }
-                >
-                    <div
-                        style={{
-                            fontSize: 12,
-                            color: "var(--muted)",
-                            marginBottom: 8
-                        }}
+                {hideConnection ? null : (
+                    <NodePicker
+                        connected={connected}
+                        label={
+                            connected
+                                ? "Connected"
+                                : connectionStatus || "Connecting…"
+                        }
                     >
-                        {activeNode || "No node selected"}
-                    </div>
-                    {nodeSelector}
-                </NodePicker>
-                {blockIndicator}
+                        <div
+                            style={{
+                                fontSize: 12,
+                                color: "var(--muted)",
+                                marginBottom: 8
+                            }}
+                        >
+                            {activeNode || "No node selected"}
+                        </div>
+                        {nodeSelector}
+                    </NodePicker>
+                )}
                 <LocaleSwitcher
                     currentLocale={currentLocale}
                     locales={locales}
@@ -139,6 +143,7 @@ export function Topbar({
                     accounts={accounts}
                     onSelect={onSelectAccount}
                     badges={accountBadges}
+                    onLogout={onLogout}
                 />
             </div>
         </header>

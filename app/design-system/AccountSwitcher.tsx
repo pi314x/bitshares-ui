@@ -9,6 +9,8 @@ export interface AccountSwitcherProps {
     onSelect: (accountName: string) => void;
     /** A short note shown next to an account ("Extension"), by account name. */
     badges?: Record<string, string>;
+    /** Shows "Log out" at the end of the menu when given. */
+    onLogout?: () => void;
 }
 
 // Replaces the legacy Header's account dropdown for the new shell. Reads
@@ -20,7 +22,8 @@ export function AccountSwitcher({
     currentAccount,
     accounts,
     onSelect,
-    badges
+    badges,
+    onLogout
 }: AccountSwitcherProps): JSX.Element {
     const [open, setOpen] = React.useState(false);
     const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
@@ -68,6 +71,19 @@ export function AccountSwitcher({
                             </button>
                         ))
                     )}
+                    {onLogout && currentAccount ? (
+                        <button
+                            type="button"
+                            role="menuitem"
+                            className={`${styles.item} ${styles.logout}`}
+                            onClick={() => {
+                                onLogout();
+                                setOpen(false);
+                            }}
+                        >
+                            Log out
+                        </button>
+                    ) : null}
                 </div>
             ) : null}
         </div>

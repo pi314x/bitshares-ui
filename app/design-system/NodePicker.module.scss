@@ -51,6 +51,11 @@
     z-index: 20;
 }
 
+.panelTop {
+    top: auto;
+    bottom: calc(100% + 6px);
+}
+
 // Phone: the 320px panel is right-aligned to a chip that sits at the left of the
 // status row, so it opened off the left edge of the screen. Anchor it to the whole
 // row instead (Topbar's `.status`, which is `position: relative` there) and let it

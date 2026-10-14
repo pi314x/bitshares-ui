@@ -9,6 +9,7 @@ import {ThemeProvider} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
 import {Rail, RailNavGroup} from "../design-system/Rail";
 import {Topbar} from "../design-system/Topbar";
+import {NodePicker} from "../design-system/NodePicker";
 import styles from "./NextShell.module.scss";
 import "../design-system/theme.scss";
 import "../design-system/fonts";
@@ -27,6 +28,7 @@ export interface NextShellProps {
     accounts: string[];
     onSelectAccount: (accountName: string) => void;
     accountBadges?: Record<string, string>;
+    onLogout?: () => void;
     /** WalletUnlockStore's `locked`, or null before it's known. */
     locked: boolean | null;
     onToggleLock: () => void;
@@ -40,8 +42,8 @@ export interface NextShellProps {
     onShowWithdraw: () => void;
     /** See TopbarProps.extensionAction. */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
-    /** See TopbarProps.blockIndicator. */
-    blockIndicator?: React.ReactNode;
+    /** The block's status, in the status bar at the very end of the page. */
+    statusDock?: React.ReactNode;
     content: React.ReactNode;
     /**
      * Controlled theme (mapped from the legacy SettingsStore's 3-theme
@@ -64,6 +66,7 @@ function ShellChrome({
     accounts,
     onSelectAccount,
     accountBadges,
+    onLogout,
     locked,
     onToggleLock,
     lockLabel,
@@ -74,7 +77,7 @@ function ShellChrome({
     onShowDeposit,
     onShowWithdraw,
     extensionAction,
-    blockIndicator,
+    statusDock,
     content
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     // Phone width: the rail is a drawer. It closes on navigation, on Escape and
@@ -130,6 +133,8 @@ function ShellChrome({
                     accounts={accounts}
                     onSelectAccount={onSelectAccount}
                     accountBadges={accountBadges}
+                    onLogout={onLogout}
+                    hideConnection
                     locked={locked}
                     onToggleLock={onToggleLock}
                     lockLabel={lockLabel}
@@ -137,12 +142,35 @@ function ShellChrome({
                     locales={locales}
                     onSelectLocale={onSelectLocale}
                     extensionAction={extensionAction}
-                    blockIndicator={blockIndicator}
                     onOpenNav={() => setNavOpen(true)}
                     navOpen={navOpen}
                     navId="main-nav"
                 />
                 <div className={styles.content}>{content}</div>
+                {/* the very end of the page: a row of its own after the
+                    content (never over it), the same place at every width */}
+                <div className={styles.status} role="contentinfo">
+                    <NodePicker
+                        className={styles.node}
+                        placement="top"
+                        connected={connectionStatus === "open"}
+                        label={
+                            <>
+                                <span className={styles.nodeText}>
+                                    {connectionStatus === "open"
+                                        ? "Connected"
+                                        : connectionStatus || "Connecting…"}
+                                </span>
+                                {statusDock}
+                            </>
+                        }
+                    >
+                        <div className={styles.nodeNote}>
+                            {activeNode || "No node selected"}
+                        </div>
+                        {nodeSelector}
+                    </NodePicker>
+                </div>
             </div>
         </div>
     );

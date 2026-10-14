@@ -15,7 +15,7 @@
 import * as React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import NextShell from "./NextShell";
-import HeadBlock from "./HeadBlock";
+import BlockStatus from "./BlockStatus";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
@@ -46,6 +46,7 @@ import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import SendModal from "components/Modal/SendModal";
 import TransactionConfirm from "components/Blockchain/TransactionConfirm";
+import WalletUnlockModal from "components/Wallet/WalletUnlockModal";
 import DepositModal from "components/Modal/DepositModal";
 import WithdrawModal from "components/Modal/WithdrawModalNew";
 
@@ -66,6 +67,8 @@ interface BlockchainStoreState {
 interface WalletUnlockStoreState {
     locked: boolean;
     rememberMe: boolean;
+    /** Set while a request to unlock waits for the user's answer. */
+    resolve?: (() => void) | null;
 }
 
 interface ImmutableMapLike {
@@ -196,6 +199,29 @@ export default function NextShellContainer({
         }
     }, [walletUnlock.rememberMe]);
 
+    // Log out: lock the wallet and forget the session's account (a cloud
+    // wallet's password account), as locking without "remember me" does.
+    const onLogout = React.useCallback(() => {
+        WalletUnlockActions.lock();
+        if (!isPersistantType()) setLocalStorageType("persistant");
+        AccountActions.setPasswordAccount(null);
+        AccountStore.tryToSetCurrentAccount();
+    }, []);
+
+    // A request to unlock that was open when the user chose another page goes
+    // away with it (it is shown in the page, not over it). Only a request that
+    // was already pending *before* the change: a page may ask for its own.
+    const unlockPending = !!walletUnlock.resolve;
+    const pendingBefore = React.useRef(false);
+    const lastPath = React.useRef(location.pathname);
+    React.useEffect(() => {
+        if (lastPath.current !== location.pathname) {
+            lastPath.current = location.pathname;
+            if (pendingBefore.current) WalletUnlockActions.cancel();
+        }
+        pendingBefore.current = unlockPending;
+    });
+
     return (
         <>
             <NextShell
@@ -207,6 +233,7 @@ export default function NextShellContainer({
                 onSelectAccount={name =>
                     AccountActions.setCurrentAccount.defer(name)
                 }
+                onLogout={onLogout}
                 accountBadges={
                     extensionAccount
                         ? {[extensionAccount]: "Extension"}
@@ -235,7 +262,7 @@ export default function NextShellContainer({
                     setWithdrawEverShown(true);
                 }}
                 extensionAction={extensionAction}
-                blockIndicator={<HeadBlock />}
+                statusDock={<BlockStatus />}
                 themeValue={themeValue}
                 onThemeChange={theme =>
                     SettingsActions.changeSetting({
@@ -248,6 +275,8 @@ export default function NextShellContainer({
                         <AccountBrowsingMode location={location} />
                         {/* "Confirm this transaction": in the page, not a popup */}
                         <TransactionConfirm inline />
+                        {/* and "unlock your wallet" with it */}
+                        <WalletUnlockModal inline />
                         {content}
                     </>
                 }

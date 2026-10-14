@@ -82,3 +82,11 @@
     font-size: 11px;
     font-weight: 600;
 }
+
+.logout {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    color: var(--down);
+}

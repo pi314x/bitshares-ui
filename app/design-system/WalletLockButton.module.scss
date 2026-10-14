@@ -18,18 +18,24 @@
     color: var(--ink);
 }
 
-.dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+.padlock {
     flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.padlock rect {
+    fill: currentColor;
+    fill-opacity: 0.15;
 }
 
 .locked {
-    background: var(--warn);
+    color: var(--warn);
 }
 
 .unlocked {
-    background: var(--up);
-    box-shadow: 0 0 0 3px var(--up-wash);
+    color: var(--up);
 }
