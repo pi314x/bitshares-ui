@@ -12,12 +12,12 @@
 // see `AccountVoting.tsx`'s header comment for the full trace).
 import * as React from "react";
 import counterpart from "counterpart";
-import Translate from "react-translate-component";
-import JoinCommitteeModal from "../../Modal/JoinCommitteeModal";
 import VotingAccountsList from "../VotingAccountsList";
 import cnames from "classnames";
-import {Button} from "../../../design-system/Button";
 import SearchInput from "../../Utility/SearchInput";
+import {Toolbar} from "../../../design-system/Toolbar";
+import {SubMenu} from "../../../design-system/SubMenu";
+import {JoinCommitteeTab} from "./RoleTabs";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
 
@@ -32,7 +32,7 @@ interface CommitteeProps {
     hasProxy: boolean;
     globalObject: any;
     filterSearch: string;
-    account: any;
+    account?: any;
 }
 
 export default function Committee({
@@ -48,54 +48,65 @@ export default function Committee({
     filterSearch,
     account
 }: CommitteeProps) {
-    const [
-        showCreateCommitteeModal,
-        setShowCreateCommitteeModal
-    ] = React.useState(false);
-
-    function showCommitteeModal() {
-        console.log("show committee modal");
-        setShowCreateCommitteeModal(!showCreateCommitteeModal);
-    }
+    const [view, setView] = React.useState<"vote" | "join">("vote");
 
     return (
         <div>
-            <div className="header-selector">
-                <div style={{float: "right"}}>
-                    <Button onClick={showCommitteeModal}>
-                        <Translate content="account.votes.join_committee" />
-                    </Button>
-                </div>
-
-                <div className="selector inline-block">
-                    <TypedSearchInput
-                        placeholder={counterpart.translate(
-                            "explorer.witnesses.filter_by_name"
-                        )}
-                        value={filterSearch}
-                        onChange={onFilterChange}
-                    />
-                </div>
-            </div>
-            <div className={cnames("content-block")}>
-                <VotingAccountsList
-                    type="committee"
-                    label="account.votes.add_committee_label"
-                    items={all_committee}
-                    onAddItem={addCommitteeHandler}
-                    onRemoveItem={removeCommitteeHandler}
-                    tabIndex={hasProxy ? -1 : 3}
-                    supported={hasProxy ? proxy_committee : committee}
-                    active={globalObject.get("active_committee_members")}
-                    proxy={proxy_account_id}
-                    filterSearch={filterSearch}
-                />
-            </div>
-            <JoinCommitteeModal
-                visible={showCreateCommitteeModal}
-                account={account}
-                hideModal={showCommitteeModal}
+            <SubMenu
+                aria-label={counterpart.translate(
+                    "explorer.committee_members.title"
+                )}
+                value={view}
+                onChange={key => setView(key as "vote" | "join")}
+                items={[
+                    {
+                        key: "vote",
+                        label: counterpart.translate("account.votes.votes")
+                    },
+                    {
+                        key: "join",
+                        label: counterpart.translate(
+                            "account.votes.join_committee"
+                        )
+                    }
+                ]}
             />
+            {view === "join" ? (
+                <JoinCommitteeTab
+                    account={account}
+                    onDone={() => setView("vote")}
+                />
+            ) : (
+                <>
+                    <Toolbar>
+                        <Toolbar.Grow>
+                            <TypedSearchInput
+                                placeholder={counterpart.translate(
+                                    "explorer.witnesses.filter_by_name"
+                                )}
+                                value={filterSearch}
+                                onChange={onFilterChange}
+                            />
+                        </Toolbar.Grow>
+                    </Toolbar>
+                    <div className={cnames("content-block")}>
+                        <VotingAccountsList
+                            type="committee"
+                            label="account.votes.add_committee_label"
+                            items={all_committee}
+                            onAddItem={addCommitteeHandler}
+                            onRemoveItem={removeCommitteeHandler}
+                            tabIndex={hasProxy ? -1 : 3}
+                            supported={hasProxy ? proxy_committee : committee}
+                            active={globalObject.get(
+                                "active_committee_members"
+                            )}
+                            proxy={proxy_account_id}
+                            filterSearch={filterSearch}
+                        />
+                    </div>
+                </>
+            )}
         </div>
     );
 }

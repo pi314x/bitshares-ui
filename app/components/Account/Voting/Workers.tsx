@@ -27,11 +27,11 @@ import AssetName from "../../Utility/AssetName";
 import counterpart from "counterpart";
 import {EquivalentValueComponent} from "../../Utility/EquivalentValueComponent";
 import FormattedAsset from "../../Utility/FormattedAsset";
-import {Row} from "../../../design-system/Row";
-import {Col} from "../../../design-system/Col";
 import {Radio} from "../../../design-system/Radio";
 import {Button} from "../../../design-system/Button";
 import SearchInput from "../../Utility/SearchInput";
+import {Toolbar} from "../../../design-system/Toolbar";
+import styles from "./Workers.module.scss";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
 const TypedLink = Link as React.ComponentType<LinkProps>;
@@ -90,88 +90,27 @@ export default function Workers({
 
     return (
         <div>
-            <div className="header-selector">
-                <div style={{float: "right"}}>
-                    <Button>
-                        <TypedLink to="/create-worker">
-                            <Translate content="account.votes.create_worker" />
-                        </TypedLink>
-                    </Button>
-                </div>
-
-                <div className="selector inline-block">
-                    <TypedSearchInput
-                        placeholder={counterpart.translate(
-                            "explorer.witnesses.filter_by_name"
-                        )}
-                        value={filterSearch}
-                        onChange={onFilterChange}
-                    />
-                    <Radio.Group
-                        defaultValue={1}
-                        onChange={handleWorkerTableIndexChange}
-                    >
-                        <Radio value={0}>
-                            {counterpart.translate("account.votes.new", {
-                                count: newWorkersLength
-                            })}
-                        </Radio>
-
-                        <Radio value={1}>
-                            {counterpart.translate("account.votes.active", {
-                                count: activeWorkersLength
-                            })}
-                        </Radio>
-
-                        {pollsLength ? (
-                            <Radio value={3}>
-                                {counterpart.translate("account.votes.polls", {
-                                    count: pollsLength
-                                })}
-                            </Radio>
-                        ) : null}
-
-                        {expiredWorkersLength ? (
-                            <Radio value={2}>
-                                <Translate content="account.votes.expired" />
-                            </Radio>
-                        ) : null}
-                    </Radio.Group>
-                </div>
-
-                {hideLegacy}
-                <br />
-                <br />
-                <Row>
-                    <Col span={3}>
+            <div className={styles.summary}>
+                <div className={styles.stat}>
+                    <span className={styles.statLabel}>
                         <Translate content="account.votes.threshold" /> (
                         <AssetName name={preferredUnit} />)
-                    </Col>
-                    <Col
-                        span={3}
-                        style={{
-                            marginLeft: "10px"
-                        }}
-                    >
+                    </span>
+                    <span className={styles.statValue}>
                         <FormattedAsset
                             decimalOffset={4}
                             hide_asset
                             amount={voteThreshold}
                             asset="1.3.0"
                         />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col span={3}>
+                    </span>
+                </div>
+                <div className={styles.stat}>
+                    <span className={styles.statLabel}>
                         <Translate content="account.votes.total_budget" /> (
                         <AssetName name={preferredUnit} />)
-                    </Col>
-                    <Col
-                        span={3}
-                        style={{
-                            marginLeft: "10px"
-                        }}
-                    >
+                    </span>
+                    <span className={styles.statValue}>
                         {globalObject ? (
                             <EquivalentValueComponent
                                 hide_asset
@@ -180,9 +119,59 @@ export default function Workers({
                                 amount={totalBudget}
                             />
                         ) : null}
-                    </Col>
-                </Row>
+                    </span>
+                </div>
             </div>
+
+            <Toolbar>
+                <Toolbar.Grow>
+                    <TypedSearchInput
+                        placeholder={counterpart.translate(
+                            "explorer.witnesses.filter_by_name"
+                        )}
+                        value={filterSearch}
+                        onChange={onFilterChange}
+                    />
+                </Toolbar.Grow>
+                <Radio.Group
+                    defaultValue={1}
+                    onChange={handleWorkerTableIndexChange}
+                >
+                    <Radio value={0}>
+                        {counterpart.translate("account.votes.new", {
+                            count: newWorkersLength
+                        })}
+                    </Radio>
+
+                    <Radio value={1}>
+                        {counterpart.translate("account.votes.active", {
+                            count: activeWorkersLength
+                        })}
+                    </Radio>
+
+                    {pollsLength ? (
+                        <Radio value={3}>
+                            {counterpart.translate("account.votes.polls", {
+                                count: pollsLength
+                            })}
+                        </Radio>
+                    ) : null}
+
+                    {expiredWorkersLength ? (
+                        <Radio value={2}>
+                            <Translate content="account.votes.expired" />
+                        </Radio>
+                    ) : null}
+                </Radio.Group>
+                <Toolbar.End>
+                    {hideLegacy}
+                    <TypedLink to="/create-worker">
+                        <Button variant="accent">
+                            <Translate content="account.votes.create_worker" />
+                        </Button>
+                    </TypedLink>
+                </Toolbar.End>
+            </Toolbar>
             <WorkersList
                 workerTableIndex={workerTableIndex}
                 preferredUnit={preferredUnit}

@@ -97,7 +97,9 @@ export default function JoinWitnessesModal({
                 .fetchWitnessByAccount(account.get("id"))
                 .then((response: any) => {
                     if (response == null) {
-                        hideModal();
+                        // not a witness (yet): updating has nothing to
+                        // update; joining is what the form is for
+                        if (updateOrCreate) hideModal();
                         mergeState({witnessObject: {}});
                     } else {
                         mergeState({
