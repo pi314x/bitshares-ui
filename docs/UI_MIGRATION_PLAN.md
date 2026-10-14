@@ -12824,7 +12824,8 @@ market tabs. It is now what a trading desk's home needs:
 ### 7.22 Polish pass: modern look and motion
 
 - **Rail**: an icon per entry (`design-system/RailIcon.tsx`, one stroke style,
-  `currentColor`), 15px text so every label fits.
+  `currentColor`), 15px text, 224px wide (it was 184px: the longest label sat
+  against the edge).
 - **Top bar**: sticky, the page faintly through it (`backdrop-filter`, with a
   solid fallback).
 - **Motion**: a page fades and rises a few pixels when it arrives; the start-up
@@ -12836,7 +12837,9 @@ market tabs. It is now what a trading desk's home needs:
   hairline); form labels are sentence case.
 - **Fixed on the way**: `/account/<name>/orders` was not a route (the dashboard
   linked to it and got an empty page); it is the open-orders list now, and an
-  unknown account sub-page is a 404, not a blank page.
+  unknown account sub-page is a 404, not a blank page. As a page of its own it
+  has a title and a card per list, and the top bar names the account's pages
+  ("Open orders", "Vesting", ...) instead of "Account".
 
 ## 8. Testing strategy ("Vergiss Tests nicht")
 

@@ -144,3 +144,15 @@ describe("rail icons", () => {
         );
     });
 });
+
+describe("crumbs of an account's pages", () => {
+    it("names the page, not just 'Account'", () => {
+        expect(crumbFromPath("/account/alice/orders")).toBe("Open orders");
+        expect(crumbFromPath("/account/alice/vesting")).toBe("Vesting");
+        expect(crumbFromPath("/account/alice/signedmessages")).toBe(
+            "Signed messages"
+        );
+        expect(crumbFromPath("/account/alice")).toBe("Account");
+        expect(crumbFromPath("/account/alice/overview")).toBe("Account");
+    });
+});

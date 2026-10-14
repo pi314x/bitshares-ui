@@ -8,9 +8,9 @@
     flex-direction: column;
     gap: 2px;
     padding: 14px 8px;
-    // Compact: wide enough for the longest label ("Prediction markets"),
-    // no wider, so the page keeps the space.
-    width: 184px;
+    // Wide enough for an icon and the longest label ("Prediction markets") with
+    // air around them, not wider: the page keeps the space.
+    width: 224px;
     flex: none;
     // The rail is as tall as the window and stays put while the page scrolls;
     // if its entries and the footer are taller than the window, the rail
@@ -131,7 +131,7 @@
 }
 
 // Phone and small tablet (the reference mockup's own breakpoint): the rail is an
-// off-canvas drawer opened from the top bar's menu button instead of a 184px
+// off-canvas drawer opened from the top bar's menu button instead of a 224px
 // column that leaves a phone about 150px for the page. `.rail.rail` and
 // `.rail.rail.railOpen` match the specificity of the base rule above; the old
 // version of this block used a single `.rail`, lost to `.rail.rail` and never

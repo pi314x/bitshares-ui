@@ -11,6 +11,7 @@
 // `useReduxState(selectSettingsState)` in a thin Container.
 import * as React from "react";
 import counterpart from "counterpart";
+import styles from "./AccountOrders.module.scss";
 import MarketsActions from "actions/MarketsActions";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {LimitOrder, SettleOrder, FeedPrice} from "common/MarketClasses";
@@ -53,6 +54,9 @@ interface AccountOrdersCoreProps {
     settings?: any;
     marketDirections: any;
     viewSettings: any;
+    /** The page of its own (not a tab of the account overview): it gets a
+     * title, and each list is a card. */
+    standalone?: boolean;
     [key: string]: any;
 }
 
@@ -762,51 +766,101 @@ function AccountOrders(props: AccountOrdersCoreProps) {
 
     const settleOrdersCount = account.get("settle_orders").size;
 
+    // the filter, the grouping switch and the actions for the selected orders
+    const toolbar = (
+        <div
+            className={props.standalone ? styles.toolbar : "header-selector"}
+            style={
+                props.standalone
+                    ? undefined
+                    : {display: "inline-block", width: "100%"}
+            }
+        >
+            <div className="filter-block">
+                <div className="filter">
+                    <Input
+                        type="text"
+                        placeholder={counterpart.translate(
+                            "account.filter_orders"
+                        )}
+                        onChange={setFilterValue}
+                        addonAfter={<Icon type="search" />}
+                    />
+                </div>
+                <div className="group-by">
+                    <Switch
+                        onChange={onGroupChange}
+                        checked={state.areAssetsGrouped}
+                    />
+                    &nbsp;&nbsp;
+                    <Translate content="account.group_by_asset" />
+                </div>
+            </div>
+            {selectedOrders.length ? (
+                <span className="action-buttons">
+                    <Button
+                        key="submit"
+                        variant="accent"
+                        onClick={cancelSelected}
+                    >
+                        <Translate content="account.cancel_orders" />
+                    </Button>
+                    &nbsp;
+                    <Button key="cancel" onClick={resetSelected}>
+                        <Translate content="account.reset_orders" />
+                    </Button>
+                </span>
+            ) : null}
+        </div>
+    );
+
+    if (props.standalone) {
+        const ordersCount = account.get("orders").size;
+        return (
+            <div className={styles.page}>
+                <div className={styles.head}>
+                    <h1 className={styles.title}>
+                        {counterpart.translate("desk.open_orders")}
+                    </h1>
+                    <span className={styles.count}>
+                        {ordersCount + settleOrdersCount}
+                    </span>
+                </div>
+                {toolbar}
+                <section className={styles.card}>
+                    <div className={styles.cardHead}>
+                        <h2 className={styles.cardTitle}>
+                            <Translate content="account.market_orders" />
+                        </h2>
+                        <span className={styles.count}>{ordersCount}</span>
+                    </div>
+                    <div className={styles.cardBody}>{tables}</div>
+                </section>
+                {settleOrdersCount > 0 ? (
+                    <section className={styles.card}>
+                        <div className={styles.cardHead}>
+                            <h2 className={styles.cardTitle}>
+                                <Translate content="account.settle_orders" />
+                            </h2>
+                            <span className={styles.count}>
+                                {settleOrdersCount}
+                            </span>
+                        </div>
+                        <div className={styles.cardBody}>
+                            {settleOrdersTable}
+                        </div>
+                    </section>
+                ) : null}
+            </div>
+        );
+    }
+
     return (
         <div
             className="grid-content no-overflow no-padding"
             style={{paddingBottom: 15}}
         >
-            <div
-                className="header-selector"
-                style={{display: "inline-block", width: "100%"}}
-            >
-                <div className="filter-block">
-                    <div className="filter">
-                        <Input
-                            type="text"
-                            placeholder={counterpart.translate(
-                                "account.filter_orders"
-                            )}
-                            onChange={setFilterValue}
-                            addonAfter={<Icon type="search" />}
-                        />
-                    </div>
-                    <div className="group-by">
-                        <Switch
-                            onChange={onGroupChange}
-                            checked={state.areAssetsGrouped}
-                        />
-                        &nbsp;&nbsp;
-                        <Translate content="account.group_by_asset" />
-                    </div>
-                </div>
-                {selectedOrders.length ? (
-                    <span className="action-buttons">
-                        <Button
-                            key="submit"
-                            variant="accent"
-                            onClick={cancelSelected}
-                        >
-                            <Translate content="account.cancel_orders" />
-                        </Button>
-                        &nbsp;
-                        <Button key="cancel" onClick={resetSelected}>
-                            <Translate content="account.reset_orders" />
-                        </Button>
-                    </span>
-                ) : null}
-            </div>
+            {toolbar}
 
             <div>
                 {settleOrdersCount > 0 && (

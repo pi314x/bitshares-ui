@@ -99,9 +99,27 @@ const CRUMB_TITLES: Record<string, string> = {
     block: "Block"
 };
 
+// An account's own pages: `/account/<name>/<page>` is titled by the page.
+const ACCOUNT_PAGE_TITLES: Record<string, string> = {
+    orders: "Open orders",
+    assets: "Assets",
+    pools: "Liquidity pools",
+    vesting: "Vesting",
+    permissions: "Permissions",
+    whitelist: "Whitelist",
+    signedmessages: "Signed messages",
+    "member-stats": "Membership",
+    voting: "Voting",
+    "create-asset": "Create asset"
+};
+
 export function crumbFromPath(pathname: string): string {
-    const segment = pathname.split("/").filter(Boolean)[0];
+    const parts = pathname.split("/").filter(Boolean);
+    const segment = parts[0];
     if (!segment) return "Dashboard";
+    if (segment === "account" && parts[2] && ACCOUNT_PAGE_TITLES[parts[2]]) {
+        return ACCOUNT_PAGE_TITLES[parts[2]];
+    }
     return (
         CRUMB_TITLES[segment] ||
         segment.charAt(0).toUpperCase() + segment.slice(1)

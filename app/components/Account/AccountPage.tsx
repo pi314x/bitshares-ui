@@ -168,7 +168,10 @@ function AccountPage({
                 element={<Navigate to={`/account/${account_name}`} replace />}
             />
             <Route path="assets" element={<AccountAssets {...passOnProps} />} />
-            <Route path="orders" element={<AccountOrders {...passOnProps} />} />
+            <Route
+                path="orders"
+                element={<AccountOrders {...passOnProps} standalone />}
+            />
             <Route path="pools" element={<AccountPools {...passOnProps} />} />
             <Route
                 path="create-asset"
