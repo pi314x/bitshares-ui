@@ -20,9 +20,13 @@
     gap: 12px;
 }
 
-.label {
+.label.label {
     font-size: 13px;
+    font-weight: 500;
     color: var(--ink-2);
+    // the legacy sheet upper-cases every label; sentence case reads better
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .control {

@@ -107,6 +107,30 @@
     margin-top: 0;
 }
 
+// A page arrives rather than appears: a short fade and a few pixels of rise
+// (the element is new on every route change, so it plays then and not again).
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.content.content > * {
+    animation: pageIn 0.18s var(--ease, ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content.content > * {
+        animation: none;
+    }
+}
+
 // The page's inset is this padding and no other. A screen whose root is
 // Foundation's `.grid-content` (24px of side padding of its own) sat 48px from
 // the rail, the others 24px. `.content.content` outranks the legacy sheet.

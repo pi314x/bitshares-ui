@@ -52,6 +52,13 @@ function percent(fraction: number, digits = 1): string {
     return `${(fraction * 100).toFixed(digits)}%`;
 }
 
+/** A shimmering bar where a figure will be. */
+function Skeleton({width = 96}: {width?: number}) {
+    return (
+        <span className={styles.skeleton} style={{width}} aria-hidden="true" />
+    );
+}
+
 // -------------------------------------------------------------------- cards
 
 const CARDS = [
@@ -136,7 +143,11 @@ function Summary({
                 <div>
                     <div className={styles.totalLabel}>{t("total_value")}</div>
                     <div className={styles.total}>
-                        {data.loading ? "…" : fmt(data.total, digits)}
+                        {data.loading ? (
+                            <Skeleton width={190} />
+                        ) : (
+                            fmt(data.total, digits)
+                        )}
                         <span className={styles.totalUnit}>
                             {data.unit ? data.unit.symbol : ""}
                         </span>
@@ -303,11 +314,16 @@ function Holdings({
     const digits = valueDigits(data.unit && data.unit.symbol);
 
     if (!data.holdings.length) {
-        return (
-            <div className={styles.empty}>
-                {data.loading ? "…" : t("no_holdings")}
-            </div>
-        );
+        if (data.loading) {
+            return (
+                <div className={styles.skeletonRows}>
+                    <Skeleton width={260} />
+                    <Skeleton width={200} />
+                    <Skeleton width={230} />
+                </div>
+            );
+        }
+        return <div className={styles.empty}>{t("no_holdings")}</div>;
     }
     return (
         <>
@@ -458,7 +474,11 @@ function Positions({
                     </div>
                 ) : (
                     <div className={styles.muted}>
-                        {data.loading ? "…" : t("orders_none")}
+                        {data.loading ? (
+                            <Skeleton width={120} />
+                        ) : (
+                            t("orders_none")
+                        )}
                     </div>
                 )}
             </div>
@@ -488,7 +508,11 @@ function Positions({
                     ))
                 ) : (
                     <div className={styles.muted}>
-                        {data.loading ? "…" : t("pools_none")}
+                        {data.loading ? (
+                            <Skeleton width={120} />
+                        ) : (
+                            t("pools_none")
+                        )}
                     </div>
                 )}
                 {data.pools.length > POOLS_SHOWN ? (
@@ -549,7 +573,11 @@ function Positions({
                     ))
                 ) : (
                     <div className={styles.muted}>
-                        {data.loading ? "…" : t("borrow_none")}
+                        {data.loading ? (
+                            <Skeleton width={120} />
+                        ) : (
+                            t("borrow_none")
+                        )}
                     </div>
                 )}
             </div>

@@ -12821,6 +12821,23 @@ market tabs. It is now what a trading desk's home needs:
   re-ordering (cards can only be shown or hidden), and the pool-vs-order-book
   price per market row (it is on the trade page).
 
+### 7.22 Polish pass: modern look and motion
+
+- **Rail**: an icon per entry (`design-system/RailIcon.tsx`, one stroke style,
+  `currentColor`), 15px text so every label fits.
+- **Top bar**: sticky, the page faintly through it (`backdrop-filter`, with a
+  solid fallback).
+- **Motion**: a page fades and rises a few pixels when it arrives; the start-up
+  screen fades out; skeleton bars (shimmer) stand where the desk's figures will
+  be. All of it off under `prefers-reduced-motion`.
+- **Surfaces**: cards take the design-system radius; a page layout no longer
+  paints the theme's blue-grey behind its cards (square corners at every round
+  card); legacy table headers are the design-system table's (small, muted,
+  hairline); form labels are sentence case.
+- **Fixed on the way**: `/account/<name>/orders` was not a route (the dashboard
+  linked to it and got an empty page); it is the open-orders list now, and an
+  unknown account sub-page is a 404, not a blank page.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

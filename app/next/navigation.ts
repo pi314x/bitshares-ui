@@ -8,15 +8,16 @@ export const NAV_GROUPS: RailNavGroup[] = [
     {
         label: "Account",
         items: [
-            {label: "Dashboard", to: "/", exact: true},
-            {label: "Accounts", to: "/accounts"},
+            {label: "Dashboard", icon: "dashboard", to: "/", exact: true},
+            {label: "Accounts", icon: "accounts", to: "/accounts"},
             // `/voting` redirects to the current account's voting tab
             {
                 label: "Voting",
+                icon: "voting",
                 to: "/voting",
                 match: /^\/(voting|account\/[^/]+\/voting)(\/|$)/
             },
-            {label: "Settings", to: "/settings"}
+            {label: "Settings", icon: "settings", to: "/settings"}
         ]
     },
     {
@@ -24,42 +25,46 @@ export const NAV_GROUPS: RailNavGroup[] = [
         // dialogs shown in the page, not over it); they used to be popups.
         label: "Payments",
         items: [
-            {label: "Send", to: "/send"},
-            {label: "Deposit", to: "/deposit"},
-            {label: "Withdraw", to: "/withdraw"},
-            {label: "Timed transfer", to: "/timed-transfer"}
+            {label: "Send", icon: "send", to: "/send"},
+            {label: "Deposit", icon: "deposit", to: "/deposit"},
+            {label: "Withdraw", icon: "withdraw", to: "/withdraw"},
+            {label: "Timed transfer", icon: "timed", to: "/timed-transfer"}
         ]
     },
     {
         label: "Markets",
         items: [
-            {label: "Trade", to: `/market/${getDefaultMarket()}`},
+            {
+                label: "Trade",
+                icon: "trade",
+                to: `/market/${getDefaultMarket()}`
+            },
             // right behind the order book: the other way to trade a pair
-            {label: "Liquidity pools", to: "/pools"},
-            {label: "Instant trade", to: "/instant-trade"},
-            {label: "Prediction markets", to: "/prediction"}
+            {label: "Liquidity pools", icon: "pools", to: "/pools"},
+            {label: "Instant trade", icon: "instant", to: "/instant-trade"},
+            {label: "Prediction markets", icon: "prediction", to: "/prediction"}
         ]
     },
     {
         label: "Lending",
         items: [
-            {label: "Credit offers", to: "/credit-offer"},
-            {label: "SameT funds", to: "/samet-funds"}
+            {label: "Credit offers", icon: "credit", to: "/credit-offer"},
+            {label: "SameT funds", icon: "funds", to: "/samet-funds"}
         ]
     },
     {
         // Looking at the chain itself rather than trading on it: blocks, assets,
         // pools, accounts, witnesses, committee, markets, fees.
         label: "Network",
-        items: [{label: "Explorer", to: "/explorer"}]
+        items: [{label: "Explorer", icon: "explorer", to: "/explorer"}]
     },
     {
         // The old header's "Spotlight": a grid of the rarer features (barter,
         // HTLC, direct debit, paper wallet, ...). Nothing else links to them.
         label: "More",
         items: [
-            {label: "Spotlight", to: "/spotlight"},
-            {label: "Help", to: "/help"}
+            {label: "Spotlight", icon: "spotlight", to: "/spotlight"},
+            {label: "Help", icon: "help", to: "/help"}
         ]
     }
 ];

@@ -11,6 +11,18 @@
     padding: 12px 24px;
     border-bottom: 1px solid var(--line);
     background: var(--surface);
+    // stays in view while the page scrolls, the page showing faintly through
+    position: sticky;
+    top: 0;
+    z-index: 30;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .topbar.topbar {
+        background: color-mix(in srgb, var(--surface) 84%, transparent);
+        -webkit-backdrop-filter: saturate(1.3) blur(12px);
+        backdrop-filter: saturate(1.3) blur(12px);
+    }
 }
 
 // The wrappers only exist so the phone layout can move the buttons and the

@@ -406,3 +406,43 @@
         display: none;
     }
 }
+
+// A placeholder where a figure will be: a soft bar that shimmers, not "...".
+.skeleton {
+    display: inline-block;
+    min-width: 48px;
+    height: 1em;
+    border-radius: 6px;
+    vertical-align: middle;
+    background: linear-gradient(
+        90deg,
+        var(--line-soft) 0%,
+        var(--line) 50%,
+        var(--line-soft) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 100% 0;
+    }
+
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
+    }
+}
+
+.skeletonRows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+}

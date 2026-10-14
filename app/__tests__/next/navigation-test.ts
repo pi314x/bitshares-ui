@@ -13,8 +13,8 @@ describe("left navigation rail", () => {
         const lending = NAV_GROUPS.find(group => group.label === "Lending");
         expect(lending).toBeDefined();
         expect(lending!.items).toEqual([
-            {label: "Credit offers", to: "/credit-offer"},
-            {label: "SameT funds", to: "/samet-funds"}
+            {label: "Credit offers", icon: "credit", to: "/credit-offer"},
+            {label: "SameT funds", icon: "funds", to: "/samet-funds"}
         ]);
     });
 
@@ -33,7 +33,9 @@ describe("left navigation rail", () => {
         const markets = NAV_GROUPS.find(g => g.label === "Markets")!;
         expect(markets.items.map(i => i.label)).not.toContain("Explorer");
         const network = NAV_GROUPS.find(g => g.label === "Network")!;
-        expect(network.items).toEqual([{label: "Explorer", to: "/explorer"}]);
+        expect(network.items).toEqual([
+            {label: "Explorer", icon: "explorer", to: "/explorer"}
+        ]);
     });
 
     it("puts the liquidity pools right behind the order book trade entry", () => {
@@ -125,5 +127,20 @@ describe("topbar title", () => {
         expect(crumbFromPath("/")).toBe("Dashboard");
         expect(crumbFromPath("/market/BTS_USD")).toBe("Market");
         expect(crumbFromPath("/settings/general")).toBe("Settings");
+    });
+});
+
+describe("rail icons", () => {
+    it("every entry has an icon the rail can draw", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../design-system/RailIcon.tsx"),
+            "utf8"
+        );
+        NAV_GROUPS.forEach(group =>
+            group.items.forEach(item => {
+                expect(item.icon).toBeTruthy();
+                expect(source).toContain(`    ${item.icon}:`);
+            })
+        );
     });
 });

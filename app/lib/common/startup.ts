@@ -11,6 +11,10 @@
  * connection is open. */
 export const READY_MAX_MS = 8000;
 
+/** How long the screen takes to fade once the app is ready; it is removed
+ * after this. */
+export const COVER_FADE_MS = 220;
+
 export interface StartupAccountState {
     accountsLoaded?: boolean;
     refsLoaded?: boolean;

@@ -43,7 +43,12 @@ import ExternalSignerActions from "actions/ExternalSignerActions";
 import {startExternalAccountSync} from "stores/ExternalAccountSync";
 import NodeSelector from "./components/Utility/NodeSelector";
 import {selectAccountState} from "./store/slices/accountSlice";
-import {READY_MAX_MS, accountsReady, coverVisible} from "./lib/common/startup";
+import {
+    COVER_FADE_MS,
+    READY_MAX_MS,
+    accountsReady,
+    coverVisible
+} from "./lib/common/startup";
 /*
  * Electron does not support browserHistory, so we need to use hashHistory.
  * The same is true for servers without configuration options, such as Github Pages
@@ -89,7 +94,9 @@ class AppInit extends React.Component {
             nodeFilterHasChanged: false,
             showNodeFilter: false,
             // the account lists have been read: the app can show something
-            appReady: false
+            appReady: false,
+            // the start-up screen has faded out and is removed
+            coverGone: false
         };
         this.mounted = true;
         this.persistentLogEnabled = false;
@@ -255,7 +262,12 @@ class AppInit extends React.Component {
     _watchReady() {
         const done = () => {
             this._stopWatchingReady();
-            if (this.mounted) this.setState({appReady: true});
+            if (!this.mounted) return;
+            this.setState({appReady: true});
+            // the screen fades for a moment before it is taken away
+            this._coverTimer = setTimeout(() => {
+                if (this.mounted) this.setState({coverGone: true});
+            }, COVER_FADE_MS);
         };
         const check = () => {
             if (accountsReady(selectAccountState(reduxStore.getState()))) {
@@ -277,6 +289,7 @@ class AppInit extends React.Component {
     componentWillUnmount() {
         this.mounted = false;
         this._stopWatchingReady();
+        if (this._coverTimer) clearTimeout(this._coverTimer);
         IntlStore.unlisten(this._onStoreChange);
         WalletManagerStore.unlisten(this._onStoreChange);
         SettingsStore.unlisten(this._onStoreChange);
@@ -298,6 +311,7 @@ class AppInit extends React.Component {
                 status={this.state.status}
                 server={server || ""}
                 theme={theme}
+                leaving={this.state.appReady}
             >
                 {this.state.showNodeFilter && (
                     <div className="padding">
@@ -334,7 +348,7 @@ class AppInit extends React.Component {
         const cover = coverVisible({
             apiConnected,
             apiError,
-            appReady: this.state.appReady
+            appReady: this.state.coverGone
         });
         return (
             <React.Fragment>

@@ -104,8 +104,34 @@ body[class][class] .settings-menu.grid-content {
     padding-left: 0;
 }
 
-// The dashboard's page layout painted the theme's panel colour behind its
-// cards (a blue-grey band between them); the page colour is the ground.
-body[class][class] .grid-block.page-layout.desk-page {
+// A page layout painted the theme's panel colour (a blue-grey) behind its cards:
+// a square backdrop showing at every rounded corner and as bands between cards.
+// The page colour is the ground.
+body[class][class] .grid-block.page-layout {
     background-color: transparent;
+}
+
+// A legacy table's header was a heavy blue-grey band of 14px letter-spaced
+// capitals. It is the design-system table's header now: small, muted, a hairline
+// under it (the first column keeps the left padding the list gave it).
+body[class][class] .table > thead > tr > th {
+    background-color: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+// The notification options: sentence case, like the other labels.
+body[class][class] .settings--notifications label,
+body[class][class] .settings--notifications span {
+    text-transform: none;
+}
+
+// The browser's "notifications are disabled" line and its help icon on one line.
+body[class][class] .settings--notifications--no-browser-support {
+    display: inline;
 }

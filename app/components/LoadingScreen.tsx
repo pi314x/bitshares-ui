@@ -36,6 +36,8 @@ interface LoadingScreenProps {
     server?: string | null;
     /** The legacy `themes` setting ("lightTheme" | "darkTheme" | "midnightTheme"). */
     theme?: string | null;
+    /** The app is ready: fade out (the owner removes it a moment later). */
+    leaving?: boolean;
     children?: React.ReactNode;
 }
 
@@ -43,6 +45,7 @@ export function LoadingScreen({
     status,
     server,
     theme,
+    leaving,
     children
 }: LoadingScreenProps) {
     // The shell's ThemeProvider is not mounted yet, so set the tokens' theme
@@ -61,7 +64,11 @@ export function LoadingScreen({
         database: counterpart.translate("app_init.step_database") as string
     };
     return (
-        <div className={styles.screen} role="status" aria-live="polite">
+        <div
+            className={`${styles.screen}${leaving ? ` ${styles.leaving}` : ""}`}
+            role="status"
+            aria-live="polite"
+        >
             <span className={styles.ringWrap}>
                 <Ring />
             </span>

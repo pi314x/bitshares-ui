@@ -83,7 +83,8 @@
 .rail button.navItem {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
+    white-space: nowrap;
     box-sizing: border-box;
     width: 100%;
     min-height: 0;
@@ -96,6 +97,7 @@
     background: transparent;
     color: var(--ink-2);
     font: inherit;
+    font-size: 15px;
     font-weight: 500;
     line-height: inherit;
     text-align: left;
@@ -203,4 +205,18 @@
     .rail.rail.railOpen {
         transition: none;
     }
+}
+
+// An entry's icon: the entry's own colour (so hover and current follow), a bit
+// quieter at rest.
+.navIcon {
+    flex: none;
+    opacity: 0.8;
+    transition: opacity 0.15s var(--ease, ease);
+}
+
+.rail a.navItem:hover .navIcon,
+.rail a.navItem.navItemActive .navIcon,
+.rail button.navItem:hover .navIcon {
+    opacity: 1;
 }

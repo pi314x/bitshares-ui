@@ -128,7 +128,17 @@ export default function SettingsEntry({
 
             component = (
                 <div className="settings--notifications">
-                    <div className="settings--notifications--group">
+                    {/* side by side, wrapping on a narrow screen: two
+                        checkboxes do not need a column each */}
+                    <div
+                        className="settings--notifications--group"
+                        style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            gap: "8px 28px"
+                        }}
+                    >
                         <div className="settings--notifications--item">
                             <Checkbox
                                 id="browser_notifications.allow"
@@ -140,21 +150,19 @@ export default function SettingsEntry({
                                 )}
                             </Checkbox>
                         </div>
-                        <div className="settings--notifications--group">
-                            <div className="settings--notifications--item">
-                                <Checkbox
-                                    id="browser_notifications.additional.transferToMe"
-                                    disabled={!value.allow}
-                                    checked={!!value.additional.transferToMe}
-                                    onChange={handleNotificationChange(
-                                        "additional.transferToMe"
-                                    )}
-                                >
-                                    {counterpart.translate(
-                                        "settings.browser_notifications_additional_transfer_to_me"
-                                    )}
-                                </Checkbox>
-                            </div>
+                        <div className="settings--notifications--item">
+                            <Checkbox
+                                id="browser_notifications.additional.transferToMe"
+                                disabled={!value.allow}
+                                checked={!!value.additional.transferToMe}
+                                onChange={handleNotificationChange(
+                                    "additional.transferToMe"
+                                )}
+                            >
+                                {counterpart.translate(
+                                    "settings.browser_notifications_additional_transfer_to_me"
+                                )}
+                            </Checkbox>
                         </div>
                     </div>
                     {!!value.allow && Notify.needsPermission && (

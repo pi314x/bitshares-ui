@@ -1,6 +1,7 @@
 import * as React from "react";
 import {NavLink, NavLinkProps, useLocation} from "react-router-dom";
 import styles from "./Rail.module.scss";
+import {RailIcon} from "./RailIcon";
 // The real BitShares brand mark (also used by the legacy Header via
 // branding.js's getLogo()), not a placeholder letter.
 import logo from "assets/logo-ico-blue.png";
@@ -17,6 +18,8 @@ export interface RailNavItem {
      */
     action?: string;
     exact?: boolean;
+    /** The name of the entry's icon (RailIcon.tsx); none draws none. */
+    icon?: string;
     /**
      * For an entry whose `to` redirects somewhere else (e.g. `/voting` ->
      * `/account/<name>/voting`): the current path counts as this entry when it
@@ -95,6 +98,12 @@ export function Rail({
                                     onNavigate && onNavigate();
                                 }}
                             >
+                                {item.icon ? (
+                                    <RailIcon
+                                        name={item.icon}
+                                        className={styles.navIcon}
+                                    />
+                                ) : null}
                                 {item.label}
                             </button>
                         ) : (
@@ -111,6 +120,12 @@ export function Rail({
                                         : styles.navItem
                                 }
                             >
+                                {item.icon ? (
+                                    <RailIcon
+                                        name={item.icon}
+                                        className={styles.navIcon}
+                                    />
+                                ) : null}
                                 {item.label}
                             </TypedNavLink>
                         )

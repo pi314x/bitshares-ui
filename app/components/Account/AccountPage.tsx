@@ -58,6 +58,7 @@ import AccountSignedMessages from "./AccountSignedMessages";
 import AccountWhitelist from "./AccountWhitelist";
 import AccountVoting from "./AccountVoting";
 import AccountOverview from "./AccountOverview";
+import AccountOrders from "./AccountOrders";
 
 interface AccountPageCoreProps {
     account: any;
@@ -167,6 +168,7 @@ function AccountPage({
                 element={<Navigate to={`/account/${account_name}`} replace />}
             />
             <Route path="assets" element={<AccountAssets {...passOnProps} />} />
+            <Route path="orders" element={<AccountOrders {...passOnProps} />} />
             <Route path="pools" element={<AccountPools {...passOnProps} />} />
             <Route
                 path="create-asset"
@@ -209,6 +211,7 @@ function AccountPage({
                 path="signedmessages"
                 element={<AccountSignedMessages {...passOnProps} />}
             />
+            <Route path="*" element={<Page404 />} />
         </Routes>
     );
 }
