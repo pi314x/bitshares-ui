@@ -93,6 +93,42 @@ function loadHelpData(locale: string) {
         });
 }
 
+const loadedLocales: {[locale: string]: boolean} = {};
+
+/** Loads the help pages of `locale` (and the English fallback), once. */
+export function ensureHelpLoaded(locale: string) {
+    if (loadedLocales[locale]) return;
+    loadedLocales[locale] = true;
+    loadHelpData(locale);
+}
+
+/**
+ * The titles of the help pages in `locale`, by page path ("dex/trading"), read
+ * from the table of contents page (`toc.md`) of the locale, English where the
+ * locale has no entry.
+ */
+export function getHelpTitles(locale: string): {[path: string]: string} {
+    ensureHelpLoaded(locale);
+    const titles: {[path: string]: string} = {};
+    const read = (code: string) => {
+        const html = HelpData[code] && HelpData[code]["toc"];
+        if (typeof html !== "string") return;
+        const anchor = /<a\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+        let match: RegExpExecArray | null;
+        while ((match = anchor.exec(html))) {
+            const path = match[1]
+                .replace(/^#?\/help\//, "")
+                .replace(/^\//, "")
+                .replace(/\.md$/, "");
+            const title = match[2].replace(/<[^>]+>/g, "").trim();
+            if (path && title) titles[path] = title;
+        }
+    };
+    read("en");
+    if (locale !== "en") read(locale);
+    return titles;
+}
+
 function setVars(props: any, str: string, hideIssuer: any) {
     if (hideIssuer == "true") {
         str = str.replace(/<p>[^<]*{issuer}[^<]*<\/p>/gm, "");
@@ -132,11 +168,7 @@ function HelpContent(props: HelpContentProps) {
     } = props;
     const locale = localeProp || counterpart.getLocale() || "en";
 
-    const initRef = React.useRef(false);
-    if (!initRef.current) {
-        initRef.current = true;
-        loadHelpData(locale);
-    }
+    ensureHelpLoaded(locale);
 
     const navigate = useNavigate();
     const navigateRef = React.useRef(navigate);

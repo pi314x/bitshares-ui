@@ -24,3 +24,5 @@
  * [网关](gateways/introduction.md)
     * [Xbts](gateways/xbtsx.md)
     * [ioxbank](gateways/ioxbank.md)
+ * [流动性池](markets/pools.md)
+ * [定时转账](payments/timed_transfer.md)

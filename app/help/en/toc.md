@@ -22,3 +22,5 @@
  * [Gateways](gateways/introduction.md)
     * [Xbts](gateways/xbtsx.md)
     * [ioxbank](gateways/ioxbank.md)
+ * [Liquidity pools](markets/pools.md)
+ * [Timed transfer](payments/timed_transfer.md)

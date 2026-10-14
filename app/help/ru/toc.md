@@ -25,3 +25,5 @@
 - [Шлюзы](gateways/introduction.md)
     - [XBTSX](gateways/xbtsx.md)
     - [ioxbank](gateways/ioxbank.md)
+- [Пулы ликвидности](markets/pools.md)
+- [Отложенный перевод](payments/timed_transfer.md)

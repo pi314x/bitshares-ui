@@ -22,3 +22,5 @@
  * [ゲートウェイ](gateways/introduction.md)
     * [Xbts](gateways/xbtsx.md)
     * [ioxbank](gateways/ioxbank.md)
+ * [流動性プール](markets/pools.md)
+ * [時間指定送金](payments/timed_transfer.md)

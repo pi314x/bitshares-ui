@@ -22,3 +22,5 @@
  * [게이트웨이](gateways/introduction.md)
     * [Xbts](gateways/xbtsx.md)
     * [ioxbank](gateways/ioxbank.md)
+ * [유동성 풀](markets/pools.md)
+ * [예약 송금](payments/timed_transfer.md)

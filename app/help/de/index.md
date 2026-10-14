@@ -1,37 +1,31 @@
 # Hilfe
 
-Dies ist die Referenz-Wallet der BitShares-Blockchain. Sie verbindet sich mit Knoten der BitShares-Blockchain (bitshares-core).
+BitShares ist eine dezentrale Börse und Wallet auf einer öffentlichen Blockchain. Diese Hilfe folgt dem Menü links: zu jedem Eintrag, wofür er da ist und wo du mehr liest.
 
-Dieser Hilfebereich gibt einen kurzen Überblick und beschreibt die grundlegenden
-Konzepte dieser Anwendung.
+## Konto
+ * [Dashboard](/): dein Guthaben im Zeitverlauf, deine Lieblingsmärkte und deine letzten Aktivitäten.
+ * [Konten](/accounts): die Konten, die du hältst, und deine Kontakte. [Mehr](accounts/general.md)
+ * [Abstimmung](/voting): wähle Witnesses, Komiteemitglieder und Worker oder bestimme einen Proxy. [Mehr](voting.md)
+ * [Einstellungen](/settings): Sprache, Einheiten, Nodes, Backups und wie Transaktionen signiert werden. [Wallet](introduction/wallets.md), [Backups](introduction/backups.md)
 
-## Einführung
- * [Haftungsausschluss](disclaimer.md)
- * [BitShares](introduction/bitshares.md)
- * [Wallet](introduction/wallets.md)
- * [Backups](introduction/backups.md)
- * [Blockchain](introduction/blockchain.md)
- * [Witnesses](introduction/witness.md)
- * [Worker](introduction/workers.md)
- * [Komiteemitglieder](introduction/committee.md)
+## Zahlungen
+ * [Senden](/send): sende ein Asset an ein anderes Konto, auf Wunsch mit Memo.
+ * [Einzahlen](/deposit) und [Auszahlen](/withdraw): bewege Assets zwischen BitShares und anderen Blockchains über [Gateways](gateways/introduction.md).
+ * [Zeitgesteuerte Überweisung](/timed-transfer): sende ein Asset, das erst nach einem Datum abgeholt werden kann. [Mehr](payments/timed_transfer.md)
 
-## Konten
- * [Einführung](accounts/general.md)
- * [Berechtigungen](accounts/permissions.md)
- * [Mitgliedschaften](accounts/membership.md)
+## Märkte
+ * Handel: kaufe und verkaufe im Orderbuch. [Mehr](dex/trading.md)
+ * [Liquiditätspools](/pools): tausche gegen einen Pool oder stelle Liquidität bereit und verdiene seine Gebühren. [Mehr](markets/pools.md)
+ * [Sofort handeln](/instant-trade): ein einfaches Formular zum Kaufen und Verkaufen zum Marktpreis.
+ * [Prognosemärkte](/prediction): handle mit dem Ausgang zukünftiger Ereignisse.
 
-## Assets
- * [An den Markt gekoppelte Assets](assets/mpa.md) (BitUSD, BitEUR, BitGOLD, Bit\*,...)
- * [Von Nutzern ausgegebene Assets](assets/uia.md)
- * [Privatisierte BitAssets](assets/privbitassets.md)
+## Kredite
+ * [Kreditangebote](/credit-offer): leihe gegen Sicherheiten zum Satz eines Angebots oder mache selbst ein Angebot.
+ * [SameT-Fonds](/samet-funds): Pools eines Assets, die innerhalb einer einzigen Transaktion geliehen werden können.
 
-## Dezentrale Börse
- * [Einführung](dex/introduction.md)
- * [Handel](dex/trading.md)
- * [BitAssets leerverkaufen](dex/shorting.md)
+## Netzwerk
+ * [Explorer](/explorer): Blöcke, Assets, Pools, Konten, Witnesses, das Komitee, Märkte und Gebühren der Chain. [Blockchain](introduction/blockchain.md), [Witnesses](introduction/witness.md)
 
-## Entwicklung
- * [Bitshares UI auf Github](https://github.com/bitshares/bitshares-ui)
-
-----------
-[Glossar](glossary.md)
+## Mehr
+ * [Spotlight](/spotlight): Tauschgeschäft, HTLCs, Lastschriften, Kredite und weitere Funktionen.
+ * [Assets](assets/mpa.md), [Glossar](glossary.md), [Haftungsausschluss](disclaimer.md)

@@ -24,3 +24,5 @@
  * [Gateway'ler](gateways/introduction.md)
     * [Xbts](gateways/xbtsx.md)
     * [ioxbank](gateways/ioxbank.md)
+ * [Likidite havuzları](markets/pools.md)
+ * [Zamanlı transfer](payments/timed_transfer.md)
