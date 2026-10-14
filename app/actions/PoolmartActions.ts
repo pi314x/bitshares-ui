@@ -23,6 +23,40 @@ import {
 
 const inProgress: {[key: string]: boolean} = {};
 
+export interface PoolQueryOptions {
+    /** Ask the node for each pool's 24h statistics (volume, fees). */
+    withStatistics?: boolean;
+    /** With one asset given: pools holding it on either side, not only as A. */
+    anySide?: boolean;
+    /** With no asset given: every pool (`list_liquidity_pools`). */
+    all?: boolean;
+}
+
+// The pools' asset ids -> asset objects, attached the way the list expects
+// them (`asset_a_obj`, `asset_b_obj`, `share_asset_obj`).
+async function withAssetObjects(pools: any[]): Promise<any[]> {
+    const ids: string[] = [];
+    pools.forEach(pool => {
+        [pool.asset_a, pool.asset_b, pool.share_asset].forEach(id => {
+            if (ids.indexOf(id) === -1) ids.push(id);
+        });
+    });
+    if (!ids.length) return pools;
+    const assetObjects: any[] = await Apis.instance()
+        .db_api()
+        .exec("lookup_asset_symbols", [ids]);
+    const byId: {[id: string]: any} = {};
+    (assetObjects || []).forEach(asset => {
+        if (asset) byId[asset.id] = Immutable.fromJS(asset);
+    });
+    pools.forEach(pool => {
+        pool.asset_a_obj = byId[pool.asset_a];
+        pool.asset_b_obj = byId[pool.asset_b];
+        pool.share_asset_obj = byId[pool.share_asset];
+    });
+    return pools;
+}
+
 function attachDefer(fn: any) {
     fn.defer = (...args: any[]) => {
         setTimeout(() => fn(...args));
@@ -53,18 +87,35 @@ class PoolmartActionsFacade {
      * @param {int} limit
      * @param {string} start (pool id)
      */
-    getLiquidityPools(assetA?: any, assetB?: any, limit?: any, start?: any) {
+    getLiquidityPools(
+        assetA?: any,
+        assetB?: any,
+        limit?: any,
+        start?: any,
+        options: PoolQueryOptions = {}
+    ) {
         let method = "";
         let params: any[] = [];
+        // `with_statistics` is the node's last optional parameter: the 24h
+        // exchange volume and fees of each pool, from its market-history plugin.
+        const stats = options.withStatistics ? [true] : [];
         if (assetA && assetB) {
+            // either order: the node looks the pair up by both ids
             method = "get_liquidity_pools_by_both_assets";
-            params = [assetA, assetB, limit, start];
+            params = [assetA, assetB, limit, start, ...stats];
+        } else if (options.anySide && (assetA || assetB)) {
+            // the asset on whichever side of the pool it is
+            method = "get_liquidity_pools_by_one_asset";
+            params = [assetA || assetB, limit, start, ...stats];
         } else if (assetA) {
             method = "get_liquidity_pools_by_asset_a";
-            params = [assetA, limit, start];
+            params = [assetA, limit, start, ...stats];
         } else if (assetB) {
             method = "get_liquidity_pools_by_asset_b";
-            params = [assetB, limit, start];
+            params = [assetB, limit, start, ...stats];
+        } else if (options.all) {
+            method = "list_liquidity_pools";
+            params = [limit, start, ...stats];
         }
         if (method === "") {
             reduxStore.dispatch(
@@ -75,7 +126,7 @@ class PoolmartActionsFacade {
             );
             return;
         }
-        const id = `${assetA}_${assetB}_${start}_${limit}`;
+        const id = `${assetA}_${assetB}_${start}_${limit}_${method}_${!!options.withStatistics}`;
         if (!inProgress[id]) {
             inProgress[id] = true;
             reduxStore.dispatch(getLiquidityPoolsAction({loading: true}));
@@ -160,6 +211,38 @@ class PoolmartActionsFacade {
     }
 
     /**
+     * The pools whose share asset is one of `assetIds` - the ones a holder of
+     * those tokens takes part in. Does not touch the store (the list on the
+     * page is a different query); resolves with the pools, statistics and
+     * asset objects included, or `[]` if the node cannot answer.
+     */
+    async getPoolsByShareAssets(assetIds: string[]): Promise<any[]> {
+        const found: any[] = [];
+        // the node answers for at most `api_limit_get_liquidity_pools` (100)
+        for (let i = 0; i < assetIds.length; i += 100) {
+            const chunk = assetIds.slice(i, i + 100);
+            try {
+                const pools: any[] = await Apis.instance()
+                    .db_api()
+                    .exec("get_liquidity_pools_by_share_asset", [
+                        chunk,
+                        false,
+                        true
+                    ]);
+                (pools || []).forEach(pool => pool && found.push(pool));
+            } catch (error) {
+                console.log("Error in PoolmartActions.getPoolsByShareAssets");
+                return [];
+            }
+        }
+        try {
+            return await withAssetObjects(found);
+        } catch (error) {
+            return found;
+        }
+    }
+
+    /**
      * getLiquidityPools
      * @param {string} shareAsset (asset symbol or id)
      */
@@ -175,7 +258,8 @@ class PoolmartActionsFacade {
                 .db_api()
                 .exec("get_liquidity_pools_by_share_asset", [
                     [shareAsset],
-                    false
+                    false,
+                    true
                 ])
                 .then((liquidityPools: any) => {
                     const tmpAssetIds: any[] = [];

@@ -1,132 +1,159 @@
-// TypeScript/functional-component port of the legacy LiquidityPools.jsx
-// (Phase 8, docs/UI_MIGRATION_PLAN.md) - the "/pools" page's pool
-// listing/filter/pagination UI. `PoolExchangeModal`/`PoolStakeModal` (the
-// actual trade/stake actions, which do involve on-chain signing) are
-// reused exactly as before, not touched - this file only opens/closes
-// them, same lower-risk category as the already-ported sibling
-// `Explorer/LiquidityPools.tsx` and `Account/AccountPools.tsx`.
+// The liquidity pools screen (/pools and the explorer's Pools tab).
 //
-// SECURITY-SENSITIVE per AGENTS.md (this file dispatches on-chain reads,
-// even though it doesn't itself sign anything): every
-// `PoolmartActions.*` call site from the original is preserved here,
-// byte-for-byte in its argument construction:
-//   - `PoolmartActions.getLiquidityPoolsByShareAsset.defer(filterShareAsset)`
-//     and `PoolmartActions.getLiquidityPools.defer(filterAssetA,
-//     filterAssetB, GetLimit, start)` - both inside the debounced fetch
-//     effect below (was `_getLiquidityPools`).
-//   - `PoolmartActions.resetLiquidityPools()` - inside `resetLiquidityPools`
-//     (was `_resetLiquidityPools`), called from every filter-change and
-//     rows-per-page handler, exactly as the original did.
-// No other `PoolmartActions.`/transaction-dispatch call sites exist in
-// this file (grep-confirmed - the only on-chain *writes* this screen can
-// reach are inside `PoolExchangeModal`/`PoolStakeModal`, already ported
-// and documented as security-sensitive there; this file merely opens
-// them). No raw password/private-key/brainkey material is logged
-// anywhere in this file (grepped every `console.*` call - see the single
-// `console.log();` note below, which logs nothing at all).
+// What it shows: every pool the node knows (or those of one asset, a pair, a
+// share asset), each with its reserves, the price of one asset in the other,
+// its value, the 24h volume and fees when the node keeps statistics, and what
+// the signed-in account holds of it. Two actions per pool: swap (PoolExchange
+// Modal) and add / remove liquidity (PoolStakeModal) - those dialogs build and
+// sign the transactions; this file only opens them, and only reads from the
+// chain.
 //
-// Structural change - the original's four layers:
-//   `connect(LiquidityPoolsStoreWrapper, {listenTo: [PoolmartStore],
-//   getProps})` (outer alt-react HOC)
-//     -> `LiquidityPoolsStoreWrapper` (trivial passthrough class, no
-//        logic of its own)
-//       -> `BindToChainState(LiquidityPools, {show_loader: true})`
-//          (resolves the required `defaultAsset` chain prop)
-//         -> `LiquidityPools` (the actual class component)
-// collapse into three functions, following the exact precedent set by
-// `Account/AccountPools.tsx` (also `connect(...) + BindToChainState(...,
-// {show_loader: true})`, same two-store-free shape here since this file
-// only ever listened to `PoolmartStore`):
-//   - `LiquidityPoolsContainer` (default export): calls
-//     `useReduxState(selectPoolmart)` once, replacing the outer `connect`.
-//     The `LiquidityPoolsStoreWrapper` passthrough class isn't separately
-//     reproduced since it had no logic of its own.
-//   - `LiquidityPoolsChainContainer`: calls `useChainStoreTick()` and
-//     resolves `defaultAsset` via `ChainStore.getAsset(...)`, replicating
-//     `BindToChainState`'s `options.show_loader` fallback *exactly* as
-//     read from `app/components/Utility/BindToChainState.jsx` (its
-//     `render()`'s required-prop-unresolved branch, when
-//     `options.show_loader` is truthy, returns `<LoadingIndicator />` +
-//     `<span className="text-center">Loading ...</span>` inside a
-//     Fragment - NOT the bare `<span />` fallback used by components
-//     ported without that option, e.g. `Modal/WithdrawModalNew.tsx`'s
-//     Container). `LoadingIndicator` is imported for this from
-//     `../LoadingIndicator`, matching what `BindToChainState.jsx` itself
-//     imports and renders for that option.
-//   - `LiquidityPools` (core): the actual rendering/state logic, taking
-//     the already-resolved `defaultAsset` (a resolved Immutable asset
-//     object, never null/undefined by the time this renders, exactly as
-//     the original class's `this.props.defaultAsset` was guaranteed to be
-//     post-`BindToChainState`) plus `liquidityPools`/`lastPoolId` from
-//     `PoolmartStore`.
+// Data: `PoolmartActions.getLiquidityPools` fills the store's pool map page by
+// page (the node serves at most 100 per request; the effect below keeps asking
+// for the next page until a page adds nothing). `getPoolsByShareAssets` finds
+// the pools whose share tokens the account holds, for "Your liquidity".
 //
-// Dropped as confirmed dead (grep-evidenced, same findings already
-// documented in the sibling `Explorer/LiquidityPools.tsx` and
-// `Account/AccountPools.tsx` ports for the equivalent fields):
-//   - `state.total` - initialized in the constructor and reset inside
-//     `_resetLiquidityPools`, never read anywhere; the antd `<Table>`'s
-//     `pagination.total` uses `dataSource.length` instead.
-//   - A *local* `state.lastPoolId` - set to `null` only inside
-//     `_resetLiquidityPools`, never read anywhere. This is distinct from
-//     the `lastPoolId` *prop* sourced from `PoolmartStore`, which IS kept
-//     (it's what the auto-pagination effect below compares against).
-//   - The `tile` object (`{disabled: hasLoggedIn ? false : "Please login
-//     ..."}`), computed fresh every `render()` from `hasLoggedIn` but
-//     never referenced again anywhere in the file.
-//   - The connect-provided `liquidityPoolsLoading` prop - computed by the
-//     original `getProps()` but never read anywhere in the class.
-//
-// Preserved verbatim (not "fixed"), both pre-existing bugs/quirks:
-//   - The legacy `GetLimit` typo: `_getLiquidityPools` destructured
-//     `GetLimit` from `this.state`, but no such field was ever set -
-//     only lowercase `limit` was - so `GetLimit` was always `undefined`,
-//     meaning the rows-per-page selector never actually affected how many
-//     pools the API returns per fetch (it does still affect the antd
-//     `<Table>`'s client-side `pagination.pageSize`, which correctly
-//     reads `state.limit`/local `limit`). Preserved here as an explicit
-//     `undefined` third argument rather than silently "fixed" to `limit`
-//     - identical treatment to the `Explorer/LiquidityPools.tsx` and
-//     `Account/AccountPools.tsx` ports of the same bug.
-//   - The bare `console.log();` call at the top of the original
-//     `render()`, with zero arguments - logs nothing at all (not
-//     security-sensitive; AGENTS.md's unconditional drop rule is for logs
-//     of actual password/private-key/brainkey material, which this is
-//     not), kept as-is per the "preserve every bug/quirk verbatim" rule.
-//
-// The auto-pagination effect (fetch more as soon as a new batch of pools
-// arrives, until the API stops returning anything new) needs the same
-// "compare against the value from *before* this update" semantics the
-// legacy `componentWillReceiveProps(nextProps)` had, by comparing
-// `nextProps.liquidityPools` against `this.props.lastPoolId` (the *old*,
-// pre-update props value, since `this.props` hadn't been reassigned yet
-// at that point in the lifecycle) - reproduced with a ref that's only
-// updated *after* the comparison, one render behind, exactly like the
-// `Explorer/LiquidityPools.tsx` port.
-//
-// TypeScript-forced adjustments: `SearchInput` (still an untyped `.jsx`)
-// and `Link` are cast via `React.ComponentType<any>`/`LinkProps`
-// respectively, matching the established pattern in
-// `Explorer/LiquidityPools.tsx`.
+// Layout: a table on a wide screen, a card per pool on a phone (every column
+// of the table is on the card, so nothing needs a sideways scroll).
 import * as React from "react";
-import {Table} from "../../design-system/Table";
-import {Select} from "../../design-system/Select";
 import {Link, LinkProps} from "react-router-dom";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
+import {Table} from "../../design-system/Table";
+import {Select} from "../../design-system/Select";
+import {Toolbar} from "../../design-system/Toolbar";
+import {Button} from "../../design-system/Button";
 import AssetName from "../Utility/AssetName";
 import SearchInput from "../Utility/SearchInput";
 import PoolmartActions from "../../actions/PoolmartActions";
-import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
 import AccountStore from "../../stores/AccountStore";
-import {useReduxState} from "../../next/hooks/useReduxState";
-import {selectPoolmart} from "../../store/slices/poolmartSlice";
-import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import LoadingIndicator from "../LoadingIndicator";
+import {PoolCard, PoolCardData} from "./PoolCard";
+import PoolGraph from "./PoolGraph";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {useMediaQuery} from "../../next/hooks/useMediaQuery";
+import {selectPoolmart} from "../../store/slices/poolmartSlice";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {
+    PoolSortKey,
+    formatAmountShort,
+    formatPercent,
+    formatPrice,
+    poolMetrics,
+    shareOfPool,
+    sortPools
+} from "../../lib/common/poolMetrics";
+import styles from "./LiquidityPools.module.scss";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
 const TypedLink = Link as React.ComponentType<LinkProps>;
+
+const t = (key: string, params?: Record<string, any>) =>
+    counterpart.translate(`poolmart.liquidity_pools.${key}`, params);
+
+const CARDS_PER_STEP = 12;
+const TABLE_PAGE = 25;
+
+interface Holding {
+    fraction: number;
+    amountA: number;
+    amountB: number;
+}
+
+/** A pool from the node, with its assets resolved, as the list needs it. */
+function toCard(pool: any, yours: Holding | null): PoolCardData | null {
+    const assetA = pool.asset_a_obj;
+    const assetB = pool.asset_b_obj;
+    if (!assetA || !assetB) return null;
+    const symbolA: string = assetA.get("symbol");
+    const symbolB: string = assetB.get("symbol");
+    return {
+        id: pool.id,
+        shareSymbol: pool.share_asset_obj
+            ? pool.share_asset_obj.get("symbol")
+            : pool.share_asset,
+        symbolA,
+        symbolB,
+        metrics: poolMetrics(
+            pool,
+            assetA.get("precision"),
+            assetB.get("precision")
+        ),
+        takerFeePercent: pool.taker_fee_percent,
+        withdrawalFeePercent: pool.withdrawal_fee_percent,
+        yours,
+        valueUnit: symbolA
+    };
+}
+
+/** What `accountName` holds of the pools it has share tokens of. */
+function useMyHoldings(
+    accountName: string | null
+): {
+    pools: any[];
+    holdings: {[poolId: string]: Holding};
+} {
+    useChainStoreTick();
+    const account: any = accountName
+        ? (ChainStore as any).getAccount(accountName)
+        : null;
+    const balances: {[assetId: string]: string} =
+        account && typeof account.get === "function" && account.get("balances")
+            ? account.get("balances").toJS()
+            : {};
+    const key = Object.keys(balances)
+        .sort()
+        .join(",");
+    const [pools, setPools] = React.useState<any[]>([]);
+    React.useEffect(() => {
+        if (!key) {
+            setPools([]);
+            return;
+        }
+        let cancelled = false;
+        (PoolmartActions as any)
+            .getPoolsByShareAssets(key.split(","))
+            .then((found: any[]) => {
+                if (!cancelled) setPools(found);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [key]);
+
+    const holdings: {[poolId: string]: Holding} = {};
+    const mine: any[] = [];
+    pools.forEach(pool => {
+        const balanceId = balances[pool.share_asset];
+        const balanceObject = balanceId
+            ? (ChainStore as any).getObject(balanceId)
+            : null;
+        const shareAsset: any = (ChainStore as any).getAsset(pool.share_asset);
+        const dynamic: any =
+            shareAsset && typeof shareAsset.get === "function"
+                ? (ChainStore as any).getObject(
+                      shareAsset.get("dynamic_asset_data_id")
+                  )
+                : null;
+        if (!balanceObject || !dynamic || !pool.asset_a_obj) return;
+        const unit = Math.pow(10, shareAsset.get("precision"));
+        const shares = Number(balanceObject.get("balance")) / unit;
+        const supply = Number(dynamic.get("current_supply")) / unit;
+        if (!(shares > 0)) return;
+        const m = poolMetrics(
+            pool,
+            pool.asset_a_obj.get("precision"),
+            pool.asset_b_obj.get("precision")
+        );
+        const share = shareOfPool(shares, supply, m.reserveA, m.reserveB);
+        holdings[pool.id] = share;
+        mine.push(pool);
+    });
+    return {pools: mine, holdings};
+}
 
 interface LiquidityPoolsCoreProps {
     liquidityPools: any;
@@ -134,358 +161,376 @@ interface LiquidityPoolsCoreProps {
     defaultAsset: any;
 }
 
-function LiquidityPools({
-    liquidityPools,
-    lastPoolId,
-    defaultAsset
-}: LiquidityPoolsCoreProps) {
-    const [filterAssetA, setFilterAssetA] = React.useState<string | null>(() =>
-        defaultAsset ? defaultAsset.get("symbol") : null
-    );
-    const [filterAssetB, setFilterAssetB] = React.useState<string | null>(null);
-    const [filterShareAsset, setFilterShareAsset] = React.useState<
-        string | null
-    >(null);
+function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
+    const account = useReduxState<any>(selectAccountState);
+    const accountName: string | null =
+        account.currentAccount || account.passwordAccount || null;
+    const phone = useMediaQuery("(max-width: 860px)");
+
+    const [filterAsset, setFilterAsset] = React.useState("");
+    const [filterWith, setFilterWith] = React.useState("");
+    const [filterShare, setFilterShare] = React.useState("");
+    const [sortKey, setSortKey] = React.useState<PoolSortKey>("value");
+    const [view, setView] = React.useState<"list" | "graph">("list");
     const [start, setStart] = React.useState("1.19.0");
-    const [limit, setLimit] = React.useState(10);
-    const [isExchangeModalVisible, setExchangeModalVisible] = React.useState(
-        false
-    );
-    const [isStakeModalVisible, setStakeModalVisible] = React.useState(false);
-    const [selectedPool, setSelectedPool] = React.useState<any>(null);
+    const [shownCards, setShownCards] = React.useState(CARDS_PER_STEP);
+    const [swapPool, setSwapPool] = React.useState<any>(null);
+    const [stakePool, setStakePool] = React.useState<any>(null);
 
-    function resetLiquidityPools() {
+    const resetList = () => {
         setStart("1.19.0");
+        setShownCards(CARDS_PER_STEP);
         PoolmartActions.resetLiquidityPools();
-    }
+    };
+    const upper = (value: string) => value.trim().toUpperCase();
 
-    function onFilterAssetA(e: React.ChangeEvent<HTMLInputElement>) {
-        if (e.target.value) {
-            setFilterAssetA(e.target.value.toUpperCase());
-        } else {
-            setFilterAssetA("");
-        }
-        resetLiquidityPools();
-    }
-
-    function onFilterAssetB(e: React.ChangeEvent<HTMLInputElement>) {
-        if (e.target.value) {
-            setFilterAssetB(e.target.value.toUpperCase());
-        } else {
-            setFilterAssetB("");
-        }
-        resetLiquidityPools();
-    }
-
-    function onFilterShareAsset(e: React.ChangeEvent<HTMLInputElement>) {
-        if (e.target.value) {
-            setFilterAssetA(null);
-            setFilterAssetB(null);
-            setFilterShareAsset(e.target.value.toUpperCase());
-        } else {
-            setFilterShareAsset("");
-        }
-        resetLiquidityPools();
-    }
-
-    function handleRowsChange(nextLimit: string) {
-        setLimit(parseInt(nextLimit, 10));
-        setStart("1.19.0");
-        resetLiquidityPools();
-    }
-
-    function showExchangeModal(pool: any) {
-        setExchangeModalVisible(true);
-        setSelectedPool(pool);
-    }
-
-    function hideExchangeModal() {
-        setExchangeModalVisible(false);
-        setSelectedPool(null);
-    }
-
-    function showStakeModal(pool: any) {
-        setStakeModalVisible(true);
-        setSelectedPool(pool);
-    }
-
-    function hideStakeModal() {
-        setStakeModalVisible(false);
-        setSelectedPool(null);
-    }
-
-    // Debounced fetch, replacing the original's `_getLiquidityPools`
-    // (called from `componentDidMount`, every filter handler, and
-    // `_handleRowsChange`) - each of those just changed one of these
-    // dependencies now instead of separately invoking a fetch.
+    // Debounced fetch: asked again whenever a filter or the start id changes.
     const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     React.useEffect(() => {
         if (fetchTimer.current) clearTimeout(fetchTimer.current);
         fetchTimer.current = setTimeout(() => {
-            if (filterShareAsset) {
+            if (filterShare) {
                 (PoolmartActions.getLiquidityPoolsByShareAsset as any).defer(
-                    filterShareAsset
+                    filterShare
                 );
             } else {
                 (PoolmartActions.getLiquidityPools as any).defer(
-                    filterAssetA,
-                    filterAssetB,
-                    undefined, // see header comment: legacy GetLimit typo, preserved
-                    start
+                    filterAsset || null,
+                    filterWith || null,
+                    undefined, // the node's page size
+                    start,
+                    {withStatistics: true, anySide: true, all: true}
                 );
             }
-        }, 500);
+        }, 400);
         return () => {
             if (fetchTimer.current) clearTimeout(fetchTimer.current);
         };
-    }, [filterAssetA, filterAssetB, filterShareAsset, start]);
+    }, [filterAsset, filterWith, filterShare, start]);
 
-    // Auto-pagination: keep loading more pools as long as a fetch returns
-    // a batch whose tail differs from the lastPoolId we had *before* this
-    // update (see header comment for why "before this update" matters).
-    const prevLastPoolIdRef = React.useRef(lastPoolId);
+    // Keep asking for the next page while a page brings pools we did not have:
+    // compared with the id from *before* this update (the ref is one behind).
+    const prevLastPoolId = React.useRef(lastPoolId);
     React.useEffect(() => {
         if (liquidityPools.size > 0) {
             const tailId = liquidityPools.last().id;
-            if (tailId !== prevLastPoolIdRef.current) {
-                setStart(tailId);
-            }
+            if (tailId !== prevLastPoolId.current) setStart(tailId);
         }
-        prevLastPoolIdRef.current = lastPoolId;
+        prevLastPoolId.current = lastPoolId;
         // eslint-disable-next-line
     }, [liquidityPools]);
 
-    const hasLoggedIn =
+    const hasAccount =
         AccountStore.getState().myActiveAccounts.length > 0 ||
         !!AccountStore.getState().currentAccount;
-    console.log();
+
+    const mine = useMyHoldings(accountName);
+
+    const cards: {data: PoolCardData; pool: any}[] = [];
+    liquidityPools.forEach((pool: any) => {
+        const data = toCard(pool, mine.holdings[pool.id] || null);
+        if (data) cards.push({data, pool});
+    });
+    const sorted = sortPools(
+        cards.map(c => ({
+            key: c.data.id,
+            data: c.data,
+            pool: c.pool,
+            metrics: c.data.metrics
+        })),
+        sortKey
+    );
+
+    const yourCards: {data: PoolCardData; pool: any}[] = [];
+    mine.pools.forEach(pool => {
+        const data = toCard(pool, mine.holdings[pool.id] || null);
+        if (data) yourCards.push({data, pool});
+    });
+
+    const openSwap = (pool: any) => setSwapPool(pool);
+    const openStake = (pool: any) => setStakePool(pool);
+
+    const renderCard = (entry: {data: PoolCardData; pool: any}) => (
+        <PoolCard
+            key={entry.data.id}
+            pool={entry.data}
+            canAct={hasAccount}
+            onSwap={() => openSwap(entry.pool)}
+            onStake={() => openStake(entry.pool)}
+        />
+    );
 
     const columns = [
         {
-            key: "id",
-            dataIndex: "id",
-            title: counterpart.translate("poolmart.liquidity_pools.pool_id"),
-            sorter: (a: any, b: any) => {
-                const aId = a.id.split(".")[2];
-                const bId = b.id.split(".")[2];
-                return aId - bId;
-            }
-        },
-        {
-            key: "share_asset_str",
-            dataIndex: "share_asset_str",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.share_asset"
-            ),
-            render: (item: string) =>
-                item ? (
-                    <TypedLink to={`/asset/${item}`}>
-                        <AssetName name={item} />
+            key: "pair",
+            title: t("pair"),
+            render: (_value: any, row: any) => (
+                <span className={styles.pair}>
+                    <TypedLink to={`/asset/${row.data.symbolA}`}>
+                        <AssetName name={row.data.symbolA} noTip />
                     </TypedLink>
-                ) : null,
-            sorter: (a: any, b: any) =>
-                a.share_asset_str > b.share_asset_str
-                    ? 1
-                    : a.share_asset_str < b.share_asset_str
-                    ? -1
-                    : 0
-        },
-        {
-            key: "asset_a_str",
-            dataIndex: "asset_a_str",
-            title: counterpart.translate("poolmart.liquidity_pools.asset_a"),
-            render: (item: string) =>
-                item ? (
-                    <TypedLink to={`/asset/${item}`}>
-                        <AssetName name={item} />
+                    {" / "}
+                    <TypedLink to={`/asset/${row.data.symbolB}`}>
+                        <AssetName name={row.data.symbolB} noTip />
                     </TypedLink>
-                ) : null,
-            sorter: (a: any, b: any) =>
-                a.asset_a_str > b.asset_a_str
-                    ? 1
-                    : a.asset_a_str < b.asset_a_str
-                    ? -1
-                    : 0
-        },
-        {
-            key: "asset_a_qty",
-            dataIndex: "asset_a_qty",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.asset_a_qty"
-            ),
-            sorter: (a: any, b: any) => a.asset_a_qty - b.asset_a_qty
-        },
-        {
-            key: "asset_b_str",
-            dataIndex: "asset_b_str",
-            title: counterpart.translate("poolmart.liquidity_pools.asset_b"),
-            render: (item: string) =>
-                item ? (
-                    <TypedLink to={`/asset/${item}`}>
-                        <AssetName name={item} />
-                    </TypedLink>
-                ) : null,
-            sorter: (a: any, b: any) =>
-                a.asset_b_str > b.asset_b_str
-                    ? 1
-                    : a.asset_b_str < b.asset_b_str
-                    ? -1
-                    : 0
-        },
-        {
-            key: "asset_b_qty",
-            dataIndex: "asset_b_qty",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.asset_b_qty"
-            ),
-            sorter: (a: any, b: any) => a.asset_b_qty - b.asset_b_qty
-        },
-        {
-            key: "taker_fee_percent",
-            dataIndex: "taker_fee_percent_str",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.taker_fee_percent"
+                </span>
             )
         },
         {
-            key: "withdrawal_fee_percent",
-            dataIndex: "withdrawal_fee_percent_str",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.withdrawal_fee_percent"
+            key: "share",
+            title: t("share_asset"),
+            render: (_value: any, row: any) => (
+                <span>
+                    <TypedLink to={`/asset/${row.data.shareSymbol}`}>
+                        <AssetName name={row.data.shareSymbol} noTip />
+                    </TypedLink>
+                    <br />
+                    <span className={styles.muted}>{row.data.id}</span>
+                </span>
             )
         },
         {
-            key: "exchange",
-            title: counterpart.translate("poolmart.liquidity_pools.exchange"),
-            render: (item: any) =>
-                hasLoggedIn ? (
-                    <a onClick={() => showExchangeModal(item)}>
-                        <Icon name="poolmart" />
-                    </a>
-                ) : (
-                    <Icon name="poolmart" />
-                )
+            key: "reserves",
+            title: t("reserves"),
+            render: (_value: any, row: any) => (
+                <span>
+                    {formatAmountShort(row.data.metrics.reserveA)}{" "}
+                    <AssetName name={row.data.symbolA} noTip />
+                    <br />
+                    {formatAmountShort(row.data.metrics.reserveB)}{" "}
+                    <AssetName name={row.data.symbolB} noTip />
+                </span>
+            )
         },
         {
-            key: "stake_unstake",
-            title: counterpart.translate(
-                "poolmart.liquidity_pools.stake_unstake"
-            ),
-            render: (item: any) =>
-                hasLoggedIn ? (
-                    <a onClick={() => showStakeModal(item)}>
-                        <Icon name="deposit" />
-                    </a>
-                ) : (
-                    <Icon name="deposit" />
-                )
+            key: "price",
+            title: t("price"),
+            render: (_value: any, row: any) => (
+                <span>
+                    {formatPrice(row.data.metrics.priceBPerA)}{" "}
+                    <AssetName name={row.data.symbolB} noTip />
+                    <br />
+                    <span className={styles.muted}>
+                        {t("per_unit", {asset: row.data.symbolA})}
+                    </span>
+                </span>
+            )
+        },
+        {
+            key: "value",
+            title: t("pool_value"),
+            render: (_value: any, row: any) =>
+                `${formatAmountShort(row.data.metrics.poolValueA)} ${
+                    row.data.valueUnit
+                }`
+        },
+        {
+            key: "volume",
+            title: t("volume_24h"),
+            render: (_value: any, row: any) =>
+                row.data.metrics.volume24hA === null
+                    ? "-"
+                    : `${formatAmountShort(row.data.metrics.volume24hA)} ${
+                          row.data.valueUnit
+                      }`
+        },
+        {
+            key: "fees",
+            title: t("fees"),
+            render: (_value: any, row: any) => (
+                <span>
+                    {row.data.takerFeePercent / 100}% /{" "}
+                    {row.data.withdrawalFeePercent / 100}%
+                    {row.data.metrics.feeYield24h !== null ? (
+                        <>
+                            <br />
+                            <span className={styles.muted}>
+                                {t("fees_24h", {
+                                    percent: formatPercent(
+                                        row.data.metrics.feeYield24h * 365
+                                    )
+                                })}
+                            </span>
+                        </>
+                    ) : null}
+                </span>
+            )
+        },
+        {
+            key: "actions",
+            title: "",
+            render: (_value: any, row: any) => (
+                <span className={styles.rowActions}>
+                    <Button
+                        variant="accent"
+                        disabled={!hasAccount || !row.data.metrics.priceBPerA}
+                        onClick={() => openSwap(row.pool)}
+                    >
+                        {t("swap")}
+                    </Button>
+                    <Button
+                        disabled={!hasAccount}
+                        onClick={() => openStake(row.pool)}
+                    >
+                        {t("add_remove")}
+                    </Button>
+                </span>
+            )
         }
     ];
 
-    const dataSource: any[] = [];
-    liquidityPools.forEach((pool: any) => {
-        const row = pool;
-        row.share_asset_str = pool.share_asset_obj
-            ? pool.share_asset_obj.get("symbol")
-            : pool.share_asset;
-        row.asset_a_str = pool.asset_a_obj
-            ? pool.asset_a_obj.get("symbol")
-            : pool.asset_a;
-        row.asset_b_str = pool.asset_b_obj
-            ? pool.asset_b_obj.get("symbol")
-            : pool.asset_b;
-        row.asset_a_qty = pool.asset_a_obj
-            ? pool.balance_a / Math.pow(10, pool.asset_a_obj.get("precision"))
-            : 0;
-        row.asset_b_qty = pool.asset_b_obj
-            ? pool.balance_b / Math.pow(10, pool.asset_b_obj.get("precision"))
-            : 0;
-        row.taker_fee_percent_str = `${pool.taker_fee_percent / 100}%`;
-        row.withdrawal_fee_percent_str = `${pool.withdrawal_fee_percent /
-            100}%`;
-        dataSource.push(row);
-    });
+    const loadingFirst = liquidityPools.size === 0;
 
     return (
-        <div className="grid-block vertical">
-            <div
-                className="grid-content no-padding"
-                style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                    gap: 12,
-                    marginBottom: 16
-                }}
-            >
-                <TypedSearchInput
-                    placeholder={counterpart.translate(
-                        "poolmart.liquidity_pools.asset_a"
-                    )}
-                    value={filterAssetA}
-                    onChange={onFilterAssetA}
-                    style={{width: "200px"}}
-                />
-                <TypedSearchInput
-                    placeholder={counterpart.translate(
-                        "poolmart.liquidity_pools.asset_b"
-                    )}
-                    value={filterAssetB}
-                    onChange={onFilterAssetB}
-                    style={{width: "200px"}}
-                />
-                <TypedSearchInput
-                    placeholder={counterpart.translate(
-                        "poolmart.liquidity_pools.share_asset"
-                    )}
-                    value={filterShareAsset}
-                    onChange={onFilterShareAsset}
-                    style={{width: "200px"}}
-                />
-                <Select
-                    style={{width: "150px"}}
-                    value={String(limit)}
-                    onChange={value => handleRowsChange(value as string)}
-                >
-                    <Select.Option key={"10"} value={"10"}>
-                        10 rows
-                    </Select.Option>
-                    <Select.Option key={"25"} value={"25"}>
-                        25 rows
-                    </Select.Option>
-                    <Select.Option key={"50"} value={"50"}>
-                        50 rows
-                    </Select.Option>
-                    <Select.Option key={"100"} value={"100"}>
-                        100 rows
-                    </Select.Option>
-                </Select>
-            </div>
-            <div className="grid-content no-padding">
-                <Table
-                    columns={columns}
-                    rowKey="id"
-                    dataSource={dataSource}
-                    pagination={{
-                        pageSize: limit,
-                        total: dataSource.length
-                    }}
-                />
-            </div>
-            {isExchangeModalVisible && (
+        <div className={styles.page}>
+            {yourCards.length > 0 ? (
+                <section className={styles.section}>
+                    <h2 className={styles.heading}>{t("your_liquidity")}</h2>
+                    <div className={styles.cards}>
+                        {yourCards.map(renderCard)}
+                    </div>
+                </section>
+            ) : null}
+
+            <section className={styles.section}>
+                <h2 className={styles.heading}>
+                    {t("all_pools", {count: sorted.length})}
+                </h2>
+                <Toolbar>
+                    <Toolbar.Grow>
+                        <TypedSearchInput
+                            placeholder={t("asset")}
+                            value={filterAsset}
+                            maxLength={32}
+                            onChange={(e: any) => {
+                                setFilterAsset(upper(e.target.value));
+                                setFilterShare("");
+                                resetList();
+                            }}
+                        />
+                    </Toolbar.Grow>
+                    <Toolbar.Grow>
+                        <TypedSearchInput
+                            placeholder={t("paired_with")}
+                            value={filterWith}
+                            maxLength={32}
+                            onChange={(e: any) => {
+                                setFilterWith(upper(e.target.value));
+                                setFilterShare("");
+                                resetList();
+                            }}
+                        />
+                    </Toolbar.Grow>
+                    <Toolbar.Grow>
+                        <TypedSearchInput
+                            placeholder={t("share_asset")}
+                            value={filterShare}
+                            maxLength={32}
+                            onChange={(e: any) => {
+                                setFilterShare(upper(e.target.value));
+                                if (e.target.value) {
+                                    setFilterAsset("");
+                                    setFilterWith("");
+                                }
+                                resetList();
+                            }}
+                        />
+                    </Toolbar.Grow>
+                    <Toolbar.End>
+                        <span className={styles.views} role="group">
+                            {(["list", "graph"] as const).map(choice => (
+                                <button
+                                    key={choice}
+                                    type="button"
+                                    aria-pressed={view === choice}
+                                    className={`${styles.view} ${
+                                        view === choice ? styles.viewOn : ""
+                                    }`}
+                                    onClick={() => setView(choice)}
+                                >
+                                    {t(`view_${choice}`)}
+                                </button>
+                            ))}
+                        </span>
+                        <Select
+                            style={{width: "170px"}}
+                            value={sortKey}
+                            onChange={value =>
+                                setSortKey(String(value) as PoolSortKey)
+                            }
+                        >
+                            <Select.Option value="value">
+                                {t("sort_value")}
+                            </Select.Option>
+                            <Select.Option value="volume">
+                                {t("volume_24h")}
+                            </Select.Option>
+                            <Select.Option value="newest">
+                                {t("sort_newest")}
+                            </Select.Option>
+                        </Select>
+                    </Toolbar.End>
+                </Toolbar>
+
+                {loadingFirst ? (
+                    <div className={styles.loading}>
+                        <LoadingIndicator type="three-bounce" />
+                    </div>
+                ) : view === "graph" ? (
+                    <PoolGraph
+                        pools={cards.map(c => c.pool)}
+                        onShowAsset={symbol => {
+                            setFilterAsset(symbol.toUpperCase());
+                            setFilterWith("");
+                            setFilterShare("");
+                            resetList();
+                            setView("list");
+                        }}
+                    />
+                ) : phone ? (
+                    <>
+                        <div className={styles.cards}>
+                            {sorted.slice(0, shownCards).map(renderCard)}
+                        </div>
+                        {shownCards < sorted.length ? (
+                            <div className={styles.more}>
+                                <Button
+                                    onClick={() =>
+                                        setShownCards(n => n + CARDS_PER_STEP)
+                                    }
+                                >
+                                    {t("show_more")}
+                                </Button>
+                            </div>
+                        ) : null}
+                    </>
+                ) : (
+                    <Table
+                        columns={columns}
+                        rowKey="key"
+                        dataSource={sorted}
+                        pagination={{pageSize: TABLE_PAGE}}
+                    />
+                )}
+                {!loadingFirst && sorted.length === 0 ? (
+                    <div className={styles.loading}>{t("no_pools")}</div>
+                ) : null}
+            </section>
+
+            {swapPool ? (
                 <PoolExchangeModal
-                    isModalVisible={isExchangeModalVisible}
-                    onHideModal={hideExchangeModal}
-                    pool={selectedPool.share_asset}
+                    isModalVisible={true}
+                    onHideModal={() => setSwapPool(null)}
+                    pool={swapPool.share_asset}
                 />
-            )}
-            {isStakeModalVisible && (
+            ) : null}
+            {stakePool ? (
                 <PoolStakeModal
-                    isModalVisible={isStakeModalVisible}
-                    onHideModal={hideStakeModal}
-                    pool={selectedPool.share_asset}
+                    isModalVisible={true}
+                    onHideModal={() => setStakePool(null)}
+                    pool={stakePool.share_asset}
                 />
-            )}
+            ) : null}
         </div>
     );
 }
@@ -496,17 +541,17 @@ interface LiquidityPoolsChainContainerProps {
     defaultAsset?: any;
 }
 
+// `defaultAsset` (BTS) is resolved before the list is shown, as before: the
+// list needs the core asset's object for fee display in the modals.
 function LiquidityPoolsChainContainer({
     liquidityPools,
     lastPoolId,
     defaultAsset = "1.3.0"
 }: LiquidityPoolsChainContainerProps) {
     useChainStoreTick();
-    const resolvedDefaultAsset = ChainStore.getAsset(defaultAsset);
+    const resolvedDefaultAsset = (ChainStore as any).getAsset(defaultAsset);
 
     if (!resolvedDefaultAsset) {
-        // Replicates BindToChainState's `options.show_loader` fallback
-        // exactly (see header comment / BindToChainState.jsx's render()).
         return (
             <React.Fragment>
                 <LoadingIndicator />
