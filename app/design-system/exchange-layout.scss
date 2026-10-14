@@ -56,15 +56,34 @@
     }
 }
 
-@media (min-width: 1280px) {
+// The side panel (markets) keeps its width: its controls wrapped to a wider
+// column than the content next to it can spare.
+.market-layout > .grid-block.left-column.shrink:last-child {
+    flex: 0 0 380px;
+    width: 380px;
+    max-width: 380px;
+}
+
+// Two columns of forms need ~320px each...
+@media (min-width: 1360px) {
     .market-layout #CenterContent > .grid-block.no-overflow.wrap.shrink {
         grid-template-columns: repeat(2, minmax(0, 1fr));
 
-        // the order book spans both columns, its two halves side by side
+        // the order book spans both columns
         > .orderbook {
             grid-column: 1 / -1;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+    }
+}
+
+// ...and the order book's four number columns need ~480px each to sit side by
+// side; below that its halves are stacked.
+@media (min-width: 1560px) {
+    .market-layout
+        #CenterContent
+        > .grid-block.no-overflow.wrap.shrink
+        > .orderbook {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
