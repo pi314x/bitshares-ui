@@ -337,6 +337,7 @@ function BuySellInner(props: BuySellProps) {
     const baseMarketFee = baseFlagBooleans["charge_market_fee"] ? (
         verticalOrderForm ? (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: baseMarketFeePercent,
                     asset: (basePrefix || "") + baseName
@@ -367,6 +368,7 @@ function BuySellInner(props: BuySellProps) {
             </Tooltip>
         ) : singleColumnForm ? (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: baseMarketFeePercent,
                     asset: (basePrefix || "") + baseName
@@ -397,6 +399,7 @@ function BuySellInner(props: BuySellProps) {
             </Tooltip>
         ) : (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: baseMarketFeePercent,
                     asset: (basePrefix || "") + baseName
@@ -434,6 +437,7 @@ function BuySellInner(props: BuySellProps) {
     const quoteMarketFee = quoteFlagBooleans["charge_market_fee"] ? (
         verticalOrderForm ? (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: quoteMarketFeePercent,
                     asset: (quotePrefix || "") + quoteName
@@ -465,6 +469,7 @@ function BuySellInner(props: BuySellProps) {
             </Tooltip>
         ) : singleColumnForm ? (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: quoteMarketFeePercent,
                     asset: (quotePrefix || "") + quoteName
@@ -496,6 +501,7 @@ function BuySellInner(props: BuySellProps) {
             </Tooltip>
         ) : (
             <Tooltip
+                className="buy-sell-tooltip-row"
                 title={counterpart.translate("tooltip.market_fee", {
                     percent: quoteMarketFeePercent,
                     asset: (quotePrefix || "") + quoteName

@@ -81,3 +81,11 @@ body[class][class] .input-area {
         }
     }
 }
+
+// A form row wrapped in a Tooltip (the trade form's market fee): the Tooltip is
+// `inline-block`, so the row was as wide as its content and its field ended
+// short of the Fee field above it. The wrapper takes the row.
+body[class][class] .buy-sell-tooltip-row {
+    display: block;
+    width: 100%;
+}

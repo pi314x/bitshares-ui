@@ -148,6 +148,7 @@ import {Apis} from "bitsharesjs-ws";
 import {ChainStore, FetchChain} from "bitsharesjs";
 import {Tabs} from "../../design-system/Tabs";
 import {PhoneTradeLayout, PhoneSection} from "./PhoneTradeLayout";
+import PoolPriceHint from "./PoolPriceHint";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
 import cnames from "classnames";
@@ -3141,6 +3142,15 @@ function ExchangeInner(props: any) {
                 onTogglePersonalize={togglePersonalize}
                 showVolumeChart={showVolumeChart}
             />
+
+            {marketReady && baseAsset.size && quoteAsset.size ? (
+                <PoolPriceHint
+                    baseAsset={baseAsset}
+                    quoteAsset={quoteAsset}
+                    lowestAsk={lowestAsk ? lowestAsk.getPrice() : null}
+                    highestBid={highestBid ? highestBid.getPrice() : null}
+                />
+            ) : null}
 
             <div className="grid-block page-layout market-layout">
                 {isMarketPickerModalVisible || isMarketPickerModalLoaded ? (
