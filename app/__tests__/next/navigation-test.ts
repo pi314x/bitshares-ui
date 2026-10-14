@@ -29,6 +29,13 @@ describe("left navigation rail", () => {
         expect(labels("More")).toEqual(["Spotlight"]);
     });
 
+    it("keeps the explorer out of the markets group", () => {
+        const markets = NAV_GROUPS.find(g => g.label === "Markets")!;
+        expect(markets.items.map(i => i.label)).not.toContain("Explorer");
+        const network = NAV_GROUPS.find(g => g.label === "Network")!;
+        expect(network.items).toEqual([{label: "Explorer", to: "/explorer"}]);
+    });
+
     it("puts the liquidity pools right behind the order book trade entry", () => {
         const markets = NAV_GROUPS.find(g => g.label === "Markets")!;
         const labels = markets.items.map(i => i.label);

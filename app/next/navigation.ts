@@ -37,8 +37,7 @@ export const NAV_GROUPS: RailNavGroup[] = [
             // right behind the order book: the other way to trade a pair
             {label: "Liquidity pools", to: "/pools"},
             {label: "Instant trade", to: "/instant-trade"},
-            {label: "Prediction markets", to: "/prediction"},
-            {label: "Explorer", to: "/explorer"}
+            {label: "Prediction markets", to: "/prediction"}
         ]
     },
     {
@@ -47,6 +46,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
             {label: "Credit offers", to: "/credit-offer"},
             {label: "SameT funds", to: "/samet-funds"}
         ]
+    },
+    {
+        // Looking at the chain itself rather than trading on it: blocks, assets,
+        // pools, accounts, witnesses, committee, markets, fees.
+        label: "Network",
+        items: [{label: "Explorer", to: "/explorer"}]
     },
     {
         // The old header's "Spotlight": a grid of the rarer features (barter,
