@@ -147,7 +147,7 @@ export default function BrainkeyInput({
                     onChange={formChange}
                     value={brnkey}
                     id="brnkey"
-                    style={{height: 100, minWidth: 450}}
+                    style={{minHeight: 100, minWidth: 0, width: "100%"}}
                 />
                 <div
                     style={{textAlign: "left"}}

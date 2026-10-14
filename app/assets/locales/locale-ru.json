@@ -2144,7 +2144,10 @@
             "past_resolution_date": "Прошлая дата подведения итога",
             "prediction": "Прогноз",
             "resolve": "Подвести итог",
-            "yes": "Да"
+            "yes": "Да",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "Прогноз",
@@ -2269,7 +2272,8 @@
         "walletLoginByValue": "bin-файл + пароль",
         "walletModelTitle": "с bin-файлом",
         "walletNote": "Пожалуйста, имейте в виду, что BitShares не хранит пароли пользователей и не может восстановить их аккаунты в случае утери пароля.",
-        "whyBinFile": "Зачем мне нужен bin-файл?"
+        "whyBinFile": "Зачем мне нужен bin-файл?",
+        "whats_this": "What is this?"
     },
     "samet": {
         "amount": "Amount to put into the fund",

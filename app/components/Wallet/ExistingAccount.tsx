@@ -12,6 +12,7 @@ import {Routes, Route} from "react-router-dom";
 import Brainkey from "./Brainkey";
 import ImportKeys from "./ImportKeys";
 import {BackupRestore} from "./Backup";
+import {OnboardingPage} from "./OnboardingPage";
 import {getWalletName} from "branding";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
@@ -25,48 +26,35 @@ export default function ExistingAccount({children}: {children?: any}) {
     const wallet = useReduxState<any>(selectWalletManagerState);
     const has_wallet = wallet.wallet_names.count() != 0;
     return (
-        <div className="grid-container">
-            <div className="grid-content">
-                <div className="content-block center-content">
-                    <div className="page-header">
-                        <h1>
-                            <Translate
-                                content="account.welcome"
-                                wallet_name={getWalletName()}
-                            />
-                        </h1>
-                        {!has_wallet ? (
-                            <h3>
-                                <Translate content="wallet.create_wallet_backup" />
-                            </h3>
-                        ) : (
-                            <h3>
-                                <Translate content="wallet.setup_wallet" />
-                            </h3>
-                        )}
-                    </div>
-                    <div className="content-block">
-                        <Routes>
-                            <Route index element={<BackupRestore />} />
-                            <Route
-                                path="import-backup"
-                                element={<ExistingAccountOptions />}
-                            />
-                            <Route
-                                path="import-keys"
-                                element={<ImportKeys />}
-                            />
-                            <Route path="brainkey" element={<Brainkey />} />
-                            <Route
-                                path="balance-claim"
-                                element={<BalanceClaimActive />}
-                            />
-                        </Routes>
-                        {children}
-                    </div>
-                </div>
-            </div>
-        </div>
+        <OnboardingPage
+            title={
+                <Translate
+                    content="account.welcome"
+                    wallet_name={getWalletName()}
+                />
+            }
+            subtitle={
+                <Translate
+                    content={
+                        !has_wallet
+                            ? "wallet.create_wallet_backup"
+                            : "wallet.setup_wallet"
+                    }
+                />
+            }
+        >
+            <Routes>
+                <Route index element={<BackupRestore />} />
+                <Route
+                    path="import-backup"
+                    element={<ExistingAccountOptions />}
+                />
+                <Route path="import-keys" element={<ImportKeys />} />
+                <Route path="brainkey" element={<Brainkey />} />
+                <Route path="balance-claim" element={<BalanceClaimActive />} />
+            </Routes>
+            {children}
+        </OnboardingPage>
     );
 }
 

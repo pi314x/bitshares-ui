@@ -38,6 +38,8 @@ import {Input} from "../../design-system/Input";
 import counterpart from "counterpart";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
+import {OnboardingPage} from "./OnboardingPage";
+import onboarding from "./Onboarding.module.scss";
 
 // See Explorer/Blocks.tsx's comment on `TypedLink` for why this cast is
 // needed - `Link`'s inferred return type isn't a valid JSX element type
@@ -179,81 +181,67 @@ function CreateNewWallet({restoreBrainkey}: {restoreBrainkey?: boolean}) {
 
     return (
         <div className="wallet-create">
-            <Form
-                style={{maxWidth: "40rem"}}
-                onSubmit={onSubmit}
-                onChange={formChange}
-                noValidate
-            >
-                <div
-                    className="grid-content"
-                    style={{
-                        textAlign: "left"
-                    }}
-                >
-                    {!restoreBrainkey ? (
-                        <React.Fragment>
-                            <Translate
-                                component="p"
-                                content="wallet.create_importkeys_text"
+            <Form onSubmit={onSubmit} onChange={formChange} noValidate>
+                {!restoreBrainkey ? (
+                    <div style={{textAlign: "left"}}>
+                        <Translate
+                            component="p"
+                            content="wallet.create_importkeys_text"
+                        />
+                        <Translate
+                            component="p"
+                            content="wallet.create_text"
+                            wallet_name={getWalletName()}
+                        />
+                    </div>
+                ) : null}
+                <div className={onboarding.fields}>
+                    <PasswordConfirm onValid={onPassword} />
+                    {has_wallet ? (
+                        <Form.Item label={counterpart.translate("wallet.name")}>
+                            <div className="no-overflow">
+                                <section>
+                                    <Input
+                                        tabIndex={3}
+                                        type="text"
+                                        id="wallet_public_name"
+                                        defaultValue={state.wallet_public_name}
+                                    />
+                                    <div className="has-error">
+                                        {errors.wallet_public_name}
+                                    </div>
+                                </section>
+                            </div>
+                        </Form.Item>
+                    ) : null}
+
+                    {state.custom_brainkey ? (
+                        <Form.Item
+                            label={counterpart.translate("wallet.brainkey")}
+                        >
+                            <BrainkeyInput
+                                tabIndex={4}
+                                onChange={onBrainkey}
+                                errorCallback={(warn: boolean) => {
+                                    const {errors} = stateRef.current;
+                                    errors.validBrainkey = warn;
+                                    setState({errors});
+                                }}
                             />
-                            <Translate
-                                component="p"
-                                content="wallet.create_text"
-                                wallet_name={getWalletName()}
-                            />
-                        </React.Fragment>
+                        </Form.Item>
                     ) : null}
                 </div>
-                <PasswordConfirm onValid={onPassword} />
-                {has_wallet ? (
-                    <Form.Item label={counterpart.translate("wallet.name")}>
-                        <div className="no-overflow">
-                            <section>
-                                <Input
-                                    tabIndex={3}
-                                    type="text"
-                                    id="wallet_public_name"
-                                    defaultValue={state.wallet_public_name}
-                                />
-                                <div className="has-error">
-                                    {errors.wallet_public_name}
-                                </div>
-                            </section>
-                        </div>
-                    </Form.Item>
-                ) : null}
 
-                <div className="no-overflow">
-                    {state.custom_brainkey ? (
-                        <div>
-                            <Form.Item
-                                label={counterpart.translate("wallet.brainkey")}
-                            >
-                                <BrainkeyInput
-                                    tabIndex={4}
-                                    onChange={onBrainkey}
-                                    errorCallback={(warn: boolean) => {
-                                        const {errors} = stateRef.current;
-                                        errors.validBrainkey = warn;
-                                        setState({errors});
-                                    }}
-                                />
-                            </Form.Item>
-                        </div>
-                    ) : null}
-
+                <div className={onboarding.actions}>
+                    <Button onClick={onBack}>
+                        <Translate content="wallet.cancel" />
+                    </Button>
                     <Button
                         variant="accent"
                         type="submit"
                         disabled={!state.isValid}
-                        style={{marginRight: "16px"}}
                     >
                         <Translate content="wallet.create_wallet" />
-                    </Button>
-
-                    <Button onClick={onBack}>
-                        <Translate content="wallet.cancel" />
                     </Button>
                 </div>
 
@@ -298,22 +286,19 @@ export const CreateWalletFromBrainkey = (props: {
 
     if (!props.nested) {
         return (
-            <div className="grid-container" style={{paddingTop: 30}}>
-                <Translate content="settings.backup_brainkey" component="h3" />
-                <Translate
-                    content="settings.restore_brainkey_text"
-                    component="p"
-                    style={{maxWidth: "40rem"}}
-                />
-                <Translate
-                    component="p"
-                    style={{paddingBottom: 10}}
-                    wallet={wallet_types}
-                    backup={backup_types}
-                    content="wallet.read_more"
-                />
+            <OnboardingPage
+                title={counterpart.translate("settings.backup_brainkey")}
+                intro={counterpart.translate("settings.restore_brainkey_text")}
+                more={
+                    <Translate
+                        wallet={wallet_types}
+                        backup={backup_types}
+                        content="wallet.read_more"
+                    />
+                }
+            >
                 <WalletCreate restoreBrainkey {...props} />
-            </div>
+            </OnboardingPage>
         );
     }
     return <WalletCreate restoreBrainkey {...props} />;

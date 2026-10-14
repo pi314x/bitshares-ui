@@ -2144,7 +2144,10 @@
             "past_resolution_date": "过期判定时间",
             "prediction": "预测",
             "resolve": "判定",
-            "yes": "是"
+            "yes": "是",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "预测",
@@ -2269,7 +2272,8 @@
         "walletLoginByValue": ".bin-文件+密码",
         "walletModelTitle": "通过 .bin-文件",
         "walletNote": "请务必牢记，比特股不会存储用户密码，用户密码如果丢失不能帮助找回及恢复。",
-        "whyBinFile": "为什么我需要一个 .bin 文件？"
+        "whyBinFile": "为什么我需要一个 .bin 文件？",
+        "whats_this": "What is this?"
     },
     "samet": {
         "amount": "Amount to put into the fund",

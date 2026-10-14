@@ -115,11 +115,13 @@ import ResolveModal from "./ResolveModal";
 import {ChainStore} from "bitsharesjs";
 import {Switch} from "../../design-system/Switch";
 import {Button} from "../../design-system/Button";
-import {Radio} from "../../design-system/Radio";
+import {SubMenu} from "../../design-system/SubMenu";
+import {Toolbar} from "../../design-system/Toolbar";
+import {Collapse} from "../../design-system/Collapse";
+import styles from "./PredictionMarkets.module.scss";
 import {Icon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Asset, Price} from "../../lib/common/MarketClasses";
-import Translate from "react-translate-component";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
@@ -560,138 +562,89 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
     };
 
     const getOverviewSection = () => {
-        const setPredictionMarketAssetFilter = (e: any) => {
-            mergeState({
-                predictionMarketAssetFilter: e.target.value
-            });
-        };
         const predictionMarketsToShow = _filterMarkets();
+        const total = (props.predictionMarkets || []).length;
+        const help = (key: string) =>
+            counterpart.translate(`prediction.tooltips.${key}`);
         return (
-            <div>
-                <div
-                    className="header-selector"
-                    style={{display: "inline-block", width: "100%"}}
-                >
-                    <div className="filter-block">
+            <div className={styles.section}>
+                <Toolbar>
+                    <Toolbar.Grow>
                         <SearchInput
                             onChange={onSearch}
                             value={state.searchTerm}
                         />
-                        <Radio.Group
-                            style={{marginLeft: "20px"}}
-                            value={state.predictionMarketAssetFilter}
-                            onChange={setPredictionMarketAssetFilter}
-                        >
-                            <Radio value={"all"}>
-                                {counterpart.translate(
+                    </Toolbar.Grow>
+                    <SubMenu
+                        aria-label={counterpart.translate(
+                            "prediction.overview.title"
+                        )}
+                        items={[
+                            {
+                                key: "all",
+                                label: counterpart.translate(
                                     "prediction.overview.all"
-                                )}
-                            </Radio>
-                            <Radio value={"open"}>
-                                {counterpart.translate(
+                                )
+                            },
+                            {
+                                key: "open",
+                                label: counterpart.translate(
                                     "prediction.overview.open"
-                                )}
-                            </Radio>
-                            <Radio value={"past_resolution_date"}>
-                                {counterpart.translate(
+                                )
+                            },
+                            {
+                                key: "past_resolution_date",
+                                label: counterpart.translate(
                                     "prediction.overview.past_resolution_date"
-                                )}
-                            </Radio>
-                        </Radio.Group>
-                        <span>
-                            <Switch
-                                style={{marginLeft: "20px", cursor: "pointer"}}
-                                onChange={handleUnknownHousesToggleChange}
-                                checked={state.isHideUnknownHousesChecked}
-                            />
-                            <Translate
-                                onClick={handleUnknownHousesToggleChange}
-                                content="prediction.overview.hide_unknown_houses"
-                                style={{
-                                    marginLeft: "10px",
-                                    cursor: "pointer"
-                                }}
-                            />
-                            <Tooltip
-                                title={counterpart.translate(
-                                    "prediction.tooltips.hide_unknown_houses"
-                                )}
-                            >
-                                <Icon
-                                    style={{
-                                        marginLeft: "0.5rem"
-                                    }}
-                                    type="question-circle"
-                                    theme="filled"
-                                />
-                            </Tooltip>
-                            <Switch
-                                style={{marginLeft: "20px", cursor: "pointer"}}
-                                onChange={handleInvalidAssetsChecked}
-                                checked={state.isHideInvalidAssetsChecked}
-                            />
-                            <Translate
-                                onClick={handleInvalidAssetsChecked}
-                                content="prediction.overview.hide_invalid_asset"
-                                style={{
-                                    marginLeft: "10px",
-                                    cursor: "pointer"
-                                }}
-                            />
-                            <Tooltip
-                                title={counterpart.translate(
-                                    "prediction.tooltips.hide_invalid_asset"
-                                )}
-                            >
-                                <Icon
-                                    style={{
-                                        marginLeft: "0.5rem"
-                                    }}
-                                    type="question-circle"
-                                    theme="filled"
-                                />
-                            </Tooltip>
+                                )
+                            }
+                        ]}
+                        value={state.predictionMarketAssetFilter}
+                        onChange={key =>
+                            mergeState({predictionMarketAssetFilter: key})
+                        }
+                    />
+                    <Toolbar.End>
+                        <span className={styles.count}>
+                            {counterpart.translate("utility.x_assets_hidden", {
+                                count: total - predictionMarketsToShow.length,
+                                total
+                            })}
                         </span>
-                    </div>
-                    <div className="filter-status">
-                        {counterpart.translate("utility.x_assets_hidden", {
-                            count:
-                                (props.predictionMarkets || []).length -
-                                predictionMarketsToShow.length,
-                            total: (props.predictionMarkets || []).length
-                        })}
-                    </div>
-                </div>
-                <div
-                    className="header-selector"
-                    style={{
-                        display: "inline-block",
-                        width: "100%",
-                        paddingTop: "0rem"
-                    }}
-                >
-                    <span className="action-buttons">
-                        <Tooltip
-                            title={counterpart.translate(
-                                "prediction.tooltips.create_prediction_market_asset"
-                            )}
-                        >
-                            <Icon
-                                style={{
-                                    fontSize: "1.3rem",
-                                    marginRight: "0.5rem"
-                                }}
-                                type="question-circle"
-                                theme="filled"
-                            />
-                        </Tooltip>
-                        <Button onClick={onCreatePredictionMarketModalOpen}>
+                    </Toolbar.End>
+                </Toolbar>
+
+                <div className={styles.switches}>
+                    <label className={styles.switch}>
+                        <Switch
+                            onChange={handleUnknownHousesToggleChange}
+                            checked={state.isHideUnknownHousesChecked}
+                        />
+                        <span>
                             {counterpart.translate(
-                                "prediction.overview.create_market"
+                                "prediction.overview.hide_unknown_houses"
                             )}
-                        </Button>
-                    </span>
+                        </span>
+                        <Tooltip title={help("hide_unknown_houses")}>
+                            <Icon type="question-circle" theme="filled" />
+                        </Tooltip>
+                    </label>
+                    <label className={styles.switch}>
+                        <Switch
+                            onChange={handleInvalidAssetsChecked}
+                            checked={state.isHideInvalidAssetsChecked}
+                        />
+                        <span>
+                            {counterpart.translate(
+                                "prediction.overview.hide_invalid_asset"
+                            )}
+                        </span>
+                        <Tooltip title={help("hide_invalid_asset")}>
+                            <Icon type="question-circle" theme="filled" />
+                        </Tooltip>
+                    </label>
                 </div>
+
                 <PredictionMarketsOverviewTable
                     predictionMarkets={predictionMarketsToShow}
                     currentAccount={props.currentAccount}
@@ -704,85 +657,63 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
     };
 
     const getDetailsSection = () => {
-        const setOpinionFilter = (e: any) => {
-            mergeState({
-                opinionFilter: e.target.value
-            });
-        };
         return (
-            <div>
-                <h3>
-                    {counterpart.translate(
-                        "prediction.details.list_of_current_prediction_offers"
-                    )}
-                    <Tooltip
-                        title={counterpart.translate(
-                            "prediction.tooltips.what_is_a_prediction_offer"
+            <div className={styles.section}>
+                <div className={styles.sectionHead}>
+                    <h2 className={styles.sectionTitle}>
+                        {counterpart.translate(
+                            "prediction.details.list_of_current_prediction_offers"
                         )}
-                    >
-                        <Icon
-                            style={{
-                                marginLeft: "0.5rem"
-                            }}
-                            type="question-circle"
-                            theme="filled"
-                        />
-                    </Tooltip>
-                </h3>
-                <div
-                    className="header-selector"
-                    style={{display: "inline-block", width: "100%"}}
-                >
-                    <div className="filter-block">
+                        <Tooltip
+                            title={counterpart.translate(
+                                "prediction.tooltips.what_is_a_prediction_offer"
+                            )}
+                        >
+                            <Icon type="question-circle" theme="filled" />
+                        </Tooltip>
+                    </h2>
+                    <Button variant="accent" onClick={onAddOpinionModalOpen}>
+                        {counterpart.translate(
+                            "prediction.details.add_prediction"
+                        )}
+                    </Button>
+                </div>
+                <Toolbar>
+                    <Toolbar.Grow>
                         <SearchInput
                             onChange={onSearchDetails}
                             value={state.detailsSearchTerm}
                             autoComplete="off"
                         />
-                        <Radio.Group
-                            style={{marginLeft: "20px"}}
-                            value={state.opinionFilter}
-                            onChange={setOpinionFilter}
-                        >
-                            <Radio value={"all"}>
-                                {counterpart.translate(
+                    </Toolbar.Grow>
+                    <SubMenu
+                        aria-label={counterpart.translate(
+                            "prediction.details.list_of_current_prediction_offers"
+                        )}
+                        items={[
+                            {
+                                key: "all",
+                                label: counterpart.translate(
                                     "prediction.details.all"
-                                )}
-                            </Radio>
-                            <Radio value={"yes"}>
-                                {counterpart.translate(
+                                )
+                            },
+                            {
+                                key: "yes",
+                                label: counterpart.translate(
                                     "prediction.details.proves_true"
-                                )}
-                            </Radio>
-                            <Radio value={"no"}>
-                                {counterpart.translate(
+                                )
+                            },
+                            {
+                                key: "no",
+                                label: counterpart.translate(
                                     "prediction.details.incorrect"
-                                )}
-                            </Radio>
-                        </Radio.Group>
-                    </div>
-                    <span className="action-buttons">
-                        <Tooltip
-                            title={counterpart.translate(
-                                "prediction.tooltips.add_prediction"
-                            )}
-                        >
-                            <Icon
-                                style={{
-                                    fontSize: "1.3rem",
-                                    marginRight: "0.5rem"
-                                }}
-                                type="question-circle"
-                                theme="filled"
-                            />
-                        </Tooltip>
-                        <Button onClick={onAddOpinionModalOpen}>
-                            {counterpart.translate(
-                                "prediction.details.add_prediction"
-                            )}
-                        </Button>
-                    </span>
-                </div>
+                                )
+                            }
+                        ]}
+                        value={state.opinionFilter}
+                        onChange={key => mergeState({opinionFilter: key})}
+                    />
+                </Toolbar>
                 {state.opinions ? (
                     <PredictionMarketDetailsTable
                         predictionMarketData={{
@@ -804,16 +735,44 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
         (item: any) => item[1].symbol
     );
     return (
-        <div
-            className="prediction-markets grid-block vertical"
-            style={{overflow: "visible", margin: 0}}
-        >
-            <div
-                className="grid-block small-12 shrink"
-                style={{overflow: "visible"}}
-            >
-                <HelpContent path={"components/PredictionMarkets"} />
+        <div className={`prediction-markets ${styles.page}`}>
+            <div className={styles.head}>
+                <div className={styles.headText}>
+                    <h1 className={styles.title}>
+                        {counterpart.translate("prediction.overview.title")}
+                    </h1>
+                    <p className={styles.lead}>
+                        {counterpart.translate("prediction.overview.lead")}
+                    </p>
+                </div>
+                <div className={styles.headAction}>
+                    <Tooltip
+                        title={counterpart.translate(
+                            "prediction.tooltips.create_prediction_market_asset"
+                        )}
+                    >
+                        <Button
+                            variant="accent"
+                            onClick={onCreatePredictionMarketModalOpen}
+                        >
+                            {counterpart.translate(
+                                "prediction.overview.create_market"
+                            )}
+                        </Button>
+                    </Tooltip>
+                </div>
             </div>
+            <Collapse>
+                <Collapse.Panel
+                    header={counterpart.translate(
+                        "prediction.overview.how_it_works"
+                    )}
+                >
+                    <div className={styles.help}>
+                        <HelpContent path={"components/PredictionMarkets"} />
+                    </div>
+                </Collapse.Panel>
+            </Collapse>
             {getOverviewSection()}
             {state.selectedPredictionMarket ? getDetailsSection() : null}
             {state.isCreateMarketModalOpen ? (

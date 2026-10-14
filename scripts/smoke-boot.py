@@ -345,6 +345,76 @@ CONTAIN_JS = """() => {
 }"""
 
 
+OVERLAP_JS = """() => {
+  // Controls that something else sits on: at the centre of each visible button,
+  // link, field and select the topmost element must be that control or part of
+  // it. What scrolls under the sticky top bar or the status bar is skipped.
+  const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+  const bar = document.querySelector('header');
+  const top = bar ? bar.getBoundingClientRect().bottom : 0;
+  const status = document.querySelector('[class*=statusDock], [class*=dock]');
+  const bottom = status ? status.getBoundingClientRect().top : vh;
+  const name = el => el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '');
+  const out = [];
+  const sel = 'a[href], button, input:not([type=hidden]), select, textarea, [role=button], [role=tab], [role=menuitem], [role=option]';
+  for (const el of document.querySelectorAll(sel)) {
+    const cs = getComputedStyle(el);
+    if (cs.visibility === 'hidden' || cs.display === 'none' || cs.pointerEvents === 'none' || el.disabled) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 4 || r.height < 4) continue;
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    if (x < 0 || x > vw || y <= top + 2 || y >= bottom - 2) continue;
+    // clipped away by an ancestor that hides its overflow (a collapsed menu)
+    let clipped = false;
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (/(hidden|clip|auto|scroll)/.test(ps.overflowY + ps.overflowX)) {
+        const pr = p.getBoundingClientRect();
+        if (x < pr.left || x > pr.right || y < pr.top || y > pr.bottom) { clipped = true; break; }
+      }
+    }
+    if (clipped) continue;
+    const hit = document.elementFromPoint(x, y);
+    if (!hit || hit === el || el.contains(hit) || hit.contains(el)) continue;
+    // a label wrapping the control, or the control inside a labelled row
+    if (hit.closest('label') && hit.closest('label').contains(el)) continue;
+    const text = (el.innerText || el.value || el.getAttribute('aria-label') || '').trim().slice(0, 24);
+    out.push(name(el) + " '" + text + "' covered by " + name(hit));
+  }
+  return out.slice(0, 8);
+}"""
+
+INSETS_JS = """() => {
+  // How far the page's own content sits from the edges of the content region:
+  // the leftmost, topmost and rightmost visible *boxes* (bordered or filled
+  // elements: cards, panels, tables, fields) and leaves (text, images), so a
+  // card counts by its edge and not by the text inside it.
+  const bar = document.querySelector('header');
+  const c = bar ? bar.nextElementSibling : null;
+  if (!c) return null;
+  const cr = c.getBoundingClientRect();
+  let left = Infinity, top = Infinity, right = -Infinity, first = '';
+  const boxy = cs => {
+    const bg = cs.backgroundColor;
+    const filled = bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+    const bordered = ['Top','Right','Bottom','Left'].some(s => parseFloat(cs['border' + s + 'Width']) > 0 && cs['border' + s + 'Style'] !== 'none');
+    return filled || bordered;
+  };
+  for (const el of c.querySelectorAll('*')) {
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed' || cs.position === 'absolute') continue;
+    const tag = el.tagName.toUpperCase();
+    const leaf = (el.children.length === 0 && el.textContent.trim()) || /^(TABLE|INPUT|SELECT|TEXTAREA|CANVAS|IMG|SVG)$/.test(tag);
+    const r = el.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8) continue;
+    if (!leaf && !(boxy(cs) && r.width > 40 && r.height > 20)) continue;
+    if (r.left < left) { left = r.left; first = tag.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' ' + (el.textContent || '').trim().slice(0, 18); }
+    top = Math.min(top, r.top); right = Math.max(right, r.right);
+  }
+  return {left: Math.round(left - cr.left), top: Math.round(top - cr.top), right: Math.round(cr.right - right), width: Math.round(cr.width), first};
+}"""
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("dist", help="built bundle directory (contains index.html)")
@@ -365,6 +435,8 @@ def main():
     ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
     ap.add_argument("--probe", default="", help="JavaScript (an arrow function) evaluated on each route after any #button press; its result is printed (for finding what covers an element)")
     ap.add_argument("--pinch", default="", help="CSS selector: on each route, do a two-finger pinch-out on that element (touch events through the devtools protocol) and print its viewBox before and after")
+    ap.add_argument("--insets", action="store_true", help="also print how far the page's content sits from the left, top and right edge of the content region (the convention is 24/24/24, and 12/16/12 on a phone)")
+    ap.add_argument("--overlap", action="store_true", help="also fail on a button, link or field that another element sits on (a control that cannot be clicked)")
     ap.add_argument("--contain", action="store_true", help="also fail on an element that sticks out of the card, panel or menu it is in (what reads as 'goes beyond the borders')")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
@@ -443,6 +515,20 @@ def main():
                 for c, a in sorted(gray.items(), key=lambda kv: -kv[1])[:4]:
                     print(f"      neutral {c} ({100.0 * a / total:.1f}%) e.g. {census['sample'].get(c, '')}")
                 if share > 2.0:
+                    failed = True
+            if args.insets:
+                ins = page.evaluate(INSETS_JS)
+                if ins:
+                    want = (12, 16, 12) if vw <= 860 else (24, 24, 24)
+                    off = (ins["left"], ins["top"], ins["right"]) != want
+                    flag = ("   <-- " + ins["first"]) if (ins["left"], ins["top"]) != want[:2] else ""
+                    print(f"{'':<34} insets: left {ins['left']} top {ins['top']} right {ins['right']}{flag}")
+            if args.overlap:
+                covered = page.evaluate(OVERLAP_JS)
+                print(f"{'':<34} overlap: " + ("ok" if not covered else str(len(covered)) + " controls covered"))
+                for line in covered:
+                    print("      covered:", line)
+                if covered:
                     failed = True
             if args.contain:
                 pokes = page.evaluate(CONTAIN_JS)

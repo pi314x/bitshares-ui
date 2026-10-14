@@ -2144,7 +2144,10 @@
             "past_resolution_date": "Past Resolution Time",
             "prediction": "Prediction",
             "resolve": "Resolve",
-            "yes": "Yes"
+            "yes": "Yes",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "Prediction",
@@ -2269,7 +2272,8 @@
         "walletLoginByValue": "Bin-file + Password",
         "walletModelTitle": "By bin-file",
         "walletNote": "Please keep in mind, that BitShares doesn't store users passwords and couldn't recover users accounts after password loss.",
-        "whyBinFile": "Why do I need a .bin file?"
+        "whyBinFile": "Why do I need a .bin file?",
+        "whats_this": "What is this?"
     },
     "samet": {
         "amount": "Amount to put into the fund",

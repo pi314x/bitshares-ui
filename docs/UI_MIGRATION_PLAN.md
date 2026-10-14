@@ -13010,6 +13010,30 @@ were cut off. It now fits by construction:
   `--pinch SELECTOR`, and `route#Trigger=Option&Trigger2=Option2` to drive
   dropdowns (touch on a phone viewport).
 
+### 7.28 Onboarding pages, prediction markets, the checks behind "no overlaps"
+
+- **Creating and restoring a wallet** (`Wallet/OnboardingPage.tsx`,
+  `Onboarding.module.scss`): the restore-from-brainkey page and the
+  restore-from-backup/import page are one frame - a 640px column at the page's
+  inset, a title, a line of what happens, the form as a card with its actions at
+  the foot and the help links under it. Only layout: no password, key or wallet
+  logic was touched. The brainkey field no longer forces a 450px minimum (it
+  made a phone page scroll sideways). Registration is two cards side by side
+  (stacked on a phone), each with what it guarantees and one *Continue*; the
+  greyed-out "focus" model and its *Select* are gone.
+- **Prediction markets** (`PredictionMarkets/PredictionMarkets.tsx`): a heading,
+  one line of what it is and the one action; the long explanation is folded
+  under *How prediction markets work*; the list sits under a toolbar (filter,
+  All / Open / Past resolution as the quiet switch, the count) and the two
+  "hide" switches; the offers of the chosen market are the same structure. The
+  overview table's columns follow its own width (issuer, confidence and
+  description appear with room).
+- **Checks** (`scripts/smoke-boot.py`): `--overlap` fails on a button, link or
+  field another element sits on; `--contain` on an element that sticks out of
+  the card it is in; `--insets` prints how far the content is from the edges of
+  the content region (24 on a desktop, 12/16 on a phone: every page measured
+  was). Run on 14 pages, phone and light theme, none fails.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

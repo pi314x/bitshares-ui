@@ -2144,7 +2144,10 @@
             "past_resolution_date": "Geçmiş Çözünürlük Süresi",
             "prediction": "Tahmin",
             "resolve": "Çözmek",
-            "yes": "Evet"
+            "yes": "Evet",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "Tahmin",
@@ -2269,7 +2272,8 @@
         "walletLoginByValue": "Bin dosyası + Şifre",
         "walletModelTitle": "Bin dosyasına göre",
         "walletNote": "BitShares'in kullanıcı şifrelerini saklamadığını ve şifre kaybından sonra kullanıcı hesaplarını kurtaramayacağını lütfen unutmayın.",
-        "whyBinFile": "Neden bir .bin dosyasına ihtiyacım var?"
+        "whyBinFile": "Neden bir .bin dosyasına ihtiyacım var?",
+        "whats_this": "What is this?"
     },
     "samet": {
         "amount": "Amount to put into the fund",

@@ -72,6 +72,7 @@
 // `Account/AccountPortfolioList.tsx`).
 import * as React from "react";
 import counterpart from "counterpart";
+import {useElementWidth} from "../../next/hooks/useElementWidth";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import LinkToAccountById from "../Utility/LinkToAccountById";
 import {Button} from "../../design-system/Button";
@@ -469,7 +470,23 @@ function PredictionMarketsOverviewTable({
         return selectedPredictionMarket ? "selected-row" : "";
     };
 
-    const header = getHeader(currentAccount, ticker, onMarketAction);
+    // Columns by the room the table has, not the window: the asset, what is
+    // predicted, the likelihood and the actions are always there; the issuer
+    // (house), the market's confidence and the description come with more room,
+    // the resolution date with a little.
+    const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+    const room = boxWidth === null ? 1000 : boxWidth;
+    const NEEDS_ROOM: {[key: string]: number} = {
+        expiry: 520,
+        issuer: 640,
+        marketConfidence: 760,
+        description: 900
+    };
+    const header = getHeader(currentAccount, ticker, onMarketAction).filter(
+        (column: any) =>
+            NEEDS_ROOM[column.dataIndex] === undefined ||
+            room >= NEEDS_ROOM[column.dataIndex]
+    );
 
     let filteredMarkets: any[] = [];
 
@@ -504,15 +521,17 @@ function PredictionMarketsOverviewTable({
             : []
     };
     return (
-        <PaginatedList
-            rowSelection={rowSelection}
-            rows={filteredMarkets}
-            header={header}
-            pageSize={10}
-            rowClassName={decideRowClassName}
-            loading={loading}
-            totalLabel="utility.total_x_assets"
-        />
+        <div ref={boxRef}>
+            <PaginatedList
+                rowSelection={rowSelection}
+                rows={filteredMarkets}
+                header={header}
+                pageSize={10}
+                rowClassName={decideRowClassName}
+                loading={loading}
+                totalLabel="utility.total_x_assets"
+            />
+        </div>
     );
 }
 

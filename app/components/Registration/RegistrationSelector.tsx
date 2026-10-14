@@ -24,86 +24,147 @@
 // treated as dead code - unlike the `contextTypes` case, nothing here
 // prevents `children` from someday being passed by a different caller.
 import * as React from "react";
-import Translate from "react-translate-component";
-import WalletBlockSelection from "./WalletBlockSelection";
-import WalletHeaderSelection from "./WalletHeaderSelection";
-import AccountBlockSelection from "./AccountBlockSelection";
-import AccountHeaderSelection from "./AccountHeaderSelection";
+import counterpart from "counterpart";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import styles from "./RegistrationSelector.module.scss";
 
 interface RegistrationSelectorProps {
     children?: React.ReactElement | null;
     history: {push: (path: string) => void};
 }
 
+const t = (key: string) => counterpart.translate(key) as string;
+
+interface Model {
+    route: string;
+    title: string;
+    subtitle: string;
+    help: string;
+    recommended: boolean;
+    rows: Array<{
+        label: string;
+        value: string;
+        tone?: "good" | "fair" | "none";
+    }>;
+}
+
+// The two ways to hold an account, side by side: what each one is, what it
+// guarantees, and the way to go on with it. (It used to be one card at a time
+// in focus, the other greyed out, with a "Select" that only moved the focus.)
 export default function RegistrationSelector({
     children = null,
     history
 }: RegistrationSelectorProps) {
-    const [activeWalletModel, setActiveWalletModel] = React.useState(true);
-
     if (children) {
         return children;
     }
 
-    const onSelect = (route: string) => {
-        history.push(`/registration/${route}`);
-    };
-
-    const changeActiveModel = (isActiveWallet: boolean) => {
-        setActiveWalletModel(isActiveWallet);
-    };
-
-    const renderHeader = (isWalletSection: boolean) => (
-        <div className="small-horizontal small-only-block">
-            <WalletHeaderSelection
-                active={activeWalletModel}
-                onChangeActive={() => changeActiveModel(true)}
-                forSmall={!isWalletSection}
-            />
-            <AccountHeaderSelection
-                active={!activeWalletModel}
-                onChangeActive={() => changeActiveModel(false)}
-                forSmall={isWalletSection}
-            />
-        </div>
-    );
+    const models: Model[] = [
+        {
+            route: "local",
+            title: t("registration.walletModelTitle"),
+            subtitle: t("wallet.wallet_model"),
+            help: t("tooltip.registration.walletModel"),
+            recommended: true,
+            rows: [
+                {
+                    label: t("registration.securityKey"),
+                    value: t("registration.securityWalletModel"),
+                    tone: "good"
+                },
+                {
+                    label: t("registration.loginByKey"),
+                    value: t("registration.walletLoginByValue")
+                },
+                {
+                    label: t("registration.backUpRestoreKey"),
+                    value: t("settings.yes"),
+                    tone: "good"
+                }
+            ]
+        },
+        {
+            route: "cloud",
+            title: t("registration.accountModelTitle"),
+            subtitle: t("wallet.password_model"),
+            help: t("tooltip.registration.accountModel"),
+            recommended: false,
+            rows: [
+                {
+                    label: t("registration.securityKey"),
+                    value: t("registration.securityAccountModel"),
+                    tone: "fair"
+                },
+                {
+                    label: t("registration.loginByKey"),
+                    value: t("registration.accountLoginByValue")
+                },
+                {
+                    label: t("registration.backUpRestoreKey"),
+                    value: t("settings.no"),
+                    tone: "none"
+                }
+            ]
+        }
+    ];
 
     return (
-        <div className="grid-block align-center registration-layout">
-            <div className="grid-block shrink vertical text-center registration-selector">
-                <Translate
-                    content="registration.title"
-                    component="p"
-                    className="registration-title"
-                />
-                <div className="registration-container">
-                    <div className="v-align">
-                        <div
-                            className={`${
-                                !activeWalletModel ? "inactive-model-block" : ""
-                            } selection-block align-center plate`}
-                        >
-                            {renderHeader(true)}
-                            <WalletBlockSelection
-                                onSelect={() => onSelect("local")}
-                                active={activeWalletModel}
-                                onChangeActive={() => changeActiveModel(true)}
-                            />
+        <div className={`registration-layout ${styles.page}`}>
+            <h1 className={styles.title}>{t("registration.title")}</h1>
+            <div className={styles.cards}>
+                {models.map(model => (
+                    <section className={styles.card} key={model.route}>
+                        <div className={styles.head}>
+                            <div className={styles.names}>
+                                <h2 className={styles.name}>{model.title}</h2>
+                                <span className={styles.kind}>
+                                    {model.subtitle}
+                                </span>
+                            </div>
+                            {model.recommended ? (
+                                <span className={styles.badge}>
+                                    {t("registration.recommended")}
+                                </span>
+                            ) : null}
                         </div>
-                        <div
-                            className={`${
-                                activeWalletModel ? "inactive-model-block" : ""
-                            } selection-block align-center plate`}
-                        >
-                            {renderHeader(false)}
-                            <AccountBlockSelection
-                                onSelect={() => onSelect("cloud")}
-                                active={!activeWalletModel}
-                                onChangeActive={() => changeActiveModel(false)}
-                            />
+                        <dl className={styles.rows}>
+                            {model.rows.map(row => (
+                                <div className={styles.row} key={row.label}>
+                                    <dt>{row.label}</dt>
+                                    <dd
+                                        className={
+                                            row.tone ? styles[row.tone] : ""
+                                        }
+                                    >
+                                        {row.value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                        <div className={styles.foot}>
+                            {model.help ? (
+                                <Tooltip title={model.help}>
+                                    <span className={styles.helpLabel}>
+                                        {t("registration.whats_this")}
+                                    </span>
+                                </Tooltip>
+                            ) : (
+                                <span />
+                            )}
+                            <Button
+                                variant={
+                                    model.recommended ? "accent" : "default"
+                                }
+                                onClick={() =>
+                                    history.push(`/registration/${model.route}`)
+                                }
+                            >
+                                {t("registration.continue")}
+                            </Button>
                         </div>
-                    </div>
-                </div>
+                    </section>
+                ))}
             </div>
         </div>
     );

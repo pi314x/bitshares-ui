@@ -1,0 +1,99 @@
+// Prediction markets: a heading with what it is and the one action, the long
+// explanation folded away, then the list under a toolbar; the offers of the
+// chosen market below it in the same structure. Tokens only.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+.headText {
+    flex: 1 1 360px;
+    min-width: 0;
+}
+
+// `.page .title`: the legacy sheet sizes every h1
+.page .title {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.lead {
+    margin: 0;
+    max-width: 68ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.headAction {
+    flex: none;
+}
+
+// the explanation, inside the folded panel, at a readable measure
+.help {
+    max-width: 72ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.section {
+    min-width: 0;
+}
+
+.sectionHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+.page .sectionTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 0 0 16px;
+}
+
+.switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    cursor: pointer;
+}
+
+.count {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
