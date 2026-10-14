@@ -3,9 +3,10 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 12px;
-    // room above too: the header's bottom line is right there
+    // room above (the header's bottom line is right there) and below
     margin: 12px 0;
-    padding: 8px 12px;
+    // 16px, the inset of the cards' own text
+    padding: 8px 16px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--surface);
@@ -36,4 +37,11 @@
 
 .link {
     margin-left: auto;
+}
+
+// The phone layout sits in the card grid, whose own 12px is the gap below.
+@media (max-width: 639px) {
+    .hint {
+        margin-bottom: 0;
+    }
 }

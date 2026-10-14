@@ -60,7 +60,7 @@ export function PhoneTradeLayout({
     onOwn
 }: PhoneTradeLayoutProps): JSX.Element {
     return (
-        <div className={styles.root}>
+        <div className={`${styles.root} phone-trade`}>
             <section className={styles.card}>
                 <Switcher
                     sections={views}

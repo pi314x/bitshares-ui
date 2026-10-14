@@ -33,6 +33,15 @@
             overflow: hidden;
         }
 
+        // the phone layout draws its own cards (PhoneTradeLayout); as a card
+        // itself it was a second rounded border around them
+        > .phone-trade {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            overflow: visible;
+        }
+
         // the order book is two cards (bids, asks) inside one block
         > .orderbook {
             display: grid;
@@ -102,4 +111,18 @@ body[class][class] .market-layout .orderbook table th {
 body[class][class] .top-bar {
     padding-top: 16px;
     padding-bottom: 8px;
+}
+
+// The chart's frame: on a wide screen it is the chart's only border, so it is
+// drawn like the cards' (rounded, the theme's line colour); on a phone the
+// chart sits inside a card that already frames it, and a box in a box is gone.
+body[class][class] .market-layout .exchange-bordered {
+    border-color: var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+body[class][class] .market-layout .phone-trade .exchange-bordered {
+    border: 0;
+    border-radius: 0;
 }
