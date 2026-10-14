@@ -13,7 +13,11 @@
 // CSS Module (docs/UI_MIGRATION_PLAN.md, section 7.5): `.panel` was only
 // referenced by Explorer.tsx.
 
+// No `display: table` here (an earlier inline style had it): a table is as wide
+// as its widest cell, which put the whole explorer 712px wide on a phone.
 .panel {
+    width: 100%;
+    box-sizing: border-box;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 10px;

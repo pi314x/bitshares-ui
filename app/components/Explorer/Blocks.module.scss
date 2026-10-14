@@ -1,0 +1,23 @@
+// The statistics tiles of the Blockchain tab. Two to a row on a phone: the
+// block number at the legacy 28px heading size was wider than its tile and
+// (the tile hides overflow) lost its last digit, and labels of two or three
+// lines put the values at different heights.
+@media (max-width: 640px) {
+    .blocks :global(.grid-content) {
+        // the captions (the values `h2`/`h3` carry `txtlabel` too)
+        :global(span.txtlabel),
+        :global(div.txtlabel) {
+            display: block;
+            min-height: 2.6em;
+            font-size: 11px;
+            line-height: 1.3;
+            letter-spacing: 0.04em;
+        }
+
+        h2,
+        h3 {
+            font-size: 18px;
+            line-height: 1.25;
+        }
+    }
+}

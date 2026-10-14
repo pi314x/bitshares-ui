@@ -120,7 +120,6 @@ export default function Explorer() {
         <Tabs
             activeKey={active}
             animated={false}
-            style={{display: "table", height: "100%", width: "100%"}}
             className={styles.panel}
             onChange={onChange}
         >

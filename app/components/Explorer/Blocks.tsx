@@ -51,6 +51,7 @@ import LoadingIndicator from "../LoadingIndicator";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 import "../Blockchain/json-inspector.scss";
+import styles from "./Blocks.module.scss";
 
 // Same @types/react-router-dom v5 + modern TS workaround as Rail.tsx's
 // TypedNavLink - see that file's comment for why this cast is needed.
@@ -297,7 +298,10 @@ export default function Blocks(props: BlocksProps) {
     }
 
     return (
-        <div ref={outerWrapperRef} className="grid-block vertical">
+        <div
+            ref={outerWrapperRef}
+            className={`grid-block vertical ${styles.blocks}`}
+        >
             {/* First row of stats */}
             <div className="align-center grid-block shrink small-horizontal blocks-row">
                 <div className="grid-block text-center small-6 medium-3">
