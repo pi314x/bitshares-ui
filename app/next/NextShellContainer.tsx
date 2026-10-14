@@ -46,9 +46,10 @@ import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
 import {logoutSession} from "./logoutSession";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
+import NotificationBell from "../components/Notifications/NotificationBell";
+import TradeNotifications from "../components/Notifications/TradeNotifications";
 import SendModal from "components/Modal/SendModal";
 import TransactionConfirm from "components/Blockchain/TransactionConfirm";
-import WalletUnlockModal from "components/Wallet/WalletUnlockModal";
 import DepositModal from "components/Modal/DepositModal";
 import WithdrawModal from "components/Modal/WithdrawModalNew";
 
@@ -286,13 +287,18 @@ export default function NextShellContainer({
                         value: themeNameToLegacyTheme(theme)
                     })
                 }
-                chips={<AccountBrowsingMode location={location} chip />}
+                chips={
+                    <>
+                        <AccountBrowsingMode location={location} chip />
+                        <NotificationBell />
+                    </>
+                }
                 content={
                     <>
                         {/* "Confirm this transaction": in the page, not a popup */}
                         <TransactionConfirm inline />
-                        {/* and "unlock your wallet" with it */}
-                        <WalletUnlockModal inline />
+                        {/* "unlock your wallet" is a popup (the global one) */}
+                        <TradeNotifications />
                         {content}
                     </>
                 }

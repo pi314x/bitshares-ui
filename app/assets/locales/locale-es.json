@@ -3355,5 +3355,19 @@
             "network": "Red",
             "reference": "Referencia"
         }
+    },
+    "notification_center": {
+        "clear": "Borrar todo",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "Notificaciones",
+        "minutes": "%(count)s min ago",
+        "now": "ahora",
+        "title": "Notificaciones",
+        "trade_done": "Operación realizada",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s nuevas"
     }
 }

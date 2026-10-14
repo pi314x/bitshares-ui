@@ -7,7 +7,6 @@ import SyncError from "./components/SyncError";
 import LoadingIndicator from "./components/LoadingIndicator";
 import BrowserNotifications from "./components/BrowserNotifications/BrowserNotificationsContainer";
 import ReactTooltip from "react-tooltip";
-import NotificationSystem from "react-notification-system";
 import TransactionConfirm from "./components/Blockchain/TransactionConfirm";
 import WalletUnlockModal from "./components/Wallet/WalletUnlockModal";
 import BrowserSupportModal from "./components/Modal/BrowserSupportModal";
@@ -19,6 +18,7 @@ import {updateGatewayBackers} from "common/gatewayUtils";
 import titleUtils from "common/titleUtils";
 import {BodyClassName} from "./design-system/BodyClassName";
 import {Notification} from "./design-system/Notification";
+import {htmlToText} from "./lib/common/notificationHistory";
 import {DEFAULT_NOTIFICATION_DURATION} from "services/Notification";
 import Loadable from "react-loadable";
 import NewsHeadline from "components/Layout/NewsHeadline";
@@ -272,7 +272,6 @@ class App extends React.Component {
         super();
 
         this.tooltipRef = React.createRef();
-        this.notificationSystemRef = React.createRef();
 
         let syncFail =
             ChainStore.subError &&
@@ -507,12 +506,28 @@ class App extends React.Component {
 
     /** Usage: NotificationActions.[success,error,warning,info] */
     _onNotificationChange() {
-        let notification = NotificationStore.getState().notification;
-        if (notification.autoDismiss === void 0) {
-            notification.autoDismiss = 10;
-        }
-        if (this.notificationSystemRef.current)
-            this.notificationSystemRef.current.addNotification(notification);
+        const notification = NotificationStore.getState().notification;
+        if (!notification) return;
+        // the same toasts (and the same history) as the rest of the app; the
+        // legacy ones allowed HTML in the message: it is shown as text
+        const text = value =>
+            typeof value === "string" ? htmlToText(value) : value;
+        const level = ["success", "error", "warning", "info"].includes(
+            notification.level
+        )
+            ? notification.level
+            : "info";
+        const hasTitle = !!notification.title;
+        Notification[level]({
+            message: hasTitle
+                ? text(notification.title)
+                : text(notification.message),
+            description: hasTitle ? text(notification.message) : undefined,
+            duration:
+                notification.autoDismiss === void 0
+                    ? 10
+                    : notification.autoDismiss
+        });
     }
 
     // Once per frame at most, and only when the height really changed: this
@@ -759,17 +774,6 @@ class App extends React.Component {
                     ) : null}
                     <div id="content-wrapper">
                         {content}
-                        <NotificationSystem
-                            ref={this.notificationSystemRef}
-                            allowHTML={true}
-                            style={{
-                                Containers: {
-                                    DefaultStyle: {
-                                        width: "425px"
-                                    }
-                                }
-                            }}
-                        />
                         <TransactionConfirm />
                         <BrowserNotifications />
                         <PriceAlertNotifications />

@@ -3355,5 +3355,19 @@
             "network": "Ağ",
             "reference": "Başvuru"
         }
+    },
+    "notification_center": {
+        "clear": "Tümünü temizle",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "Bildirimler",
+        "minutes": "%(count)s min ago",
+        "now": "şimdi",
+        "title": "Bildirimler",
+        "trade_done": "İşlem gerçekleşti",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s yeni"
     }
 }

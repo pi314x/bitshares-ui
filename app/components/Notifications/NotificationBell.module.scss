@@ -1,0 +1,168 @@
+// The notification bell: a chip like its neighbours (lock, account) and a
+// dropdown panel under it. Tokens only.
+.wrap {
+    position: relative;
+}
+
+.bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 0;
+    margin: 0;
+    padding: 5px 9px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bell:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.badge {
+    position: absolute;
+    top: -6px;
+    right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 99px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    max-height: min(70vh, 520px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.link {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--accent);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.item:last-child {
+    border-bottom: 0;
+}
+
+// not seen yet: a wash and a bar at the edge
+.fresh {
+    background: var(--accent-wash);
+    box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.kind {
+    display: inline-flex;
+    margin-top: 1px;
+}
+
+.success {
+    color: var(--up);
+}
+
+.error {
+    color: var(--down);
+}
+
+.warning {
+    color: var(--warn);
+}
+
+.info {
+    color: var(--accent);
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.itemTitle {
+    font-size: 14px;
+    color: var(--ink);
+    word-break: break-word;
+}
+
+.desc {
+    font-size: 13px;
+    color: var(--muted);
+    word-break: break-word;
+}
+
+.when {
+    font-size: 12px;
+    color: var(--faint);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.empty {
+    padding: 28px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+}

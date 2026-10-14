@@ -3355,5 +3355,19 @@
             "network": "网络",
             "reference": "参考"
         }
+    },
+    "notification_center": {
+        "clear": "全部清除",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "通知",
+        "minutes": "%(count)s min ago",
+        "now": "刚刚",
+        "title": "通知",
+        "trade_done": "交易已成交",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s 条新通知"
     }
 }

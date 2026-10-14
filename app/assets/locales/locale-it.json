@@ -3355,5 +3355,19 @@
             "network": "Rete",
             "reference": "Riferimento"
         }
+    },
+    "notification_center": {
+        "clear": "Cancella tutto",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "Notifiche",
+        "minutes": "%(count)s min ago",
+        "now": "ora",
+        "title": "Notifiche",
+        "trade_done": "Scambio eseguito",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s nuove"
     }
 }

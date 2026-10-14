@@ -2,6 +2,10 @@ import * as React from "react";
 import {createRoot, Root} from "react-dom/client";
 import {Icon} from "./Icon";
 import styles from "./Notification.module.scss";
+import {
+    nodeToText,
+    recordNotification
+} from "../lib/common/notificationHistory";
 
 // Seventh component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md), following `Modal`/`Tooltip`/
@@ -74,6 +78,8 @@ type NotificationKind = "success" | "error" | "warning" | "info";
 
 interface NotificationEntry {
     id: number;
+    /** seconds until it goes (0: it stays until closed) */
+    duration: number;
     kind: NotificationKind;
     message: React.ReactNode;
     description?: React.ReactNode;
@@ -107,6 +113,16 @@ function ensureContainer() {
 }
 
 function push(kind: NotificationKind, args: NotificationArgs) {
+    // the toast goes away; the history (the bell) keeps it
+    try {
+        recordNotification(
+            kind,
+            nodeToText(args.message),
+            nodeToText(args.description)
+        );
+    } catch (e) {
+        // never let the history stop a toast
+    }
     ensureContainer();
     const id = nextId++;
     const duration = args.duration ?? config.duration;
@@ -114,6 +130,7 @@ function push(kind: NotificationKind, args: NotificationArgs) {
         ...entries,
         {
             id,
+            duration: duration > 0 ? duration : 0,
             kind,
             message: args.message,
             description: args.description,
@@ -163,6 +180,13 @@ function NotificationStack({
                         .filter(Boolean)
                         .join(" ")}
                     role="alert"
+                    style={
+                        entry.duration
+                            ? ({
+                                  "--toast-duration": `${entry.duration}s`
+                              } as React.CSSProperties)
+                            : undefined
+                    }
                 >
                     <span className={styles.icon}>
                         {entry.icon ? (

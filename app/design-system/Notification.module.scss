@@ -4,44 +4,100 @@
     z-index: 1200;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 340px;
-    max-width: calc(100vw - 48px);
+    gap: 10px;
+    width: 380px;
+    max-width: calc(100vw - 24px);
     pointer-events: none;
 }
 
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes toastLife {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+// A toast: a card with the kind's colour in an icon chip and, along its
+// bottom edge, how long it still stays.
 .entry {
+    position: relative;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     padding: 14px 16px;
-    border-radius: 8px;
+    overflow: hidden;
+    border-radius: var(--radius-lg, 12px);
     background: var(--raised);
     border: 1px solid var(--line);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     pointer-events: auto;
+    animation: toastIn 0.22s var(--ease, ease-out) both;
+}
+
+.entry::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: currentColor;
+    opacity: 0.55;
+    transform-origin: left center;
+    animation: toastLife var(--toast-duration, 0s) linear forwards;
+}
+
+.success {
+    color: var(--up);
+}
+
+.error {
+    color: var(--down);
+}
+
+.warning {
+    color: var(--warn);
+}
+
+.info {
+    color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .entry {
+        animation: none;
+    }
+
+    .entry::after {
+        display: none;
+    }
 }
 
 .icon {
     flex-shrink: 0;
     display: flex;
-    margin-top: 1px;
-}
-
-.success .icon {
-    color: var(--up);
-}
-
-.error .icon {
-    color: var(--down);
-}
-
-.warning .icon {
-    color: var(--warn);
-}
-
-.info .icon {
-    color: var(--accent);
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-top: -1px;
+    border-radius: 50%;
+    background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .messageGroup {

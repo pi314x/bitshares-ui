@@ -3355,5 +3355,19 @@
             "network": "Netzwerk",
             "reference": "Nachschlagen"
         }
+    },
+    "notification_center": {
+        "clear": "Alle löschen",
+        "days": "vor %(count)s Tg.",
+        "empty": "Noch nichts. Handel, Überweisungen und Fehler erscheinen hier.",
+        "hours": "vor %(count)s Std.",
+        "label": "Benachrichtigungen",
+        "minutes": "vor %(count)s Min.",
+        "now": "jetzt",
+        "title": "Benachrichtigungen",
+        "trade_done": "Handel ausgeführt",
+        "trade_sold": "Verkauft %(pays)s, erhalten %(receives)s",
+        "trade_sold_maker": "Deine Order hat %(pays)s für %(receives)s verkauft",
+        "unseen": "%(count)s neu"
     }
 }

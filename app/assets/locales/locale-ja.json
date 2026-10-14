@@ -3355,5 +3355,19 @@
             "network": "ネットワーク",
             "reference": "リファレンス"
         }
+    },
+    "notification_center": {
+        "clear": "すべて削除",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "通知",
+        "minutes": "%(count)s min ago",
+        "now": "たった今",
+        "title": "通知",
+        "trade_done": "取引が成立しました",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "新着%(count)s件"
     }
 }

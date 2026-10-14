@@ -12841,6 +12841,31 @@ market tabs. It is now what a trading desk's home needs:
   has a title and a card per list, and the top bar names the account's pages
   ("Open orders", "Vesting", ...) instead of "Account".
 
+### 7.23 One place for every page, the notification bell
+
+- **Every page has one entry in the menu** (`next/navigation.ts`, tested against
+  the routes in `App.jsx`): Portfolio for the account's pages (a row of its own
+  on top reaches assets, pools, membership, vesting, permissions, whitelist,
+  signed messages), Voting for workers, Trade for any market, Explorer for an
+  asset or a block, Spotlight for the hub's features, Accounts for creating and
+  importing, Settings for the wallet, Help for the news.
+- **Doubles removed**: the standalone open-orders page (the portfolio's tab is
+  the one; the desk selects it), `/deposit-withdraw` (redirects to `/deposit`).
+  Left as they are, because they are one component shown in two places:
+  Explorer's Pools tab and Liquidity pools; Settings > Accounts and Accounts.
+- **Notification bell** (top bar): every toast (`design-system/Notification`,
+  and the legacy `NotificationActions` ones, which now use the same toasts) is
+  kept in this browser (`lib/common/notificationHistory.ts`, at most 100); the
+  bell shows how many were not looked at, the panel lists them, closing it marks
+  them seen.
+- **Trades**: `components/Notifications/TradeNotifications.tsx` announces the
+  account's new fill orders (the first read is the baseline; fills that happened
+  while the page was closed are announced once, the newest three).
+- **Unlocking the wallet is a popup** again (the global dialog); confirming a
+  transaction stays in the page.
+- The toasts are cards with the kind's colour in an icon chip and a line that
+  runs out with the time they stay.
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

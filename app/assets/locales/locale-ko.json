@@ -3355,5 +3355,19 @@
             "network": "네트워크",
             "reference": "참고"
         }
+    },
+    "notification_center": {
+        "clear": "모두 지우기",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "알림",
+        "minutes": "%(count)s min ago",
+        "now": "방금",
+        "title": "알림",
+        "trade_done": "거래 체결",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "새 알림 %(count)s개"
     }
 }

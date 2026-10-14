@@ -3355,5 +3355,19 @@
             "network": "Сеть",
             "reference": "Справочник"
         }
+    },
+    "notification_center": {
+        "clear": "Очистить",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "Уведомления",
+        "minutes": "%(count)s min ago",
+        "now": "сейчас",
+        "title": "Уведомления",
+        "trade_done": "Сделка совершена",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s новых"
     }
 }
