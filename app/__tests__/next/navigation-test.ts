@@ -29,6 +29,13 @@ describe("left navigation rail", () => {
         expect(labels("More")).toEqual(["Spotlight"]);
     });
 
+    it("puts the liquidity pools right behind the order book trade entry", () => {
+        const markets = NAV_GROUPS.find(g => g.label === "Markets")!;
+        const labels = markets.items.map(i => i.label);
+        expect(labels[0]).toBe("Trade");
+        expect(labels[1]).toBe("Liquidity pools");
+    });
+
     it("keeps moving money together: send, deposit, withdraw as actions, timed transfer as a page", () => {
         const payments = NAV_GROUPS.find(g => g.label === "Payments")!;
         expect(payments.items.map(i => i.label)).toEqual([

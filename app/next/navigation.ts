@@ -34,8 +34,9 @@ export const NAV_GROUPS: RailNavGroup[] = [
         label: "Markets",
         items: [
             {label: "Trade", to: `/market/${getDefaultMarket()}`},
-            {label: "Instant trade", to: "/instant-trade"},
+            // right behind the order book: the other way to trade a pair
             {label: "Liquidity pools", to: "/pools"},
+            {label: "Instant trade", to: "/instant-trade"},
             {label: "Prediction markets", to: "/prediction"},
             {label: "Explorer", to: "/explorer"}
         ]
