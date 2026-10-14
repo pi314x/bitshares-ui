@@ -1961,7 +1961,8 @@
             "add_remove": "追加 / 削除",
             "stable": "ステーブル",
             "view_list": "リスト",
-            "view_graph": "グラフ"
+            "view_graph": "グラフ",
+            "fees_yearly": "年率 ≈ %(percent)s"
         },
         "swap": {
             "title": "スワップ",

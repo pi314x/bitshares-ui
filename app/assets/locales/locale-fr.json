@@ -1961,7 +1961,8 @@
             "add_remove": "Ajouter / retirer",
             "stable": "Stable",
             "view_list": "Liste",
-            "view_graph": "Graphe"
+            "view_graph": "Graphe",
+            "fees_yearly": "≈ %(percent)s / an"
         },
         "swap": {
             "title": "Échanger",

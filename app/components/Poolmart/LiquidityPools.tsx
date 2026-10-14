@@ -345,7 +345,7 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                         <>
                             <br />
                             <span className={styles.muted}>
-                                {t("fees_24h", {
+                                {t("fees_yearly", {
                                     percent: formatPercent(
                                         row.data.metrics.feeYield24h * 365
                                     )

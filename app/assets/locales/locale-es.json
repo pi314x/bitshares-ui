@@ -1967,7 +1967,8 @@
             "add_remove": "Añadir / retirar",
             "stable": "Estable",
             "view_list": "Lista",
-            "view_graph": "Grafo"
+            "view_graph": "Grafo",
+            "fees_yearly": "≈ %(percent)s / año"
         },
         "swap": {
             "title": "Intercambiar",

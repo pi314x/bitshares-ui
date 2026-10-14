@@ -53,13 +53,20 @@
 
 .rowActions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: flex-end;
     white-space: nowrap;
+
+    // compact: two buttons must not take a quarter of the table
+    > * {
+        min-height: 32px;
+        padding: 0 12px;
+        font-size: 13px;
+    }
 }
 
-// The table's cells keep their figures on one line (a pair or a fee pair broke
-// at the slash and doubled every row's height).
+// The figures keep to one line (a pair or a fee pair broke at the slash and
+// doubled every row's height); the actions sit tight at the end.
 .page :global(td) {
     white-space: nowrap;
 }

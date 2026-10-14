@@ -1967,7 +1967,8 @@
             "add_remove": "Добавить / убрать",
             "stable": "Стабильный",
             "view_list": "Список",
-            "view_graph": "Граф"
+            "view_graph": "Граф",
+            "fees_yearly": "≈ %(percent)s / год"
         },
         "swap": {
             "title": "Обмен",

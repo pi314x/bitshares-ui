@@ -1967,7 +1967,8 @@
             "add_remove": "Hinzufügen / entfernen",
             "stable": "Stabil",
             "view_list": "Liste",
-            "view_graph": "Graph"
+            "view_graph": "Graph",
+            "fees_yearly": "≈ %(percent)s / Jahr"
         },
         "swap": {
             "title": "Tauschen",

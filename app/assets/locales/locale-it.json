@@ -1961,7 +1961,8 @@
             "add_remove": "Aggiungi / rimuovi",
             "stable": "Stabile",
             "view_list": "Elenco",
-            "view_graph": "Grafo"
+            "view_graph": "Grafo",
+            "fees_yearly": "≈ %(percent)s / anno"
         },
         "swap": {
             "title": "Scambia",

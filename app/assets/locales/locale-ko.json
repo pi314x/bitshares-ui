@@ -1961,7 +1961,8 @@
             "add_remove": "추가 / 제거",
             "stable": "스테이블",
             "view_list": "목록",
-            "view_graph": "그래프"
+            "view_graph": "그래프",
+            "fees_yearly": "연 ≈ %(percent)s"
         },
         "swap": {
             "title": "스왑",

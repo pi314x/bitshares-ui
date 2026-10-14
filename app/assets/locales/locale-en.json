@@ -1968,7 +1968,8 @@
             "add_remove": "Add / remove",
             "stable": "Stable",
             "view_list": "List",
-            "view_graph": "Graph"
+            "view_graph": "Graph",
+            "fees_yearly": "≈ %(percent)s / year"
         },
         "swap": {
             "title": "Swap",

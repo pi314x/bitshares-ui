@@ -1961,7 +1961,8 @@
             "add_remove": "Ekle / çıkar",
             "stable": "Sabit",
             "view_list": "Liste",
-            "view_graph": "Grafik"
+            "view_graph": "Grafik",
+            "fees_yearly": "≈ %(percent)s / yıl"
         },
         "swap": {
             "title": "Takas",

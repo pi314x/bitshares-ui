@@ -1967,7 +1967,8 @@
             "add_remove": "添加 / 移除",
             "stable": "稳定币池",
             "view_list": "列表",
-            "view_graph": "关系图"
+            "view_graph": "关系图",
+            "fees_yearly": "年化 ≈ %(percent)s"
         },
         "swap": {
             "title": "兑换",
