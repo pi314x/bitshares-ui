@@ -12749,6 +12749,45 @@ What changed after §7.17, in the order a user meets it.
   node; the swap arithmetic by unit tests (it is not broadcast-tested from this
   environment); real WebKit not available.
 
+### 7.20 Audit pass: voting tables, insets, phone top bar, log out
+
+A pass over the whole app against the live node, in dark and light, desktop and
+phone. What it found and changed:
+
+- **Voting tables were empty.** `VotingAccountsList` tested `item_rows.length`
+  on an Immutable.List (undefined), so neither the witness nor the committee
+  table ever drew a row since the TypeScript port. Fixed (array first) with a
+  regression test that was checked to fail without the fix. The list fetch
+  (about 200 objects, 5s timeout, rejection unhandled) now retries and falls
+  back to what the chain store has (`lib/chain/fetchObjectsPartial.ts`).
+- **One inset.** The shell's content padding (24px) is the page's only inset.
+  Screens rooted in Foundation's `.grid-content` (24px of their own), a 20px
+  module padding or a 15px inline margin sat 24-48px further in (vesting,
+  settings, deposit-withdraw, prediction markets, SameT funds, spotlight, voting).
+  The account wrapper no longer paints the theme's grey behind its cards.
+  A script that lists the left edge of the first visible content per route
+  (min left of text/controls right of the rail) is the quick check.
+- **Legacy `display: block` trap.** `body.<theme> article|aside|footer|header|
+  nav|section {display: block}` (0,1,2) beats a single module class: a flex or
+  grid on one of those tags silently stays block (the pool card's action row,
+  the help contents). Double the class (`.x.x`) or use a `div`.
+- **Pools** pick table or cards by the page's own width (`useElementWidth`),
+  not the viewport: an Explorer tab at a 1400px viewport is narrower than the
+  table (1153px) and clipped its actions.
+- **Phone top bar**: the lock and account chips share row 1 with the menu
+  button and title, at the right; the title gives way, the account name
+  truncates, and below 480px the lock is its padlock only.
+- **Log out** locks the wallet and forgets the password account *and* the
+  current account (`next/logoutSession.ts`); the top bar then says "No account".
+  Browser-verified; unit-tested against the real `AccountStore`.
+- Missing locale keys `gateway.choose_deposit/withdraw` added (10 locales).
+- **Still not verified**: the swap is not broadcast-tested from here; the stable
+  pool curve is not quoted; real WebKit is not available (Chromium only); older
+  account history needs a reachable full-history node (`node.xbts.io` keeps 100
+  operations per account); an unhandled `["2.0.0"]` fetch timeout under a very
+  slow relay is not fully attributed (the crash screen only shows when the page
+  is empty).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

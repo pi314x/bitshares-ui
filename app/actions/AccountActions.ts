@@ -59,7 +59,7 @@ class AccountActionsFacade {
     /**
      *  TODO:  The concept of current accounts is deprecated and needs to be removed
      */
-    setCurrentAccount(name: string) {
+    setCurrentAccount(name: string | null) {
         (accountStore as any).onSetCurrentAccount(name);
         return name;
     }

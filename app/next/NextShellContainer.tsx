@@ -43,6 +43,7 @@ import SettingsActions from "actions/SettingsActions";
 import IntlActions from "actions/IntlActions";
 import WalletDb from "stores/WalletDb";
 import {setLocalStorageType, isPersistantType} from "lib/common/localStorage";
+import {logoutSession} from "./logoutSession";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import SendModal from "components/Modal/SendModal";
@@ -200,14 +201,9 @@ export default function NextShellContainer({
         }
     }, [walletUnlock.rememberMe]);
 
-    // Log out: lock the wallet and forget the session's account (a cloud
-    // wallet's password account), as locking without "remember me" does.
-    const onLogout = React.useCallback(() => {
-        WalletUnlockActions.lock();
-        if (!isPersistantType()) setLocalStorageType("persistant");
-        AccountActions.setPasswordAccount(null);
-        AccountStore.tryToSetCurrentAccount();
-    }, []);
+    // Log out: lock the wallet and forget the session's account (see
+    // logoutSession.ts).
+    const onLogout = React.useCallback(() => logoutSession(), []);
 
     // A request to unlock that was open when the user chose another page goes
     // away with it (it is shown in the page, not over it). Only a request that

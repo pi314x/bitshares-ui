@@ -730,7 +730,7 @@ class AccountStoreFacade {
         if (!isExtensionAccount) ss.set(key, name || null);
     }
 
-    onSetCurrentAccount(name: string) {
+    onSetCurrentAccount(name: string | null) {
         this.setCurrentAccount(name);
     }
 
