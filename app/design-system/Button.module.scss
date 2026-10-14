@@ -11,7 +11,11 @@
     align-items: center;
     justify-content: center;
     min-height: var(--control-h);
-    padding: 0 16px;
+    // vertical padding as well: a label that wraps to two lines (a narrow
+    // column, a long translation) must not touch the button's edges. One line
+    // is still `--control-h` tall (line + 16px is under it).
+    padding: 8px 16px;
+    text-align: center;
     border-radius: var(--radius);
     border: 1px solid var(--field-border);
     background: var(--field-bg);
@@ -62,7 +66,7 @@
 
 .small {
     min-height: var(--control-h-sm);
-    padding: 0 10px;
+    padding: 5px 10px;
     font-size: 13px;
     border-radius: var(--radius-sm);
 }
