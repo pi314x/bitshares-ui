@@ -22,20 +22,24 @@ describe("design-system/Form", () => {
                 </Form.Item>
             </Form>
         );
-        expect(getByText("Account name:")).toBeTruthy();
+        expect(getByText("Account name")).toBeTruthy();
         expect(getByText("Must be unique")).toBeTruthy();
     });
 
-    it("omits the colon when colon is false", () => {
+    it("has no colon after the label unless asked for", () => {
         const {getByText, queryByText} = render(
             <Form>
-                <Form.Item label="Account name" colon={false}>
+                <Form.Item label="Account name">
+                    <input readOnly />
+                </Form.Item>
+                <Form.Item label="Memo" colon>
                     <input readOnly />
                 </Form.Item>
             </Form>
         );
         expect(getByText("Account name")).toBeTruthy();
         expect(queryByText("Account name:")).toBeNull();
+        expect(getByText("Memo:")).toBeTruthy();
     });
 
     it("renders no label element at all when label is omitted", () => {

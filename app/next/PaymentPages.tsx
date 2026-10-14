@@ -41,16 +41,18 @@ export function SendPage(): JSX.Element {
         sendRef.current && sendRef.current.show();
     }, []);
     return (
-        <ModalAsPage>
-            <SendModal
-                id="send_page"
-                refCallback={(e: {show: () => void} | null) => {
-                    sendRef.current = e;
-                }}
-                from_name={accountName}
-                onHide={leave}
-            />
-        </ModalAsPage>
+        <div className="send-page">
+            <ModalAsPage>
+                <SendModal
+                    id="send_page"
+                    refCallback={(e: {show: () => void} | null) => {
+                        sendRef.current = e;
+                    }}
+                    from_name={accountName}
+                    onHide={leave}
+                />
+            </ModalAsPage>
+        </div>
     );
 }
 

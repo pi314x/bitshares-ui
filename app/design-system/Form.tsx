@@ -70,7 +70,9 @@ export interface FormItemProps {
     label?: React.ReactNode;
     help?: React.ReactNode;
     validateStatus?: ValidateStatus;
-    /** Shows ":" after the label. Default true, matching antd. */
+    /** Shows ":" after the label. Default false: a label above its field does
+     * not need one (and one after a block-level label wrapped to a line of its
+     * own). */
     colon?: boolean;
     /** Only meaningful under `<Form layout="horizontal">`. */
     labelCol?: ColSpan;
@@ -84,7 +86,7 @@ function FormItem({
     label,
     help,
     validateStatus = "",
-    colon = true,
+    colon = false,
     labelCol,
     wrapperCol,
     className,
