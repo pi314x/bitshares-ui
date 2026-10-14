@@ -36,6 +36,8 @@ export interface TopbarProps {
      * it is installed and not the signer). Omit it and nothing shows.
      */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
+    /** The head block, shown beside the connection chip (see NextShellContainer). */
+    blockIndicator?: React.ReactNode;
     /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
     onOpenNav?: () => void;
     navOpen?: boolean;
@@ -61,6 +63,7 @@ export function Topbar({
     onShowDeposit,
     onShowWithdraw,
     extensionAction,
+    blockIndicator,
     onOpenNav,
     navOpen = false,
     navId
@@ -113,6 +116,7 @@ export function Topbar({
                     </div>
                     {nodeSelector}
                 </NodePicker>
+                {blockIndicator}
                 <LocaleSwitcher
                     currentLocale={currentLocale}
                     locales={locales}

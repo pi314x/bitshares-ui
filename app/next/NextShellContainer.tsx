@@ -15,6 +15,7 @@
 import * as React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import NextShell from "./NextShell";
+import HeadBlock from "./HeadBlock";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
@@ -234,6 +235,7 @@ export default function NextShellContainer({
                     setWithdrawEverShown(true);
                 }}
                 extensionAction={extensionAction}
+                blockIndicator={<HeadBlock />}
                 themeValue={themeValue}
                 onThemeChange={theme =>
                     SettingsActions.changeSetting({

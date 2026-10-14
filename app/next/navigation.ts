@@ -57,7 +57,10 @@ export const NAV_GROUPS: RailNavGroup[] = [
         // The old header's "Spotlight": a grid of the rarer features (barter,
         // HTLC, direct debit, paper wallet, ...). Nothing else links to them.
         label: "More",
-        items: [{label: "Spotlight", to: "/spotlight"}]
+        items: [
+            {label: "Spotlight", to: "/spotlight"},
+            {label: "Help", to: "/help"}
+        ]
     }
 ];
 

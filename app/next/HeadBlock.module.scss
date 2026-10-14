@@ -1,0 +1,13 @@
+.block {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}

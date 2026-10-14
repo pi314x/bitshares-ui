@@ -40,6 +40,8 @@ export interface NextShellProps {
     onShowWithdraw: () => void;
     /** See TopbarProps.extensionAction. */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
+    /** See TopbarProps.blockIndicator. */
+    blockIndicator?: React.ReactNode;
     content: React.ReactNode;
     /**
      * Controlled theme (mapped from the legacy SettingsStore's 3-theme
@@ -72,6 +74,7 @@ function ShellChrome({
     onShowDeposit,
     onShowWithdraw,
     extensionAction,
+    blockIndicator,
     content
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     // Phone width: the rail is a drawer. It closes on navigation, on Escape and
@@ -134,6 +137,7 @@ function ShellChrome({
                     locales={locales}
                     onSelectLocale={onSelectLocale}
                     extensionAction={extensionAction}
+                    blockIndicator={blockIndicator}
                     onOpenNav={() => setNavOpen(true)}
                     navOpen={navOpen}
                     navId="main-nav"
