@@ -12,16 +12,24 @@
     // no wider, so the page keeps the space.
     width: 184px;
     flex: none;
-    min-height: 100vh;
+    // The rail is as tall as the window and stays put while the page scrolls;
+    // if its entries and the footer are taller than the window, the rail
+    // scrolls inside itself (the footer is its last row, never over an entry).
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
-// At the bottom of the screen: the rail stretches the full height of the page,
-// so the footer sticks to the bottom edge of the *viewport* (not of the page,
-// and not 100vh below a banner that pushes the shell down).
+// The last row of the rail: language and theme. It follows the entries and, on
+// a window taller than they are, sits at the bottom edge.
 .footer {
     margin-top: auto;
-    position: sticky;
-    bottom: 0;
     padding: 12px 4px 8px;
     background: var(--surface);
 }
@@ -134,6 +142,10 @@
         left: 0;
         z-index: 1100;
         width: min(288px, 86vw);
+        // the window's height, and scroll inside (`height: auto` between top
+        // and bottom made it as tall as its entries, so it could not scroll)
+        height: 100vh;
+        height: 100dvh;
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -142,6 +154,13 @@
         // closed: out of the tab order and away from screen readers
         visibility: hidden;
         transition: transform 0.2s var(--ease), visibility 0s linear 0.2s;
+    }
+
+    // the drawer scrolls; language and theme stay in reach at its bottom edge
+    .footer {
+        position: sticky;
+        bottom: 0;
+        border-top: 1px solid var(--line);
     }
 
     .rail.rail.railOpen {

@@ -21,6 +21,8 @@ export interface TopbarProps {
     accountBadges?: Record<string, string>;
     /** The connection chip lives in the status bar at the bottom instead. */
     hideConnection?: boolean;
+    /** The language menu lives elsewhere (the left menu's footer). */
+    hideLocale?: boolean;
     /** "Log out" in the account menu. */
     onLogout?: () => void;
     /** WalletUnlockStore's `locked`, or null before it's known. */
@@ -57,6 +59,7 @@ export function Topbar({
     accountBadges,
     onLogout,
     hideConnection = false,
+    hideLocale = false,
     locked,
     onToggleLock,
     lockLabel,
@@ -121,11 +124,13 @@ export function Topbar({
                         {nodeSelector}
                     </NodePicker>
                 )}
-                <LocaleSwitcher
-                    currentLocale={currentLocale}
-                    locales={locales}
-                    onSelect={onSelectLocale}
-                />
+                {hideLocale ? null : (
+                    <LocaleSwitcher
+                        currentLocale={currentLocale}
+                        locales={locales}
+                        onSelect={onSelectLocale}
+                    />
+                )}
                 <WalletLockButton
                     locked={locked}
                     onToggle={onToggleLock}

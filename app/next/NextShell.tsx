@@ -134,6 +134,7 @@ function ShellChrome({
                     accountBadges={accountBadges}
                     onLogout={onLogout}
                     hideConnection
+                    hideLocale
                     locked={locked}
                     onToggleLock={onToggleLock}
                     lockLabel={lockLabel}

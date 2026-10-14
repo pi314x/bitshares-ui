@@ -32,7 +32,7 @@
     right: 0;
     top: calc(100% + 6px);
     min-width: 160px;
-    max-height: 280px;
+    max-height: min(380px, 70vh);
     overflow-y: auto;
     background: var(--surface);
     border: 1px solid var(--line);
@@ -65,4 +65,32 @@
 .itemActive {
     color: var(--accent);
     font-weight: 600;
+}
+
+// Above the control, for a switcher at the bottom of the window.
+.menuTop {
+    top: auto;
+    bottom: calc(100% + 6px);
+}
+
+// Full width, as the left menu's footer control: the same height and corners
+// as the theme button under it.
+.block {
+    display: block;
+}
+
+.block .trigger {
+    width: 100%;
+    justify-content: space-between;
+    min-height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--radius);
+    font-size: 14px;
+}
+
+.block .menu,
+.menuStart {
+    left: 0;
+    right: auto;
+    width: 100%;
 }

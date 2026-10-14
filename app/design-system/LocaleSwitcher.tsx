@@ -22,18 +22,27 @@ export interface LocaleSwitcherProps {
     currentLocale: string | null;
     locales: string[];
     onSelect: (locale: string) => void;
+    /** Where the list opens: below the chip (default) or above it. */
+    placement?: "bottom" | "top";
+    /** A full-width control (the left menu's footer) instead of a chip. */
+    block?: boolean;
 }
 
 export function LocaleSwitcher({
     currentLocale,
     locales,
-    onSelect
+    onSelect,
+    placement = "bottom",
+    block = false
 }: LocaleSwitcherProps): JSX.Element {
     const [open, setOpen] = React.useState(false);
     const ref = useClickOutside<HTMLDivElement>(() => setOpen(false), open);
 
     return (
-        <div className={styles.wrap} ref={ref}>
+        <div
+            className={`${styles.wrap} ${block ? styles.block : ""}`}
+            ref={ref}
+        >
             <button
                 type="button"
                 className={styles.trigger}
@@ -49,7 +58,12 @@ export function LocaleSwitcher({
                 </span>
             </button>
             {open ? (
-                <div className={styles.menu} role="menu">
+                <div
+                    className={`${styles.menu} ${
+                        placement === "top" ? styles.menuTop : ""
+                    } ${block ? styles.menuStart : ""}`}
+                    role="menu"
+                >
                     {locales.map(code => (
                         <button
                             key={code}

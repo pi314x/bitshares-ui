@@ -16,6 +16,7 @@ import * as React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import NextShell from "./NextShell";
 import BlockStatus from "./BlockStatus";
+import {LocaleSwitcher} from "../design-system/LocaleSwitcher";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
@@ -227,7 +228,26 @@ export default function NextShellContainer({
             <NextShell
                 navGroups={NAV_GROUPS}
                 crumb={crumbFromPath(location.pathname)}
-                railFooter={<RailThemeToggle />}
+                railFooter={
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8
+                        }}
+                    >
+                        <LocaleSwitcher
+                            block
+                            placement="top"
+                            currentLocale={intl.currentLocale}
+                            locales={settings.defaults.locale}
+                            onSelect={locale =>
+                                IntlActions.switchLocale(locale)
+                            }
+                        />
+                        <RailThemeToggle />
+                    </div>
+                }
                 currentAccount={currentAccount}
                 accounts={accounts}
                 onSelectAccount={name =>
