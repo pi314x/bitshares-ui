@@ -45,8 +45,10 @@ export interface TopbarProps {
      * it is installed and not the signer). Omit it and nothing shows.
      */
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
-    /** Small chips shown before the lock (view-only notice, notifications). */
+    /** Small chips shown before the account (view-only notice, backup). */
     chips?: React.ReactNode;
+    /** What sits at the far right, after the lock (the notification bell). */
+    endChips?: React.ReactNode;
     /** Phone width: opens the navigation drawer; omit it and no menu button shows. */
     onOpenNav?: () => void;
     navOpen?: boolean;
@@ -78,6 +80,7 @@ export function Topbar({
     onShowWithdraw,
     extensionAction,
     chips,
+    endChips,
     onOpenNav,
     navOpen = false,
     navId
@@ -162,6 +165,7 @@ export function Topbar({
                     onToggle={onToggleLock}
                     label={lockLabel}
                 />
+                {endChips}
             </div>
         </header>
     );

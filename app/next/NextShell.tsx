@@ -45,8 +45,10 @@ export interface NextShellProps {
     extensionAction?: {label: string; onClick: () => void; disabled?: boolean};
     /** The block's status, in the status bar at the very end of the page. */
     statusDock?: React.ReactNode;
-    /** Small chips in the top bar, before the lock. */
+    /** Small chips in the top bar, before the account. */
     chips?: React.ReactNode;
+    /** At the far right of the top bar, after the lock. */
+    endChips?: React.ReactNode;
     content: React.ReactNode;
     /**
      * Controlled theme (mapped from the legacy SettingsStore's 3-theme
@@ -84,6 +86,7 @@ function ShellChrome({
     extensionAction,
     statusDock,
     chips,
+    endChips,
     content
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     // Phone width: the rail is a drawer. It closes on navigation, on Escape and
@@ -152,6 +155,7 @@ function ShellChrome({
                     onSelectLocale={onSelectLocale}
                     extensionAction={extensionAction}
                     chips={chips}
+                    endChips={endChips}
                     onOpenNav={() => setNavOpen(true)}
                     navOpen={navOpen}
                     navId="main-nav"

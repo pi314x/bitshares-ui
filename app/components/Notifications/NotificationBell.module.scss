@@ -166,3 +166,18 @@
     color: var(--muted);
     font-size: 14px;
 }
+
+// A phone: the panel was a 380px box hung from the bell's right edge, so with
+// the bell in the middle of the bar it ran off the screen's left edge (iPhone).
+// It is a sheet across the screen, 12px from both edges, under the bar.
+@media (max-width: 640px) {
+    .panel {
+        position: fixed;
+        top: var(--bell-top, 64px);
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+        max-height: min(70vh, calc(100vh - var(--bell-top, 64px) - 24px));
+    }
+}

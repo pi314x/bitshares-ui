@@ -78,12 +78,16 @@ export function NotificationBell(): JSX.Element {
         markAllSeen();
     }, []);
     const ref = useClickOutside<HTMLDivElement>(close, open);
+    // where the bar ends, for the phone's sheet (fixed under the bar)
+    const [panelTop, setPanelTop] = React.useState(0);
 
     const toggle = () => {
         if (open) {
             close();
         } else {
             setFresh(new Set(items.filter(i => !i.seen).map(i => i.id)));
+            const wrap = ref.current;
+            if (wrap) setPanelTop(wrap.getBoundingClientRect().bottom + 8);
             setOpen(true);
         }
     };
@@ -126,6 +130,7 @@ export function NotificationBell(): JSX.Element {
             {open ? (
                 <div
                     className={styles.panel}
+                    style={{["--bell-top" as any]: `${panelTop}px`}}
                     role="dialog"
                     aria-label={t("title")}
                 >

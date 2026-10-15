@@ -375,25 +375,15 @@ function BuySellInner(props: BuySellProps) {
                 })}
             >
                 <div className="grid-block no-overflow wrap shrink">
-                    <div className="small-3 buy-sell-label">
+                    <span className="small-4 buy-sell-label">
                         <Translate content="explorer.asset.summary.market_fee" />
                         , {baseMarketFeePercent}
-                    </div>
-                    <div className="inputAddon small-9">
-                        <ExchangeInput
-                            placeholder="0.0"
-                            id="baseMarketFee"
-                            defaultValue={baseFee}
-                            value={baseFee}
-                            addonAfter={
-                                <span>
-                                    <AssetName
-                                        noTip
-                                        name={base.get("symbol")}
-                                    />
-                                </span>
-                            }
-                        />
+                    </span>
+                    <div className="small-8 buy-sell-label">
+                        <span>
+                            {baseFee}{" "}
+                            <AssetName noTip name={base.get("symbol")} />
+                        </span>
                     </div>
                 </div>
             </Tooltip>
@@ -476,26 +466,15 @@ function BuySellInner(props: BuySellProps) {
                 })}
             >
                 <div className="grid-block no-overflow wrap shrink">
-                    <div className="small-3 buy-sell-label">
+                    <span className="small-4 buy-sell-label">
                         <Translate content="explorer.asset.summary.market_fee" />
                         , {quoteMarketFeePercent}
-                    </div>
-                    <div className="inputAddon small-9">
-                        <ExchangeInput
-                            placeholder="0.0"
-                            id="quoteMarketFee"
-                            defaultValue={quoteFee}
-                            value={quoteFee}
-                            addonAfter={
-                                <span>
-                                    <AssetName
-                                        style={{width: 100}}
-                                        noTip
-                                        name={quote.get("symbol")}
-                                    />
-                                </span>
-                            }
-                        />
+                    </span>
+                    <div className="small-8 buy-sell-label">
+                        <span>
+                            {quoteFee}{" "}
+                            <AssetName noTip name={quote.get("symbol")} />
+                        </span>
                     </div>
                 </div>
             </Tooltip>
@@ -534,41 +513,15 @@ function BuySellInner(props: BuySellProps) {
         )
     ) : null;
 
-    const emptyCell = !verticalOrderForm ? (
-        <div
-            style={{visibility: "hidden"}}
-            className="grid-block no-overflow wrap shrink"
-        >
-            <div className="small-3 buy-sell-label">
-                <Translate content="explorer.asset.summary.market_fee" />
-            </div>
-            <div className="inputAddon small-9">
-                <ExchangeInput
-                    placeholder="0.0"
-                    id="emptyPlaceholder"
-                    defaultValue="0"
-                    addonAfter={
-                        <span>
-                            <AssetName
-                                style={{width: 100}}
-                                noTip
-                                name={quote.get("symbol")}
-                            />
-                        </span>
-                    }
-                />
-            </div>
-        </div>
-    ) : null;
-
+    // (A hidden placeholder row used to be reserved here so that the buy and the
+    // sell form had the same rows; it left a gap of a row between the fee and
+    // the expiration of the side without a market fee.)
     const isBid = type === "bid";
     const marketFee =
         isBid && quoteMarketFee
             ? quoteMarketFee
             : !isBid && baseMarketFee
             ? baseMarketFee
-            : quoteMarketFee || baseMarketFee
-            ? emptyCell
             : null;
 
     const hasBalance = isBid
@@ -880,7 +833,6 @@ function BuySellInner(props: BuySellProps) {
                         />
                     </div>
                 </div>
-                {marketFee}
             </div>
         ) : (
             <div className={containerClass}>
@@ -1270,6 +1222,23 @@ function BuySellInner(props: BuySellProps) {
                                     </div>
                                 </div>
                             ) : null}
+                            {singleColumnForm
+                                ? marketFee ||
+                                  (quoteMarketFee || baseMarketFee ? (
+                                      <div
+                                          className="grid-block no-overflow wrap shrink"
+                                          style={{visibility: "hidden"}}
+                                          aria-hidden="true"
+                                      >
+                                          <span className="small-4 buy-sell-label">
+                                              &nbsp;
+                                          </span>
+                                          <div className="small-8 buy-sell-label">
+                                              <span>&nbsp;</span>
+                                          </div>
+                                      </div>
+                                  ) : null)
+                                : null}
                             <div style={{marginTop: 10}}>
                                 <div>
                                     <div className="order-actions">

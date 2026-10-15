@@ -667,10 +667,10 @@ const ScaledOrderFormInner = React.forwardRef<
         </span>
     );
 
-    const formItemProps = {
-        labelCol: {span: 6},
-        wrapperCol: {span: 16, offset: 2}
-    };
+    // (No column spans: the label is a fixed column - `exchange-layout.scss`,
+    // the same one as the limit form's - and the control takes the rest of the
+    // row. The spans left a third of the row empty.)
+    const formItemProps = {};
 
     const priceLowerRules: ScaledOrderFieldRule[] = [
         Validation.Rules.required(),
@@ -882,11 +882,7 @@ const ScaledOrderFormInner = React.forwardRef<
 
     return (
         <div className="buy-sell-container" style={{padding: "5px"}}>
-            <Form
-                className="order-form"
-                layout="horizontal"
-                style={{padding: "8px 15px"}}
-            >
+            <Form className="order-form" layout="vertical">
                 <Form.Item
                     {...formItemProps}
                     label={counterpart.translate("scaled_orders.price_lower")}
@@ -984,7 +980,11 @@ const ScaledOrderFormInner = React.forwardRef<
                     </div>
                 </Form.Item>
 
-                <Form.Item label={lastPriceLabel} {...formItemProps}>
+                <Form.Item
+                    label={lastPriceLabel}
+                    className="order-data"
+                    {...formItemProps}
+                >
                     <span
                         style={{
                             borderBottom: "#A09F9F 1px dotted",
@@ -1004,6 +1004,7 @@ const ScaledOrderFormInner = React.forwardRef<
 
                 <Form.Item
                     label={counterpart.translate("exchange.balance")}
+                    className="order-data"
                     {...formItemProps}
                 >
                     <span

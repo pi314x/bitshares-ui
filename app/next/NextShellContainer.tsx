@@ -375,9 +375,9 @@ export default function NextShellContainer({
                     <>
                         <AccountBrowsingMode location={location} chip />
                         <BackupNotice />
-                        <NotificationBell />
                     </>
                 }
+                endChips={<NotificationBell />}
                 content={
                     <>
                         {/* "Confirm this transaction": in the page, not a popup */}

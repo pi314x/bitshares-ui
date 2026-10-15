@@ -13048,6 +13048,24 @@ were cut off. It now fits by construction:
   borders), and the table scrolls sideways inside the card (it was clipped by
   the card's hidden overflow, so a phone could not reach its last columns).
 
+### 7.30 The order forms: label above the field
+
+The trade page's two order forms (limit, scaled) are one design now
+(`design-system/exchange-layout.scss`, `.buy-sell-container`): every field has
+its label above it and is the width of the form; the figures that are data
+(lowest ask / highest bid, balance, and the market fee, which is a computed
+value, not a field) are a label and its value on one row; the expiration is a
+select under its label (a hidden 38px date input used to push it a row down);
+Buy/Sell and Borrow or Settle share a row, half and half. The buy and the sell
+card have the same rows (an invisible data row stands in for a market fee the
+side does not charge), so their buttons are on one line. The scaled form is the
+design system's vertical form (it was horizontal with column spans that left a
+third of the row empty). The order book's rows use the monospace figures at one
+row height, and its header the other tables' style. The notification bell is at
+the far right of the top bar and, on a phone, its panel is a sheet 12px from both
+edges under the bar (it hung from the bell's right edge and ran off the left edge
+on an iPhone).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

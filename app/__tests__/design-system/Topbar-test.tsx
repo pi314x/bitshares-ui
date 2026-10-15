@@ -65,6 +65,19 @@ describe("design-system/Topbar", () => {
         ).toBeTruthy();
     });
 
+    it("puts what is passed as endChips at the far right, after the lock", () => {
+        const {getByText} = renderTopbar({
+            locked: true,
+            endChips: <span>bell</span>
+        });
+        const lock = getByText("Locked");
+        const bell = getByText("bell");
+        expect(
+            lock.compareDocumentPosition(bell) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+    });
+
     it("switches accounts through the real AccountSwitcher, not a static label", () => {
         const onSelectAccount = jest.fn();
         const {getByText} = renderTopbar({
