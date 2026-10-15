@@ -13034,6 +13034,20 @@ were cut off. It now fits by construction:
   the content region (24 on a desktop, 12/16 on a phone: every page measured
   was). Run on 14 pages, phone and light theme, none fails.
 
+### 7.29 The limit form follows the scaled form; fees
+
+- **Trade page, limit form** (`Exchange/BuySell.tsx`, `design-system/
+  exchange-layout.scss`): the user found the scaled form's button and price data
+  better, so the limit form takes them over - the label 13px/500 in the ink
+  colour, the figures of *lowest ask / highest bid* and *balance* at 16px, and
+  the submit button as wide as the form. **Buy/Sell and Borrow (or Settle, for a
+  globally settled asset) share one row, half and half**; the deposit shortcuts
+  follow below.
+- **Explorer > Fees** (`Blockchain/Fees.tsx`): a group's title is the first row
+  of its card instead of a bordered card of its own inside the card (two
+  borders), and the table scrolls sideways inside the card (it was clipped by
+  the card's hidden overflow, so a phone could not reach its last columns).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

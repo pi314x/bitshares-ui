@@ -1272,27 +1272,63 @@ function BuySellInner(props: BuySellProps) {
                             ) : null}
                             <div style={{marginTop: 10}}>
                                 <div>
-                                    <Tooltip
-                                        className="order-submit-wrap"
-                                        placement="top"
-                                        title={disabledText ? disabledText : ""}
-                                    >
-                                        <Button
-                                            className={
-                                                disabled
-                                                    ? "order-submit"
-                                                    : `order-submit ${buttonClass}`
+                                    <div className="order-actions">
+                                        <Tooltip
+                                            className="order-submit-wrap"
+                                            placement="top"
+                                            title={
+                                                disabledText ? disabledText : ""
                                             }
-                                            disabled={disabled}
-                                            onClick={(e: any) =>
-                                                onSubmit(true, e)
-                                            }
-                                            variant="accent"
-                                            style={{margin: 5}}
                                         >
-                                            {isBid ? "Buy" : "Sell"}
-                                        </Button>
-                                    </Tooltip>
+                                            <Button
+                                                className={
+                                                    disabled
+                                                        ? "order-submit"
+                                                        : `order-submit ${buttonClass}`
+                                                }
+                                                disabled={disabled}
+                                                onClick={(e: any) =>
+                                                    onSubmit(true, e)
+                                                }
+                                                variant="accent"
+                                                style={{width: "100%"}}
+                                            >
+                                                {isBid ? "Buy" : "Sell"}
+                                            </Button>
+                                        </Tooltip>
+                                        {props.onBorrow &&
+                                        !isGloballySettled ? (
+                                            <Button
+                                                style={{width: "100%"}}
+                                                disabled={
+                                                    !props.currentAccount ||
+                                                    props.currentAccount.get(
+                                                        "id"
+                                                    ) === "1.2.3"
+                                                }
+                                                onClick={props.onBorrow}
+                                            >
+                                                <Translate content="exchange.borrow" />
+                                            </Button>
+                                        ) : null}
+                                        {isGloballySettled ? (
+                                            <Button
+                                                style={{width: "100%"}}
+                                                disabled={
+                                                    !props.currentAccount ||
+                                                    props.currentAccount.get(
+                                                        "id"
+                                                    ) === "1.2.3"
+                                                }
+                                                onClick={showSettleModal}
+                                                data-tip={counterpart.translate(
+                                                    "exchange.settle_globally_settled_tooltip"
+                                                )}
+                                            >
+                                                <Translate content="exchange.settle_globally_settled" />
+                                            </Button>
+                                        ) : null}
+                                    </div>
 
                                     {props.currentBridges &&
                                     !props.backedCoin ? (
@@ -1490,37 +1526,6 @@ function BuySellInner(props: BuySellProps) {
                                                 </Button>
                                             </Tooltip>
                                         </Popover>
-                                    ) : null}
-                                    {props.onBorrow && !isGloballySettled ? (
-                                        <Button
-                                            style={{margin: 5}}
-                                            disabled={
-                                                !props.currentAccount ||
-                                                props.currentAccount.get(
-                                                    "id"
-                                                ) === "1.2.3"
-                                            }
-                                            onClick={props.onBorrow}
-                                        >
-                                            <Translate content="exchange.borrow" />
-                                        </Button>
-                                    ) : null}
-                                    {isGloballySettled ? (
-                                        <Button
-                                            style={{margin: 5}}
-                                            disabled={
-                                                !props.currentAccount ||
-                                                props.currentAccount.get(
-                                                    "id"
-                                                ) === "1.2.3"
-                                            }
-                                            onClick={showSettleModal}
-                                            data-tip={counterpart.translate(
-                                                "exchange.settle_globally_settled_tooltip"
-                                            )}
-                                        >
-                                            <Translate content="exchange.settle_globally_settled" />
-                                        </Button>
                                     ) : null}
                                 </div>
                             </div>

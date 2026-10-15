@@ -40,13 +40,13 @@
 // current-global-parameters chain object and displays it.
 import * as React from "react";
 import counterpart from "counterpart";
+import styles from "./Fees.module.scss";
 import classNames from "classnames";
 import Translate from "react-translate-component";
 import HelpContent from "../Utility/HelpContent";
 import FormattedAsset from "../Utility/FormattedAsset";
 import {EquivalentValueComponent} from "../Utility/EquivalentValueComponent";
 import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
-import {Card} from "../../design-system/Card";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const {operations} = grapheneChainTypes as any;
@@ -237,26 +237,28 @@ function FeeGroupCore({
 
     return (
         <div className="asset-card">
-            <Card>{title.toUpperCase()}</Card>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>
-                            <Translate content={"explorer.block.op"} />
-                        </th>
-                        <th>
-                            <Translate content={"explorer.fees.type"} />
-                        </th>
-                        <th style={{textAlign: "right"}}>
-                            <Translate content={"explorer.fees.fee"} />
-                        </th>
-                        <th style={{textAlign: "right"}}>
-                            <Translate content={"explorer.fees.feeltm"} />
-                        </th>
-                    </tr>
-                </thead>
-                {fees}
-            </table>
+            <div className={styles.title}>{title.toUpperCase()}</div>
+            <div className={styles.scroll}>
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <Translate content={"explorer.block.op"} />
+                            </th>
+                            <th>
+                                <Translate content={"explorer.fees.type"} />
+                            </th>
+                            <th style={{textAlign: "right"}}>
+                                <Translate content={"explorer.fees.fee"} />
+                            </th>
+                            <th style={{textAlign: "right"}}>
+                                <Translate content={"explorer.fees.feeltm"} />
+                            </th>
+                        </tr>
+                    </thead>
+                    {fees}
+                </table>
+            </div>
         </div>
     );
 }

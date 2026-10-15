@@ -134,3 +134,46 @@ body[class][class] .market-layout .phone-trade .exchange-bordered {
     border: 0;
     border-radius: 0;
 }
+
+// The limit form's labels, price data and submit button follow the scaled
+// form's (the user's call: the scaled one looked better): the label 13px/500 in
+// the ink colour, the figures of "lowest ask / highest bid" and "balance" at
+// 16px, and the button as wide as the form.
+body[class][class] .buy-sell-container {
+    .buy-sell-label {
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .small-8.buy-sell-label {
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    // Buy/Sell and Borrow (or Settle) share a row, half and half
+    .order-actions {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .order-actions > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .order-actions button {
+        width: 100%;
+    }
+
+    .order-submit-wrap {
+        display: block;
+        width: 100%;
+    }
+
+    // the deposit shortcuts, when there are any: a row of their own
+    .order-submit-wrap ~ button {
+        margin-top: 8px;
+    }
+}
