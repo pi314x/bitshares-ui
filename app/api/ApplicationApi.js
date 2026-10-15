@@ -11,7 +11,7 @@ import {
     ChainTypes
 } from "bitsharesjs";
 import counterpart from "counterpart";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "../design-system/Notification";
 
 const ApplicationApi = {
     create_account(
@@ -124,7 +124,7 @@ const ApplicationApi = {
         fee_asset_id = null,
         transactionBuilder = null
     }) {
-        let unlock_promise = WalletUnlockActions.unlock();
+        let unlock_promise = WalletUnlockActions.unlockForSigning();
 
         if (!fee_asset_id) {
             // use default fee asset selection if none given
@@ -298,7 +298,7 @@ const ApplicationApi = {
     },
 
     transfer_list(list_of_transfers, proposal_fee = null) {
-        return WalletUnlockActions.unlock().then(() => {
+        return WalletUnlockActions.unlockForSigning().then(() => {
             let proposer = null;
             let transfers = [];
             let tr = new TransactionBuilder();
@@ -359,7 +359,7 @@ const ApplicationApi = {
         encrypt_memo = true,
         optional_nonce = null
     ) {
-        let unlock_promise = WalletUnlockActions.unlock();
+        let unlock_promise = WalletUnlockActions.unlockForSigning();
 
         return Promise.all([
             FetchChain("getAccount", from_account),
@@ -545,7 +545,7 @@ const ApplicationApi = {
         }
 
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -631,7 +631,7 @@ const ApplicationApi = {
         }
 
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -702,7 +702,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -783,7 +783,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -831,7 +831,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -883,7 +883,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -929,7 +929,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -980,7 +980,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -1028,7 +1028,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -1084,7 +1084,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given
@@ -1137,7 +1137,7 @@ const ApplicationApi = {
         broadcast = true
     ) {
         // account must be unlocked
-        await WalletUnlockActions.unlock();
+        await WalletUnlockActions.unlockForSigning();
 
         if (!feeAsset) {
             // use default fee asset selection if none given

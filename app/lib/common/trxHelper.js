@@ -122,7 +122,9 @@ function checkFeeStatusAsync({
                     return;
                 }
 
-                Promise.all([
+                // returned: a failure of these fetches reaches the `catch`
+                // below instead of being an unhandled rejection
+                return Promise.all([
                     coreBalanceID
                         ? FetchChain("getObject", coreBalanceID)
                         : null,

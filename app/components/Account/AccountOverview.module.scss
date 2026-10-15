@@ -1,0 +1,109 @@
+// The portfolio's views (balances, open orders, margin positions, credit,
+// activity): one panel with a tab strip, a toolbar where the view has one, and
+// the 16px inset from the panel's edge that the other pages keep.
+.panel {
+    box-sizing: border-box;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    overflow: hidden;
+}
+
+// the tab strip is the panel's own header: inset, with its rule under it
+.tabs > :first-child {
+    padding: 0 8px;
+}
+
+.pane {
+    min-width: 0;
+    padding: 0;
+}
+
+// a tab: its name and, beside it, what it holds (a value or a count)
+.tabLabel {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.tabSub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+// filter on the left, the view switch on the right; wraps on a phone
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+}
+
+.filter {
+    flex: 1 1 220px;
+    min-width: 0;
+    max-width: 360px;
+}
+
+// A table wider than the panel scrolls inside it instead of being cut off.
+.scroll {
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 8px;
+}
+
+.padded {
+    padding: 16px;
+}
+
+// "Total (BTS)  47,877.37": the label and the figure at the two ends of a row
+.total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.totalLabel {
+    color: var(--muted);
+}
+
+.totalValue {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+// The activity list: the description of an operation is a sentence, so it wraps
+// in its cell instead of pushing the time column out of the panel.
+.wrapCells table td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.wrapCells table td:first-child {
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+// A phone has no room for the operation id and the fee beside the sentence:
+// the type, what happened and when remain (the id is in the operation's block).
+@media (max-width: 640px) {
+    .wrapCells table th:first-child,
+    .wrapCells table td:first-child,
+    .wrapCells table th:nth-child(4),
+    .wrapCells table td:nth-child(4) {
+        display: none;
+    }
+}

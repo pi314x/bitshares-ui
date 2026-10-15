@@ -418,7 +418,7 @@
             "inactive": "Backup",
             "info": "Informazioni",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "Diventa witness",
             "line": "Linea",
             "max_pay": "Salario totale massimo",
             "missing": "Necessari",
@@ -460,7 +460,8 @@
             "witness": "Nome witness",
             "worker_account": "Account Worker",
             "workers": "Budget Items",
-            "workers_short": "Worker"
+            "workers_short": "Worker",
+            "update_witness": "Aggiorna witness"
         },
         "voting": "Voti",
         "welcome": "Benvenuto su BitShares",
@@ -478,7 +479,8 @@
             "white_by": "Messo in whitelist da",
             "whitelist_authorities": "Autorità whitelist",
             "whitelist_market_fee_sharing": "Market fee sharing whitelist"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Go back to my account",
@@ -504,8 +506,13 @@
         "connected": "Connesso",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
+        "loading_title": "Avvio di BitShares Desk",
+        "node_label": "Nodo:",
         "not_connected": "Non connesso",
         "retry": "Riprova",
+        "step_connect": "Connessione al nodo",
+        "step_database": "Apertura dei dati locali",
+        "step_latency": "Scelta del nodo più veloce",
         "title": "Problemi nell'inizializzazione dell'applicazione",
         "understand": "Ho capito",
         "ws_status": "Stato della connessione del full node"
@@ -646,6 +653,62 @@
         "starred_markets": "Starred Markets",
         "table_empty": "No market matched",
         "top_markets": "Top Markets"
+    },
+    "desk": {
+        "accounts": "Account",
+        "activity": "Attività recente",
+        "amount": "Quantità",
+        "asset": "Asset",
+        "attention": "Richiede attenzione",
+        "attention_called": "Your %(symbol)s position is below the maintenance ratio (%(ratio)s) and can be margin-called",
+        "attention_expiring": "%(count)s orders expire within a day",
+        "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
+        "attention_stale": "The node's latest block is %(minutes)s minutes old",
+        "backed_by": "backed by %(amount)s %(symbol)s",
+        "borrow_none": "Nessuna posizione di prestito",
+        "borrowed": "Preso in prestito",
+        "card_accounts": "Accounts",
+        "card_activity": "Activity",
+        "card_attention": "Attention",
+        "card_chart": "Balance chart",
+        "card_holdings": "Holdings",
+        "card_markets": "Markets",
+        "card_positions": "Positions",
+        "collateral": "Collaterale",
+        "current": "attuale",
+        "customize": "Personalizza",
+        "customize_hint": "Show or hide cards:",
+        "debt": "Debito",
+        "distance": "price may fall %(percent)s",
+        "holdings": "Possedimenti",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
+        "more_n": "+%(count)s altri",
+        "no_holdings": "Ancora niente",
+        "no_price": "nessun prezzo",
+        "open": "Apri",
+        "open_orders": "Ordini aperti",
+        "orders_count": "%(count)s open orders",
+        "orders_expiry_next": "next one expires %(when)s",
+        "orders_expiry_none": "all good until cancelled",
+        "orders_none": "Nessun ordine aperto",
+        "pool_share": "%(percent)s of the pool",
+        "pools": "Pools",
+        "pools_none": "Nessuna quota di pool",
+        "positions": "Posizioni",
+        "ratio": "ratio %(ratio)s",
+        "risk_called": "Called",
+        "risk_danger": "At risk",
+        "risk_ok": "Safe",
+        "risk_watch": "Watch",
+        "share": "Quota",
+        "show_all": "Mostra tutto (%(count)s)",
+        "show_less": "Mostra meno",
+        "total_value": "Valore totale",
+        "trade": "Scambia",
+        "unit": "Valore in",
+        "unpriced": "%(count)s without a price are not counted",
+        "value": "Valore",
+        "wallet": "Portafoglio"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -807,7 +870,13 @@
         "sell": "Vendi",
         "sell_description": "Sell %(baseAsset)s %(baseName)s for %(quoteAsset)s %(quoteName)s",
         "settings": {
-            "header": "Personalize",
+            "header": {
+                "chart_options": "Opzioni del grafico",
+                "general": "Generale",
+                "order_options": "Opzioni degli ordini",
+                "panel_grouping": "Raggruppamento dei pannelli",
+                "title": "Personalizza"
+            },
             "options": {
                 "grouping_1": "Group 1",
                 "grouping_2": "Group 2",
@@ -907,7 +976,8 @@
         "worth_less_settlement_warning": "Warning! You can get a better price by selling to {market_link}.",
         "your_price": "Il tuo Call Price",
         "zoom": "Zoom",
-        "zoom_all": "Tutto"
+        "zoom_all": "Tutto",
+        "trend_7d": "7G"
     },
     "explorer": {
         "account": {
@@ -1221,6 +1291,28 @@
             "hello": "Dear BitShares' User"
         }
     },
+    "externalSigner": {
+        "title": "Wallet extension",
+        "intro": "Sign with the BitShares wallet browser extension. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key. The account chosen in the account menu is the one that signs: the extension's account through the extension, any other account through the wallet stored in this browser.",
+        "status_unknown": "Looking for the extension...",
+        "status_unavailable": "The BitShares wallet extension was not found in this browser.",
+        "status_disconnected": "The extension was found but is not connected.",
+        "status_connecting": "Waiting for you to approve the connection in the extension...",
+        "status_connected": "Connected as %(account)s.",
+        "signing_extension": "Transactions for %(account)s are signed by the wallet extension.",
+        "signing_local": "Transactions for %(account)s are signed by the wallet stored in this browser.",
+        "locked": "The extension is locked. Unlock it before signing.",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "limits": "Not supported with the extension yet: memos (it would publish them unencrypted), a fee in an asset other than the core asset, and claiming balances. Use the local wallet for those.",
+        "noChain": "Not connected to a node yet, so the network cannot be checked.",
+        "noUnbroadcast": "The extension signs and broadcasts in one step, so a transaction cannot be signed without being sent.",
+        "noExtraKeys": "This transaction needs keys the extension does not hold. Use the local wallet for it.",
+        "notConnected": "The wallet extension is not connected.",
+        "waiting": "Approve the transaction in the BitShares wallet extension.",
+        "sent": "Transaction sent.",
+        "failed": "The extension did not sign the transaction: %(reason)s"
+    },
     "fees": {
         "title": "Elenco commissioni"
     },
@@ -1243,20 +1335,12 @@
     "gateway": {
         "add_funds": "Aggiungi fondi rapidamente e facilmente al tuo account BitShares <strong>%(account)s</strong>. Questo servizio è fornito da Openledger.",
         "address": "Address",
-        "address_with_memo": "%(address)s <span class=\"blocktrades-with-memo\">con memo</span> %(memo)s",
-        "agreement": {
-            "hint": "I have read and agreed to",
-            "name": "《Service Agreement》",
-            "notice": "Please check the agreement to continue",
-            "register": "Agree"
-        },
         "asset": "Asset",
         "asset_search_deposit": "Search for an asset to deposit",
         "asset_search_withdraw": "Search for an asset to withdraw",
         "asset_to_deposit": "Asset da depositare:",
         "asset_to_receive": "Riceverai:",
         "asset_to_withdraw": "Asset da prelevare:",
-        "asset_unavailable": "The gateway for %(asset)s is not in service",
         "assets": {
             "bit": "bit%(asset)s è un derivato che segue il valore reale di %(backed)s. È decentralizzato al 100%%, trustless e supportato da una garanzia trattenuta dalla blockchain in uno smart contract.",
             "bitcny": "bitCNY v 1:1 verso veri Yuan usando un servizio di gateway come Magic Wallet. For more info, vedi https://www.magicw.net/",
@@ -1272,32 +1356,11 @@
         },
         "balance": "Saldo attuale",
         "balance_asset": "Saldo %(asset)s attuale",
-        "bitkapital_receive": "Riceverai",
-        "bitkapital_text": "Scegli un asset da depositare o prelevare:",
-        "bitkapital_withdraw": "Stai prelevando",
-        "bitspark": {
-            "support_block": "For DEPOSIT AND WITHDRAWAL issues using \"BitSpark TRANSFER SERVICE\", please contact BitSpark at:"
-        },
-        "bridge": "Bridge",
-        "bridge_text": "Un bridge ti permette discambiare un asset verso un altro, ad esempio BTC in BTS.",
-        "calc": "Calcolo in corso",
-        "choose_deposit": "Per favore seleziona la valuta che vuoi depositare",
-        "choose_withdraw": "Per favore seleziona la valuta che vuoi prelevare",
-        "citadel": {
-            "coming_soon": "Prossimamente",
-            "min_amount": "Minimum amount: %(minAmount)s %(symbol)s",
-            "min_amount_error": "Per favore inserisci un numero >= minimo",
-            "support_block": "Per supporto, contatta citadel.li a:",
-            "under_construction": "Under Construction"
-        },
-        "contact_TRADE": "Contact Blocktrades",
-        "convert": "Quantità minima: %(minAmount)s %(symbol)s",
-        "convert_coin": "Converti in %(coin)s (%(symbol)s)",
-        "convert_now": "Converti adesso",
+        "choose_deposit": "Scegli l'asset da depositare",
+        "choose_withdraw": "Scegli l'asset da prelevare",
         "copy_address": "Copy address",
         "copy_memo": "Copy memo",
         "deposit": "Deposito",
-        "deposit_address": "Deposit address",
         "deposit_from_wallet": "Deposit from wallet",
         "deposit_history_status": {
             "confirming": "deposit confirming",
@@ -1307,16 +1370,10 @@
             "waiting": "waiting for deposit"
         },
         "deposit_inst": "Istruzioni per il deposito",
-        "deposit_limit": "Limite di deposito",
         "deposit_notice_delay": "(new address can be generated once per 5 minutes)",
         "deposit_summary": "Riepilogo deposito",
         "deposit_to": "Per favore invia i tuoi %(asset)s all'indirizzo seguente",
-        "deposit_warning": "Sending any other currency to the %(asset)s address will result in the loss of your deposit",
-        "deposit_warning_memo": "Deposit %(asset)s must contains memo, otherwise it won't be credited",
         "fee": "Commissione Gateway",
-        "fiat": "Fiat",
-        "fiat_text": "I depositi e i prelievi in valuta legale sono forniti da CCEDK. Per iniziare devi completare la procedura di registrazione. Sono disponibili le seguenti conversioni:",
-        "frozen": "The user account %(account)s was frozen",
         "gateway": "Gateway",
         "gateway_deposit": {
             "confirmations": {
@@ -1325,11 +1382,7 @@
             }
         },
         "gateway_text": "Scegli qui se vuoi effettuare un deposito o un prelievo",
-        "generate": "Genera",
         "generate_new": "Ottieni un nuovo indirizzo",
-        "generate_new_memo": "Get new memo",
-        "iban": "IBAN",
-        "info": "Info",
         "intermediate": "Account intermedio",
         "inventory": "Inventario",
         "iob": {
@@ -1339,19 +1392,16 @@
             "support_block": "For support, please contact ioxbank at:",
             "under_construction": "Under Construction"
         },
-        "limit": "Limite: %(amount)s %(symbol)s",
         "limit_withdraw_asset": "Min: %(min)s, Max: %(max)s",
         "limit_withdraw_asset_max": "Maximum withdraw: %(min)s %(coin)s",
         "limit_withdraw_asset_min": "Minimum withdraw: %(min)s %(coin)s",
         "limit_withdraw_asset_none": "None",
-        "logout_now": "Logout now",
         "memo": "Memo",
         "meta": {
             "open_website": "Apri sito web"
         },
         "min_deposit_warning_amount": "Minimum Deposit: %(minDeposit)s %(coin)s",
         "min_deposit_warning_asset": "IMPORTANT: Send only %(coin)s  to this deposit address on the blockchain native to %(coin)s. Sending less than %(minDeposit)s %(coin)s or any other currency to this address may result in the loss of your deposit.",
-        "over_limit": "Limit Reached",
         "phase_out_warning": "We recommend using the new {deposit_modal_link} and {withdraw_modal_link} modals as this page will be phased out",
         "piratecash": {
             "coming_soon": "Coming soon",
@@ -1367,32 +1417,12 @@
         "purchase_notice_memo": "Memo <b>required</b> for proper routing to your account",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "Account ricevente:",
-        "recent_deposit": "Depositi recenti",
-        "recent_withdraw": "Prelievi recenti",
-        "rudex": {
-            "coming_soon": "Prossimamente",
-            "min_amount": "Quantità minima: %(minAmount)s %(symbol)s",
-            "min_amount_error": "Per favore inserisci un numero >= minimo",
-            "support_block": "Per supporto, contatta RuDEX a:",
-            "under_construction": "Under Construction"
-        },
         "scan_qr": "Scandisci QR",
         "service": "Servizio di Trasferimento",
-        "status": "Status",
-        "support_block": "Per supporto, per favore contatta OpenLedger presso:",
-        "support_gdex": "For support, please contact GDEX",
-        "symbol": "Simbolo",
-        "time": "Time",
         "title": "Deposito & Prelievo",
-        "transaction_history_info": " %(amount)s %(assetName)s with trancation id: %(txid)s ",
         "unavailable": "Il servizio di gateway per questo asset non è al momento disponibile, riprova più tardi",
-        "unavailable_CITADEL": "The Citadel Bridge is down or not responding",
         "unavailable_OPEN": "Il Gateway OpenLedger non è disponibile o non risponde",
-        "unavailable_RUDEX": "Il Gateway RuDEX non è disponibile o non risponde",
-        "unavailable_TRADE": "Il Bridge Blocktrades non è disponibile o non risponde",
-        "unavailable_bridge": "Il servizio di bridge per questo asset non è al momento disponibile, riprova più tardi",
         "use_copy_button": "PLEASE USE COPY BUTTON TO MAKE COPY OF ADDRESS OR MEMO ON THIS PAGE",
-        "user_unavailable": "User informaction is current unavailable, please try again later",
         "valid_address": "Per favore inserisci un indirizzo %(coin_type)s valido",
         "website": "Visita il sito web",
         "withdraw": "Prelievo",
@@ -1694,7 +1724,7 @@
             "title": "Buy"
         },
         "cancel": "cancel",
-        "close": "close",
+        "close": "Close",
         "committee": {
             "confirm": "CONFIRM",
             "create_committee": "Become a committee member",
@@ -1863,20 +1893,6 @@
         "wallet_unlock_different_block_chain": "This wallet was intended for a different block-chain; expecting %(expectedWalletId)s, but got %(actualWalletId)s",
         "worker_create_failure": "Failed to create worker: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "Deposit Amount",
-        "deposit_details": "Details",
-        "deposit_none": "No deposits",
-        "header_fiat": "Fiat",
-        "header_transaction_history": "Transaction history",
-        "loading": "Loading...",
-        "refresh_transaction_history": "Refresh",
-        "retry": "Retry",
-        "show_transaction_history": "Show transaction history",
-        "status": "Status",
-        "withdraw_amount": "Withdrawal Amount",
-        "withdraw_none": "No withdrawals"
-    },
     "operation": {
         "annual_upgrade_account": "{account} è stato promosso a membro annuale",
         "asset_claim_pool": "{account} claimed {amount} from asset {asset}'s fee pool",
@@ -1989,7 +2005,78 @@
             "taker_fee_percent_rate": "Taker Fee Rate",
             "title": "Pools",
             "unstake": "Unstake",
-            "withdrawal_fee_percent": "Withdrawal Fee"
+            "withdrawal_fee_percent": "Withdrawal Fee",
+            "pair": "Coppia",
+            "reserves": "Riserve",
+            "price": "Prezzo",
+            "per_unit": "per 1 %(asset)s",
+            "pool_value": "Valore del pool",
+            "volume_24h": "Volume 24h",
+            "fees": "Commissioni",
+            "taker": "taker",
+            "withdrawal": "prelievo",
+            "fees_24h": "≈ %(percent)s all'anno con le commissioni delle ultime 24h",
+            "your_liquidity": "La tua liquidità",
+            "your_share": "La tua quota: %(percent)s",
+            "all_pools": "Pool (%(count)s)",
+            "asset": "Asset",
+            "paired_with": "In coppia con",
+            "sort_value": "Valore del pool",
+            "sort_newest": "Più recenti",
+            "show_more": "Mostra altro",
+            "no_pools": "Nessun pool corrisponde a questo filtro.",
+            "swap": "Scambia",
+            "add_remove": "Aggiungi / rimuovi",
+            "stable": "Stabile",
+            "view_list": "Elenco",
+            "view_graph": "Grafo",
+            "fees_yearly": "≈ %(percent)s / anno"
+        },
+        "swap": {
+            "title": "Scambia",
+            "you_pay": "Paghi",
+            "you_receive": "Ricevi",
+            "min_receive": "Minimo da ricevere",
+            "balance": "Saldo",
+            "max": "MAX",
+            "flip": "Inverti i due asset",
+            "price": "Prezzo",
+            "price_impact": "Impatto sul prezzo",
+            "pool_fee": "Commissione del pool",
+            "min_received": "Minimo che ricevi",
+            "slippage": "Tolleranza di slippage",
+            "submit": "Scambia",
+            "log_in": "Accedi per scambiare",
+            "enter_amount": "Inserisci un importo",
+            "enter_minimum": "Inserisci il minimo da ricevere",
+            "cannot_fill": "Il pool non può coprire questo importo",
+            "insufficient": "%(asset)s insufficienti",
+            "stable_manual": "Questo pool usa la curva stabile: indica cosa vendi e il minimo che accetti.",
+            "better_pool": "Il pool paga il %(percent)s in più del libro degli ordini per questo importo.",
+            "better_book": "Il libro degli ordini paga il %(percent)s in più (%(amount)s).",
+            "open_order_book": "Apri il libro degli ordini",
+            "same_price": "Pool e libro degli ordini pagano lo stesso.",
+            "book_too_thin": "Il libro degli ordini è troppo sottile per l'intero importo."
+        },
+        "hint": {
+            "title": "Pool di liquidità",
+            "pool_price": "acquisto %(buy)s · vendita %(sell)s",
+            "buy_pool": "Acquisto: pool %(percent)s più economico",
+            "buy_book": "Acquisto: libro %(percent)s più economico",
+            "buy_equal": "Acquisto: stesso prezzo",
+            "sell_pool": "Vendita: il pool paga il %(percent)s in più",
+            "sell_book": "Vendita: il libro paga il %(percent)s in più",
+            "sell_equal": "Vendita: stesso prezzo",
+            "open_pools": "Pool"
+        },
+        "graph": {
+            "title": "Pool e asset",
+            "empty": "Nessun pool da disegnare.",
+            "summary": "%(assets)s asset, %(pools)s pool",
+            "reset": "Ripristina",
+            "in_pools": "in %(count)s pool",
+            "show_in_list": "Mostra i pool nell'elenco",
+            "click_hint": "Fai clic su un asset per vederne i pool. Trascina per spostare, rotella o +/- per ingrandire."
         }
     },
     "prediction": {
@@ -2057,7 +2144,10 @@
             "past_resolution_date": "Past Resolution Time",
             "prediction": "Prediction",
             "resolve": "Resolve",
-            "yes": "Yes"
+            "yes": "Yes",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "Prediction",
@@ -2182,7 +2272,64 @@
         "walletLoginByValue": "Bin-file + Password",
         "walletModelTitle": "By bin-file",
         "walletNote": "Please keep in mind, that BitShares doesn't store users passwords and couldn't recover users accounts after password loss.",
-        "whyBinFile": "Why do I need a .bin file?"
+        "whyBinFile": "Why do I need a .bin file?",
+        "whats_this": "What is this?"
+    },
+    "samet": {
+        "amount": "Amount to put into the fund",
+        "asset": "Asset",
+        "asset_placeholder": "Select an asset",
+        "available": "Available: %(amount)s",
+        "balance_change": "Balance",
+        "cancel": "Cancel",
+        "change_add": "Add funds",
+        "change_amount": "Amount",
+        "change_none": "Keep balance",
+        "change_withdraw": "Withdraw funds",
+        "col_actions": "Actions",
+        "col_asset": "Asset",
+        "col_balance": "Balance",
+        "col_fee_rate": "Fee rate",
+        "col_id": "Fund",
+        "col_owner": "Owner",
+        "col_unpaid": "Unpaid fees",
+        "create": "Create fund",
+        "create_note": "This moves the amount from your balance into the fund. You can take it back at any time by updating or deleting the fund.",
+        "create_title": "Create SameT fund",
+        "created": "SameT fund created",
+        "current": "Current: %(value)s",
+        "delete": "Delete",
+        "delete_confirm": "The remaining balance of %(amount)s is returned to your account.",
+        "delete_title": "Delete SameT fund %(id)s",
+        "deleted": "SameT fund deleted",
+        "empty_all": "No SameT funds found.",
+        "empty_mine": "You have no SameT funds yet.",
+        "err_amount": "Enter an amount with at most %(precision)s decimals.",
+        "err_amount_zero": "The amount must be greater than zero.",
+        "err_fee_rate": "Enter a fee rate between 0 and 100 with at most 4 decimals.",
+        "err_over_balance": "More than your available balance.",
+        "err_over_fund": "More than the fund's balance.",
+        "error_load": "Could not load SameT funds: %(error)s",
+        "failed": "The transaction failed",
+        "fee_rate": "Fee rate, in percent",
+        "fee_rate_help": "Charged on every borrow. Between 0 and 100, up to 4 decimals.",
+        "intro": "A SameT fund is a pool of one asset that anyone can borrow from inside a single transaction, as long as the loan plus the fund's fee is repaid in that same transaction (a flash loan). The owner of the fund earns the fee.",
+        "load_more": "Load more",
+        "loading": "Loading SameT funds...",
+        "new_fee_rate": "Fee rate, in percent",
+        "no_borrow": "Borrowing and repaying have to be built together in one transaction by a program, so this page lets you create and manage funds but does not borrow from them.",
+        "nothing_changed": "Change the balance or the fee rate first.",
+        "select_account": "Select an account to see and manage your funds.",
+        "submit_create": "Create fund",
+        "submit_delete": "Delete fund",
+        "submit_update": "Update fund",
+        "summary": "%(count)s funds shown, %(assets)s assets",
+        "tab_all": "All funds",
+        "tab_mine": "My funds",
+        "title": "SameT funds",
+        "update": "Update",
+        "update_title": "Update SameT fund %(id)s",
+        "updated": "SameT fund updated"
     },
     "scaled_orders": {
         "action": {
@@ -2329,7 +2476,15 @@
         "wallet_required_text": "Per ripristinare un backup devi prima passaere alla modalità portafoglio, cliccando il pulsante sotto",
         "wallet_text": "Controlla i dettagli del tuo portafoglio.",
         "wallets": "Portafogli",
-        "yes": "Sì"
+        "yes": "Sì",
+        "signing": "Signing",
+        "signing_text": "Connect the BitShares wallet browser extension to sign with it.",
+        "node_connect": "Connect",
+        "node_connected": "Connected",
+        "node_hide": "Hide",
+        "node_show": "Show",
+        "node_remove": "Remove",
+        "nodes_none": "No nodes in this list."
     },
     "showcases": {
         "barter": {
@@ -2418,6 +2573,7 @@
             "title": "Collaterized Debt Position",
             "title_long": "Create a Collateralized Debt Position"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "Amount to collect",
             "authorized_account": "Payee",
@@ -2448,6 +2604,9 @@
             "update": "Update",
             "update_mandate": "Update existing authorization"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "Actions",
             "amount": "Amount",
@@ -2493,6 +2652,9 @@
             "description": "Instantly execute market orders in a simplified interface.",
             "title": "Instant trade"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "Create, view and pay remittance requests or invoices",
             "title": "Merchant Protocol"
@@ -2506,7 +2668,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Initiate a transfer that will execute at a specified time.",
+            "description": "Invia un asset che il destinatario potrà riscuotere solo a partire da una data a tua scelta.",
             "title": "Timed transfer"
         },
         "voting": {
@@ -2518,6 +2680,42 @@
         "sub_text_1": "Per favore controlla che l'ora del tuo computer sia corretta.",
         "sub_text_2": "Dopo aver sincronizzato l'ora, ricarica questa pagina.<br/><br/>Se l'ora è già impostata correttamente, il server API che stai utilizzando potrebbe essere fuori sincrono. In questo caso, prova ad utilizzare un altro server dalla lista seguente.",
         "title": "Sincronizzazione con il server API fallita"
+    },
+    "timed_transfer": {
+        "title": "Trasferimento programmato",
+        "intro": "Invia un asset che il destinatario potrà riscuotere solo a partire da una data a tua scelta. Fino ad allora è bloccato; da quel momento è suo da prelevare.",
+        "recipient": "Destinatario",
+        "recipient_placeholder": "Nome account",
+        "asset": "Asset",
+        "asset_placeholder": "Scegli un asset",
+        "amount": "Importo",
+        "available": "Disponibile: %(amount)s",
+        "release": "Riscuotibile dal",
+        "release_help": "Data e ora nel tuo fuso orario. Almeno un minuto da adesso.",
+        "summary": "%(amount)s sarà riscuotibile da %(recipient)s dal %(date)s.",
+        "irreversible": "Non può essere annullato né ripreso. L'importo appartiene al destinatario da subito; è fissata solo la data da cui può essere riscosso. Il destinatario lo riscuote in Saldi in vesting.",
+        "submit": "Crea trasferimento programmato",
+        "submitting": "Creazione...",
+        "cancel": "Annulla",
+        "created": "Trasferimento programmato creato",
+        "failed": "Impossibile creare il trasferimento",
+        "err_amount": "Inserisci un numero con al massimo %(precision)s decimali",
+        "err_amount_zero": "L'importo deve essere maggiore di zero",
+        "err_over_balance": "Più del tuo saldo",
+        "err_recipient_missing": "Nessun account con questo nome",
+        "err_recipient_self": "Scegli un account diverso dal tuo",
+        "err_release_format": "Scegli data e ora",
+        "err_release_past": "Quell'istante è passato",
+        "err_release_too_soon": "Scegli un istante ad almeno un minuto da adesso",
+        "err_release_too_far": "È troppo lontano nel futuro",
+        "button": "Trasferimento programmato",
+        "page_intro": "Invia un asset che il destinatario potrà riscuotere solo a partire da una data a tua scelta. Non viene inviato nulla più tardi: l'importo lascia subito il tuo account ed è bloccato per il destinatario fino a quel momento.",
+        "step1": "Scegli destinatario, asset e importo.",
+        "step2": "Scegli la data e l'ora da cui può essere riscosso.",
+        "step3": "Il destinatario lo riscuote in Saldi in vesting quando quel momento è arrivato.",
+        "open": "Nuovo trasferimento programmato",
+        "claim_link": "Riscuoti un trasferimento programmato inviato a te",
+        "no_account": "Accedi o scegli prima un account."
     },
     "tooltip": {
         "add_memo_field": "Aggiungi il campo di testo memo",
@@ -3128,5 +3326,60 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "Saldo nel tempo",
+        "over_period": "nel periodo mostrato",
+        "based_on": "Costruito dalle ultime %(count)s operazioni di questo account.",
+        "unresolved": "%(count)s operazione/i non hanno potuto essere lette e non sono nella linea.",
+        "older": "Carica più vecchie",
+        "loading": "Caricamento...",
+        "in_orders": "In ordini aperti: %(amount)s",
+        "wallet": "Portafoglio",
+        "orders": "Ordini aperti",
+        "total": "Totale",
+        "no_orders": "Nessun ordine aperto in questo periodo",
+        "whole_history": "Ricavato dall'intera cronologia del conto (%(count)s operazioni).",
+        "from_node": "Le operazioni più vecchie provengono da %(node)s.",
+        "range": "Intervallo",
+        "range_1d": "1G",
+        "range_1m": "1M",
+        "range_1w": "1S",
+        "range_all": "Tutto"
+    },
+    "toolbar": {
+        "rows": "%(count)s righe",
+        "search": "Cerca"
+    },
+    "help_page": {
+        "title": "Aiuto",
+        "search": "Cerca nell'aiuto",
+        "contents": "Indice",
+        "previous": "Precedente",
+        "next": "Successivo",
+        "no_match": "Niente nell'aiuto corrisponde.",
+        "groups": {
+            "start": "Per iniziare",
+            "account": "Conto",
+            "payments": "Pagamenti",
+            "markets": "Mercati",
+            "assets": "Asset",
+            "network": "Rete",
+            "reference": "Riferimento"
+        }
+    },
+    "notification_center": {
+        "clear": "Cancella tutto",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "Notifiche",
+        "minutes": "%(count)s min ago",
+        "now": "ora",
+        "title": "Notifiche",
+        "trade_done": "Scambio eseguito",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "%(count)s nuove"
     }
 }

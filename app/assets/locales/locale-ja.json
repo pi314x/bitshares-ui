@@ -418,7 +418,7 @@
             "inactive": "バックアップ",
             "info": "情報",
             "join_committee": "Join committee",
-            "join_witnesses": "Join Witnesses",
+            "join_witnesses": "証人になる",
             "line": "Line",
             "max_pay": "最大総支払い額",
             "missing": "Needed",
@@ -460,7 +460,8 @@
             "witness": "証人名",
             "worker_account": "ワーカーアカウント",
             "workers": "予算項目",
-            "workers_short": "ワーカー"
+            "workers_short": "ワーカー",
+            "update_witness": "証人を更新"
         },
         "voting": "投票",
         "welcome": "BitSharesへようこそ",
@@ -478,7 +479,8 @@
             "white_by": "ホワイトリスト登録者",
             "whitelist_authorities": "ホワイトリスト権限",
             "whitelist_market_fee_sharing": "Market fee sharing whitelist"
-        }
+        },
+        "more_actions": "More actions"
     },
     "account_browsing_mode": {
         "go_back": "Go back to my account",
@@ -504,8 +506,13 @@
         "connected": "接続しました",
         "connecting": "Connecting to API server: %(server)s",
         "database": "Connection established, initializing local databases",
+        "loading_title": "BitShares Desk を起動しています",
+        "node_label": "ノード:",
         "not_connected": "接続していません",
         "retry": "再試行",
+        "step_connect": "ノードに接続",
+        "step_database": "ローカルデータを開く",
+        "step_latency": "最速のノードを選択",
         "title": "アプリケーション初期化エラー",
         "understand": "理解しました。",
         "ws_status": "フルノード接続状態"
@@ -646,6 +653,62 @@
         "starred_markets": "お気に入りのマーケット",
         "table_empty": "表示できるマーケットがありません。",
         "top_markets": "トップマーケット"
+    },
+    "desk": {
+        "accounts": "アカウント",
+        "activity": "最近のアクティビティ",
+        "amount": "数量",
+        "asset": "資産",
+        "attention": "要確認",
+        "attention_called": "Your %(symbol)s position is below the maintenance ratio (%(ratio)s) and can be margin-called",
+        "attention_expiring": "%(count)s orders expire within a day",
+        "attention_margin": "Your %(symbol)s position: collateral ratio %(ratio)s; the price may fall %(distance)s before it is called",
+        "attention_stale": "The node's latest block is %(minutes)s minutes old",
+        "backed_by": "backed by %(amount)s %(symbol)s",
+        "borrow_none": "借入ポジションはありません",
+        "borrowed": "借入",
+        "card_accounts": "Accounts",
+        "card_activity": "Activity",
+        "card_attention": "Attention",
+        "card_chart": "Balance chart",
+        "card_holdings": "Holdings",
+        "card_markets": "Markets",
+        "card_positions": "Positions",
+        "collateral": "担保",
+        "current": "現在",
+        "customize": "カスタマイズ",
+        "customize_hint": "Show or hide cards:",
+        "debt": "負債",
+        "distance": "price may fall %(percent)s",
+        "holdings": "保有資産",
+        "incomplete": "An order or a position has no price yet - the total is incomplete",
+        "more_n": "ほか%(count)s件",
+        "no_holdings": "保有資産はありません",
+        "no_price": "価格なし",
+        "open": "開く",
+        "open_orders": "未約定の注文",
+        "orders_count": "%(count)s open orders",
+        "orders_expiry_next": "next one expires %(when)s",
+        "orders_expiry_none": "all good until cancelled",
+        "orders_none": "未約定の注文はありません",
+        "pool_share": "%(percent)s of the pool",
+        "pools": "Pools",
+        "pools_none": "プールの持分はありません",
+        "positions": "ポジション",
+        "ratio": "ratio %(ratio)s",
+        "risk_called": "Called",
+        "risk_danger": "At risk",
+        "risk_ok": "Safe",
+        "risk_watch": "Watch",
+        "share": "割合",
+        "show_all": "すべて表示 (%(count)s)",
+        "show_less": "表示を減らす",
+        "total_value": "合計評価額",
+        "trade": "取引",
+        "unit": "評価通貨",
+        "unpriced": "%(count)s without a price are not counted",
+        "value": "評価額",
+        "wallet": "ウォレット"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -807,7 +870,13 @@
         "sell": "売る",
         "sell_description": "Sell %(baseAsset)s %(baseName)s for %(quoteAsset)s %(quoteName)s",
         "settings": {
-            "header": "Personalize",
+            "header": {
+                "chart_options": "チャートのオプション",
+                "general": "一般",
+                "order_options": "注文オプション",
+                "panel_grouping": "パネルのグループ化",
+                "title": "カスタマイズ"
+            },
             "options": {
                 "grouping_1": "Group 1",
                 "grouping_2": "Group 2",
@@ -907,7 +976,8 @@
         "worth_less_settlement_warning": "Warning! You can get a better price by selling to {market_link}.",
         "your_price": "あなたのコール価格",
         "zoom": "拡大",
-        "zoom_all": "すべて"
+        "zoom_all": "すべて",
+        "trend_7d": "7日"
     },
     "explorer": {
         "account": {
@@ -1221,6 +1291,28 @@
             "hello": "Dear BitShares' User"
         }
     },
+    "externalSigner": {
+        "title": "Wallet extension",
+        "intro": "Sign with the BitShares wallet browser extension. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key. The account chosen in the account menu is the one that signs: the extension's account through the extension, any other account through the wallet stored in this browser.",
+        "status_unknown": "Looking for the extension...",
+        "status_unavailable": "The BitShares wallet extension was not found in this browser.",
+        "status_disconnected": "The extension was found but is not connected.",
+        "status_connecting": "Waiting for you to approve the connection in the extension...",
+        "status_connected": "Connected as %(account)s.",
+        "signing_extension": "Transactions for %(account)s are signed by the wallet extension.",
+        "signing_local": "Transactions for %(account)s are signed by the wallet stored in this browser.",
+        "locked": "The extension is locked. Unlock it before signing.",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "limits": "Not supported with the extension yet: memos (it would publish them unencrypted), a fee in an asset other than the core asset, and claiming balances. Use the local wallet for those.",
+        "noChain": "Not connected to a node yet, so the network cannot be checked.",
+        "noUnbroadcast": "The extension signs and broadcasts in one step, so a transaction cannot be signed without being sent.",
+        "noExtraKeys": "This transaction needs keys the extension does not hold. Use the local wallet for it.",
+        "notConnected": "The wallet extension is not connected.",
+        "waiting": "Approve the transaction in the BitShares wallet extension.",
+        "sent": "Transaction sent.",
+        "failed": "The extension did not sign the transaction: %(reason)s"
+    },
     "fees": {
         "title": "手数料表"
     },
@@ -1243,20 +1335,12 @@
     "gateway": {
         "add_funds": "あなたのBitSharesアカウント<strong>%(account)s</strong>に素早く簡単に資金を追加します。 このサービスはOpenledgerによって提供されています。",
         "address": "Address",
-        "address_with_memo": "%(address)s <span class=\"blocktrades-with-memo\">とメモ</span> %(memo)s",
-        "agreement": {
-            "hint": "I have read and agreed to",
-            "name": "《利用規約》",
-            "notice": "続行するには規約を確認してください",
-            "register": "同意する"
-        },
         "asset": "アセット",
         "asset_search_deposit": "入金するアセットを検索する",
         "asset_search_withdraw": "出金するアセットを検索する",
         "asset_to_deposit": "入金するアセット:",
         "asset_to_receive": "入金額:",
         "asset_to_withdraw": "出金するアセット:",
-        "asset_unavailable": "%(asset)sのゲートウェイはサービス外です。",
         "assets": {
             "bit": "%(asset)s は実際の%(backed)sの価値に追随するデリバティブです。これは100%分散化されており、トラストレスであり、スマートコントラクトによってブロックチェーンに保持される担保に裏付けされています。",
             "bitcny": "bitCNY はMagic Walletが提供するゲートウェイサービスによって実際の元と1：1で入出金できます。詳細はこちらを見てください https://www.magicw.net/",
@@ -1272,32 +1356,11 @@
         },
         "balance": "現在の残高",
         "balance_asset": "現在の%(asset)s残高",
-        "bitkapital_receive": "入金額",
-        "bitkapital_text": "入出金するアセットを選択してください:",
-        "bitkapital_withdraw": "出金額",
-        "bitspark": {
-            "support_block": "For DEPOSIT AND WITHDRAWAL issues using \"BitSpark TRANSFER SERVICE\", please contact BitSpark at:"
-        },
-        "bridge": "ブリッジ",
-        "bridge_text": "ブリッジはアセットを他のものに交換します。例: BTCをBTSに。",
-        "calc": "計算中",
-        "choose_deposit": "入金したいコインを選択してください",
-        "choose_withdraw": "出金したいコインを選択してください",
-        "citadel": {
-            "coming_soon": "近日公開",
-            "min_amount": "最低数量: %(minAmount)s %(symbol)s",
-            "min_amount_error": "数字を入力してください >= minimum",
-            "support_block": "サポートについては、citadel.li までご連絡ください。:",
-            "under_construction": "工事中"
-        },
-        "contact_TRADE": "Blocktradesに連絡する",
-        "convert": "内部変換",
-        "convert_coin": "%(coin)s (%(symbol)s) に変換",
-        "convert_now": "今すぐ変換",
+        "choose_deposit": "入金する資産を選択",
+        "choose_withdraw": "出金する資産を選択",
         "copy_address": "アドレスをコピー",
         "copy_memo": "メモをコピー",
         "deposit": "入金",
-        "deposit_address": "入金アドレス",
         "deposit_from_wallet": "Deposit from wallet",
         "deposit_history_status": {
             "confirming": "デポジット確認中",
@@ -1307,16 +1370,10 @@
             "waiting": "入金待ち"
         },
         "deposit_inst": "入金指示",
-        "deposit_limit": "入金制限",
         "deposit_notice_delay": "(新しいアドレスは５分に一度生成できます。)",
         "deposit_summary": "入金概要",
         "deposit_to": "%(asset)sを以下のアドレスに送ってください",
-        "deposit_warning": "他の通貨を%(asset)sアドレスに送信すると、デポジットが失われます",
-        "deposit_warning_memo": "Deposit %(asset)s must contains memo, otherwise it won't be credited",
         "fee": "ゲートウェイ手数料",
-        "fiat": "法定通貨",
-        "fiat_text": "注意：法定通貨のゲートウェイは当面の間、利用不可となります。最新情報は<a target='_blank' rel='noopener noreferrer' href='https://blog.openledger.info/'>blog.openledger.info</a>から確認してください。",
-        "frozen": "The user account %(account)s was frozen",
         "gateway": "ゲートウェイ",
         "gateway_deposit": {
             "confirmations": {
@@ -1325,11 +1382,7 @@
             }
         },
         "gateway_text": "ここで入金または出金を選択してください",
-        "generate": "生成",
         "generate_new": "新しいアドレスを取得",
-        "generate_new_memo": "新しいメモを取得",
-        "iban": "IBAN",
-        "info": "情報",
         "intermediate": "中間アカウント",
         "inventory": "一覧表",
         "iob": {
@@ -1339,19 +1392,16 @@
             "support_block": "For support, please contact ioxbank at:",
             "under_construction": "Under Construction"
         },
-        "limit": "リミット: %(amount)s %(symbol)s",
         "limit_withdraw_asset": "Min: %(min)s, Max: %(max)s",
         "limit_withdraw_asset_max": "Maximum withdraw: %(min)s %(coin)s",
         "limit_withdraw_asset_min": "Minimum withdraw: %(min)s %(coin)s",
         "limit_withdraw_asset_none": "None",
-        "logout_now": "Logout now",
         "memo": "Memo",
         "meta": {
             "open_website": "ウェブサイトを開く"
         },
         "min_deposit_warning_amount": "最低入金額は%(minDeposit)s %(coin)sです。",
         "min_deposit_warning_asset": "IMPORTANT: Send only %(coin)s to this deposit address on the blockchain native to %(coin)s. Sending less than %(minDeposit)s %(coin)s or any other currency to this address may result in the loss of your deposit.",
-        "over_limit": "制限に達しました",
         "phase_out_warning": "We recommend using the new {deposit_modal_link} and {withdraw_modal_link} modals as this page will be phased out",
         "piratecash": {
             "coming_soon": "近日公開",
@@ -1367,32 +1417,12 @@
         "purchase_notice_memo": "Memo <b>required</b> for proper routing to your account",
         "purchase_notice_tag": "Tag <b>required</b> for proper routing to your account",
         "receive_account": "受け取りアカウント:",
-        "recent_deposit": "最近の入金",
-        "recent_withdraw": "最近の出金",
-        "rudex": {
-            "coming_soon": "近日公開",
-            "min_amount": "最低数量: %(minAmount)s %(symbol)s",
-            "min_amount_error": "数字を入力してください >= minimum",
-            "support_block": "サポートについては、RuDEXまでご連絡ください。:",
-            "under_construction": "工事中"
-        },
         "scan_qr": "QRをスキャン",
         "service": "転送サービス",
-        "status": "ステータス",
-        "support_block": "OpenLedgerが提供する転送サービスに関するサポートが必要な場合は、OpenLedgerにご連絡ください（英語のみ）:",
-        "support_gdex": "サポートについては、GDEXまでお問い合わせください",
-        "symbol": "シンボル",
-        "time": "時間",
         "title": "入金 & 出金",
-        "transaction_history_info": " %(amount)s %(assetName)s with trancation id: %(txid)s ",
         "unavailable": "このアセットのゲートウェイサービスが現在停止しています。後でやり直してください",
-        "unavailable_CITADEL": "The Citadel Bridge is down or not responding",
         "unavailable_OPEN": "OpenLedgerゲートウェイがダウンしているか、応答していません",
-        "unavailable_RUDEX": "RuDEXゲートウェイがダウンしているか、応答していません",
-        "unavailable_TRADE": "Blocktradesブリッジがダウンしているか、応答していません",
-        "unavailable_bridge": "このアセットのブリッジサービスは現在停止しています。後でやり直してください",
         "use_copy_button": "アドレス、またはメモをコピーするにはコピーボタンを使用してください。",
-        "user_unavailable": "ユーザー情報は現在利用できません。後でやり直してください",
         "valid_address": "有効な%(coin_type)sのアドレスを入力してください",
         "website": "ウェブサイトに行く",
         "withdraw": "出金",
@@ -1694,7 +1724,7 @@
             "title": "Buy"
         },
         "cancel": "cancel",
-        "close": "close",
+        "close": "Close",
         "committee": {
             "confirm": "CONFIRM",
             "create_committee": "Become a committee member",
@@ -1863,20 +1893,6 @@
         "wallet_unlock_different_block_chain": "This wallet was intended for a different block-chain; expecting %(expectedWalletId)s, but got %(actualWalletId)s",
         "worker_create_failure": "Failed to create worker: %(error_msg)s"
     },
-    "openledger": {
-        "deposit_amount": "入金額",
-        "deposit_details": "詳細",
-        "deposit_none": "入金なし",
-        "header_fiat": "法定通貨",
-        "header_transaction_history": "取引履歴",
-        "loading": "ロード中...",
-        "refresh_transaction_history": "更新",
-        "retry": "再試行",
-        "show_transaction_history": "取引履歴を表示する",
-        "status": "ステータス",
-        "withdraw_amount": "出金額",
-        "withdraw_none": "出金なし"
-    },
     "operation": {
         "annual_upgrade_account": "{account}は年間会員にアップグレードしました",
         "asset_claim_pool": "{account} claimed {amount} from asset {asset}'s fee pool",
@@ -1989,7 +2005,78 @@
             "taker_fee_percent_rate": "Taker Fee Rate",
             "title": "Pools",
             "unstake": "Unstake",
-            "withdrawal_fee_percent": "Withdrawal Fee"
+            "withdrawal_fee_percent": "Withdrawal Fee",
+            "pair": "ペア",
+            "reserves": "準備高",
+            "price": "価格",
+            "per_unit": "1 %(asset)s あたり",
+            "pool_value": "プール価値",
+            "volume_24h": "24時間出来高",
+            "fees": "手数料",
+            "taker": "テイカー",
+            "withdrawal": "引き出し",
+            "fees_24h": "直近24時間の手数料で年率 ≈ %(percent)s",
+            "your_liquidity": "あなたの流動性",
+            "your_share": "あなたの持分: %(percent)s",
+            "all_pools": "プール (%(count)s)",
+            "asset": "アセット",
+            "paired_with": "ペア相手",
+            "sort_value": "プール価値",
+            "sort_newest": "新しい順",
+            "show_more": "さらに表示",
+            "no_pools": "この条件に一致するプールはありません。",
+            "swap": "スワップ",
+            "add_remove": "追加 / 削除",
+            "stable": "ステーブル",
+            "view_list": "リスト",
+            "view_graph": "グラフ",
+            "fees_yearly": "年率 ≈ %(percent)s"
+        },
+        "swap": {
+            "title": "スワップ",
+            "you_pay": "支払い",
+            "you_receive": "受け取り",
+            "min_receive": "最低受取額",
+            "balance": "残高",
+            "max": "最大",
+            "flip": "2つのアセットを入れ替え",
+            "price": "価格",
+            "price_impact": "価格への影響",
+            "pool_fee": "プール手数料",
+            "min_received": "最低受取額",
+            "slippage": "スリッページ許容",
+            "submit": "スワップ",
+            "log_in": "スワップするにはサインイン",
+            "enter_amount": "金額を入力",
+            "enter_minimum": "最低受取額を入力",
+            "cannot_fill": "プールではこの金額を約定できません",
+            "insufficient": "%(asset)s が不足しています",
+            "stable_manual": "このプールはステーブルカーブを使います。売る量と許容する最低額を入力してください。",
+            "better_pool": "この金額ではプールの方が板より %(percent)s 多く受け取れます。",
+            "better_book": "板の方が %(percent)s 多く受け取れます（%(amount)s）。",
+            "open_order_book": "板を開く",
+            "same_price": "プールと板で受取額は同じです。",
+            "book_too_thin": "板の厚みが全額には足りません。"
+        },
+        "hint": {
+            "title": "流動性プール",
+            "pool_price": "買い %(buy)s ・ 売り %(sell)s",
+            "buy_pool": "買い: プールが %(percent)s 安い",
+            "buy_book": "買い: 板が %(percent)s 安い",
+            "buy_equal": "買い: 同じ価格",
+            "sell_pool": "売り: プールが %(percent)s 多く支払う",
+            "sell_book": "売り: 板が %(percent)s 多く支払う",
+            "sell_equal": "売り: 同じ価格",
+            "open_pools": "プール"
+        },
+        "graph": {
+            "title": "プールとアセット",
+            "empty": "表示するプールがありません。",
+            "summary": "アセット %(assets)s 件、プール %(pools)s 件",
+            "reset": "リセット",
+            "in_pools": "%(count)s 件のプールに所属",
+            "show_in_list": "リストでプールを表示",
+            "click_hint": "アセットをクリックするとそのプールを表示します。ドラッグで移動、スクロールまたは +/- で拡大縮小。"
         }
     },
     "prediction": {
@@ -2057,7 +2144,10 @@
             "past_resolution_date": "Past Resolution Time",
             "prediction": "Prediction",
             "resolve": "Resolve",
-            "yes": "Yes"
+            "yes": "Yes",
+            "title": "Prediction markets",
+            "lead": "Agree or disagree with a prediction and put collateral behind your opinion. The issuer resolves a market after its resolution date.",
+            "how_it_works": "How prediction markets work"
         },
         "resolve_modal": {
             "prediction": "Prediction",
@@ -2182,7 +2272,64 @@
         "walletLoginByValue": "Bin-file + Password",
         "walletModelTitle": "By bin-file",
         "walletNote": "Please keep in mind, that BitShares doesn't store users passwords and couldn't recover users accounts after password loss.",
-        "whyBinFile": "Why do I need a .bin file?"
+        "whyBinFile": "Why do I need a .bin file?",
+        "whats_this": "What is this?"
+    },
+    "samet": {
+        "amount": "Amount to put into the fund",
+        "asset": "Asset",
+        "asset_placeholder": "Select an asset",
+        "available": "Available: %(amount)s",
+        "balance_change": "Balance",
+        "cancel": "Cancel",
+        "change_add": "Add funds",
+        "change_amount": "Amount",
+        "change_none": "Keep balance",
+        "change_withdraw": "Withdraw funds",
+        "col_actions": "Actions",
+        "col_asset": "Asset",
+        "col_balance": "Balance",
+        "col_fee_rate": "Fee rate",
+        "col_id": "Fund",
+        "col_owner": "Owner",
+        "col_unpaid": "Unpaid fees",
+        "create": "Create fund",
+        "create_note": "This moves the amount from your balance into the fund. You can take it back at any time by updating or deleting the fund.",
+        "create_title": "Create SameT fund",
+        "created": "SameT fund created",
+        "current": "Current: %(value)s",
+        "delete": "Delete",
+        "delete_confirm": "The remaining balance of %(amount)s is returned to your account.",
+        "delete_title": "Delete SameT fund %(id)s",
+        "deleted": "SameT fund deleted",
+        "empty_all": "No SameT funds found.",
+        "empty_mine": "You have no SameT funds yet.",
+        "err_amount": "Enter an amount with at most %(precision)s decimals.",
+        "err_amount_zero": "The amount must be greater than zero.",
+        "err_fee_rate": "Enter a fee rate between 0 and 100 with at most 4 decimals.",
+        "err_over_balance": "More than your available balance.",
+        "err_over_fund": "More than the fund's balance.",
+        "error_load": "Could not load SameT funds: %(error)s",
+        "failed": "The transaction failed",
+        "fee_rate": "Fee rate, in percent",
+        "fee_rate_help": "Charged on every borrow. Between 0 and 100, up to 4 decimals.",
+        "intro": "A SameT fund is a pool of one asset that anyone can borrow from inside a single transaction, as long as the loan plus the fund's fee is repaid in that same transaction (a flash loan). The owner of the fund earns the fee.",
+        "load_more": "Load more",
+        "loading": "Loading SameT funds...",
+        "new_fee_rate": "Fee rate, in percent",
+        "no_borrow": "Borrowing and repaying have to be built together in one transaction by a program, so this page lets you create and manage funds but does not borrow from them.",
+        "nothing_changed": "Change the balance or the fee rate first.",
+        "select_account": "Select an account to see and manage your funds.",
+        "submit_create": "Create fund",
+        "submit_delete": "Delete fund",
+        "submit_update": "Update fund",
+        "summary": "%(count)s funds shown, %(assets)s assets",
+        "tab_all": "All funds",
+        "tab_mine": "My funds",
+        "title": "SameT funds",
+        "update": "Update",
+        "update_title": "Update SameT fund %(id)s",
+        "updated": "SameT fund updated"
     },
     "scaled_orders": {
         "action": {
@@ -2329,7 +2476,15 @@
         "wallet_required_text": "バックアップをリストアするには、まずウォレットモデルに切り替える必要があります。下のボタンをクリックしてください。",
         "wallet_text": "ウォレットの詳細を制御する。",
         "wallets": "ウォレット",
-        "yes": "はい"
+        "yes": "はい",
+        "signing": "Signing",
+        "signing_text": "Connect the BitShares wallet browser extension to sign with it.",
+        "node_connect": "Connect",
+        "node_connected": "Connected",
+        "node_hide": "Hide",
+        "node_show": "Show",
+        "node_remove": "Remove",
+        "nodes_none": "No nodes in this list."
     },
     "showcases": {
         "barter": {
@@ -2418,6 +2573,7 @@
             "title": "Collaterized Debt Position",
             "title_long": "Create a Collateralized Debt Position"
         },
+        "coming_soon": "Coming soon",
         "direct_debit": {
             "amount_to_withdraw": "Amount to collect",
             "authorized_account": "Payee",
@@ -2448,6 +2604,9 @@
             "update": "Update",
             "update_mandate": "Update existing authorization"
         },
+        "group_account": "Your account",
+        "group_payments": "Payments",
+        "group_trade": "Trade and borrow",
         "htlc": {
             "actions": "Actions",
             "amount": "Amount",
@@ -2493,6 +2652,9 @@
             "description": "Instantly execute market orders in a simplified interface.",
             "title": "Instant trade"
         },
+        "intro": "The rest of what BitShares can do, in one place.",
+        "login_required": "Log in to use these features.",
+        "login_badge": "Log in",
         "merchant_protocol": {
             "description": "Create, view and pay remittance requests or invoices",
             "title": "Merchant Protocol"
@@ -2506,7 +2668,7 @@
             "title": "Prediction Markets"
         },
         "timed_transfer": {
-            "description": "Initiate a transfer that will execute at a specified time.",
+            "description": "受取人が、あなたが指定した日時から初めて請求できるアセットを送ります。",
             "title": "Timed transfer"
         },
         "voting": {
@@ -2518,6 +2680,42 @@
         "sub_text_1": "コンピュータの時計が正しいか確認してください。",
         "sub_text_2": "時計を同期させたらこのページを更新してください。<br/><br/>既に時計が正しい場合は、使用しているAPIサーバーが同期していません。その場合は下のリストから他のサーバーを選んで再試行してください。",
         "title": "APIサーバとの同期に失敗しました"
+    },
+    "timed_transfer": {
+        "title": "日時指定の送金",
+        "intro": "受取人が、あなたが指定した日時から初めて請求できるアセットを送ります。それまでは ロックされ、以後は受取人が引き出せます。",
+        "recipient": "受取人",
+        "recipient_placeholder": "アカウント名",
+        "asset": "アセット",
+        "asset_placeholder": "アセットを選択",
+        "amount": "数量",
+        "available": "利用可能: %(amount)s",
+        "release": "請求可能になる日時",
+        "release_help": "お使いのタイムゾーンの日時です。現在から最低1分後にしてください。",
+        "summary": "%(amount)s は %(date)s から %(recipient)s が請求できます。",
+        "irreversible": "取り消しも取り戻しもできません。数量は今この時点から受取人のものになり、請求できる日時だけが固定されます。受取人は「権利確定残高」から請求します。",
+        "submit": "日時指定の送金を作成",
+        "submitting": "作成中...",
+        "cancel": "キャンセル",
+        "created": "日時指定の送金を作成しました",
+        "failed": "送金を作成できませんでした",
+        "err_amount": "小数点以下 %(precision)s 桁までの数値を入力してください",
+        "err_amount_zero": "数量は0より大きくしてください",
+        "err_over_balance": "残高を超えています",
+        "err_recipient_missing": "その名前のアカウントはありません",
+        "err_recipient_self": "自分以外のアカウントを選んでください",
+        "err_release_format": "日付と時刻を選んでください",
+        "err_release_past": "その時刻は過ぎています",
+        "err_release_too_soon": "現在から最低1分後の時刻を選んでください",
+        "err_release_too_far": "先すぎます",
+        "button": "日時指定の送金",
+        "page_intro": "受取人が、あなたが指定した日時から初めて請求できるアセットを送ります。後から送られるわけではありません。数量は今すぐあなたのアカウントを離れ、その日時まで受取人のためにロックされます。",
+        "step1": "受取人、アセット、数量を選びます。",
+        "step2": "請求できるようになる日付と時刻を選びます。",
+        "step3": "その時刻になったら、受取人が「権利確定残高」から請求します。",
+        "open": "新しい日時指定の送金",
+        "claim_link": "自分宛ての日時指定の送金を請求する",
+        "no_account": "先にログインするか、アカウントを選んでください。"
     },
     "tooltip": {
         "add_memo_field": "メモテキストフィールドを追加",
@@ -3128,5 +3326,60 @@
         "wif_associated_accounts": "Associated Account(s): ",
         "wif_import_error": "Please enter a valid WIF",
         "wif_length_error": "Incorrect input length"
+    },
+    "balance_history": {
+        "title": "残高の推移",
+        "over_period": "(表示期間)",
+        "based_on": "このアカウントの直近 %(count)s 件の操作から作成しています。",
+        "unresolved": "%(count)s 件の操作は読み取れず、線に含まれていません。",
+        "older": "さらに古いものを読み込む",
+        "loading": "読み込み中...",
+        "in_orders": "未約定の注文中: %(amount)s",
+        "wallet": "ウォレット",
+        "orders": "未約定の注文",
+        "total": "合計",
+        "no_orders": "この期間に未約定の注文はありません",
+        "whole_history": "アカウントの全履歴から作成しています（%(count)s 件の操作）。",
+        "from_node": "古い操作は %(node)s から取得しました。",
+        "range": "期間",
+        "range_1d": "1日",
+        "range_1m": "1月",
+        "range_1w": "1週",
+        "range_all": "全期間"
+    },
+    "toolbar": {
+        "rows": "%(count)s 行",
+        "search": "検索"
+    },
+    "help_page": {
+        "title": "ヘルプ",
+        "search": "ヘルプを検索",
+        "contents": "目次",
+        "previous": "前へ",
+        "next": "次へ",
+        "no_match": "一致する項目がありません。",
+        "groups": {
+            "start": "はじめに",
+            "account": "アカウント",
+            "payments": "支払い",
+            "markets": "マーケット",
+            "assets": "アセット",
+            "network": "ネットワーク",
+            "reference": "リファレンス"
+        }
+    },
+    "notification_center": {
+        "clear": "すべて削除",
+        "days": "%(count)s d ago",
+        "empty": "Nothing yet. Trades, transfers and errors show up here.",
+        "hours": "%(count)s h ago",
+        "label": "通知",
+        "minutes": "%(count)s min ago",
+        "now": "たった今",
+        "title": "通知",
+        "trade_done": "取引が成立しました",
+        "trade_sold": "Sold %(pays)s, received %(receives)s",
+        "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
+        "unseen": "新着%(count)s件"
     }
 }

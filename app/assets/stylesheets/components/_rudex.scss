@@ -5,7 +5,7 @@
   color: inherit;
   background-color: transparent;
   font-size: 0.9em;
-  border: 1px solid #555;
+  border: 1px solid var(--field-border);
   background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2224%22%20viewBox%3D%220%200%2032%2024%22%3E%3Cpath%20style%3D%22fill%3A%20%23555%22%20d%3D%22M0%200h32L16%2024%22/%3E%3C/svg%3E');
 }
 
@@ -16,7 +16,7 @@
   color: inherit;
   background-color: transparent;
   font-size: 0.9em;
-  border: 1px solid #555;
+  border: 1px solid var(--field-border);
   background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2224%22%20viewBox%3D%220%200%2032%2024%22%3E%3Cpath%20style%3D%22fill%3A%20%23555%22%20d%3D%22M0%200h32L16%2024%22/%3E%3C/svg%3E');
 }
 
@@ -29,9 +29,9 @@
   width: 9em;
   display: inline;
   color: inherit;
-  background-color: #3F3F3F !important;
+  background-color: var(--raised) !important;
   font-size: 0.9em;
-  border: 1px solid #555;
+  border: 1px solid var(--field-border);
   height: 2.4rem;
   padding: .5rem;
   vertical-align: top;
@@ -39,12 +39,12 @@
 }
 
 .rudex-bridge .deposit-limit {
-  color: #ababab;
+  color: var(--muted);
   line-height: 150%;
 }
 
 .rudex-with-memo {
-  color: #ababab;
+  color: var(--muted);
 }
 
 .rudex-position-options {
@@ -78,7 +78,7 @@
 
 .rudex-position-options .rudex-options a:hover {
   color: #fff;
-  background-color: #3399ff;
+  background-color: var(--accent);
 }
 
 .rudex-select-dropdown span {

@@ -19,9 +19,17 @@ app/bundle
 app/stats-dev.json
 app/stats-prod.json
 app/test/MarketClasses.js
+assets
+
+# yarn build-preview output (app/next screen previews for screenshots,
+# docs/UI_MIGRATION_PLAN.md §6.5) - already covered by `build` above,
+# listed explicitly so it's not mistaken for something to commit.
+build/preview
 
 charting_library/*
 !charting_library/scss
 !charting_library/charting_library.29.4.0.zip.md5
 !charting_library/package-charting-library.cjs
 !charting_library/install-charting-library.cjs
+
+__pycache__/

@@ -1,0 +1,174 @@
+// Styles for the SameT funds page and its dialogs. Colours and sizes come from
+// the design-system tokens (theme.scss / _palette.scss) only.
+
+.page {
+    max-width: 1180px;
+    margin: 0 auto;
+    // the shell's content padding is the page's inset; no second one
+    padding: 0;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.title {
+    margin: 0;
+    font-size: 24px;
+}
+
+.intro {
+    margin: 0 0 8px;
+    max-width: 78ch;
+    color: var(--ink-2);
+    line-height: 1.55;
+}
+
+.note {
+    margin: 0 0 20px;
+    max-width: 78ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.summary {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+// The list is the page's own width, edge to edge like the credit offers table
+// (it used to sit in a bordered card with an inset, a table narrower than the
+// one on the page next to it).
+.card {
+    padding: 0;
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.fundId {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.you {
+    margin-left: 8px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.rowActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.empty {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+.error {
+    margin: 12px 0;
+}
+
+.more {
+    display: flex;
+    justify-content: center;
+    padding-top: 16px;
+}
+
+// ---- dialogs ----------------------------------------------------------------
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+}
+
+.help {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.fieldError {
+    font-size: 12px;
+    color: var(--down);
+}
+
+.modalNote {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    background: var(--accent-wash);
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mode {
+    padding: 7px 12px;
+    border: 1px solid var(--field-border);
+    border-radius: var(--radius);
+    background: var(--field-bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease),
+        border-color 0.15s var(--ease);
+}
+
+.mode:hover {
+    border-color: var(--field-border-hover);
+}
+
+.modeActive {
+    border-color: var(--accent);
+    background: var(--accent-wash);
+    color: var(--accent);
+}

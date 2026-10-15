@@ -208,14 +208,6 @@ const MarketUtils = {
         let basePrecision = utils.get_asset_precision(
             base.toJS ? base.get("precision") : base.precision
         );
-        let pricePrecision = order.call_price
-            ? quote.toJS
-                ? quote.get("precision")
-                : quote.precision
-            : base.toJS
-                ? base.get("precision")
-                : base.precision;
-
         let buy, sell;
         let callPrice;
         if (order.sell_price) {
@@ -390,6 +382,8 @@ const MarketUtils = {
     //     return orderBookArray;
     // }
 
+    // `precision` is unused but the markets slice still passes it, and TypeScript checks that call
+    // eslint-disable-next-line no-unused-vars
     flatten_orderbookchart_highcharts(array, sumBoolean, inverse, precision) {
         inverse = inverse === undefined ? false : inverse;
         let orderBookArray = [];

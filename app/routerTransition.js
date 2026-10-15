@@ -20,7 +20,7 @@ import counterpart from "counterpart";
 // Actions
 import PrivateKeyActions from "actions/PrivateKeyActions";
 import SettingsActions from "actions/SettingsActions";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "./design-system/Notification";
 
 ChainStore.setDispatchFrequency(60);
 
@@ -61,7 +61,7 @@ class RouterTransitioner {
      */
     willTransitionTo(appInit = true, statusCallback = () => {}) {
         if (this.isTransitionInProgress())
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
                 resolve();
             });
         this._statusCallback = statusCallback;
@@ -157,7 +157,7 @@ class RouterTransitioner {
      * @returns {Promise}
      */
     doQuickLatencyUpdate(nodeUrls) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             let url = this._connectionManager.url;
             let urls = this._connectionManager.urls;
 
@@ -172,7 +172,10 @@ class RouterTransitioner {
                 .then(res => {
                     console.log("Following nodes have been pinged:", res);
                     // update the latencies object
-                    const apiLatencies = SettingsStore.getState().apiLatencies;
+                    // copy: the state object is frozen (Redux-backed store)
+                    const apiLatencies = {
+                        ...SettingsStore.getState().apiLatencies
+                    };
                     for (var nodeUrl in res) {
                         apiLatencies[nodeUrl] = res[nodeUrl];
                     }
@@ -208,7 +211,7 @@ class RouterTransitioner {
 
         let thiz = this;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             // if for some reason this method is called before connections are setup via willTransitionTo,
             // initialize the manager
             if (thiz._connectionManager == null) {
@@ -316,7 +319,8 @@ class RouterTransitioner {
     }
 
     _updateLatencies(mapOfPings, force = true, container = null) {
-        let apiLatencies = SettingsStore.getState().apiLatencies;
+        // copy: the state object is frozen (Redux-backed store)
+        let apiLatencies = {...SettingsStore.getState().apiLatencies};
 
         for (let node in mapOfPings) {
             if (!force && node in apiLatencies) {
@@ -473,8 +477,12 @@ class RouterTransitioner {
             // only keep the ones we were able to connect to
             return !!latenciesMap[a.url];
         });
-        // create more info in the entries
-        filtered = filtered.map(a => {
+        // create more info in the entries. Work on copies: the entries come
+        // from SettingsStore's Redux-backed state (frozen by immer), so the
+        // in-place assignments this used to do throw a TypeError in strict
+        // mode and abort the whole connection step (willTransitionTo).
+        filtered = filtered.map(entry => {
+            const a = {...entry};
             a.hidden = !!a.hidden;
             a.name = a.location || "Unknown";
             if (latenciesMap != null && a.url in latenciesMap) {
@@ -671,7 +679,8 @@ class RouterTransitioner {
                 error: err
             })
         });
-        let apiLatencies = SettingsStore.getState().apiLatencies;
+        // copy: the state object is frozen (Redux-backed store)
+        let apiLatencies = {...SettingsStore.getState().apiLatencies};
         delete apiLatencies[failingNodeUrl];
         SettingsActions.updateLatencies(apiLatencies);
         return Apis.close().then(() => {
@@ -1053,10 +1062,10 @@ class DirectPinger {
             try {
                 let connection = new WebSocket(url);
                 connection.openTime = hirestime();
-                connection.onerror = event => {
+                connection.onerror = () => {
                     resolve(null);
                 };
-                connection.onopen = event => {
+                connection.onopen = () => {
                     connection.onmessage = function() {
                         this.closeTime = connection.openTime(hirestime.MS);
                         connection.close();

@@ -1,0 +1,247 @@
+// Modern look for the legacy screens' buttons and form fields, driven by the
+// same tokens (theme.scss) as the design-system Button/Input/Select, so a
+// legacy `<button class="button">` or native `<input>` and a design-system
+// one look like the same family: 8px corners, 38px control height, a soft
+// translucent field fill, a glowing focus ring instead of a hard outline.
+//
+// Why a global sheet with boosted specificity instead of editing the
+// per-theme template: Foundation (`.button`, `input[type=...]`) and
+// themes/_theme-template.scss style these elements per theme as
+// `body.<theme> .button { ... }` (0,2,1) with `!important` on hover states.
+// `body[class][class]` (0,3,1) beats them regardless of stylesheet order, so
+// this file can be loaded from the entry without touching the template.
+//
+// What it deliberately leaves alone: checkboxes/radios/range (only tinted via
+// `accent-color`), file inputs, buttons that are not `.button` (they are
+// either design-system components, which carry their own module styles, or
+// bespoke icon buttons).
+
+body[class][class] {
+    // ---- Buttons --------------------------------------------------------
+    .button,
+    a.button,
+    button.button,
+    input.button {
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: 0;
+        text-transform: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-height: var(--control-h, 38px);
+        // vertical padding too: a label wrapping to two lines keeps its air
+        padding: 8px 18px;
+        text-align: center;
+        border-radius: var(--radius, 8px);
+        border: 1px solid transparent;
+        background: var(--accent);
+        color: var(--on-accent);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition: background-color 0.15s var(--ease, ease),
+            border-color 0.15s var(--ease, ease),
+            box-shadow 0.15s var(--ease, ease),
+            transform 0.06s var(--ease, ease);
+
+        &:hover,
+        &:focus,
+        &:active {
+            background: var(--accent-2) !important;
+            color: var(--on-accent);
+        }
+
+        &:active {
+            transform: translateY(1px);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--focus-ring), var(--shadow-sm);
+        }
+
+        &:disabled,
+        &.disabled,
+        &[disabled] {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            transform: none;
+        }
+
+        // Neutral
+        &.secondary {
+            background: var(--field-bg);
+            border-color: var(--field-border);
+            color: var(--ink);
+            box-shadow: none;
+
+            &:hover,
+            &:focus,
+            &:active {
+                background: var(--field-bg-hover) !important;
+                border-color: var(--field-border-hover);
+                color: var(--ink);
+            }
+        }
+
+        // Outlined / hollow
+        &.outline,
+        &.hollow {
+            background: transparent;
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: none;
+
+            span {
+                color: inherit !important;
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background: var(--accent-wash) !important;
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+        }
+
+        // Destructive
+        &.danger,
+        &.alert {
+            background: var(--down);
+            border-color: var(--down);
+            color: #fff;
+
+            &:hover,
+            &:focus,
+            &:active {
+                background: var(--down) !important;
+                filter: brightness(1.1);
+                color: #fff;
+            }
+        }
+
+        &.tiny {
+            min-height: 24px;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: var(--radius-sm, 6px);
+        }
+
+        &.small {
+            min-height: var(--control-h-sm, 30px);
+            padding: 4px 12px;
+            font-size: 13px;
+            border-radius: var(--radius-sm, 6px);
+        }
+
+        &.large {
+            min-height: 46px;
+            padding: 0 24px;
+            font-size: 15px;
+        }
+
+        &.expand {
+            display: flex;
+            width: 100%;
+        }
+    }
+
+    // ---- Text fields ----------------------------------------------------
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="number"],
+    input[type="search"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"],
+    input[type="month"],
+    input[type="week"],
+    input[role="combobox"],
+    input:not([type]),
+    textarea,
+    select {
+        font: inherit;
+        font-size: 14px;
+        box-sizing: border-box;
+        // min-height, not height: several call sites pass an inline
+        // `height: inherit`/`auto` that would otherwise collapse the field.
+        min-height: var(--control-h, 38px);
+        padding: 0 12px;
+        border-radius: var(--radius, 8px);
+        border: 1px solid var(--field-border);
+        background-color: var(--field-bg);
+        color: var(--ink);
+        box-shadow: none;
+        transition: border-color 0.15s var(--ease, ease),
+            background-color 0.15s var(--ease, ease),
+            box-shadow 0.15s var(--ease, ease);
+
+        &::placeholder {
+            color: var(--muted);
+            opacity: 1;
+        }
+
+        &:hover:not(:disabled) {
+            border-color: var(--field-border-hover);
+            background-color: var(--field-bg);
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            outline: none;
+            border-color: var(--accent);
+            background-color: var(--field-bg);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        &:disabled,
+        &[readonly] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    textarea {
+        min-height: 72px;
+        padding: 9px 12px;
+        line-height: 1.45;
+    }
+
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238792a4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        cursor: pointer;
+    }
+
+    // Validation state set by the legacy forms (`.has-error`).
+    .has-error input,
+    .has-error select,
+    .has-error textarea,
+    div.has-error > input {
+        border-color: var(--down);
+
+        &:focus {
+            box-shadow: 0 0 0 3px rgba(224, 102, 110, 0.3);
+        }
+    }
+
+    // ---- Native check controls, tinted rather than restyled -------------
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"] {
+        accent-color: var(--accent);
+    }
+}

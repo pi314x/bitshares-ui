@@ -1,0 +1,183 @@
+.card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    padding: 16px 18px 12px;
+    margin-bottom: 20px;
+}
+
+// the title and the range switch on one row ...
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 20px;
+    margin-bottom: 12px;
+}
+
+// ... the figures (what is drawn) and the change under them
+.headFigures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+// `.card .title`: the legacy global sheet sizes every h3
+.card .title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.change {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.up {
+    color: var(--up);
+}
+
+.down {
+    color: var(--down);
+}
+
+// The three figures are also the choice of what the chart draws: the wallet,
+// what is in open orders, and both together.
+.figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.figure {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 150px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.figure:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.figureOn {
+    border-color: var(--line-strong, var(--faint));
+    background: var(--raised);
+    color: var(--ink);
+    opacity: 1;
+}
+
+.figureLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+}
+
+.figureValue {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+@media (max-width: 640px) {
+    .figure {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+    }
+}
+
+// The currency dropdown and "Load older" sit together at the right of the
+// footer and are the same size.
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.card .select,
+.card .older {
+    width: 148px;
+    min-width: 148px;
+    height: var(--control-h);
+    box-sizing: border-box;
+}
+
+.card .older {
+    justify-content: center;
+}
+
+.chart {
+    width: 100%;
+    height: 240px;
+}
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+}
+
+.empty {
+    padding: 36px 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+// 1D / 1W / 1M / All: which part of the loaded history is in view
+.ranges {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    align-self: center;
+}
+
+.ranges .rangeBtn {
+    min-height: var(--control-h-sm, 30px);
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.ranges .rangeOn {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}

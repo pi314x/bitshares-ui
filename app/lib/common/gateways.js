@@ -3,17 +3,7 @@
  * General API Settings are stored in api/apiConfig and should be imported here
  */
 
-import {
-    ioxbankAPIs,
-    rudexAPIs,
-    bitsparkAPIs,
-    openledgerAPIs,
-    cryptoBridgeAPIs,
-    gdex2APIs,
-    pirateCashAPIs,
-    xbtsxAPIs,
-    citadelAPIs
-} from "api/apiConfig";
+import {ioxbankAPIs, pirateCashAPIs, xbtsxAPIs} from "api/apiConfig";
 import {allowedGateway} from "branding";
 import {isGatewayTemporarilyDisabled} from "../chain/onChainConfig";
 import SettingsStore from "stores/SettingsStore";
@@ -109,83 +99,6 @@ export const availableGateways = {
         landing: "https://ioxbank.com",
         wallet: "https://dex.iobanker.com/"
     },
-    OPEN: {
-        id: "OPEN",
-        name: "OpenLedger",
-        baseAPI: openledgerAPIs,
-        isEnabled: () => false,
-        selected: false,
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "Shutdown",
-        wallet: "Shutdown"
-    },
-    RUDEX: {
-        id: "RUDEX",
-        name: "RuDEX",
-        baseAPI: rudexAPIs,
-        isEnabled: () => false,
-        isSimple: true,
-        selected: false,
-        simpleAssetGateway: true,
-        fixedMemo: {
-            prepend_default: "dex:",
-            prepend_btsid: "btsid-",
-            append: ""
-        },
-        addressValidatorMethod: "POST",
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "Shutdown",
-        wallet: "Shutdown"
-    },
-    SPARKDEX: {
-        id: "SPARKDEX",
-        name: "BitSpark",
-        baseAPI: bitsparkAPIs,
-        isEnabled: () => false,
-        selected: false,
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "https://www.bitspark.io/",
-        wallet: "Shutdown"
-    },
-    BRIDGE: {
-        id: "BRIDGE",
-        name: "CryptoBridge",
-        baseAPI: cryptoBridgeAPIs,
-        isEnabled: () => false,
-        selected: false,
-        singleWallet: true, // Has no coresponging coinType == backingCoinType specific wallet
-        addressValidatorAsset: true, // Address validator requires output_asset parameter
-        useFullAssetName: true, // Adds <gateway>.<asset> to memo and address object
-        intermediateAccount: "cryptobridge", // Fixed intermediateAccount
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "Shutdown",
-        wallet: "Shutdown"
-    },
-    GDEX: {
-        id: "GDEX",
-        name: "GDEX",
-        baseAPI: gdex2APIs,
-        isEnabled: () => false,
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "https://bitsharestalk.org/index.php?topic=33861",
-        wallet: "Only manual deposit / withdraw",
-        comment: "Only manual deposit / withdraw"
-    },
     PIRATE: {
         id: "PIRATE",
         name: "PirateCash",
@@ -215,31 +128,10 @@ export const availableGateways = {
         },
         landing: "https://xbts.io/",
         wallet: "https://ex.xbts.io/"
-    },
-    CITADEL: {
-        id: "CITADEL",
-        name: "Citadel",
-        baseAPI: citadelAPIs,
-        isEnabled: () => false,
-        selected: false,
-        assetWithdrawlAlias: {monero: "xmr"}, // if asset name doesn't equal to memo
-        options: {
-            enabled: false,
-            selected: false
-        },
-        landing: "Shutdown",
-        wallet: "Shutdown"
     }
 };
 
-export const availableBridges = {
-    TRADE: {
-        id: "TRADE",
-        name: "Blocktrades",
-        isEnabled: _isEnabled("TRADE"),
-        landing: "https://blocktrades.us"
-    }
-};
+export const availableBridges = {};
 
 export const gatewayPrefixes = Object.keys(availableGateways);
 

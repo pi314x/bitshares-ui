@@ -1,0 +1,169 @@
+.shell {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    // the content grows, the status bar is the last row
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// The status bar: node and block, bottom right. It is the last row of the
+// page: in the flow after the content (so it covers nothing), pushed to the
+// bottom of the window on a short page. `.status.status` outranks the legacy
+// sheet's rules for block elements.
+.status.status {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0;
+    // the top bar's own padding (12px 24px; 10px 12px on a phone): the chip is
+    // as far from the right edge and the bottom as the account chip is at the top
+    padding: 12px 24px;
+    border-top: 1px solid var(--line);
+    background: transparent;
+}
+
+// One chip, a link to the nodes page: connection state, then the head block.
+// Fixed-width characters and a fixed width for the state ("Connected",
+// "Connecting…", "closed" take the same room), so nothing in it moves when a
+// value changes.
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.chip:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.chipDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.chipDotOk {
+    background: var(--up);
+    box-shadow: 0 0 0 3px var(--up-wash);
+}
+
+.chipDotWarn {
+    background: var(--warn);
+}
+
+.nodeText {
+    display: inline-block;
+    min-width: 11ch;
+}
+
+.nodeNote {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.content {
+    padding: 24px;
+}
+
+// A page starts at the padding: the first block's own top margin (a legacy
+// card's 16px, an h1/h2/h3's 24px) is not added to it.
+.content.content > :first-child {
+    margin-top: 0;
+}
+
+.content.content h1:first-child,
+.content.content h2:first-child,
+.content.content h3:first-child {
+    margin-top: 0;
+}
+
+// A page arrives rather than appears: a short fade and a few pixels of rise
+// (the element is new on every route change, so it plays then and not again).
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.content.content > * {
+    animation: pageIn 0.18s var(--ease, ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content.content > * {
+        animation: none;
+    }
+}
+
+// The page's inset is this padding and no other. A screen whose root is
+// Foundation's `.grid-content` (24px of side padding of its own) sat 48px from
+// the rail, the others 24px. `.content.content` outranks the legacy sheet.
+.content.content > :global(.grid-content),
+.content.content > :global(.grid-block) > :global(.grid-content),
+.content.content > :global(.grid-container) > :global(.grid-content) {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+// Behind the open navigation drawer on a phone.
+.scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    background: var(--overlay);
+}
+
+@media (max-width: 860px) {
+    .content {
+        padding: 16px 12px;
+    }
+
+    // `.status.status`: the base rule above has two classes
+    .status.status {
+        padding: 10px 12px;
+    }
+}
+
+@media (min-width: 861px) {
+    // the drawer cannot be open on a wide screen; if the window was resized with
+    // it open, do not leave a dead scrim behind
+    .scrim {
+        display: none;
+    }
+}

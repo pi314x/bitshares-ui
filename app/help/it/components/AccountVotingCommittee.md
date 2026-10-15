@@ -1,0 +1,1 @@
+I [membri del comitato](introduction/committee) possono proporre modifiche ai parametri dinamici della blockchain, come le commissioni, il tempo di blocco e molto altro. È un ruolo di grande responsabilità che richiede una buona comprensione del funzionamento di BitShares.

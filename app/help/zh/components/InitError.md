@@ -1,6 +1,7 @@
 [# connection-error]
-无法获取到全节点的 websocket 连接
+无法与全节点建立 websocket 连接。
 
-Possible reasons: TODO
-- reason #1
-- reason #2
+可能的原因：
+- 所选节点已离线、负载过高或尚未同步。请选择另一个节点。
+- 你的网络连接已断开，或者防火墙、代理或 VPN 阻止了 websocket 连接。
+- 浏览器扩展或隐私工具阻止了连接。

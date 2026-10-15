@@ -48,6 +48,30 @@ module.exports = function(env) {
         }
     ];
 
+    // CSS Modules for the new design system (files named *.module.scss),
+    // kept separate from the global, non-scoped SCSS used by legacy `app/`.
+    var scssModuleLoaders = [
+        {
+            loader: "style-loader"
+        },
+        {
+            loader: "css-loader",
+            options: {
+                modules: {
+                    localIdentName: env.prod
+                        ? "[hash:base64:8]"
+                        : "[name]__[local]__[hash:base64:5]"
+                }
+            }
+        },
+        {
+            loader: "postcss-loader"
+        },
+        {
+            loader: "sass-loader"
+        }
+    ];
+
     // OUTPUT PATH
     var outputPath = path.join(root_dir, "assets").replace(/\\/g, "/");
 
@@ -73,7 +97,7 @@ module.exports = function(env) {
         new HtmlWebpackPlugin({
             template: "!!handlebars-loader!app/assets/index.hbs",
             templateParameters: {
-                title: "BitShares " + __VERSION__,
+                title: "BitShares Desk " + __VERSION__,
                 INCLUDE_BASE: !!env.prod && !env.hash,
                 PRODUCTION: !!env.prod,
                 ELECTRON: !!env.electron
@@ -88,9 +112,12 @@ module.exports = function(env) {
             __UI_API__: JSON.stringify(env.apiUrl),
             __TESTNET__: !!env.testnet,
             __DEPRECATED__: !!env.deprecated,
+            // Deployment default for the exchange price chart: "auto" (TradingView
+            // when its library is bundled, else the built-in chart), "tradingview"
+            // or "lightweight". Users can still switch in the chart's own toggle.
+            __CHART_ENGINE__: JSON.stringify(env.chartEngine || "auto"),
             DEFAULT_SYMBOL: "BTS",
-            __GIT_BRANCH__: JSON.stringify(git.branch()),
-            __PERFORMANCE_DEVTOOL__: !!env.perf_dev
+            __GIT_BRANCH__: JSON.stringify(git.branch())
         }),
         new webpack.ContextReplacementPlugin(
             /moment[\/\\]locale$/,
@@ -244,15 +271,26 @@ module.exports = function(env) {
         sanitize$: "xss",
         moment$: path.resolve(root_dir, "node_modules/moment/moment.js"),
         bitsharesjs$: path.resolve(root_dir, "node_modules/bitsharesjs/"),
-        "bitshares-ui-style-guide$": path.resolve(
-            root_dir,
-            "node_modules/bitshares-ui-style-guide/dist/main.js"
-        )
+        // Phase 8 (docs/UI_MIGRATION_PLAN.md): drop the `counterpart`
+        // package in favor of a local, tested replacement covering the
+        // exact subset of its API this app (and react-translate
+        // -component, which imports `counterpart` internally) actually
+        // uses. See app/lib/i18n/counterpartShim.js's header.
+        counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
     };
-    if (!env.prod) {
-        alias = Object.assign({}, alias, {
-            "react-dom": "@hot-loader/react-dom"
-        });
+    // The licensed TradingView library is not part of the repository. Without
+    // it the import is aliased to an empty module (app/components/Exchange/
+    // tradingViewMissing.js) so the build succeeds and the exchange shows the
+    // built-in chart instead.
+    if (
+        !fs.existsSync(
+            path.resolve(root_dir, "charting_library/charting_library.esm.js")
+        )
+    ) {
+        alias["../../../charting_library/charting_library.esm$"] = path.resolve(
+            root_dir,
+            "app/components/Exchange/tradingViewMissing.js"
+        );
     }
     var https = false;
     if (env.https) {
@@ -264,12 +302,7 @@ module.exports = function(env) {
     var config = {
         mode: env.noUgly ? "none" : env.prod ? "production" : "development",
         entry: {
-            app: env.prod
-                ? path.resolve(root_dir, "app/Main.js")
-                : [
-                      "react-hot-loader/patch",
-                      path.resolve(root_dir, "app/Main.js")
-                  ]
+            app: path.resolve(root_dir, "app/Main.js")
         },
         output: {
             publicPath: env.prod ? "" : "/",
@@ -327,13 +360,7 @@ module.exports = function(env) {
                 },
                 {
                     test: /\.jsx$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(
-                            root_dir,
-                            "node_modules/react-foundation-apps"
-                        )
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",
@@ -344,26 +371,39 @@ module.exports = function(env) {
                                         {targets: {node: "current"}}
                                     ]
                                 ],
-                                cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"]
+                                cacheDirectory: env.prod ? false : true
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.tsx?$/,
+                    include: [path.join(root_dir, "app")],
+                    use: [
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                presets: [
+                                    "@babel/preset-typescript",
+                                    [
+                                        "@babel/preset-react",
+                                        {targets: {node: "current"}}
+                                    ]
+                                ],
+                                cacheDirectory: env.prod ? false : true
                             }
                         }
                     ]
                 },
                 {
                     test: /\.js$/,
-                    include: [
-                        path.join(root_dir, "app"),
-                        path.join(root_dir, "node_modules/alt-container"),
-                        path.join(root_dir, "node_modules/alt-react")
-                    ],
+                    include: [path.join(root_dir, "app")],
                     use: [
                         {
                             loader: "babel-loader",
                             options: {
                                 compact: false,
                                 cacheDirectory: env.prod ? false : true,
-                                plugins: ["react-hot-loader/babel"],
                                 presets: [
                                     [
                                         "@babel/preset-react",
@@ -392,7 +432,12 @@ module.exports = function(env) {
                     use: cssLoaders
                 },
                 {
+                    test: /\.module\.scss$/,
+                    use: scssModuleLoaders
+                },
+                {
                     test: /\.scss$/,
+                    exclude: /\.module\.scss$/,
                     use: scssLoaders
                 },
                 {
@@ -404,27 +449,31 @@ module.exports = function(env) {
                             "app/assets/language-dropdown/img"
                         )
                     ],
-                    use: [
-                        {
-                            loader: "url-loader",
-                            options: {
-                                limit: 100000
-                            }
-                        }
-                    ]
+                    // Asset module instead of url-loader: css-loader 6 turns
+                    // `url(...)` into `new URL(...)`, which webpack 5 emits
+                    // as an asset *after* running these loaders - so with
+                    // url-loader the emitted file was its JS output
+                    // (`export default "data:..."`), not the image. Same
+                    // inline-below-100 kB rule as before.
+                    type: "asset",
+                    parser: {dataUrlCondition: {maxSize: 100000}}
                 },
 
                 {
+                    // Asset module for the same reason as .png above. Fonts are
+                    // always emitted as files (never inlined): the
+                    // @fontsource stylesheets declare dozens of unicode-range
+                    // subsets, and inlining them all would turn the CSS into
+                    // a multi-megabyte blocking download instead of letting
+                    // the browser fetch only the subsets a page uses.
                     test: /\.woff$/,
-                    use: [
-                        {
-                            loader: "url-loader",
-                            options: {
-                                limit: 100000,
-                                mimetype: "application/font-woff"
-                            }
-                        }
-                    ]
+                    type: "asset/resource"
+                },
+                {
+                    // @fontsource/ibm-plex-sans and @fontsource/ibm-plex-mono
+                    // (docs/UI_MIGRATION_PLAN.md Phase 0) ship .woff2.
+                    test: /\.woff2$/,
+                    type: "asset/resource"
                 },
                 {
                     test: /.*\.svg$/,
@@ -470,7 +519,7 @@ module.exports = function(env) {
                 path.resolve(root_dir, "app/lib"),
                 "node_modules"
             ],
-            extensions: [".js", ".jsx", ".coffee", ".json"],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".coffee", ".json"],
             mainFields: ["module", "jsnext:main", "browser", "main"],
             alias: alias,
             fallback: {

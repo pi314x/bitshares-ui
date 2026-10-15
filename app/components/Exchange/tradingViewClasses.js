@@ -1,4 +1,5 @@
 import MarketsStore from "stores/MarketsStore";
+import {normalizeBars} from "../../lib/common/normalizeBars";
 import {FetchChain} from "bitsharesjs";
 import moment from "moment-timezone";
 import MarketsActions from "actions/MarketsActions";
@@ -75,7 +76,6 @@ function getResolutionsFromBuckets(buckets, convertToFrame = false) {
         .map(r => {
             let minute = r / 60;
             let day = minute / 60 / 24;
-            let week = day / 7;
 
             if (minute < 1 && !convertToFrame) {
                 // below 1 minute we return Seconds
@@ -205,13 +205,7 @@ class DataFeed {
             .catch(onResolveErrorCallback);
     }
 
-    getBars(
-        symbolInfo,
-        resolution,
-        periodParams,
-        onHistoryCallback,
-        onErrorCallback
-    ) {
+    getBars(symbolInfo, resolution, periodParams, onHistoryCallback) {
         // https://www.tradingview.com/charting-library-docs/latest/connecting_data/Datafeed-API/#correct-amount-of-data
         //
         // It is more important to pass the required number of bars than to match the [from, to) time range.
@@ -298,7 +292,8 @@ class DataFeed {
     }
 
     _getHistory() {
-        return MarketsStore.getState().priceData;
+        // ascending, one bar per time, finite prices: what the chart accepts
+        return normalizeBars(MarketsStore.getState().priceData);
     }
 
     subscribeBars(
@@ -349,7 +344,7 @@ class DataFeed {
         // this.latestBar = null;
     }
 
-    calculateHistoryDepth(resolution, resolutionBack, intervalBack) {
+    calculateHistoryDepth() {
         return undefined;
     }
 

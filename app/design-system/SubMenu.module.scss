@@ -1,0 +1,42 @@
+.menu {
+    display: inline-flex;
+    max-width: 100%;
+    margin: 0 0 16px;
+    padding: 3px;
+    gap: 2px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--raised);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.menu::-webkit-scrollbar {
+    display: none;
+}
+
+.item {
+    flex: none;
+    min-height: 30px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.item:hover {
+    color: var(--ink);
+}
+
+.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+}

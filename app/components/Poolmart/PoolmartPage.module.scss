@@ -1,0 +1,13 @@
+.panel {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+// the view switch sits above the list, with the page's own 16px rhythm
+.views {
+    margin-bottom: 16px;
+}
