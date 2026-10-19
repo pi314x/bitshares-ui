@@ -334,7 +334,10 @@ module.exports = function(env) {
                 directory: path.join(__dirname, "app/assets/locales"),
                 publicPath: env.prod ? "" : "/"
             },
-            historyApiFallback: true,
+            // Every address of the app is index.html, also one with a dot in its last
+            // part: a market of a gateway asset (/market/IOB.XRP_BTS) is not a file
+            // (the default rule answers "Cannot GET" for it).
+            historyApiFallback: {disableDotRule: true},
             https: https,
             // what a deployment sends too (docs/DEPLOYMENT.md); the policy itself is the page's meta tag
             headers: {
