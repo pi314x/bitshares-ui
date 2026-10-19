@@ -238,6 +238,40 @@ body[class][class] {
         }
     }
 
+    // ---- Date and time fields -------------------------------------------
+    // A native date / time input on iOS Safari has a width of its own (it ran
+    // out of the card to the right), centres its text and is as high as its
+    // content (nothing when empty). Same box as the other fields, text at the left.
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"],
+    input[type="month"],
+    input[type="week"] {
+        -webkit-appearance: none;
+        appearance: none;
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        line-height: 1.3;
+        text-align: left;
+
+        &::-webkit-date-and-time-value {
+            min-height: 1.3em;
+            margin: 0;
+            text-align: left;
+        }
+
+        &::-webkit-datetime-edit {
+            padding: 0;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+            margin-left: 8px;
+            cursor: pointer;
+        }
+    }
+
     // ---- Native check controls, tinted rather than restyled -------------
     input[type="checkbox"],
     input[type="radio"],

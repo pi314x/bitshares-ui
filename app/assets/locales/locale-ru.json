@@ -1999,7 +1999,24 @@
         "witness_pay": "Вывести зарплату заверителя на аккаунт",
         "witness_receive": "Получен заверителем от заверителя",
         "witness_update": "{account} обновил свою информацию о заверителе",
-        "worker_create": "{account} создал рабочее предложение с ежедневной оплатой в размере {pay}"
+        "worker_create": "{account} создал рабочее предложение с ежедневной оплатой в размере {pay}",
+        "committee_member_update": "{account} updated committee member {id}",
+        "assert": "{account} asserted conditions on the chain",
+        "blind_transfer": "A blinded transfer from %(inputs)s inputs to %(outputs)s outputs, fee {fee}",
+        "fba_distribute": "{account} received {amount} from a fee backed asset distribution",
+        "execute_bid": "{account}'s collateral bid executed: {debt} against {collateral}",
+        "custom_authority_create": "{account} created a custom authority for %(operation)s operations",
+        "custom_authority_update": "{account} updated custom authority {id}",
+        "custom_authority_delete": "{account} deleted custom authority {id}",
+        "ticket_update": "{account} changed ticket {id} to: %(target)s",
+        "liquidity_pool_update": "{account} changed the fees of liquidity pool {id}",
+        "credit_deal_update": "{account} set repayment of credit deal {id} to: %(mode)s",
+        "limit_order_update": "{account} updated order #%(order)s",
+        "auto_repay_modes": {
+            "0": "Repay by hand",
+            "1": "Repay in full automatically",
+            "2": "Repay automatically, in part if need be"
+        }
     },
     "page404": {
         "asset_not_found_subtitle": "Такого актива не существует",
@@ -3028,7 +3045,14 @@
             "witness_create": "Создание заверителя",
             "witness_update": "Обновление заверителя",
             "witness_withdraw_pay": "Вывод зарплаты заверителя",
-            "worker_create": "Создание работника"
+            "worker_create": "Создание работника",
+            "custom_authority_create": "Create custom authority",
+            "custom_authority_update": "Update custom authority",
+            "custom_authority_delete": "Delete custom authority",
+            "ticket_update": "Update ticket",
+            "liquidity_pool_update": "Update liquidity pool",
+            "credit_deal_update": "Update credit deal",
+            "limit_order_update": "Update order"
         },
         "vesting_balance_create": "создал вестинговый баланс",
         "view_json": "Показать необработанный json",

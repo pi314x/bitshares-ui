@@ -73,6 +73,7 @@ import ReactTooltip from "react-tooltip";
 import moment from "moment";
 import {Tooltip} from "../../design-system/Tooltip";
 import JSONModal from "components/Modal/JSONModal";
+import {genericOperationRows} from "./operations/GenericRows";
 import asset_utils from "../../lib/common/asset_utils";
 
 import "./operations.scss";
@@ -2402,8 +2403,7 @@ export default function Transaction({
                 break;
             }
             default:
-                console.log("unimplemented tx op:", op);
-
+                // no table of its own: the operation's fields, one row each
                 rows.push(
                     <tr key={key++}>
                         <td>
@@ -2412,11 +2412,14 @@ export default function Transaction({
                                 content="explorer.block.op"
                             />
                         </td>
-                        <td>
-                            <Inspector data={op} search={false} />
-                        </td>
+                        <td>{ops[op[0]] || op[0]}</td>
                     </tr>
                 );
+                genericOperationRows(
+                    op[1],
+                    {linkToAccount, linkToAsset},
+                    key
+                ).forEach(row => rows.push(row));
                 break;
         }
 

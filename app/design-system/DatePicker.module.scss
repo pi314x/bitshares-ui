@@ -3,6 +3,12 @@
 // from the cascade at runtime, not at Sass-compile time.
 
 .input {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left;
     font: inherit;
     font-size: 14px;
     width: 100%;
@@ -34,4 +40,11 @@
 .input::-webkit-calendar-picker-indicator {
     filter: invert(0.5);
     cursor: pointer;
+}
+
+// iOS Safari centres the value and gives it no height of its own
+.input::-webkit-date-and-time-value {
+    min-height: 1.3em;
+    margin: 0;
+    text-align: left;
 }
