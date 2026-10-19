@@ -12,7 +12,7 @@
 //
 // Given an asset name, amount and label generates uri for its refilling
 import * as React from "react";
-import QRCode from "qrcode.react";
+import {CopyableQr} from "../DepositWithdraw/DepositCopy";
 
 const assetTemplates: {
     [asset: string]: {
@@ -145,7 +145,8 @@ function CryptoLinkFormatter({
 
         return (
             <div className="QR">
-                <QRCode size={size} value={link} />
+                {/* a tap on the code copies it (the image, or what it says where an image cannot be copied) */}
+                <CopyableQr size={size} value={link} centered />
             </div>
         );
     } else {

@@ -78,6 +78,25 @@ export function canCopyImage(): boolean {
 }
 
 /**
+ * The bytes of a base64 data URL as a Blob. Decoded here, not with `fetch(dataUrl)`:
+ * the page's content security policy does not let a fetch reach `data:` (connect-src),
+ * and the copy then fell back to saving the file.
+ */
+export function dataUrlToBlob(dataUrl: string): Blob {
+    const comma = dataUrl.indexOf(",");
+    const header = comma === -1 ? "" : dataUrl.slice(0, comma);
+    const body = comma === -1 ? dataUrl : dataUrl.slice(comma + 1);
+    const type = (/^data:([^;,]+)/.exec(header) || [])[1] || "image/png";
+    const binary =
+        header.indexOf(";base64") !== -1
+            ? atob(body)
+            : decodeURIComponent(body);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], {type});
+}
+
+/**
  * Copy a PNG (a data URL) to the clipboard; where that cannot be done, save it as a
  * file named `fileName`. The blob is handed over as a promise inside the
  * `ClipboardItem`, which is what Safari needs to keep the user gesture.
@@ -89,7 +108,7 @@ export async function copyImage(
     if (canCopyImage()) {
         try {
             const Item = (window as any).ClipboardItem;
-            const blob = fetch(dataUrl).then(response => response.blob());
+            const blob = Promise.resolve().then(() => dataUrlToBlob(dataUrl));
             await (navigator.clipboard as any).write([
                 new Item({"image/png": blob})
             ]);

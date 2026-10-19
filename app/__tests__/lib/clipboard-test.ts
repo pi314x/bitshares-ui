@@ -1,6 +1,7 @@
 import {
     canCopyImage,
     copyImage,
+    dataUrlToBlob,
     copyText,
     saveImage
 } from "../../lib/common/clipboard";
@@ -83,14 +84,25 @@ describe("images", () => {
         (window as any).ClipboardItem = function(data: any) {
             items.push(data);
         };
-        (global as any).fetch = jest
-            .fn()
-            .mockResolvedValue({blob: () => Promise.resolve("BLOB")});
-        expect(await copyImage("data:image/png;base64,AAA", "qr.png")).toBe(
-            "copied"
-        );
+        // no network: the policy's connect-src does not allow a fetch of data:
+        const fetchMock = jest.fn();
+        (global as any).fetch = fetchMock;
+        expect(
+            await copyImage("data:image/png;base64,iVBORw0K", "qr.png")
+        ).toBe("copied");
         expect(write).toHaveBeenCalledTimes(1);
         expect(Object.keys(items[0])).toEqual(["image/png"]);
+        expect(fetchMock).not.toHaveBeenCalled();
+        const blob: Blob = await items[0]["image/png"];
+        expect(blob.type).toBe("image/png");
+        expect(blob.size).toBe(6); // "iVBORw0K" is the PNG signature's first six bytes
+    });
+
+    it("decodes a data URL into the bytes it holds", async () => {
+        const blob = dataUrlToBlob("data:image/png;base64,SGk=");
+        expect(blob.type).toBe("image/png");
+        expect(blob.size).toBe(2);
+        expect(dataUrlToBlob("data:text/plain,a%20b").size).toBe(3);
     });
 
     it("are saved as a file where they cannot be copied", async () => {

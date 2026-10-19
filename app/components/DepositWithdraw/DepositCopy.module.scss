@@ -18,6 +18,28 @@
     gap: 10px;
 }
 
+// the deposit screen's code: all of it in the middle of its line
+.qrCentered {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+
+    .qrActions {
+        justify-content: center;
+    }
+
+    .hint {
+        max-width: 22em;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .feedback {
+        text-align: center;
+    }
+}
+
 // the canvas the code is drawn on, never shown
 .hidden {
     position: absolute;
@@ -57,6 +79,19 @@
     gap: 4px 10px;
 }
 
+// the text in the middle, its feedback under it (the space is kept, so the text does not move)
+.tapWrap.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+
+    .feedback {
+        text-align: center;
+    }
+}
+
 .tap {
     cursor: pointer;
     border-radius: var(--radius-sm);
@@ -75,4 +110,18 @@ span.tap:focus-visible {
 
 img.tap:active {
     opacity: 0.85;
+}
+
+// the explanation under the account name: a paragraph, in the middle like what is above it
+// (doubled class: the legacy sheet sizes and tightens every heading and paragraph)
+.note.note {
+    max-width: 32em;
+    margin: 16px auto 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-transform: none;
+    letter-spacing: 0;
 }

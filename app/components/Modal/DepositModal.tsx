@@ -82,6 +82,7 @@ import {requestDepositAddress} from "common/gatewayMethods";
 import {ChainStore} from "bitsharesjs";
 import BlockTradesDepositAddressCache from "common/BlockTradesDepositAddressCache";
 import CopyButton from "../Utility/CopyButton";
+import {CopyOnTap} from "../DepositWithdraw/DepositCopy";
 import Icon from "../Icon/Icon";
 import LoadingIndicator from "../LoadingIndicator";
 import DepositWithdrawAssetSelector from "../DepositWithdraw/DepositWithdrawAssetSelector";
@@ -97,6 +98,7 @@ import CryptoLinkFormatterImpl from "../Utility/CryptoLinkFormatter";
 import counterpart from "counterpart";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
+import styles from "../DepositWithdraw/DepositCopy.module.scss";
 
 // `CryptoLinkFormatter.tsx` (an earlier, separately-ported file) types
 // its two string-returning branches in a way `tsc` won't accept as a
@@ -644,10 +646,14 @@ function DepositModalContent({
                             className="modal__highlight"
                             style={{textAlign: "center"}}
                         >
-                            {account}
+                            {/* a tap on the account name copies it */}
+                            <CopyOnTap text={account} centered>
+                                {account}
+                            </CopyOnTap>
                         </h2>
                         <Translate
-                            component="h6"
+                            component="p"
+                            className={styles.note}
                             content="modal.deposit.bts_transfer_description"
                         />
                     </div>

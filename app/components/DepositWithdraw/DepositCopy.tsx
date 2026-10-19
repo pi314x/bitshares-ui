@@ -74,6 +74,8 @@ export interface CopyOnTapProps {
     /** what goes on the clipboard */
     text: string;
     children: React.ReactNode;
+    /** the text in the middle of its line, "Copied" under it (the deposit screen's account name) */
+    centered?: boolean;
 }
 
 /**
@@ -82,13 +84,17 @@ export interface CopyOnTapProps {
  * this way: a tap is the natural way to copy on a phone, and the text itself cannot
  * be selected on these screens.
  */
-export function CopyOnTap({text, children}: CopyOnTapProps) {
+export function CopyOnTap({text, children, centered}: CopyOnTapProps) {
     const [feedback, show] = useFeedback();
     const copy = () => {
         copyText(text).then(ok => show(ok ? "copied" : "failed"));
     };
     return (
-        <span className={styles.tapWrap}>
+        <span
+            className={`${styles.tapWrap}${
+                centered ? ` ${styles.centered}` : ""
+            }`}
+        >
             <span
                 role="button"
                 tabIndex={0}
@@ -115,9 +121,11 @@ export function CopyOnTap({text, children}: CopyOnTapProps) {
 export interface CopyableQrProps {
     value: string;
     size?: number;
+    /** the code, its buttons and its hint in the middle of the line */
+    centered?: boolean;
 }
 
-export function CopyableQr({value, size = 160}: CopyableQrProps) {
+export function CopyableQr({value, size = 160, centered}: CopyableQrProps) {
     const holder = React.useRef<HTMLDivElement>(null);
     const [url, setUrl] = React.useState<string | null>(null);
     const [feedback, show] = useFeedback();
@@ -135,7 +143,9 @@ export function CopyableQr({value, size = 160}: CopyableQrProps) {
     }, [value, size]);
 
     return (
-        <div className={styles.qr}>
+        <div
+            className={`${styles.qr}${centered ? ` ${styles.qrCentered}` : ""}`}
+        >
             <div ref={holder} className={styles.hidden} aria-hidden="true">
                 <QRCode size={size * 2} value={value} />
             </div>
