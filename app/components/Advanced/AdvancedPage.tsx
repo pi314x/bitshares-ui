@@ -136,13 +136,13 @@ export default function AdvancedPage() {
                     : t("page.intro_no_account")}
             </p>
             {SECTIONS.map(section => (
-                <section className={styles.section} key={section.id}>
+                <div className={styles.section} key={section.id}>
                     <h3 className={styles.sectionTitle}>
                         {t(`page.section_${section.id}`)}
                     </h3>
                     <div className={styles.grid}>
                         {section.cards.map(card => (
-                            <article className={styles.card} key={card.id}>
+                            <div className={styles.card} key={card.id}>
                                 <div className={styles.cardFoot}>
                                     <h4 className={styles.cardTitle}>
                                         {t(`cards.${card.id}.title`)}
@@ -163,10 +163,10 @@ export default function AdvancedPage() {
                                         {t(`cards.${card.id}.open`)}
                                     </Button>
                                 </div>
-                            </article>
+                            </div>
                         ))}
                     </div>
-                </section>
+                </div>
             ))}
             {active ? <active.Dialog onCancel={close} onDone={close} /> : null}
         </div>

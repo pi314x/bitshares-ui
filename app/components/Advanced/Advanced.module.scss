@@ -24,6 +24,7 @@
 // (the doubled class beats the legacy heading rules)
 .sectionTitle.sectionTitle {
     margin: 0;
+    padding: 0;
     color: var(--muted);
     font-family: var(--font-sans);
     font-size: 12px;
@@ -48,8 +49,10 @@
     background: var(--surface);
 }
 
-.cardTitle {
+// (doubled: the legacy heading rules add margins)
+.cardTitle.cardTitle {
     margin: 0;
+    padding: 0;
     color: var(--ink);
     font-size: 15px;
     font-weight: 600;
