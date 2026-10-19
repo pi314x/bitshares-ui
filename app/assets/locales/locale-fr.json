@@ -530,26 +530,15 @@
         "ws_status": "Full node connection status",
         "local": {
             "title": "On this device",
-            "settings_loading": "Reading your settings...",
-            "settings_done": "Settings loaded (language, theme, nodes)",
+            "settings": "Reading your settings",
             "settings_failed": "Settings could not be read",
-            "database_loading": "Opening the local database...",
-            "database_done": "Local database opened",
+            "database": "Opening the local database",
             "database_failed": "The local database could not be opened",
-            "keys_loading": "Reading the keys stored in this browser...",
-            "keys_none": "No keys stored in this browser",
-            "keys_some": "%(count)s keys stored in this browser (encrypted until you unlock the wallet)",
+            "keys": "Reading the keys stored in this browser",
             "keys_failed": "The stored keys could not be read",
-            "wallet_loading": "Looking for a local wallet...",
-            "wallet_none": "No local wallet on this device",
-            "wallet_password": "Account name and password sign-in: no local wallet is needed",
-            "wallet_one": "Wallet \"%(name)s\" found, locked until you unlock it",
-            "wallet_several": "%(count)s local wallets found, \"%(name)s\" is the current one, locked until you unlock it",
+            "wallet": "Looking for a local wallet",
             "wallet_failed": "The local wallet could not be read",
-            "accounts_loading": "Reading your accounts...",
-            "accounts_none": "No accounts of yours on this device",
-            "accounts_some": "%(count)s accounts of yours on this device",
-            "accounts_last": "%(count)s accounts of yours on this device, last used: %(name)s",
+            "accounts": "Reading your accounts",
             "accounts_failed": "Your accounts could not be read"
         }
     },
@@ -1042,7 +1031,23 @@
         "your_price": "Your Call Price",
         "zoom": "Zoom",
         "zoom_all": "All",
-        "trend_7d": "7J"
+        "trend_7d": "7J",
+        "quick_trade_help": {
+            "lead": "Instant trade sells one asset for another right now, at the prices that are already waiting in the order book. You see what you get before you confirm.",
+            "more": "How it works",
+            "amounts_title": "Choose one amount",
+            "amounts_text": "Pick what to sell and what to receive, then fill in either amount. The other is worked out from the open orders.",
+            "all_or_nothing_title": "All or nothing",
+            "all_or_nothing_text": "The trade is sent as a fill-or-kill order: it is filled completely at once, or it fails and nothing changes. No part of it stays open afterwards.",
+            "price_title": "The price is an average",
+            "price_text": "You take the best orders first, one after the other (see Orders below). A larger amount reaches further into the book, so its average price is worse.",
+            "costs_title": "What it costs",
+            "costs_text": "The network fee for the order, the market fee some assets charge on what you receive, and the liquidity penalty: how far your price is from the last market price (and from the feed price, for a smartcoin). Fee shows the total.",
+            "moves_title": "If the market moves",
+            "moves_text": "Orders can change between your click and the chain. If the book can no longer fill your amount at the price shown, the trade fails instead of filling at a worse price.",
+            "trade_title": "Not the same as Trade",
+            "trade_text": "On the Trade page you place an order that waits in the book until someone takes it. Instant trade takes what is there now and finishes."
+        }
     },
     "explorer": {
         "account": {
@@ -3601,9 +3606,9 @@
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",
         "note": "Only the owner of a pool - the issuer of its share asset - can change its fees. A change applies to every swap and withdrawal from then on.",
-        "taker": "Swap fee (%)",
+        "taker": "Swap fee, in percent",
         "taker_help": "What a swap pays into the pool, in percent of the amount received.",
-        "withdrawal": "Withdrawal fee (%)",
+        "withdrawal": "Withdrawal fee, in percent",
         "withdrawal_help": "What leaving the pool costs, in percent of what is withdrawn.",
         "err_fee": "A percentage from 0 to 100 with at most two decimals.",
         "submit": "Save fees",

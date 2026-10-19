@@ -69,7 +69,10 @@ export function resetLocalSteps(): void {
     listeners.forEach(listener => listener());
 }
 
-/** The locale key and its parameters for a step's line. */
+/**
+ * The locale key and its parameters for a step's line. The line says what is being done
+ * and keeps saying it when the step is checked: only a failure replaces it.
+ */
 export function describeLocalStep(
     id: LocalStepId,
     step: LocalStep
@@ -79,38 +82,5 @@ export function describeLocalStep(
         count: step.count ?? 0,
         name: step.name ?? ""
     };
-    if (step.state === "failed") return {key: `${base}_failed`, params};
-    if (step.state === "pending" || step.state === "active") {
-        return {key: `${base}_loading`, params};
-    }
-    switch (id) {
-        case "keys":
-            return {
-                key: step.count ? `${base}_some` : `${base}_none`,
-                params
-            };
-        case "wallet":
-            return {
-                key:
-                    step.state === "none"
-                        ? step.password
-                            ? `${base}_password`
-                            : `${base}_none`
-                        : (step.count || 0) > 1
-                        ? `${base}_several`
-                        : `${base}_one`,
-                params
-            };
-        case "accounts":
-            return {
-                key: step.count
-                    ? step.name
-                        ? `${base}_last`
-                        : `${base}_some`
-                    : `${base}_none`,
-                params
-            };
-        default:
-            return {key: `${base}_done`, params};
-    }
+    return {key: step.state === "failed" ? `${base}_failed` : base, params};
 }

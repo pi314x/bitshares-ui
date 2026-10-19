@@ -173,6 +173,7 @@ import {Button} from "../../design-system/Button";
 import {Switch} from "../../design-system/Switch";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Collapse} from "../../design-system/Collapse";
+import QuickTradeHelp from "./QuickTradeHelp";
 import SellReceive from "components/QuickTrade/SellReceive";
 import MarketsActions from "actions/MarketsActions";
 import {
@@ -1477,6 +1478,7 @@ function QuickTradeCore(props: QuickTradeProps) {
                 minWidth: "300px"
             }}
         >
+            <QuickTradeHelp />
             <SellReceive
                 sellAssetInput={sellAssetInput}
                 sellAsset={sellAssetId}

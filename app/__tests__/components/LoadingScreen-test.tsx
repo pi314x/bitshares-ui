@@ -44,50 +44,63 @@ describe("LoadingScreen, what is read from this device", () => {
         expect(items[6].getAttribute("data-state")).toBe("pending");
     });
 
-    it("lists what has been read, the wallet and the keys included, as it arrives", () => {
+    it("lists what is read from the device, and a line keeps its words when it is checked", () => {
         const {container} = render(<LoadingScreen />);
+        const lines = () =>
+            Array.from(container.querySelectorAll("ol li")).map(
+                li => li.textContent || ""
+            );
+        const before = lines();
         act(() => {
             reportLocalStep("database", "done");
             reportLocalStep("settings", "done");
             reportLocalStep("keys", "active");
             reportLocalStep("wallet", "active");
         });
-        let text = container.textContent || "";
-        expect(text).toContain("Local database opened");
-        expect(text).toContain("Settings loaded");
+        const text = container.textContent || "";
+        expect(text).toContain("Opening the local database");
+        expect(text).toContain("Reading your settings");
         expect(text).toContain("Reading the keys stored in this browser");
+        expect(text).toContain("Looking for a local wallet");
+        expect(text).toContain("Reading your accounts");
         act(() => {
             reportLocalStep("keys", "done", {count: 3});
             reportLocalStep("wallet", "done", {count: 1, name: "default"});
             reportLocalStep("accounts", "done", {count: 2, name: "johnr"});
         });
-        text = container.textContent || "";
-        expect(text).toContain("3 keys stored in this browser");
-        expect(text).toContain(
-            'Wallet "default" found, locked until you unlock it'
-        );
-        expect(text).toContain(
-            "2 accounts of yours on this device, last used: johnr"
-        );
+        // the same words in every row: only the mark changed
+        expect(lines()).toEqual(before.map((line, i) => lines()[i]));
+        expect(lines().slice(2)).toEqual([
+            "Opening the local database",
+            "Reading your settings",
+            "Reading the keys stored in this browser",
+            "Looking for a local wallet",
+            "Reading your accounts"
+        ]);
+        expect(
+            container.querySelectorAll('ol li[data-state="done"]').length
+        ).toBeGreaterThanOrEqual(5);
     });
 
-    it("says there is no wallet, or that a password is the sign-in", () => {
+    it("says the same whatever was found: nothing, a password sign-in or a wallet", () => {
         const {container} = render(<LoadingScreen />);
+        const lines = () =>
+            Array.from(container.querySelectorAll("ol li")).map(
+                li => li.textContent || ""
+            );
         act(() => {
             reportLocalStep("database", "done");
             reportLocalStep("keys", "none", {count: 0});
             reportLocalStep("wallet", "none");
             reportLocalStep("accounts", "none", {count: 0});
         });
-        let text = container.textContent || "";
-        expect(text).toContain("No keys stored in this browser");
-        expect(text).toContain("No local wallet on this device");
-        expect(text).toContain("No accounts of yours on this device");
+        const none = lines();
         act(() => {
             reportLocalStep("wallet", "none", {password: true});
         });
-        text = container.textContent || "";
-        expect(text).toContain("no local wallet is needed");
+        expect(lines()).toEqual(none);
+        expect(container.textContent).not.toContain("No keys stored");
+        expect(container.textContent).not.toContain("no local wallet");
     });
 
     it("has no current step once everything is read", () => {

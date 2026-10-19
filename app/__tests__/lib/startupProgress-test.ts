@@ -38,48 +38,31 @@ describe("the local data steps", () => {
 });
 
 describe("describeLocalStep", () => {
-    it("names a locale string for every line, and every one exists", () => {
-        const cases: Array<[any, any]> = [
-            ["settings", {state: "done"}],
-            ["database", {state: "done"}],
-            ["keys", {state: "done", count: 0}],
-            ["keys", {state: "done", count: 4}],
-            ["wallet", {state: "done", count: 1, name: "default"}],
-            ["wallet", {state: "done", count: 3, name: "default"}],
-            ["wallet", {state: "none"}],
-            ["wallet", {state: "none", password: true}],
-            ["accounts", {state: "done", count: 0}],
-            ["accounts", {state: "done", count: 2}],
-            ["accounts", {state: "done", count: 2, name: "johnr"}],
-            ["settings", {state: "failed"}],
-            ["keys", {state: "active"}]
-        ];
-        cases.forEach(([id, step]) => {
-            const {key} = describeLocalStep(id, step);
-            const entry = key.replace("app_init.local.", "");
-            expect((localeEn as any).app_init.local[entry]).toBeTruthy();
+    const IDS: any[] = ["database", "settings", "keys", "wallet", "accounts"];
+
+    it("keeps one line for a step whatever state it is in, and a line of its own for a failure", () => {
+        IDS.forEach(id => {
+            const lines = [
+                {state: "pending"},
+                {state: "active"},
+                {state: "done", count: 3, name: "x"},
+                {state: "none", password: true}
+            ].map(step => describeLocalStep(id, step as any).key);
+            expect(new Set(lines).size).toBe(1);
+            expect(lines[0]).toBe(`app_init.local.${id}`);
+            expect(describeLocalStep(id, {state: "failed"}).key).toBe(
+                `app_init.local.${id}_failed`
+            );
         });
     });
 
-    it("picks the line by what was found", () => {
-        expect(describeLocalStep("keys", {state: "done", count: 0}).key).toBe(
-            "app_init.local.keys_none"
-        );
-        expect(describeLocalStep("keys", {state: "done", count: 2}).key).toBe(
-            "app_init.local.keys_some"
-        );
-        expect(
-            describeLocalStep("wallet", {state: "none", password: true}).key
-        ).toBe("app_init.local.wallet_password");
-        expect(describeLocalStep("wallet", {state: "done", count: 2}).key).toBe(
-            "app_init.local.wallet_several"
-        );
-        expect(
-            describeLocalStep("accounts", {
-                state: "done",
-                count: 2,
-                name: "johnr"
-            }).key
-        ).toBe("app_init.local.accounts_last");
+    it("has a locale string for every line", () => {
+        IDS.forEach(id => {
+            const local = (localeEn as any).app_init.local;
+            expect(local[id]).toBeTruthy();
+            expect(local[`${id}_failed`]).toBeTruthy();
+            // no trailing dots: the line is not "in progress" words that stop being true
+            expect(local[id]).not.toMatch(/\.\.\.$/);
+        });
     });
 });
