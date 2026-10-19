@@ -1,0 +1,29 @@
+// The logo: round, never squeezed, never shrunk by a flex row.
+.logo {
+    display: inline-block;
+    flex: none;
+    box-sizing: border-box;
+    border-radius: 50%;
+    vertical-align: middle;
+    object-fit: cover;
+}
+
+// no file for the asset: its letter in a circle, tokens only
+.letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    background: var(--raised);
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    line-height: 1;
+    object-fit: initial;
+}
+
+// next to a name in running text or a table cell: on the line, a gap after it
+.inline {
+    margin-right: 6px;
+    vertical-align: -0.2em;
+}

@@ -30,6 +30,7 @@ import {
     describeError
 } from "./SametFundModals";
 import SametOverview from "./SametOverview";
+import AssetLogo from "../../Utility/AssetLogo";
 import styles from "./SametFundsPage.module.scss";
 
 const TypedLink = Link as React.ComponentType<any>;
@@ -240,9 +241,12 @@ export default function SametFundsPage() {
                 render: (_v, fund) => {
                     const info = assets[fund.asset_type];
                     return info ? (
-                        <TypedLink to={`/asset/${info.symbol}`}>
-                            {info.symbol}
-                        </TypedLink>
+                        <span className={styles.assetCell}>
+                            <AssetLogo symbol={info.symbol} size={18} />
+                            <TypedLink to={`/asset/${info.symbol}`}>
+                                {info.symbol}
+                            </TypedLink>
+                        </span>
                     ) : (
                         fund.asset_type
                     );

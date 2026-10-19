@@ -13128,6 +13128,27 @@ on an iPhone).
   Other callers of `getFinalPrice`/`convertValue` (withdraw modal, treemap, account
   utils) still ask strictly. An idle price is the last trade, not a quote: a dead
   market's last price can be far from what the holding would fetch.
+- **Asset logos** (taken over from the BitShares wallet browser extension, 83 new
+  files in `app/assets/asset-symbols/`: the XBTSX gateway coins, IOB.*, EVRAZ, BEOS,
+  TWENTIX; three files that were in the folder but never required are now shipped):
+  `lib/common/assetLogo.ts` picks the file (exact symbol, a bitAsset's coin, the coin
+  behind a gateway prefix such as HONEST.ETH) and `Utility/AssetLogo` draws it, or the
+  coin's first letter in a circle where a list wants alignment. `AssetName` shows the
+  logo before the name wherever the asset has one (`logo="none"` to opt out, `"letter"` to
+  always draw one); the asset selects, the Portfolio, the Dashboard holdings, the market
+  lists and the header, the overviews and the SameT table carry it. A test keeps
+  `assetLogoNames.ts`, the folder and `symbols.js` in step.
+- **Send / asset selects**: the shared `AssetSelect` was given the chosen asset as its
+  symbol while its options are the assets' ids, and this Select shows its placeholder
+  for an unmatched value (antd showed the value as it was), so the amount and the fee
+  asset read "Select asset". It now resolves a symbol to the option's id.
+- **Market page top and settings**: one card (pair with logos, the swap/alert/favourite
+  actions, latest price, 24 h change chip, volume, feed/settle prices, the settings
+  button), the legacy `hide-order-*` rules no longer drop figures on a phone; the
+  Personalize dialog is sections with rows (label and tooltip help left, control right).
+- **Metadata**: the page title is "BitShares Desk" (it carried the package version with
+  its "-rc1"), the head has a description, theme colour and Open Graph tags, and
+  package.json has its own name, version and description.
 - Harness: `smoke-boot.py` takes `--ls KEY=JSON` (localStorage before the page loads),
   `--overlap`, and its `#Trigger=Option` step falls back to a case-insensitive match
   (asset names are split into styled spans).

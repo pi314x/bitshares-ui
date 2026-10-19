@@ -21,6 +21,8 @@ import {feeSpread} from "../../../lib/common/sametOverview";
 import {SametFund, formatFeeRate} from "../../../lib/common/sametFunds";
 import {formatUnitValue} from "../../../lib/common/unitValue";
 import {symbolOf} from "../CreditOffer/CreditOverview";
+import AssetLogo from "../../Utility/AssetLogo";
+import logoStyles from "../../Utility/AssetLogo.module.scss";
 import styles from "../OverviewCards.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -180,6 +182,16 @@ export default function SametOverview({
                                             aria-hidden="true"
                                         />
                                         <span className={styles.name}>
+                                            {s.key === OTHER ? null : (
+                                                <AssetLogo
+                                                    symbol={symbolOf(s.key)}
+                                                    size={16}
+                                                    className={
+                                                        logoStyles.inline
+                                                    }
+                                                    fallback="none"
+                                                />
+                                            )}
                                             {nameOf(s.key)}
                                         </span>
                                         <span className={styles.value}>

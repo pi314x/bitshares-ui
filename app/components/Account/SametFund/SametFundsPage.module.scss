@@ -172,3 +172,10 @@
     background: var(--accent-wash);
     color: var(--accent);
 }
+
+// the asset's logo, then its symbol
+.assetCell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

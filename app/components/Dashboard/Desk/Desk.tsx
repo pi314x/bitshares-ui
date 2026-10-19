@@ -15,6 +15,7 @@ import {RecentTransactions} from "../../Account/RecentTransactions";
 import {CurrentAccountBalanceChart} from "../../Account/BalanceHistoryChart";
 import {AttentionItem, HoldingRow} from "../../../lib/common/desk";
 import {DeskData, DeskPosition, useDeskData} from "./useDeskData";
+import AssetLogo from "../../Utility/AssetLogo";
 import styles from "./Desk.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
@@ -364,9 +365,12 @@ function Holdings({
                     {rows.map(row => (
                         <tr key={row.assetId}>
                             <td className={styles.asset}>
-                                <TypedLink to={`/asset/${row.symbol}`}>
-                                    {row.symbol}
-                                </TypedLink>
+                                <span className={styles.assetCell}>
+                                    <AssetLogo symbol={row.symbol} size={20} />
+                                    <TypedLink to={`/asset/${row.symbol}`}>
+                                        {row.symbol}
+                                    </TypedLink>
+                                </span>
                             </td>
                             <td className={styles.num}>
                                 {fmt(row.amount, amountDigits(row.amount))}

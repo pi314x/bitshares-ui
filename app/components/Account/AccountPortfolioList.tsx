@@ -729,7 +729,10 @@ function AccountPortfolioListCore({
                 render: (item: any) => {
                     return (
                         <span style={{whiteSpace: "nowrap"}}>
-                            <LinkToAssetById asset={item.get("id")} />
+                            <LinkToAssetById
+                                asset={item.get("id")}
+                                logo="letter"
+                            />
                         </span>
                     );
                 }

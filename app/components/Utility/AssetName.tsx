@@ -35,6 +35,8 @@ import GatewayStore from "../../stores/GatewayStore";
 import {getAssetAndGateway} from "../../lib/common/gatewayUtils";
 import {Icon} from "../../design-system/Icon";
 import {Tooltip} from "../../design-system/Tooltip";
+import AssetLogo from "./AssetLogo";
+import logoStyles from "./AssetLogo.module.scss";
 
 interface AssetNameCoreProps {
     replace?: boolean;
@@ -232,10 +234,21 @@ const WrappedAssetName = AssetWrapper(AssetName);
 
 interface AssetNameWrapperProps {
     name?: string | null;
+    /**
+     * The asset's logo before its name: "auto" (default) when it has one,
+     * "letter" always (its first letter in a circle when it has none), "none".
+     */
+    logo?: "auto" | "letter" | "none";
+    logoSize?: number;
     [key: string]: any;
 }
 
-function AssetNameWrapper({name, ...rest}: AssetNameWrapperProps) {
+function AssetNameWrapper({
+    name,
+    logo = "auto",
+    logoSize = 16,
+    ...rest
+}: AssetNameWrapperProps) {
     const gatewaySplit = getAssetAndGateway(name);
     let postfix;
     if (!!gatewaySplit && !!gatewaySplit.selectedGateway) {
@@ -295,6 +308,14 @@ function AssetNameWrapper({name, ...rest}: AssetNameWrapperProps) {
     }
     return !name ? null : (
         <React.Fragment>
+            {logo === "none" ? null : (
+                <AssetLogo
+                    symbol={name}
+                    size={logoSize}
+                    className={logoStyles.inline}
+                    fallback={logo === "letter" ? "letter" : "none"}
+                />
+            )}
             <WrappedAssetName {...rest} asset={name} />
             {postfix}
             {warning}

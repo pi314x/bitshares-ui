@@ -1,0 +1,88 @@
+// The market page's settings: sections with a small title, and under each a list
+// of rows - what the setting is on the left (its help in the tooltip), its
+// control on the right, a rule between rows. The rows are the legacy grid markup
+// (`.grid-block` with two `.small-6` columns), laid out here.
+.settings {
+    min-width: 0;
+}
+
+body[class][class] .settings header {
+    display: block;
+    margin: 22px 0 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+body[class][class] .settings header:first-child {
+    margin-top: 0;
+}
+
+body[class][class] .settings :global(.grid-block) {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 48px;
+    margin: 0;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line-soft);
+    overflow: visible;
+}
+
+body[class][class] .settings :global(.small-6) {
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+// the label takes the room, the control is as wide as it needs
+body[class][class] .settings :global(.small-6):first-child {
+    flex: 1 1 auto;
+}
+
+body[class][class] .settings :global(.small-6):last-child {
+    display: flex;
+    flex: 0 0 200px;
+    justify-content: flex-end;
+}
+
+body[class][class] .settings :global(.small-6):last-child > * {
+    margin: 0;
+}
+
+// (the labels carry an inline margin from the legacy markup)
+body[class][class] .settings h6 {
+    margin: 0 !important;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.35;
+    text-align: left;
+    text-transform: none;
+}
+
+body[class][class] .settings h6 :global(.anticon),
+body[class][class] .settings h6 svg {
+    color: var(--faint);
+    font-size: 13px;
+}
+
+@media (max-width: 560px) {
+    body[class][class] .settings :global(.small-6):last-child {
+        flex-basis: 150px;
+    }
+}

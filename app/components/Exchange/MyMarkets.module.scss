@@ -140,6 +140,12 @@ body[class][class] .list {
         padding-right: 6px;
     }
 
+    // the volume is in the market's header; the side panel keeps what fits
+    &:not(.flush) thead th:nth-child(3),
+    &:not(.flush) tbody td:nth-child(3) {
+        display: none;
+    }
+
     &:not(.flush) tbody td:global(.text-right) {
         font-size: 12px;
     }
@@ -173,4 +179,11 @@ body[class][class] .list {
     tbody tr:hover td {
         background: var(--hover);
     }
+}
+
+// the market's asset: its logo, then its name
+.marketName {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }

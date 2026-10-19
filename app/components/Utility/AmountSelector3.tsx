@@ -1,6 +1,7 @@
 // TypeScript/functional-component port of the legacy AmountSelector3.jsx
 // (Phase 8, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
 import * as React from "react";
+import {assetLogoName} from "../../lib/common/assetLogo";
 import Translate from "react-translate-component";
 import {Tooltip} from "../../design-system/Tooltip";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
@@ -47,7 +48,10 @@ function AmountSelector3({
         setImageError(true);
     };
 
-    const imgName = imageError ? "unknown" : imgNameProp;
+    // the logo the app has for this asset (a gateway coin wears the coin's)
+    const imgName = imageError
+        ? "unknown"
+        : assetLogoName(imgNameProp) || "unknown";
 
     const image = (
         <img

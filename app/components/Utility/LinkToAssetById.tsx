@@ -20,11 +20,12 @@ const LinkComponent = Link as React.ComponentType<any>;
 interface LinkToAssetByIdProps {
     asset: any;
     noLink?: boolean;
+    logo?: "auto" | "letter" | "none";
 }
 
-function LinkToAssetById({asset, noLink}: LinkToAssetByIdProps) {
+function LinkToAssetById({asset, noLink, logo}: LinkToAssetByIdProps) {
     const symbol = asset.get("symbol");
-    const assetName = <AssetName name={symbol} noTip />;
+    const assetName = <AssetName name={symbol} noTip logo={logo} />;
     return noLink ? (
         assetName
     ) : (

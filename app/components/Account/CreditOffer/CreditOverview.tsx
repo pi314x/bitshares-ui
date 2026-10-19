@@ -24,6 +24,8 @@ import {
     weightedAverage
 } from "../../../lib/common/creditOverview";
 import {formatUnitValue} from "../../../lib/common/unitValue";
+import AssetLogo from "../../Utility/AssetLogo";
+import logoStyles from "../../Utility/AssetLogo.module.scss";
 import styles from "../OverviewCards.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -190,6 +192,16 @@ export default function CreditOverview({
                                             aria-hidden="true"
                                         />
                                         <span className={styles.name}>
+                                            {s.key === OTHER ? null : (
+                                                <AssetLogo
+                                                    symbol={symbolOf(s.key)}
+                                                    size={16}
+                                                    className={
+                                                        logoStyles.inline
+                                                    }
+                                                    fallback="none"
+                                                />
+                                            )}
                                             {s.key === OTHER
                                                 ? t("other")
                                                 : symbolOf(s.key)}
@@ -215,6 +227,12 @@ export default function CreditOverview({
                         {accepted.map(a => (
                             <li key={a.key} className={styles.acceptRow}>
                                 <span className={styles.name}>
+                                    <AssetLogo
+                                        symbol={symbolOf(a.key)}
+                                        size={16}
+                                        className={logoStyles.inline}
+                                        fallback="none"
+                                    />
                                     {symbolOf(a.key)}
                                 </span>
                                 <span

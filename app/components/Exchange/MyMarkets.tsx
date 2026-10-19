@@ -137,6 +137,7 @@ import debounceRender from "react-debounce-render";
 import {getPossibleGatewayPrefixes, gatewayPrefixes} from "common/gateways";
 import QuoteSelectionModal from "./QuoteSelectionModal";
 import {SubMenu} from "../../design-system/SubMenu";
+import AssetLogo from "../Utility/AssetLogo";
 import styles from "./MyMarkets.module.scss";
 import SearchInputUntyped from "../Utility/SearchInput";
 
@@ -342,7 +343,14 @@ function MarketGroupInner(props: MarketGroupProps) {
                                 <AssetName name={market.base} />
                             </span>
                         ) : (
-                            <AssetName dataPlace="left" name={market.quote} />
+                            <span className={styles.marketName}>
+                                <AssetLogo symbol={market.quote} size={18} />
+                                <AssetName
+                                    dataPlace="left"
+                                    name={market.quote}
+                                    logo="none"
+                                />
+                            </span>
                         )
                     }
                     quote={market.quote}

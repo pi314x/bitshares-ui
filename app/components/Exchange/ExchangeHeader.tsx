@@ -48,6 +48,8 @@ import {ChainStore} from "bitsharesjs";
 import ExchangeHeaderCollateral from "./ExchangeHeaderCollateral";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import {Asset, Price} from "common/MarketClasses";
+import AssetLogo from "../Utility/AssetLogo";
+import styles from "./ExchangeHeader.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
@@ -91,8 +93,7 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
         onToggleMarketPicker,
         onTogglePersonalize,
         hasAnyPriceAlert,
-        showPriceAlertModal,
-        tinyScreen
+        showPriceAlertModal
     } = props;
 
     const [volumeShowQuote, setVolumeShowQuote] = React.useState(true);
@@ -261,18 +262,49 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
         : "";
 
     return (
-        <div className="grid-block shrink no-padding overflow-visible top-bar">
-            <div className="grid-block overflow-visible">
-                <div className="grid-block shrink">
-                    <div style={{padding: "10px"}}>
-                        {!hasPrediction ? (
-                            <div
-                                style={{
-                                    padding: "0 5px",
-                                    fontSize: tinyScreen ? "13px" : "18px",
-                                    marginTop: "1px"
-                                }}
-                            >
+        <div className={styles.header}>
+            <div className={styles.pair}>
+                {!hasPrediction ? (
+                    <>
+                        <span className={styles.logos}>
+                            <AssetLogo symbol={quoteSymbol} size={34} />
+                            <AssetLogo
+                                symbol={baseSymbol}
+                                size={34}
+                                className={styles.second}
+                            />
+                        </span>
+                        <div className={styles.names}>
+                            <div className={styles.title}>
+                                <span
+                                    onClick={() => marketPicker(quoteSymbol)}
+                                    className={`${styles.asset} ${
+                                        isQuoteSelected ? styles.selected : ""
+                                    }`}
+                                >
+                                    <AssetName
+                                        name={quoteSymbol}
+                                        replace={true}
+                                        noTip
+                                        logo="none"
+                                    />
+                                </span>
+                                <span className={styles.slash}>/</span>
+                                <span
+                                    onClick={() => marketPicker(baseSymbol)}
+                                    className={`${styles.asset} ${
+                                        isBaseSelected ? styles.selected : ""
+                                    }`}
+                                >
+                                    <AssetName
+                                        name={baseSymbol}
+                                        replace={true}
+                                        noTip
+                                        logo="none"
+                                    />
+                                </span>
+                            </div>
+                            <div className={styles.actions}>
                                 <AntIcon
                                     onClick={showPriceAlertModal}
                                     type={"bell"}
@@ -281,236 +313,167 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                                         "walkthrough.price_alerts"
                                     )}
                                 />
-                                <span
-                                    onClick={() => marketPicker(quoteSymbol)}
-                                    className="underline"
-                                    style={{
-                                        cursor: "pointer",
-                                        color: isQuoteSelected ? "#2196f3" : ""
+                                <TypedLink
+                                    onClick={() => {
+                                        (MarketsActions as any).switchMarket();
                                     }}
+                                    to={`/market/${baseSymbol}_${quoteSymbol}`}
+                                    data-intro={(translator as any).translate(
+                                        "walkthrough.switch_button"
+                                    )}
                                 >
-                                    <AssetName
-                                        name={quoteSymbol}
-                                        replace={true}
-                                        noTip
+                                    <Icon
+                                        className="shuffle"
+                                        name="shuffle"
+                                        title="icons.shuffle"
                                     />
-                                </span>
-                                <span style={{padding: "0 5px"}}>/</span>
-                                <span
-                                    onClick={() => marketPicker(baseSymbol)}
-                                    className="underline"
-                                    style={{
-                                        cursor: "pointer",
-                                        color: isBaseSelected ? "#2196f3" : ""
+                                </TypedLink>
+                                <a
+                                    onClick={() => {
+                                        addMarket(
+                                            quoteAsset.get("symbol"),
+                                            baseAsset.get("symbol")
+                                        );
                                     }}
+                                    data-intro={(translator as any).translate(
+                                        "walkthrough.favourite_button"
+                                    )}
                                 >
-                                    <AssetName
-                                        name={baseSymbol}
-                                        replace={true}
-                                        noTip
+                                    <Icon
+                                        className={starClass}
+                                        name="fi-star"
+                                        title="icons.fi_star.market"
                                     />
-                                </span>
+                                </a>
                             </div>
-                        ) : (
-                            <a className="market-symbol">
-                                <span>{`${quoteSymbol} : ${baseSymbol}`}</span>
-                            </a>
-                        )}
-                        <div
-                            className="label-actions"
-                            style={{padding: "5px 0 0 5px"}}
-                        >
-                            <Translate
-                                component="span"
-                                className="stat-text"
-                                content="exchange.trading_pair"
-                            />
-                            <TypedLink
-                                onClick={() => {
-                                    (MarketsActions as any).switchMarket();
-                                }}
-                                to={`/market/${baseSymbol}_${quoteSymbol}`}
-                                data-intro={(translator as any).translate(
-                                    "walkthrough.switch_button"
-                                )}
-                            >
-                                <Icon
-                                    className="shuffle"
-                                    name="shuffle"
-                                    title="icons.shuffle"
-                                />
-                            </TypedLink>
-
-                            <a
-                                onClick={() => {
-                                    addMarket(
-                                        quoteAsset.get("symbol"),
-                                        baseAsset.get("symbol")
-                                    );
-                                }}
-                                data-intro={(translator as any).translate(
-                                    "walkthrough.favourite_button"
-                                )}
-                            >
-                                <Icon
-                                    className={starClass}
-                                    name="fi-star"
-                                    title="icons.fi_star.market"
-                                />
-                            </a>
                         </div>
-                    </div>
-                </div>
-
-                <div
-                    className="grid-block vertical"
-                    style={{overflow: "visible"}}
-                >
-                    <div className="grid-block wrap market-stats-container">
-                        <ul className="market-stats stats top-stats">
-                            {latestPrice ? (
-                                <PriceStatWithLabel
-                                    ignoreColorChange={true}
-                                    ready={marketReady}
-                                    price={latestPrice}
-                                    quote={quoteAsset}
-                                    base={baseAsset}
-                                    market={marketID}
-                                    content="exchange.latest"
-                                />
-                            ) : null}
-
-                            <li
-                                className={
-                                    "hide-order-1 stressed-stat daily_change " +
-                                    dayChangeClass
-                                }
-                            >
-                                <span>
-                                    <b className="value">
-                                        {dayChangeWithSign
-                                            ? marketReady
-                                                ? dayChangeWithSign
-                                                : 0
-                                            : "-"}
-                                    </b>
-                                    {dayChangeWithSign && <span> %</span>}
-                                </span>
-                                <Translate
-                                    component="div"
-                                    className="stat-text"
-                                    content="account.hour_24"
-                                />
-                            </li>
-
-                            {volumeBase >= 0 ? (
-                                <PriceStatWithLabel
-                                    ignoreColorChange={true}
-                                    onClick={changeVolumeBase}
-                                    ready={marketReady}
-                                    volume={true}
-                                    price={volume24h}
-                                    className="hide-order-2 clickable"
-                                    base={volume24hAsset}
-                                    market={marketID}
-                                    content="exchange.volume_24"
-                                />
-                            ) : null}
-                            {!hasPrediction && feedPrice ? (
-                                <PriceStatWithLabel
-                                    ignoreColorChange={true}
-                                    toolTip={counterpart.translate(
-                                        "tooltip.feed_price"
-                                    )}
-                                    ready={marketReady}
-                                    className="hide-order-3"
-                                    price={feedPrice.toReal()}
-                                    quote={quoteAsset}
-                                    base={baseAsset}
-                                    market={marketID}
-                                    content="exchange.feed_price"
-                                />
-                            ) : null}
-                            {!hasPrediction && settlePrice ? (
-                                <PriceStatWithLabel
-                                    ignoreColorChange={true}
-                                    toolTip={counterpart.translate(
-                                        settlePriceTooltip
-                                    )}
-                                    ready={marketReady}
-                                    className="hide-order-4"
-                                    price={settlePrice}
-                                    quote={quoteAsset}
-                                    base={baseAsset}
-                                    market={marketID}
-                                    content={settlePriceTitle}
-                                />
-                            ) : null}
-                            {showCollateralRatio ? (
-                                <ExchangeHeaderCollateral
-                                    object={collOrderObject}
-                                    account={account}
-                                    className="hide-order-1"
-                                />
-                            ) : null}
-                            {lowestCallPrice && showCallLimit ? (
-                                <PriceStatWithLabel
-                                    toolTip={counterpart.translate(
-                                        "tooltip.call_limit"
-                                    )}
-                                    ready={marketReady}
-                                    className="hide-order-5 is-call"
-                                    price={lowestCallPrice}
-                                    quote={quoteAsset}
-                                    base={baseAsset}
-                                    market={marketID}
-                                    content="explorer.block.call_limit"
-                                />
-                            ) : null}
-
-                            {feedPrice && showCallLimit ? (
-                                <PriceStatWithLabel
-                                    toolTip={counterpart.translate(
-                                        "tooltip.margin_price"
-                                    )}
-                                    ready={marketReady}
-                                    className="hide-order-6 is-call"
-                                    price={feedPrice.getSqueezePrice({
-                                        real: true
-                                    })}
-                                    quote={quoteAsset}
-                                    base={baseAsset}
-                                    market={marketID}
-                                    content="exchange.squeeze"
-                                />
-                            ) : null}
-                        </ul>
-                        <ul
-                            className="market-stats stats top-stats"
-                            data-position={"left"}
-                            data-step="1"
-                            data-intro={(translator as any).translate(
-                                "walkthrough.personalize"
-                            )}
-                        >
-                            <li
-                                className="stressed-stat input clickable"
-                                style={{padding: "16px 16px 16px 0px"}}
-                                onClick={onTogglePersonalize}
-                            >
-                                <AntIcon
-                                    type="setting"
-                                    style={{paddingRight: 5}}
-                                />
-                                <Translate
-                                    className="hide-order-2"
-                                    content="exchange.settings.header.title"
-                                />
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                    </>
+                ) : (
+                    <a className="market-symbol">
+                        <span>{`${quoteSymbol} : ${baseSymbol}`}</span>
+                    </a>
+                )}
             </div>
+
+            <ul className={styles.stats}>
+                {latestPrice ? (
+                    <PriceStatWithLabel
+                        ignoreColorChange={true}
+                        ready={marketReady}
+                        price={latestPrice}
+                        quote={quoteAsset}
+                        base={baseAsset}
+                        market={marketID}
+                        content="exchange.latest"
+                    />
+                ) : null}
+
+                <li className={"stressed-stat daily_change " + dayChangeClass}>
+                    <span>
+                        <b className="value">
+                            {dayChangeWithSign
+                                ? marketReady
+                                    ? dayChangeWithSign
+                                    : 0
+                                : "-"}
+                        </b>
+                        {dayChangeWithSign && <span> %</span>}
+                    </span>
+                    <Translate
+                        component="div"
+                        className="stat-text"
+                        content="account.hour_24"
+                    />
+                </li>
+
+                {volumeBase >= 0 ? (
+                    <PriceStatWithLabel
+                        ignoreColorChange={true}
+                        onClick={changeVolumeBase}
+                        ready={marketReady}
+                        volume={true}
+                        price={volume24h}
+                        className="clickable"
+                        base={volume24hAsset}
+                        market={marketID}
+                        content="exchange.volume_24"
+                    />
+                ) : null}
+                {!hasPrediction && feedPrice ? (
+                    <PriceStatWithLabel
+                        ignoreColorChange={true}
+                        toolTip={counterpart.translate("tooltip.feed_price")}
+                        ready={marketReady}
+                        price={feedPrice.toReal()}
+                        quote={quoteAsset}
+                        base={baseAsset}
+                        market={marketID}
+                        content="exchange.feed_price"
+                    />
+                ) : null}
+                {!hasPrediction && settlePrice ? (
+                    <PriceStatWithLabel
+                        ignoreColorChange={true}
+                        toolTip={counterpart.translate(settlePriceTooltip)}
+                        ready={marketReady}
+                        price={settlePrice}
+                        quote={quoteAsset}
+                        base={baseAsset}
+                        market={marketID}
+                        content={settlePriceTitle}
+                    />
+                ) : null}
+                {showCollateralRatio ? (
+                    <ExchangeHeaderCollateral
+                        object={collOrderObject}
+                        account={account}
+                    />
+                ) : null}
+                {lowestCallPrice && showCallLimit ? (
+                    <PriceStatWithLabel
+                        toolTip={counterpart.translate("tooltip.call_limit")}
+                        ready={marketReady}
+                        className="is-call"
+                        price={lowestCallPrice}
+                        quote={quoteAsset}
+                        base={baseAsset}
+                        market={marketID}
+                        content="explorer.block.call_limit"
+                    />
+                ) : null}
+
+                {feedPrice && showCallLimit ? (
+                    <PriceStatWithLabel
+                        toolTip={counterpart.translate("tooltip.margin_price")}
+                        ready={marketReady}
+                        className="is-call"
+                        price={feedPrice.getSqueezePrice({
+                            real: true
+                        })}
+                        quote={quoteAsset}
+                        base={baseAsset}
+                        market={marketID}
+                        content="exchange.squeeze"
+                    />
+                ) : null}
+            </ul>
+
+            <button
+                type="button"
+                className={styles.settings}
+                onClick={onTogglePersonalize}
+                data-position={"left"}
+                data-step="1"
+                data-intro={(translator as any).translate(
+                    "walkthrough.personalize"
+                )}
+            >
+                <AntIcon type="setting" />
+                <Translate
+                    className={styles.settingsLabel}
+                    content="exchange.settings.header.title"
+                />
+            </button>
         </div>
     );
 }

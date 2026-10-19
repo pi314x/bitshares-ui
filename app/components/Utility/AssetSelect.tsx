@@ -59,6 +59,20 @@ const AssetSelectView = ({
 }: AssetSelectViewProps) => {
     const disableSelect =
         assets.filter(Map.isMap).length <= 1 && !onDropdownVisibleChange;
+    // The options are the assets' ids. Callers pass the chosen asset as its
+    // symbol as well (antd showed an unmatched value as it was; this Select
+    // shows the placeholder, so the chosen asset read "Select asset").
+    const known = assets.filter(Map.isMap);
+    const selectedValue =
+        value === undefined || value === null
+            ? value
+            : known.some((a: any) => a.get("id") === value)
+            ? value
+            : (
+                  known.find((a: any) => a.get("symbol") === value) || {
+                      get: () => value
+                  }
+              ).get("id");
     // if onDropdownVisibleChange given we assume that lazy loading takes place
     const select = (
         <Select
@@ -71,7 +85,7 @@ const AssetSelectView = ({
                     content={placeholder || "utility.asset_select_placeholder"}
                 />
             }
-            value={value}
+            value={selectedValue}
             {...props}
             filterOption={(input: string, option: any) =>
                 option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -82,12 +96,21 @@ const AssetSelectView = ({
             {assets.filter(Map.isMap).map((asset: any) => {
                 const {name: replacedName, prefix} = utils.replaceName(asset);
 
+                const label = (
+                    <AssetName
+                        noTip
+                        name={asset.get("symbol")}
+                        logo="letter"
+                        logoSize={18}
+                    />
+                );
                 return (
                     <Select.Option
                         key={`${prefix || ""}${replacedName}`}
                         value={asset.get("id")}
+                        triggerLabel={label}
                     >
-                        <AssetName noTip name={asset.get("symbol")} />
+                        {label}
                     </Select.Option>
                 );
             })}

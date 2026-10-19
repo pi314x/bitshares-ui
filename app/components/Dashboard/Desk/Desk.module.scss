@@ -232,6 +232,13 @@
     color: var(--ink);
 }
 
+// the logo and the symbol on one line
+.assetCell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .shareBar {
     display: inline-block;
     width: 56px;

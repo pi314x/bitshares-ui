@@ -97,7 +97,9 @@ module.exports = function(env) {
         new HtmlWebpackPlugin({
             template: "!!handlebars-loader!app/assets/index.hbs",
             templateParameters: {
-                title: "BitShares Desk " + __VERSION__,
+                title: "BitShares Desk",
+                description:
+                    "BitShares Desk: balances, trading, liquidity pools, lending and more on the BitShares blockchain.",
                 INCLUDE_BASE: !!env.prod && !env.hash,
                 PRODUCTION: !!env.prod,
                 ELECTRON: !!env.electron
