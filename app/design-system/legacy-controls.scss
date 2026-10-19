@@ -240,8 +240,11 @@ body[class][class] {
 
     // ---- Date and time fields -------------------------------------------
     // A native date / time input on iOS Safari has a width of its own (it ran
-    // out of the card to the right), centres its text and is as high as its
-    // content (nothing when empty). Same box as the other fields, text at the left.
+    // out of the card to the right), centres its text but sits at the top of
+    // the field, and is as high as its content (nothing when empty). Same box as
+    // the other fields; a flex box that puts the value in the middle of its height
+    // and of its width, on every browser. The calendar button of Chrome stays at the
+    // right edge.
     input[type="date"],
     input[type="datetime-local"],
     input[type="time"],
@@ -249,25 +252,36 @@ body[class][class] {
     input[type="week"] {
         -webkit-appearance: none;
         appearance: none;
-        display: block;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 100%;
         min-width: 0;
         max-width: 100%;
         line-height: 1.3;
-        text-align: left;
+        text-align: center;
 
         &::-webkit-date-and-time-value {
+            flex: 1 1 auto;
             min-height: 1.3em;
             margin: 0;
-            text-align: left;
+            text-align: center;
         }
 
         &::-webkit-datetime-edit {
+            flex: 1 1 auto;
             padding: 0;
+            text-align: center;
         }
 
+        // out of the flow, so the value is in the middle of the whole field
         &::-webkit-calendar-picker-indicator {
-            margin-left: 8px;
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            margin: 0;
+            transform: translateY(-50%);
             cursor: pointer;
         }
     }

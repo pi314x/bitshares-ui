@@ -5,10 +5,14 @@
 .input {
     -webkit-appearance: none;
     appearance: none;
-    display: block;
+    // a flex box: the value is in the middle of the field's height and width
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 0;
     max-width: 100%;
-    text-align: left;
+    text-align: center;
     font: inherit;
     font-size: 14px;
     width: 100%;
@@ -42,9 +46,25 @@
     cursor: pointer;
 }
 
-// iOS Safari centres the value and gives it no height of its own
+// iOS Safari gives the value no height of its own; it is in the middle of the field
 .input::-webkit-date-and-time-value {
+    flex: 1 1 auto;
     min-height: 1.3em;
     margin: 0;
-    text-align: left;
+    text-align: center;
+}
+
+.input::-webkit-datetime-edit {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+// out of the flow, so the value is in the middle of the whole field
+.input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    margin: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
 }
