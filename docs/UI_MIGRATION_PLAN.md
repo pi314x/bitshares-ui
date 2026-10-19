@@ -13290,6 +13290,33 @@ on an iPhone).
 - **Browser notifications warning** (`SettingsEntry.tsx`): "Your browser has blocked
   notifications. Click to learn how to enable them." was small red text; it is a warning box
   that is itself the link. The goo.gl address (a redirect to a search) is the search itself.
+- **Balance chart: the whole history, loaded in the background, kept on this device**
+  (`lib/common/balanceHistoryStore.ts`, `balanceHistoryCache.ts`, `lib/chain/balanceHistoryLoader.ts`,
+  `next/hooks/useBalanceHistory.ts`): the chart read five pages (500 operations) and then waited
+  for a "Load older" click. A store outside the screen now loads the newest page first (the
+  chart draws at once), then page after page back to the account's first operation (older pages
+  from the other public nodes where the connected one keeps no more), up to 30,000 operations
+  (said in the footer). It is shared by the Dashboard and the Portfolio, so going from one to the
+  other does not start again, and saved in IndexedDB (`bts_desk_cache`, public chain data, removed
+  by "delete local data"): the next visit shows the saved history at once and only asks for the
+  operations since. While older history arrives the view stays on the most recent data (the
+  default "All" does not zoom out with every page; one glide when the load is done, or at once when
+  a period is chosen: `rangeGlide.targetSpan`). No "Load older" button; "Try again" after an error.
+  Checked over a real WebSocket: 100 operations in 3 s, 400 within 10 s, a reload showed the 400
+  from the saved copy. (The smoke relay queues every call, so it cannot show this.)
+- **Pools filters are drop-downs** (`Poolmart/PoolAssetSelect.tsx`, `lib/chain/poolAssets.ts`):
+  Asset, Paired with and Share Asset list every asset that is in a pool (all of the chain's pools,
+  fetched once per session), each with its logo, searched while typing; "Paired with" offers only
+  the partners of the chosen asset. The Select focuses its search box once the list is open (it
+  did not, so typing went nowhere). "Created by me" has the same filters over the account's own pools
+  (the typed fields there did nothing).
+- **Created by me shows only the account's own pools**: the list in the store is shared with the
+  page of all pools, and an empty answer for an account without pools (`get_liquidity_pools_by_owner`)
+  returned early, leaving all 117 pools on screen. An empty answer now empties the list, the view
+  starts from an empty list, and a pool counts only when the account issues its share asset.
+- **No zoom on a touch screen**: iOS Safari zooms into a field whose text is under 16px when it is
+  focused (the drop-down's search box), and stays zoomed. Every text field, select and textarea is
+  16px under `(hover: none) and (pointer: coarse)` (`legacy-controls.scss`).
 - **CI for the container image** (`.github/workflows/docker.yml`, `scripts/check-container.sh`):
   on a pull request that touches the app, the Dockerfile or the nginx files, and on `develop`,
   the image is built (nothing is pushed) and the script checks what it serves: `nginx -t` for

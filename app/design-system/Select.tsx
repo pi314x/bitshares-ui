@@ -215,9 +215,12 @@ function SelectBase({
         };
     }, [open]);
 
+    // The search box is there once the list has a place (`box`), a render after `open`:
+    // focus it then, so what is typed goes into it.
+    const listPlaced = box !== null;
     React.useEffect(() => {
-        if (open && showSearch) searchRef.current?.focus();
-    }, [open, showSearch]);
+        if (open && showSearch && listPlaced) searchRef.current?.focus();
+    }, [open, showSearch, listPlaced]);
 
     const options = collectOptions(children);
     const currentValue = value !== undefined ? value : uncontrolledValue;
