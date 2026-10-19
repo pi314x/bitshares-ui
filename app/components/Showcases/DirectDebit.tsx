@@ -117,6 +117,7 @@ import DirectDebitClaimModal from "../Modal/DirectDebitClaimModal";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import ApplicationApi from "../../api/ApplicationApi";
 import {bindToCurrentAccount, hasLoaded} from "../Utility/BindToCurrentAccount";
+import styles from "./Toolbar.module.scss";
 
 interface DirectDebitState {
     isModalVisible: boolean;
@@ -482,23 +483,16 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
         <div className="direct-debit-view">
             <Card className="direct-debit-table-card">
                 <Row>
-                    <Col span={24} style={{padding: "10px"}}>
+                    <Col span={24}>
                         {/* TABLE HEADER */}
-                        <div
-                            style={{
-                                marginBottom: "30px"
-                            }}
-                        >
+                        <div className={styles.toolbar}>
                             <Input
                                 className="direct-debit-table__filter-input"
                                 placeholder={counterpart.translate(
                                     "explorer.witnesses.filter_by_name"
                                 )}
                                 onChange={onFilter}
-                                style={{
-                                    width: "200px",
-                                    marginRight: "30px"
-                                }}
+                                style={{width: "200px"}}
                                 addonAfter={<Icon type="search" />}
                             />
                             <Button
@@ -506,9 +500,6 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
                                     type: "create",
                                     payload: null
                                 })}
-                                style={{
-                                    marginRight: "30px"
-                                }}
                             >
                                 {counterpart.translate(
                                     "showcases.direct_debit.create_new_mandate"

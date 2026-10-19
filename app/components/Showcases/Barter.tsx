@@ -256,7 +256,8 @@ function referenceErrorLikeOriginal(name: string): never {
 // hold a card each, which should take the row (the cards of Peer 1 and Peer 2
 // were two different widths on a phone).
 const FULL_ROW_COL: React.CSSProperties = {
-    padding: "10px",
+    // vertical room only: the card around it already pads the sides
+    padding: "10px 0",
     flex: "1 1 100%",
     minWidth: 0
 };
@@ -1132,11 +1133,11 @@ export default function Barter(props: BarterProps) {
         if (from) {
             fee = fee;
             from_barter.forEach(item => {
-                fee += item.from_feeAsset._real_amount;
+                fee += item.from_feeAsset._real_amount || 0;
             });
         } else {
             to_barter.forEach(item => {
-                fee += item.to_feeAsset._real_amount;
+                fee += item.to_feeAsset._real_amount || 0;
             });
         }
 
@@ -1597,7 +1598,7 @@ export default function Barter(props: BarterProps) {
                         content={"showcases.barter.total_fees"}
                         className="left-label"
                         component="label"
-                        fee={fee(true) + state.proposal_fee._real_amount}
+                        fee={fee(true) + (state.proposal_fee._real_amount || 0)}
                         asset={"BTS"}
                     />
                 </span>
@@ -1825,10 +1826,16 @@ export default function Barter(props: BarterProps) {
                             <Col style={FULL_ROW_COL}>{intro}</Col>
                         </Row>
                         <Row>
-                            <Col span={12} style={{padding: "10px"}}>
+                            <Col
+                                span={12}
+                                style={{padding: "10px 10px 10px 0"}}
+                            >
                                 {account_from}
                             </Col>
-                            <Col span={12} style={{padding: "10px"}}>
+                            <Col
+                                span={12}
+                                style={{padding: "10px 0 10px 10px"}}
+                            >
                                 {account_to}
                             </Col>
                         </Row>
@@ -1841,10 +1848,16 @@ export default function Barter(props: BarterProps) {
                             </Row>
                         )}
                         <Row>
-                            <Col span={12} style={{padding: "10px"}}>
+                            <Col
+                                span={12}
+                                style={{padding: "10px 10px 10px 0"}}
+                            >
                                 {totalFeeFrom}
                             </Col>
-                            <Col span={12} style={{padding: "10px"}}>
+                            <Col
+                                span={12}
+                                style={{padding: "10px 0 10px 10px"}}
+                            >
                                 {totalFeeTo}
                                 {feeForEscrow}
                             </Col>

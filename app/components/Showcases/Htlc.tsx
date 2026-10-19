@@ -88,6 +88,7 @@ import utils from "common/utils";
 import HtlcModal from "../Modal/HtlcModal";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import {bindToCurrentAccount} from "../Utility/BindToCurrentAccount";
+import styles from "./Toolbar.module.scss";
 
 interface HtlcState {
     isModalVisible: boolean;
@@ -358,23 +359,16 @@ function Htlc({currentAccount}: HtlcProps) {
         <div className="direct-debit-view">
             <Card className="direct-debit-table-card">
                 <Row>
-                    <Col span={24} style={{padding: "10px"}}>
+                    <Col span={24}>
                         {/* TABLE HEADER */}
-                        <div
-                            style={{
-                                marginBottom: "30px"
-                            }}
-                        >
+                        <div className={styles.toolbar}>
                             <Input
                                 className="direct-debit-table__filter-input"
                                 placeholder={counterpart.translate(
                                     "explorer.witnesses.filter_by_name"
                                 )}
                                 onChange={onFilter}
-                                style={{
-                                    width: "200px",
-                                    marginRight: "30px"
-                                }}
+                                style={{width: "200px"}}
                                 addonAfter={<Icon type="search" />}
                             />
                             <Button
@@ -382,9 +376,6 @@ function Htlc({currentAccount}: HtlcProps) {
                                     type: "create",
                                     payload: null
                                 })}
-                                style={{
-                                    marginRight: "30px"
-                                }}
                             >
                                 {counterpart.translate(
                                     "showcases.htlc.create_htlc"

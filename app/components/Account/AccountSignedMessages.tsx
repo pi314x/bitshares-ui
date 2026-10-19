@@ -291,7 +291,7 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
                     >
                         <Tab title="account.signedmessages.signmessage">
                             <div
-                                className="grid-content"
+                                className="grid-content no-padding"
                                 style={{overflowX: "hidden"}}
                             >
                                 <div className="content-block no-margin">
@@ -343,7 +343,7 @@ function AccountSignedMessages({account}: AccountSignedMessagesCoreProps) {
 
                         <Tab title="account.signedmessages.verifymessage">
                             <div
-                                className="grid-content"
+                                className="grid-content no-padding"
                                 style={{overflowX: "hidden"}}
                             >
                                 <div className="content-block no-margin">

@@ -1,0 +1,10 @@
+// The filter and the create button above a showcase table (HTLC, direct debit): one
+// wrapping row with a gap each way (they were inline with 30px right margins, and
+// touched each other as soon as the row wrapped).
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
