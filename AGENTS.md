@@ -195,6 +195,10 @@ gate at all.
   toolbar). A panel's own tabs that carry a figure beside the name (the portfolio's
   Balances / Open orders / Margin positions) are the same pill row. A strip with one tab
   shows no menu. See `docs/UI_MIGRATION_PLAN.md` §7.31.
+- The buttons of a form or card (Save / Reset / Remove, Submit / Cancel) go in
+  `design-system/ButtonRow`: one wrapping row with one gap. Never `marginLeft` on the second
+  button: when the row runs out of room the button wraps onto its own line with the margin and
+  stands indented (the Voting proxy card did). A dialog's `footer` already has the gap.
 - BigInt: never `**` (the build turns it into `Math.pow`); use
   `BigInt("1" + "0".repeat(n))` or a loop.
 - A legacy rule like `body[class][class] ...` or `.darkTheme .table > ...`

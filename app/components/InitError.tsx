@@ -48,6 +48,7 @@ import {Apis} from "bitsharesjs-ws";
 import {Form} from "../design-system/Form";
 import {Select} from "../design-system/Select";
 import {Button} from "../design-system/Button";
+import {ButtonRow} from "../design-system/ButtonRow";
 import {Input} from "../design-system/Input";
 import counterpart from "counterpart";
 import {useReduxState} from "../next/hooks/useReduxState";
@@ -191,12 +192,14 @@ export default function InitError() {
                             )}
                         </Form.Item>
 
-                        <Button variant="accent" onClick={onReloadClick}>
-                            {counterpart.translate(`app_init.retry`)}
-                        </Button>
-                        <Button style={{marginLeft: "16px"}} onClick={onReset}>
-                            {counterpart.translate(`settings.reset`)}
-                        </Button>
+                        <ButtonRow>
+                            <Button variant="accent" onClick={onReloadClick}>
+                                {counterpart.translate(`app_init.retry`)}
+                            </Button>
+                            <Button onClick={onReset}>
+                                {counterpart.translate(`settings.reset`)}
+                            </Button>
+                        </ButtonRow>
                     </Form>
 
                     <WebsocketAddModalAny

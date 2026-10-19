@@ -164,11 +164,7 @@ export default function JoinWitnessesModal({
                 <Button key="submit" variant="accent" onClick={onAddWitness}>
                     {counterpart.translate("modal.witness.confirm")}
                 </Button>,
-                <Button
-                    key="cancel"
-                    style={{marginLeft: "8px"}}
-                    onClick={hideModal}
-                >
+                <Button key="cancel" onClick={hideModal}>
                     {counterpart.translate("modal.cancel")}
                 </Button>
             ]}

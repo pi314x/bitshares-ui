@@ -596,14 +596,15 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                                 <div
                                     style={{
                                         marginTop: 16,
-                                        marginBottom: 16
+                                        marginBottom: 16,
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        alignItems: "center",
+                                        gap: 16
                                     }}
                                 >
                                     <Translate content="account.proposed_transactions.answered_no" />
-                                    <Button
-                                        style={{marginLeft: 16}}
-                                        onClick={showProposals}
-                                    >
+                                    <Button onClick={showProposals}>
                                         <Translate content="account.proposed_transactions.show_me_proposals" />
                                     </Button>
                                 </div>

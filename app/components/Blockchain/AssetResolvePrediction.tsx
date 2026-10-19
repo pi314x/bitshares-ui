@@ -37,6 +37,7 @@ import counterpart from "counterpart";
 import {Radio} from "../../design-system/Radio";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
 import {Form} from "../../design-system/Form";
 import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import {ChainStore} from "bitsharesjs";
@@ -202,7 +203,7 @@ function AssetResolvePredictionCore({
                         width: "100%"
                     }}
                 />
-                <div style={{paddingTop: "1rem"}} className="button-group">
+                <ButtonRow spaced>
                     <Button
                         variant="accent"
                         disabled={
@@ -214,10 +215,10 @@ function AssetResolvePredictionCore({
                     >
                         <Translate content="account.perm.publish_prediction" />
                     </Button>
-                    <Button style={{marginLeft: "8px"}} onClick={onReset}>
+                    <Button onClick={onReset}>
                         <Translate content="account.perm.reset" />
                     </Button>
-                </div>
+                </ButtonRow>
             </Form>
         </div>
     );

@@ -100,11 +100,7 @@ export default function JoinCommitteeModal({
                 <Button key="submit" variant="accent" onClick={onAddComittee}>
                     {counterpart.translate("modal.committee.confirm")}
                 </Button>,
-                <Button
-                    key="cancel"
-                    style={{marginLeft: "8px"}}
-                    onClick={onClose}
-                >
+                <Button key="cancel" onClick={onClose}>
                     {counterpart.translate("modal.cancel")}
                 </Button>
             ]}

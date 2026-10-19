@@ -71,6 +71,7 @@ import {Tabs, Tab} from "../Utility/Tabs";
 import HelpContent from "../Utility/HelpContent";
 import {RecentTransactions} from "./RecentTransactions";
 import {Notification} from "../../design-system/Notification";
+import {ButtonRow} from "../../design-system/ButtonRow";
 
 function permissionsFromImmutableObj(auths: any) {
     const threshold = auths.get("weight_threshold");
@@ -434,7 +435,7 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                         tabsClass="account-overview bordered-header content-block"
                         contentClass="padding"
                         actionButtons={
-                            <div className="action-buttons">
+                            <ButtonRow className="action-buttons">
                                 <button
                                     className={reset_buttons_class}
                                     onClick={onReset}
@@ -452,7 +453,6 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                                 </button>
                                 <button
                                     className={"button"}
-                                    style={{marginLeft: 10}}
                                     data-tip={counterpart.translate(
                                         "account.perm.create_paperwallet_private_hint"
                                     )}
@@ -463,7 +463,7 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                                 >
                                     <Translate content="account.perm.create_paperwallet" />
                                 </button>
-                            </div>
+                            </ButtonRow>
                         }
                     >
                         <Tab title="account.perm.active">

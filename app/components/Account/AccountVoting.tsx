@@ -713,14 +713,14 @@ function AccountVoting({
         return {totalBudget, workerBudget};
     }
 
-    function getProxyInput(accountHasProxy: boolean) {
+    function getProxyInput() {
         return (
             <React.Fragment>
                 <AccountSelector
                     label="account.votes.proxy_short"
                     style={{
                         // 50% of a shrink-wrapped parent was ~100px on a phone
-                        width: "min(100%, 250px)",
+                        width: "min(100%, 320px)",
                         display: "inline-block"
                     }}
                     account={state.current_proxy_input}
@@ -754,15 +754,6 @@ function AccountVoting({
                         </TypedLink>
                     </span>
                 </AccountSelector>
-                {accountHasProxy && (
-                    <Button
-                        style={{marginLeft: "1rem"}}
-                        onClick={onRemoveProxy}
-                        tabIndex={9}
-                    >
-                        <Translate content="account.perm.remove_proxy" />
-                    </Button>
-                )}
             </React.Fragment>
         );
     }
@@ -791,32 +782,43 @@ function AccountVoting({
         );
     }
 
-    function getActionButtons() {
+    // Save and Reset belong together (the one tooltip is about casting the votes);
+    // "Remove proxy" is its own action beside them. One row of buttons that wrap
+    // as a whole: side by side where there is room, full width on a phone.
+    function getActionButtons(accountHasProxy: boolean) {
         return (
-            <Tooltip
-                title={counterpart.translate(
-                    "account.votes.cast_votes_through_one_operation"
-                )}
-                mouseEnterDelay={0.5}
-            >
-                <div className={styles.actions}>
+            <div className={styles.actions}>
+                <Tooltip
+                    className={styles.group}
+                    title={counterpart.translate(
+                        "account.votes.cast_votes_through_one_operation"
+                    )}
+                    mouseEnterDelay={0.5}
+                >
+                    <div className={styles.groupInner}>
+                        <Button
+                            variant="accent"
+                            onClick={onPublish}
+                            tabIndex={4}
+                            disabled={!isChanged() ? true : undefined}
+                        >
+                            <Translate content="account.votes.publish" />
+                        </Button>
+                        <Button onClick={onReset} tabIndex={8}>
+                            <Translate content="account.perm.reset" />
+                        </Button>
+                    </div>
+                </Tooltip>
+                {accountHasProxy ? (
                     <Button
-                        variant="accent"
-                        onClick={onPublish}
-                        tabIndex={4}
-                        disabled={!isChanged() ? true : undefined}
+                        className={styles.removeProxy}
+                        onClick={onRemoveProxy}
+                        tabIndex={9}
                     >
-                        <Translate content="account.votes.publish" />
+                        <Translate content="account.perm.remove_proxy" />
                     </Button>
-                    <Button
-                        style={{marginLeft: "8px"}}
-                        onClick={onReset}
-                        tabIndex={8}
-                    >
-                        <Translate content="account.perm.reset" />
-                    </Button>
-                </div>
-            </Tooltip>
+                ) : null}
+            </div>
         );
     }
 
@@ -837,8 +839,8 @@ function AccountVoting({
     const hasProxy = !!proxy_account_id;
     const {totalBudget, workerBudget} = getBudgets(globalObject);
 
-    const actionButtons = getActionButtons();
-    const proxyInput = getProxyInput(accountHasProxy);
+    const actionButtons = getActionButtons(accountHasProxy);
+    const proxyInput = getProxyInput();
     const hideLegacy = getHideLegacyOptions();
 
     const onTabChange = (value: string) => {

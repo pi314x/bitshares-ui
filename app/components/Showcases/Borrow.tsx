@@ -65,6 +65,7 @@ import * as ReactDOM from "react-dom";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
 import {Card} from "../../design-system/Card";
 import {Steps} from "../../design-system/Steps";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -438,7 +439,7 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                         </Card>
                     )}
                 </div>
-                <div className="steps-action">
+                <ButtonRow className="steps-action">
                     {current < steps.length && (
                         <Tooltip
                             title={
@@ -476,7 +477,6 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                     )}
                     {current > 0 && (
                         <Button
-                            style={{marginLeft: 8}}
                             onClick={() => prev()}
                             ref={previousRef}
                             onKeyDown={onKeyDown}
@@ -484,7 +484,7 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                             <Translate content={"showcases.borrow.previous"} />
                         </Button>
                     )}
-                </div>
+                </ButtonRow>
             </Card>
             {accountLoaded && !!selectedAssetObject && (
                 <BorrowModal

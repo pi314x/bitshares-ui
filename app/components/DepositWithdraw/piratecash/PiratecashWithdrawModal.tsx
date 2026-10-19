@@ -69,6 +69,7 @@ import {checkFeeStatusAsync, checkBalance} from "common/trxHelper";
 import {Price, Asset} from "common/MarketClasses";
 import {debounce} from "lodash-es";
 import {Button} from "../../../design-system/Button";
+import {ButtonRow} from "../../../design-system/ButtonRow";
 import {Modal} from "../../../design-system/Modal";
 import {useReduxState} from "../../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../../store/slices/settingsSlice";
@@ -683,11 +684,7 @@ function PiratecashWithdrawModal(props: PiratecashWithdrawModalProps) {
                         >
                             {counterpart.translate("modal.confirmation.accept")}
                         </Button>,
-                        <Button
-                            key="cancel"
-                            style={{marginLeft: "8px"}}
-                            onClick={hideConfirmationModal}
-                        >
+                        <Button key="cancel" onClick={hideConfirmationModal}>
                             {counterpart.translate("modal.confirmation.cancel")}
                         </Button>
                     ]}
@@ -897,7 +894,7 @@ function PiratecashWithdrawModal(props: PiratecashWithdrawModalProps) {
                 {withdraw_memo}
 
                 {/* Withdraw/Cancel buttons */}
-                <div>
+                <ButtonRow>
                     <Button
                         variant="accent"
                         disabled={
@@ -910,13 +907,10 @@ function PiratecashWithdrawModal(props: PiratecashWithdrawModalProps) {
                         {counterpart.translate("modal.withdraw.submit")}
                     </Button>
 
-                    <Button
-                        onClick={props.hideModal}
-                        style={{marginLeft: "8px"}}
-                    >
+                    <Button onClick={props.hideModal}>
                         {counterpart.translate("account.perm.cancel")}
                     </Button>
-                </div>
+                </ButtonRow>
                 {confirmation}
             </div>
         </form>

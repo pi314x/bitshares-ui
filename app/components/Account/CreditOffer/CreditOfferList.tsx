@@ -122,10 +122,7 @@ function CreditOfferListCore({
                 <div className="generic-bordered-box">
                     <div className="header-selector">
                         <div className="filter inline-block">
-                            <Button
-                                style={{marginRight: "30px"}}
-                                onClick={showCreateModal}
-                            >
+                            <Button onClick={showCreateModal}>
                                 <Translate content="credit_offer.create" />
                             </Button>
                         </div>

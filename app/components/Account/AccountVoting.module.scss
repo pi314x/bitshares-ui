@@ -62,8 +62,41 @@
     gap: 10px;
 }
 
+// Save and Reset in one group, "Remove proxy" beside it; the row sits at the right
+// of the card where there is room and fills it on a phone, every button the same height
 .actions {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     margin-left: auto;
+}
+
+.group {
+    display: block;
+}
+
+.groupInner {
+    display: flex;
+    gap: 8px;
+}
+
+@media (max-width: 640px) {
+    .actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    // Save and Reset share the first row, equal; Remove proxy has the next one
+    .group {
+        flex: 1 1 100%;
+    }
+
+    .groupInner > button {
+        flex: 1 1 0;
+    }
+
+    .removeProxy {
+        flex: 1 1 100%;
+    }
 }
