@@ -13221,6 +13221,16 @@ on an iPhone).
   network from the built bundle: the flash loan dialog read fund 1.20.9 (balance, rate, fee), the
   parameter proposal with the real fee schedule reached the wallet prompt, and the node priced all 14
   operations and a proposal holding 31. Nothing was signed or broadcast.
+- **Serving over HTTPS** (`docs/DEPLOYMENT.md`, `conf/nginx.https.conf.example`): the page's
+  content security policy no longer allows a third-party script (`zxcvbn` is bundled and
+  loaded on demand, `lib/common/passwordStrength.ts`, instead of `zxcvbn-async` fetching it from
+  cdnjs), `'unsafe-eval'`, the unused `at.alicdn.com` font host, or `connect-src *` (now
+  `wss:`, `https:` and the local node, nothing in clear text); `object-src`, `base-uri`,
+  `form-action` are closed. The nginx examples send the same policy as a header with
+  `frame-ancestors 'none'` plus HSTS, nosniff, a no-referrer policy, a permissions policy and
+  cache rules; `__tests__/security/headers-test.ts` keeps meta tag and header in step. Checked
+  in the built bundle: eval is blocked, the main screens and the trade chart raise no policy
+  violation, the strength meter works. Not run through `nginx -t` (no nginx here).
 - **iOS date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the
   native field has no intrinsic width and centres its text in Safari; `appearance: none`,
   `display: block`, `width: 100%` and left-aligned `::-webkit-date-and-time-value` make

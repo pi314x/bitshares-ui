@@ -12371,7 +12371,7 @@ yauzl@^2.10.0:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
 
-zxcvbn-async@0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/zxcvbn-async/-/zxcvbn-async-0.0.5.tgz#37276c3963a578bd8b2f800ad841bd68f0e09bdd"
-  integrity sha512-ZVqaUOOJDH5E87SeDIqWQl0wTmlUMEODrF12b3DS2VQlvmHDW7M5rSkGRWqOZQ4bsnZW4J5oDJ3dnMIWOI0tHA==
+zxcvbn@4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/zxcvbn/-/zxcvbn-4.4.2.tgz#28ec17cf09743edcab056ddd8b1b06262cc73c30"
+  integrity sha512-Bq0B+ixT/DMyG8kgX2xWcI5jUvCwqrMxSFam7m0lAf78nf04hv6lNCsyLYdyYTrCVMqNDY/206K7eExYCeSyUQ==

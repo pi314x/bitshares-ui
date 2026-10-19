@@ -324,6 +324,11 @@ module.exports = function(env) {
             },
             historyApiFallback: true,
             https: https,
+            // what a deployment sends too (docs/DEPLOYMENT.md); the policy itself is the page's meta tag
+            headers: {
+                "X-Content-Type-Options": "nosniff",
+                "Referrer-Policy": "no-referrer"
+            },
             devMiddleware: {
                 index: true,
                 mimeTypes: {phtml: "text/html"},

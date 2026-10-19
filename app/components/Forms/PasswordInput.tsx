@@ -56,7 +56,10 @@
 // anything actually rendered.
 import * as React from "react";
 import Translate from "react-translate-component";
-import zxcvbnAsync from "zxcvbn-async";
+import {
+    loadPasswordStrength,
+    passwordStrength
+} from "../../lib/common/passwordStrength";
 import CopyButton from "../Utility/CopyButton";
 import cname from "classnames";
 
@@ -106,6 +109,11 @@ const PasswordInput = React.forwardRef<PasswordInputHandle, PasswordInputProps>(
         },
         ref
     ) {
+        // the strength meter's library is loaded once the field is on the page
+        React.useEffect(() => {
+            if (checkStrength) loadPasswordStrength();
+        }, [checkStrength]);
+
         const [state, setState] = React.useState<PasswordInputState>({
             value: initialValue || "",
             error: null,
@@ -142,8 +150,7 @@ const PasswordInput = React.forwardRef<PasswordInputHandle, PasswordInputProps>(
                 if (state.value.length > 100) {
                     strength = {score: 4};
                 } else {
-                    const zxcvbn = (zxcvbnAsync as any).load({sync: true});
-                    strength = zxcvbn(state.value || "");
+                    strength = passwordStrength(state.value || "");
                 }
                 /* Require a length of passwordLength + 50% for the max score */
                 score = Math.min(

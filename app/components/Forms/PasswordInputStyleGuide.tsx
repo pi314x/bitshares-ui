@@ -53,7 +53,10 @@
 // established treatment of such cases (e.g. `Forms/AccountSelect.tsx`'s
 // `selected`).
 import * as React from "react";
-import zxcvbnAsync from "zxcvbn-async";
+import {
+    loadPasswordStrength,
+    passwordStrength
+} from "../../lib/common/passwordStrength";
 import counterpart from "counterpart";
 import {Progress} from "../../design-system/Progress";
 import {Form} from "../../design-system/Form";
@@ -95,6 +98,11 @@ export default function PasswordInput({
     visible = false,
     readonly = false
 }: PasswordInputProps) {
+    // the strength meter's library is loaded once the field is on the page
+    React.useEffect(() => {
+        loadPasswordStrength();
+    }, []);
+
     const [state, setState] = React.useState<PasswordInputState>({
         password: "",
         confirmPassword: "",
@@ -162,9 +170,7 @@ export default function PasswordInput({
     };
 
     const calculatePasswordScore = (password: string) => {
-        const zxcvbn = (zxcvbnAsync as any).load({sync: true});
-
-        const strength = zxcvbn(password || "");
+        const strength = passwordStrength(password || "");
 
         // passwordLength is min required length
         // to reach max score password length should be higher by 50% from min length

@@ -34,6 +34,6 @@ declare module "react-scroll";
 declare module "string-similarity";
 declare module "@hiveio/hive-js";
 declare module "react-qr-reader";
-declare module "zxcvbn-async";
+declare module "zxcvbn";
 declare module "humanize-duration";
 declare module "react-loadable";

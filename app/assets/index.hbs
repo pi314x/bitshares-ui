@@ -19,7 +19,7 @@
     <meta property="og:site_name" content="{{title}}">
     <meta property="og:title" content="{{title}}">
     <meta property="og:description" content="{{description}}">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; worker-src 'self' blob:; script-src https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/ 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' *; font-src 'self' data: https://at.alicdn.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https: ws://127.0.0.1:* ws://localhost:*; font-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script>
         // Before first paint: apply the saved theme to <html>, so the splash, the
