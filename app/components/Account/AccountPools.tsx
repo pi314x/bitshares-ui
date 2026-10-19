@@ -72,7 +72,8 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
 import {selectPoolmart} from "../../store/slices/poolmartSlice";
-import SearchInput from "../Utility/SearchInput";
+import {PoolAssetSelect} from "../Poolmart/PoolAssetSelect";
+import {sortSymbols} from "../../lib/chain/poolAssets";
 import PoolmartActions from "../../actions/PoolmartActions";
 import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
@@ -83,6 +84,9 @@ import DeletePoolModal from "../Modal/DeletePoolModal";
 import {List} from "immutable";
 import ApplicationApi from "api/ApplicationApi";
 import LoadingIndicator from "../LoadingIndicator";
+
+const poolsText = (key: string) =>
+    counterpart.translate(`poolmart.liquidity_pools.${key}`) as string;
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -119,9 +123,9 @@ function AccountPools({
     defaultAsset
 }: AccountPoolsCoreProps) {
     const [state, setState] = React.useState<AccountPoolsState>({
-        filterAssetA: defaultAsset ? defaultAsset.get("symbol") : null,
-        filterAssetB: null,
-        filterShareAsset: null,
+        filterAssetA: "",
+        filterAssetB: "",
+        filterShareAsset: "",
         start: "1.19.0",
         limit: 10,
         isExchangeModalVisible: false,
@@ -162,6 +166,8 @@ function AccountPools({
     React.useEffect(() => {
         if (isMountRef.current) {
             isMountRef.current = false;
+            // the list is shared with the page of all pools: start from an empty one
+            (PoolmartActions as any).resetLiquidityPools();
             getLiquidityPools();
             prevLiquidityPoolsRef.current = liquidityPools;
             prevLastPoolIdRef.current = lastPoolId;
@@ -179,43 +185,6 @@ function AccountPools({
         prevLiquidityPoolsRef.current = liquidityPools;
         prevLastPoolIdRef.current = lastPoolId;
     }, [liquidityPools]);
-
-    const onFilterAssetA = (e: any) => {
-        if (e.target.value) {
-            mergeState({filterAssetA: e.target.value.toUpperCase()});
-            getLiquidityPools();
-            resetLiquidityPools();
-        } else {
-            mergeState({filterAssetA: ""});
-            resetLiquidityPools();
-        }
-    };
-
-    const onFilterAssetB = (e: any) => {
-        if (e.target.value) {
-            mergeState({filterAssetB: e.target.value.toUpperCase()});
-            getLiquidityPools();
-            resetLiquidityPools();
-        } else {
-            mergeState({filterAssetB: ""});
-            resetLiquidityPools();
-        }
-    };
-
-    const onFilterShareAsset = (e: any) => {
-        if (e.target.value) {
-            mergeState({
-                filterAssetA: null,
-                filterAssetB: null,
-                filterShareAsset: e.target.value.toUpperCase()
-            });
-            getLiquidityPools();
-            resetLiquidityPools();
-        } else {
-            mergeState({filterShareAsset: ""});
-            resetLiquidityPools();
-        }
-    };
 
     const handleRowsChange = (limit: any) => {
         mergeState({
@@ -409,8 +378,18 @@ function AccountPools({
         }
     ];
 
+    // Only the pools this account created: the issuer of a pool's share asset is its
+    // owner. (The list comes from the pools of one owner, but it is shared with the
+    // page of all pools, and whatever that left in it must not show here.)
+    const ownerId = account.get("id");
     const dataSource: any[] = [];
     liquidityPools.forEach((pool: any) => {
+        if (
+            !pool.share_asset_obj ||
+            pool.share_asset_obj.get("issuer") !== ownerId
+        ) {
+            return;
+        }
         const row = pool;
         row.share_asset_str = pool.share_asset_obj
             ? pool.share_asset_obj.get("symbol")
@@ -433,6 +412,27 @@ function AccountPools({
         dataSource.push(row);
     });
 
+    // the filters: the assets of the pools of this account, chosen from a list
+    const symbolsOf = (
+        key: "asset_a_str" | "asset_b_str" | "share_asset_str"
+    ) => Array.from(new Set(dataSource.map(row => String(row[key]))));
+    const coreSymbol = defaultAsset ? defaultAsset.get("symbol") : null;
+    const assetOptions = sortSymbols(
+        Array.from(
+            new Set([...symbolsOf("asset_a_str"), ...symbolsOf("asset_b_str")])
+        ),
+        coreSymbol
+    );
+    const shareOptions = sortSymbols(symbolsOf("share_asset_str"), null);
+    const onSide = (row: any, symbol: string) =>
+        row.asset_a_str === symbol || row.asset_b_str === symbol;
+    const shownRows = dataSource.filter(row =>
+        state.filterShareAsset
+            ? row.share_asset_str === state.filterShareAsset
+            : (!state.filterAssetA || onSide(row, state.filterAssetA)) &&
+              (!state.filterAssetB || onSide(row, state.filterAssetB))
+    );
+
     return (
         <div>
             <div>
@@ -440,36 +440,66 @@ function AccountPools({
                 <div>
                     <div className="grid-block vertical">
                         <div className={styles.filters}>
-                            <div className={styles.filter}>
-                                <SearchInput
-                                    placeholder={counterpart.translate(
-                                        "poolmart.liquidity_pools.asset_a"
-                                    )}
-                                    value={state.filterAssetA}
-                                    onChange={onFilterAssetA}
-                                    style={{width: "100%"}}
-                                />
-                            </div>
-                            <div className={styles.filter}>
-                                <SearchInput
-                                    placeholder={counterpart.translate(
-                                        "poolmart.liquidity_pools.asset_b"
-                                    )}
-                                    value={state.filterAssetB}
-                                    onChange={onFilterAssetB}
-                                    style={{width: "100%"}}
-                                />
-                            </div>
-                            <div className={styles.filter}>
-                                <SearchInput
-                                    placeholder={counterpart.translate(
-                                        "poolmart.liquidity_pools.share_asset"
-                                    )}
-                                    value={state.filterShareAsset}
-                                    onChange={onFilterShareAsset}
-                                    style={{width: "100%"}}
-                                />
-                            </div>
+                            {dataSource.length ? (
+                                <>
+                                    <div className={styles.filter}>
+                                        <PoolAssetSelect
+                                            label={poolsText("asset")}
+                                            anyLabel={poolsText("any_asset")}
+                                            notFound={poolsText(
+                                                "no_asset_found"
+                                            )}
+                                            value={state.filterAssetA}
+                                            options={assetOptions}
+                                            onChange={symbol =>
+                                                mergeState({
+                                                    filterAssetA: symbol,
+                                                    filterShareAsset: ""
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className={styles.filter}>
+                                        <PoolAssetSelect
+                                            label={poolsText("paired_with")}
+                                            anyLabel={poolsText("any_asset")}
+                                            notFound={poolsText(
+                                                "no_asset_found"
+                                            )}
+                                            value={state.filterAssetB}
+                                            options={assetOptions}
+                                            onChange={symbol =>
+                                                mergeState({
+                                                    filterAssetB: symbol,
+                                                    filterShareAsset: ""
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className={styles.filter}>
+                                        <PoolAssetSelect
+                                            label={poolsText("share_asset")}
+                                            anyLabel={poolsText("any_asset")}
+                                            notFound={poolsText(
+                                                "no_asset_found"
+                                            )}
+                                            value={state.filterShareAsset}
+                                            options={shareOptions}
+                                            onChange={symbol =>
+                                                mergeState({
+                                                    filterShareAsset: symbol,
+                                                    ...(symbol
+                                                        ? {
+                                                              filterAssetA: "",
+                                                              filterAssetB: ""
+                                                          }
+                                                        : {})
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            ) : null}
                             <div className={styles.rows}>
                                 <Select
                                     style={{width: "100%"}}
@@ -495,10 +525,10 @@ function AccountPools({
                             <Table
                                 columns={columns}
                                 rowKey="id"
-                                dataSource={dataSource}
+                                dataSource={shownRows}
                                 pagination={{
                                     pageSize: state.limit,
-                                    total: dataSource.length
+                                    total: shownRows.length
                                 }}
                             />
                         </div>

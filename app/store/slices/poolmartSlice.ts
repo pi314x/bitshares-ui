@@ -99,10 +99,11 @@ const poolmartSlice = createSlice({
                 payload.liquidityPools.forEach((pool: any) => {
                     tmp = tmp.set(pool.id, pool);
                 });
-                if (tmp.size === 0) return;
-                state.lastPoolId = tmp.last().id;
-                // Original replaces wholesale here, unlike the merge()
-                // the other two handlers use - preserved as-is.
+                // The answer replaces the list wholesale (unlike the merge() the other
+                // two handlers use) - also an empty answer: an account with no pools
+                // of its own must see none, not the pools of the page it came from
+                // (the original returned early and left them in the list).
+                state.lastPoolId = tmp.size ? tmp.last().id : null;
                 state.liquidityPools = tmp;
             }
 

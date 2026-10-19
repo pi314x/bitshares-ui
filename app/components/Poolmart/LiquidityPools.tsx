@@ -25,7 +25,8 @@ import {Toolbar} from "../../design-system/Toolbar";
 import {Button} from "../../design-system/Button";
 import {SubMenu} from "../../design-system/SubMenu";
 import AssetName from "../Utility/AssetName";
-import SearchInput from "../Utility/SearchInput";
+import {PoolAssetSelect} from "./PoolAssetSelect";
+import {usePoolAssets} from "./usePoolAssets";
 import PoolmartActions from "../../actions/PoolmartActions";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
@@ -51,7 +52,6 @@ import {
 } from "../../lib/common/poolMetrics";
 import styles from "./LiquidityPools.module.scss";
 
-const TypedSearchInput = SearchInput as React.ComponentType<any>;
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -107,6 +107,8 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
     const phone =
         pageWidth === null ? narrowViewport : pageWidth < TABLE_MIN_WIDTH;
 
+    // the assets that are in a pool: what the filters offer
+    const poolAssets = usePoolAssets();
     const [filterAsset, setFilterAsset] = React.useState("");
     const [filterWith, setFilterWith] = React.useState("");
     const [filterShare, setFilterShare] = React.useState("");
@@ -124,7 +126,6 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
         setShownCards(CARDS_PER_STEP);
         PoolmartActions.resetLiquidityPools();
     };
-    const upper = (value: string) => value.trim().toUpperCase();
 
     // Debounced fetch: asked again whenever a filter or the start id changes.
     const fetchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -362,37 +363,59 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                 </h2>
                 <Toolbar>
                     <Toolbar.Grow>
-                        <TypedSearchInput
-                            placeholder={t("asset")}
+                        <PoolAssetSelect
+                            label={t("asset")}
+                            anyLabel={t("any_asset")}
+                            notFound={t("no_asset_found")}
                             value={filterAsset}
-                            maxLength={32}
-                            onChange={(e: any) => {
-                                setFilterAsset(upper(e.target.value));
+                            options={poolAssets ? poolAssets.assets : []}
+                            onChange={symbol => {
+                                setFilterAsset(symbol);
                                 setFilterShare("");
+                                // a partner that does not go with this asset is dropped
+                                const partners =
+                                    poolAssets && poolAssets.partners[symbol];
+                                if (
+                                    filterWith &&
+                                    partners &&
+                                    partners.indexOf(filterWith) === -1
+                                ) {
+                                    setFilterWith("");
+                                }
                                 resetList();
                             }}
                         />
                     </Toolbar.Grow>
                     <Toolbar.Grow>
-                        <TypedSearchInput
-                            placeholder={t("paired_with")}
+                        <PoolAssetSelect
+                            label={t("paired_with")}
+                            anyLabel={t("any_asset")}
+                            notFound={t("no_asset_found")}
                             value={filterWith}
-                            maxLength={32}
-                            onChange={(e: any) => {
-                                setFilterWith(upper(e.target.value));
+                            options={
+                                poolAssets
+                                    ? (filterAsset &&
+                                          poolAssets.partners[filterAsset]) ||
+                                      poolAssets.assets
+                                    : []
+                            }
+                            onChange={symbol => {
+                                setFilterWith(symbol);
                                 setFilterShare("");
                                 resetList();
                             }}
                         />
                     </Toolbar.Grow>
                     <Toolbar.Grow>
-                        <TypedSearchInput
-                            placeholder={t("share_asset")}
+                        <PoolAssetSelect
+                            label={t("share_asset")}
+                            anyLabel={t("any_asset")}
+                            notFound={t("no_asset_found")}
                             value={filterShare}
-                            maxLength={32}
-                            onChange={(e: any) => {
-                                setFilterShare(upper(e.target.value));
-                                if (e.target.value) {
+                            options={poolAssets ? poolAssets.shares : []}
+                            onChange={symbol => {
+                                setFilterShare(symbol);
+                                if (symbol) {
                                     setFilterAsset("");
                                     setFilterWith("");
                                 }
