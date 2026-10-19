@@ -29,9 +29,11 @@ import {BackupCreate, BackupRestore} from "./Backup";
 import BackupBrainkey from "./BackupBrainkey";
 import {Form} from "../../design-system/Form";
 import {Select} from "../../design-system/Select";
+import {ButtonRow} from "../../design-system/ButtonRow";
+import styles from "./WalletManager.module.scss";
+import {getWalletName} from "branding";
 import {Input} from "../../design-system/Input";
 import {Button} from "../../design-system/Button";
-import {Card} from "../../design-system/Card";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectWalletManagerState} from "../../store/slices/walletManagerSlice";
 
@@ -131,6 +133,10 @@ export default function WalletManager() {
     );
 }
 
+// The wallet console: what the active wallet is and what can be done with it, in cards that
+// each hold one subject (the wallet, its keys, the claims, the backups) and its buttons in
+// one row. (These were Foundation grid columns of unequal width with a hidden "Dummy" line
+// to level their heights, and eleven stacked outline buttons of different widths.)
 export function WalletOptions() {
     const {current_wallet, wallet_names} = useReduxState<any>(
         selectWalletManagerState
@@ -139,116 +145,90 @@ export function WalletOptions() {
     const has_wallets = wallet_names.size > 1;
     const currentWalletLabel = current_wallet
         ? current_wallet.toUpperCase()
-        : "";
+        : "-";
+    const action = (to: string, label: string) => (
+        <TypedLink to={to}>
+            <Button>
+                <Translate content={label} />
+            </Button>
+        </TypedLink>
+    );
     return (
-        <span>
-            <div className="grid-block">
-                <div className="grid-content">
-                    <Card>
-                        <label>
-                            <Translate content="wallet.active_wallet" />:
-                        </label>
-                        <div>{currentWalletLabel}</div>
-                        <br />
-                        {has_wallets ? (
-                            <TypedLink to="/wallet/change">
-                                <div className="button outline success">
-                                    <Translate content="wallet.change_wallet" />
-                                </div>
-                            </TypedLink>
-                        ) : null}
-                    </Card>
+        <div className={styles.sections}>
+            <Translate
+                component="p"
+                className={styles.intro}
+                content="wallet.create_text"
+                wallet_name={getWalletName()}
+            />
+            <div className={styles.panel}>
+                <div className={styles.title}>
+                    <Translate content="wallet.active_wallet" />
                 </div>
-
-                <div className="grid-content">
-                    <Card>
-                        <label>
-                            <Translate content="wallet.import_keys_tool" />
-                        </label>
-                        <div style={{visibility: "hidden"}}>Dummy</div>
-                        <br />
-                        {has_wallet ? (
-                            <TypedLink to="/wallet/import-keys">
-                                <div className="button outline success">
-                                    <Translate content="wallet.import_keys" />
-                                </div>
-                            </TypedLink>
-                        ) : null}
-                    </Card>
-                </div>
-
-                {has_wallet ? (
-                    <div className="grid-content">
-                        <Card>
-                            <label>
-                                <Translate content="wallet.balance_claims" />
-                            </label>
-                            <div style={{visibility: "hidden"}}>Dummy</div>
-                            <br />
-                            <TypedLink to="/wallet/balance-claims">
-                                <div className="button outline success">
-                                    <Translate content="wallet.balance_claim_lookup" />
-                                </div>
-                            </TypedLink>
-                            {/*<BalanceClaimByAsset>
-                            <br/>
-                            <div className="button outline success">
-                                <Translate content="wallet.balance_claims" /></div>
-                        </BalanceClaimByAsset>
-                        */}
-                        </Card>
-                    </div>
-                ) : null}
+                <div className={styles.value}>{currentWalletLabel}</div>
+                <ButtonRow>
+                    {has_wallets
+                        ? action("/wallet/change", "wallet.change_wallet")
+                        : null}
+                    {action("/wallet/create", "wallet.new_wallet")}
+                    {has_wallet
+                        ? action(
+                              "/wallet/change-password",
+                              "wallet.change_password"
+                          )
+                        : null}
+                    {has_wallet
+                        ? action("/wallet/delete", "wallet.delete_wallet")
+                        : null}
+                </ButtonRow>
             </div>
 
             {has_wallet ? (
-                <TypedLink to="/wallet/backup/create">
-                    <div className="button outline success">
-                        <Translate content="wallet.create_backup" />
+                <div className={styles.panel}>
+                    <div className={styles.title}>
+                        <Translate content="wallet.import_keys_tool" />
                     </div>
-                </TypedLink>
-            ) : null}
-
-            {has_wallet ? (
-                <TypedLink to="/wallet/backup/brainkey">
-                    <div className="button outline success">
-                        <Translate content="wallet.backup_brainkey" />
-                    </div>
-                </TypedLink>
-            ) : null}
-
-            <TypedLink to="/wallet/backup/restore">
-                <div className="button outline success">
-                    <Translate content="wallet.restore_backup" />
+                    <ButtonRow>
+                        {action("/wallet/import-keys", "wallet.import_keys")}
+                    </ButtonRow>
                 </div>
-            </TypedLink>
+            ) : null}
 
-            <br />
-
-            {has_wallet ? <br /> : null}
-
-            <TypedLink to="/wallet/create">
-                <div className="button outline success">
-                    <Translate content="wallet.new_wallet" />
+            {has_wallet ? (
+                <div className={styles.panel}>
+                    <div className={styles.title}>
+                        <Translate content="wallet.balance_claims" />
+                    </div>
+                    <ButtonRow>
+                        {action(
+                            "/wallet/balance-claims",
+                            "wallet.balance_claim_lookup"
+                        )}
+                    </ButtonRow>
                 </div>
-            </TypedLink>
-
-            {has_wallet ? (
-                <TypedLink to="/wallet/delete">
-                    <div className="button outline success">
-                        <Translate content="wallet.delete_wallet" />
-                    </div>
-                </TypedLink>
             ) : null}
 
-            {has_wallet ? (
-                <TypedLink to="/wallet/change-password">
-                    <div className="button outline success">
-                        <Translate content="wallet.change_password" />
-                    </div>
-                </TypedLink>
-            ) : null}
-        </span>
+            <div className={styles.panel}>
+                <div className={styles.title}>
+                    <Translate content="wallet.backup_types" />
+                </div>
+                <ButtonRow>
+                    {has_wallet
+                        ? action(
+                              "/wallet/backup/create",
+                              "wallet.create_backup"
+                          )
+                        : null}
+                    {has_wallet
+                        ? action(
+                              "/wallet/backup/brainkey",
+                              "wallet.backup_brainkey"
+                          )
+                        : null}
+                    {action("/wallet/backup/restore", "wallet.restore_backup")}
+                </ButtonRow>
+            </div>
+        </div>
     );
 }
 
@@ -315,17 +295,22 @@ export function ChangeActiveWallet() {
                     </ul>
                 </FormItem>
             </section>
-            <TypedLink to="/wallet/create">
-                <Button style={{marginRight: "16px"}}>
-                    <Translate content="wallet.new_wallet" />
-                </Button>
-            </TypedLink>
+            <ButtonRow>
+                <TypedLink to="/wallet/create">
+                    <Button>
+                        <Translate content="wallet.new_wallet" />
+                    </Button>
+                </TypedLink>
 
-            {is_dirty ? (
-                <Button onClick={onConfirm}>
-                    <Translate content="wallet.change" name={currentWallet} />
-                </Button>
-            ) : null}
+                {is_dirty ? (
+                    <Button onClick={onConfirm}>
+                        <Translate
+                            content="wallet.change"
+                            name={currentWallet}
+                        />
+                    </Button>
+                ) : null}
+            </ButtonRow>
         </div>
     );
 }
@@ -368,7 +353,7 @@ export function WalletDelete() {
                     content="wallet.delete_confirm_line3"
                 />
                 <br />
-                <Button onClick={onConfirm2} style={{marginRight: "16px"}}>
+                <Button onClick={onConfirm2}>
                     <Translate
                         content="wallet.delete_confirm_line4"
                         name={selectedWallet}
