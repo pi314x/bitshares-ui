@@ -223,9 +223,15 @@ body[class][class] .settings--notifications span {
     text-transform: none;
 }
 
-// The browser's "notifications are disabled" line and its help icon on one line.
-body[class][class] .settings--notifications--no-browser-support {
-    display: inline;
+// The browser's "notifications are blocked" warning is a link: the box, no underline.
+body[class][class] .settings--notifications--help {
+    display: block;
+    margin-top: 12px;
+    text-decoration: none;
+}
+
+body[class][class] .settings--notifications--help:hover {
+    text-decoration: underline;
 }
 
 // ---------------------------------------------------------------------------

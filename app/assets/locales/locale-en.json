@@ -2505,7 +2505,7 @@
         "browser_notifications": "Browser Notifications",
         "browser_notifications_additional_transfer_to_me": "Notify about transfers to my account",
         "browser_notifications_allow": "Enable notifications",
-        "browser_notifications_disabled_by_browser_notify": "Your browser disabled notifications. Click to learn how enable browser notifications",
+        "browser_notifications_disabled_by_browser_notify": "Your browser has blocked notifications. Click to learn how to enable them.",
         "can_change_default_fee_asset_tooltip": "The default asset used to pay transaction fees can be changed in the settings",
         "change": "Change",
         "change_default": "Change default",

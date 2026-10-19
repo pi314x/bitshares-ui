@@ -13273,6 +13273,23 @@ on an iPhone).
   the price back; that click had been throwing a TypeError since the migration (the
   Exchange's `setPrice` took the order type for the price). Checked on a live market:
   854.63409 (ask) and 837.74455 (bid) in the fields, 2 x 854.63 = 1,709.27 as the total.
+- **Button rows** (`design-system/ButtonRow.tsx`): the buttons of a form or a card sat in a
+  row spaced with an inline `marginLeft` on the second one, so when the row ran out of room
+  (the Voting proxy card on a phone) a button wrapped onto its own line with the margin and
+  stood indented. `ButtonRow` is one wrapping row with one gap and no margins on the buttons;
+  the proxy card has Save and Reset (equal, one tooltip) and Remove proxy in one row, full
+  width on a phone. The inline margins went from the Wallet, Permissions, Borrow, the
+  withdraw dialogs, the prediction-market resolve form and the init error; a dialog's own
+  footer already has the gap, so the extra 8px in four footers is gone (their buttons were
+  16px apart). Rule in AGENTS.md.
+- **Wallet console** (`Wallet/WalletManager.tsx`, `WalletManager.module.scss`): Foundation grid
+  columns of unequal width with a hidden "Dummy" line to level their heights and eleven stacked
+  outline buttons of different widths are now four cards (wallet, key import, balance claims,
+  backups), each with its title and one row of buttons, under the explanation of what a local
+  wallet is.
+- **Browser notifications warning** (`SettingsEntry.tsx`): "Your browser has blocked
+  notifications. Click to learn how to enable them." was small red text; it is a warning box
+  that is itself the link. The goo.gl address (a redirect to a search) is the search itself.
 - **CI for the container image** (`.github/workflows/docker.yml`, `scripts/check-container.sh`):
   on a pull request that touches the app, the Dockerfile or the nginx files, and on `develop`,
   the image is built (nothing is pushed) and the script checks what it serves: `nginx -t` for

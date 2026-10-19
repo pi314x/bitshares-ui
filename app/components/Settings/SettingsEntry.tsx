@@ -42,6 +42,7 @@ import {Select} from "../../design-system/Select";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
 import {Button} from "../../design-system/Button";
+import {Alert} from "../../design-system/Alert";
 import GatewaySelectorModal from "../Gateways/GatewaySelectorModal";
 
 const FormItem = Form.Item;
@@ -166,16 +167,22 @@ export default function SettingsEntry({
                         </div>
                     </div>
                     {!!value.allow && Notify.needsPermission && (
+                        // a warning box that is the link (the line was small red
+                        // text on the dark page); the address is a search, which
+                        // answers for every browser, in place of a goo.gl link
+                        // that only redirected there
                         <a
-                            href="https://goo.gl/zZ7NHY"
+                            href="https://www.google.com/search?q=turn+on+browser+notifications"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="external-link"
+                            className="settings--notifications--help"
                         >
-                            <Translate
-                                component="div"
-                                className="settings--notifications--no-browser-support"
-                                content="settings.browser_notifications_disabled_by_browser_notify"
+                            <Alert
+                                type="warning"
+                                showIcon
+                                message={
+                                    <Translate content="settings.browser_notifications_disabled_by_browser_notify" />
+                                }
                             />
                         </a>
                     )}
