@@ -33,6 +33,7 @@ import SettingsActions from "actions/SettingsActions";
 import WebsocketAddModal from "./WebsocketAddModal";
 import SettingsEntry from "./SettingsEntry";
 import AccountsSettings from "./AccountsSettings";
+import LocalDataCard from "./LocalDataCard";
 import ExternalSignerSettings from "./ExternalSignerSettings";
 import WalletSettings from "./WalletSettings";
 import PasswordSettings from "./PasswordSettings";
@@ -331,7 +332,12 @@ export default function Settings(props: SettingsProps) {
 
     switch (activeEntry) {
         case "accounts":
-            entries = <AccountsSettings />;
+            entries = (
+                <>
+                    <LocalDataCard />
+                    <AccountsSettings />
+                </>
+            );
             break;
 
         case "wallet":

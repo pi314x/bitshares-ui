@@ -152,6 +152,7 @@ import Witnesses from "./Voting/Witnesses";
 import Committee from "./Voting/Committee";
 import Workers from "./Voting/Workers";
 import CreateLockModal from "../Modal/CreateLockModal";
+import TicketsList from "./TicketsList";
 import {ModalAsPage} from "../../design-system/Modal";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
@@ -892,6 +893,11 @@ function AccountVoting({
                         {actionButtons}
                     </div>
                 </div>
+
+                <TicketsList
+                    account={account.get("id")}
+                    canChange={!!(AccountStore as any).isMyAccount(account)}
+                />
 
                 <Tabs
                     activeKey={location.pathname}

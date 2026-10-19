@@ -28,6 +28,7 @@ import SearchInput from "../Utility/SearchInput";
 import PoolmartActions from "../../actions/PoolmartActions";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
+import PoolFeesModal from "./PoolFeesModal";
 import AccountStore from "../../stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {PoolCard, PoolCardData} from "./PoolCard";
@@ -114,6 +115,8 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
     const [shownCards, setShownCards] = React.useState(CARDS_PER_STEP);
     const [swapPool, setSwapPool] = React.useState<any>(null);
     const [stakePool, setStakePool] = React.useState<any>(null);
+    // a pool whose fees are being changed (liquidity_pool_update)
+    const [feesPool, setFeesPool] = React.useState<any>(null);
 
     const resetList = () => {
         setStart("1.19.0");
@@ -185,6 +188,17 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
         if (data) yourCards.push({data, pool});
     });
 
+    // the pools the signed-in account owns: the issuer of the share asset
+    const myAccount: any = accountName
+        ? (ChainStore as any).getAccount(accountName)
+        : null;
+    const myId: string | null =
+        myAccount && myAccount.get ? myAccount.get("id") : null;
+    const owns = (pool: any) =>
+        !!myId &&
+        !!pool.share_asset_obj &&
+        pool.share_asset_obj.get("issuer") === myId;
+
     const openSwap = (pool: any) => setSwapPool(pool);
     const openStake = (pool: any) => setStakePool(pool);
 
@@ -195,6 +209,9 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
             canAct={hasAccount}
             onSwap={() => openSwap(entry.pool)}
             onStake={() => openStake(entry.pool)}
+            onEditFees={
+                owns(entry.pool) ? () => setFeesPool(entry.pool) : undefined
+            }
         />
     );
 
@@ -312,6 +329,14 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                     >
                         {t("add_remove")}
                     </Button>
+                    {owns(row.pool) ? (
+                        <Button
+                            disabled={!hasAccount}
+                            onClick={() => setFeesPool(row.pool)}
+                        >
+                            {t("edit_fees")}
+                        </Button>
+                    ) : null}
                 </span>
             )
         }
@@ -471,6 +496,15 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                     pool={stakePool.share_asset}
                 />
             ) : null}
+            <PoolFeesModal
+                pool={feesPool}
+                accountId={myId || ""}
+                onCancel={() => setFeesPool(null)}
+                onDone={() => {
+                    setFeesPool(null);
+                    resetList();
+                }}
+            />
         </div>
     );
 }

@@ -10,11 +10,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    // Top-anchored, so the ring is where the static splash (index.hbs) drew
-    // it and the title and steps appear below it, not around it.
-    justify-content: flex-start;
+    // The whole group - ring, title, steps - is centred, across and down. The
+    // static splash (index.hbs) puts its ring where this group's ring is (its
+    // spacer is the group's height under the ring), so nothing moves when this
+    // screen takes over.
+    justify-content: center;
     gap: 18px;
-    padding: 30vh 24px 24px;
+    padding: 24px;
     overflow-y: auto;
     background: var(--ground);
     color: var(--ink);
@@ -45,6 +47,7 @@
 }
 
 .steps {
+    align-self: center;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -56,7 +59,8 @@
 
 .step {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    line-height: 1.4;
     gap: 10px;
     color: var(--faint);
     font-size: 14px;
@@ -120,4 +124,13 @@
     .active .mark {
         animation-duration: 3s;
     }
+}
+
+// a step that could not be read
+.failed {
+    color: var(--down);
+}
+
+.failed .mark {
+    border-color: var(--down);
 }

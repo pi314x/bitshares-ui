@@ -2,8 +2,16 @@ import * as React from "react";
 import counterpart from "counterpart";
 import styles from "./LoadingScreen.module.scss";
 import {Ring} from "./LoadingIndicator";
+import {
+    LOCAL_STEP_ORDER,
+    describeLocalStep,
+    getLocalSteps,
+    subscribeLocalSteps
+} from "../lib/common/startupProgress";
 
 export type LoadingStage = "latency" | "connect" | "database";
+
+type RowState = "pending" | "active" | "done" | "failed";
 
 const ORDER: LoadingStage[] = ["latency", "connect", "database"];
 
@@ -63,6 +71,41 @@ export function LoadingScreen({
         connect: counterpart.translate("app_init.step_connect") as string,
         database: counterpart.translate("app_init.step_database") as string
     };
+    // What has been read from this device (the local database, the settings, the
+    // keys stored in this browser, the wallet, the accounts) is part of the same
+    // sequence, after the connection: one list, in the order it happens.
+    const local = React.useSyncExternalStore(
+        subscribeLocalSteps,
+        getLocalSteps,
+        getLocalSteps
+    );
+    type Row = {id: string; text: string; state: RowState};
+    const rows: Row[] = [
+        ...(["latency", "connect"] as LoadingStage[]).map(id => {
+            const index = ORDER.indexOf(id);
+            return {
+                id,
+                text: labels[id],
+                state: (index < current
+                    ? "done"
+                    : index === current
+                    ? "active"
+                    : "pending") as RowState
+            };
+        }),
+        ...LOCAL_STEP_ORDER.map(id => {
+            const step = local[id];
+            const {key, params} = describeLocalStep(id, step);
+            return {
+                id,
+                text: counterpart.translate(key, params) as string,
+                state: (step.state === "none" ? "done" : step.state) as RowState
+            };
+        })
+    ];
+    // the line the screen is at: the first that is not done (none, once all are)
+    const activeRow = rows.find(row => row.state !== "done");
+    const activeId = activeRow ? activeRow.id : null;
     return (
         <div
             className={`${styles.screen}${leaving ? ` ${styles.leaving}` : ""}`}
@@ -76,20 +119,24 @@ export function LoadingScreen({
                 {counterpart.translate("app_init.loading_title")}
             </h1>
             <ol className={styles.steps}>
-                {ORDER.map((id, index) => (
+                {rows.map(row => (
                     <li
-                        key={id}
+                        key={row.id}
                         className={[
                             styles.step,
-                            index < current ? styles.done : "",
-                            index === current ? styles.active : ""
+                            row.state === "done" ? styles.done : "",
+                            row.state === "active" || row.id === activeId
+                                ? styles.active
+                                : "",
+                            row.state === "failed" ? styles.failed : ""
                         ]
                             .filter(Boolean)
                             .join(" ")}
-                        aria-current={index === current ? "step" : undefined}
+                        data-state={row.state}
+                        aria-current={row.id === activeId ? "step" : undefined}
                     >
                         <span className={styles.mark} aria-hidden="true" />
-                        {labels[id]}
+                        {row.text}
                     </li>
                 ))}
             </ol>

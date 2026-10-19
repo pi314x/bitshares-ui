@@ -317,16 +317,24 @@ class DataFeed {
                     onRealtimeCallback(bar);
                 });
                 this.latestBar = newBars[newBars.length - 1];
-            } else {
+            } else if (bars.length) {
                 // Check if latest bar is different
+                const last = bars[bars.length - 1];
                 let didChange = false;
                 for (let key in this.latestBar) {
-                    if (this.latestBar[key] !== bars[bars.length - 1][key]) {
+                    if (this.latestBar[key] !== last[key]) {
                         didChange = true;
                     }
                 }
-                if (didChange) {
-                    onRealtimeCallback(bars[bars.length - 1]);
+                // An update of the newest bar, never an older one: the chart
+                // refuses a bar before the last it has ("time order violation"),
+                // which is what a history reloaded in another bucket size, or
+                // answered late, looks like here.
+                if (
+                    didChange &&
+                    (!this.latestBar || last.time >= this.latestBar.time)
+                ) {
+                    onRealtimeCallback(last);
                 }
             }
         });

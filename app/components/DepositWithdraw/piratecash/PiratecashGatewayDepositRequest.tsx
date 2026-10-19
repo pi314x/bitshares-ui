@@ -62,8 +62,7 @@ import LinkToAccountById from "components/Utility/LinkToAccountById";
 import utils from "lib/common/utils";
 import DisableCopyText from "../DisableCopyText";
 import counterpart from "counterpart";
-import QRCode from "qrcode.react";
-import CopyToClipboard from "react-copy-to-clipboard";
+import {CopyOnTap, CopyTextButton, CopyableQr} from "../DepositCopy";
 import {Modal} from "../../../design-system/Modal";
 import {useChainStoreTick} from "../../../next/hooks/useChainStoreTick";
 
@@ -307,7 +306,7 @@ function PiratecashGatewayDepositRequest(
                     </div>
                     {!memoText ? (
                         <div className="QR">
-                            <QRCode size={128} value={clipboardText} />
+                            <CopyableQr value={clipboardText} />
                         </div>
                     ) : null}
                 </div>
@@ -344,7 +343,11 @@ function PiratecashGatewayDepositRequest(
                                                 "gateway.use_copy_button"
                                             )}
                                         >
-                                            <b>{deposit_address_fragment}</b>
+                                            <b>
+                                                <CopyOnTap text={clipboardText}>
+                                                    {deposit_address_fragment}
+                                                </CopyOnTap>
+                                            </b>
                                         </DisableCopyText>
                                     </td>
                                 </tr>
@@ -363,7 +366,11 @@ function PiratecashGatewayDepositRequest(
                                                     "gateway.use_copy_button"
                                                 )}
                                             >
-                                                <b> {deposit_memo} </b>
+                                                <b>
+                                                    <CopyOnTap text={memoText}>
+                                                        {deposit_memo}
+                                                    </CopyOnTap>
+                                                </b>
                                             </DisableCopyText>
                                         </td>
                                     </tr>
@@ -372,18 +379,16 @@ function PiratecashGatewayDepositRequest(
                         </table>
                         <div className="button-group" style={{paddingTop: 10}}>
                             {deposit_address_fragment ? (
-                                <CopyToClipboard text={clipboardText}>
-                                    <div className="button">
-                                        <Translate content="gateway.copy_address" />
-                                    </div>
-                                </CopyToClipboard>
+                                <CopyTextButton
+                                    text={clipboardText}
+                                    label="copy_address"
+                                />
                             ) : null}
                             {memoText ? (
-                                <CopyToClipboard text={memoText}>
-                                    <div className="button">
-                                        <Translate content="gateway.copy_memo" />
-                                    </div>
-                                </CopyToClipboard>
+                                <CopyTextButton
+                                    text={memoText}
+                                    label="copy_memo"
+                                />
                             ) : null}
                             {showPayFromWallet ? (
                                 <a className="button" href={payFromWallet}>

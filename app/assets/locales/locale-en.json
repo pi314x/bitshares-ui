@@ -527,7 +527,31 @@
         "step_latency": "Choosing the fastest node",
         "title": "Application initialization issues",
         "understand": "I understand",
-        "ws_status": "Full node connection status"
+        "ws_status": "Full node connection status",
+        "local": {
+            "title": "On this device",
+            "settings_loading": "Reading your settings...",
+            "settings_done": "Settings loaded (language, theme, nodes)",
+            "settings_failed": "Settings could not be read",
+            "database_loading": "Opening the local database...",
+            "database_done": "Local database opened",
+            "database_failed": "The local database could not be opened",
+            "keys_loading": "Reading the keys stored in this browser...",
+            "keys_none": "No keys stored in this browser",
+            "keys_some": "%(count)s keys stored in this browser (encrypted until you unlock the wallet)",
+            "keys_failed": "The stored keys could not be read",
+            "wallet_loading": "Looking for a local wallet...",
+            "wallet_none": "No local wallet on this device",
+            "wallet_password": "Account name and password sign-in: no local wallet is needed",
+            "wallet_one": "Wallet \"%(name)s\" found, locked until you unlock it",
+            "wallet_several": "%(count)s local wallets found, \"%(name)s\" is the current one, locked until you unlock it",
+            "wallet_failed": "The local wallet could not be read",
+            "accounts_loading": "Reading your accounts...",
+            "accounts_none": "No accounts of yours on this device",
+            "accounts_some": "%(count)s accounts of yours on this device",
+            "accounts_last": "%(count)s accounts of yours on this device, last used: %(name)s",
+            "accounts_failed": "Your accounts could not be read"
+        }
     },
     "assets": {
         "BTS": "BTS is the core token of the BitShares Blockchain"
@@ -670,6 +694,20 @@
             "no_prices": "No prices yet for the assets on offer.",
             "collateral": "Accepted collateral",
             "accepted_by": "%(count)s of %(total)s offers"
+        },
+        "auto_repay": {
+            "title": "Repayment of credit deal %(id)s",
+            "note": "When the deal falls due the chain can repay it from your balance by itself. Without it the deal expires and the collateral goes to the lender.",
+            "label": "Automatic repayment",
+            "mode_0": "Repay by hand",
+            "mode_1": "Repay in full automatically",
+            "mode_2": "Repay automatically, in part if need be",
+            "help_0": "Nothing is repaid for you.",
+            "help_1": "The whole debt is repaid from your balance when it falls due, or nothing is.",
+            "help_2": "As much of the debt as your balance covers is repaid when it falls due.",
+            "column": "Auto-repay",
+            "submit": "Save",
+            "success": "The repayment setting was updated."
         }
     },
     "customizable_table": {
@@ -1476,7 +1514,17 @@
             "support_block": "For support, please contact XBTS at:",
             "under_construction": "Under Construction"
         },
-        "your_account": "Your account"
+        "your_account": "Your account",
+        "copied": "Copied",
+        "copy_failed": "Could not copy - try again",
+        "copy_qr": "Copy QR code",
+        "save_qr": "Save QR code",
+        "qr_saved": "QR code saved",
+        "qr_alt": "QR code of the deposit address",
+        "qr_hold_hint": "On a phone: press and hold the code to copy or save it.",
+        "tap_to_copy": "Click or tap to copy",
+        "tap_qr_image": "Click or tap the code to copy it.",
+        "tap_qr_text": "Click or tap the code to copy the address."
     },
     "global": {
         "cancel": "Cancel",
@@ -2074,7 +2122,8 @@
             "stable": "Stable",
             "view_list": "List",
             "view_graph": "Graph",
-            "fees_yearly": "≈ %(percent)s / year"
+            "fees_yearly": "≈ %(percent)s / year",
+            "edit_fees": "Fees"
         },
         "swap": {
             "title": "Swap",
@@ -2546,7 +2595,56 @@
         "node_hide": "Hide",
         "node_show": "Show",
         "node_remove": "Remove",
-        "nodes_none": "No nodes in this list."
+        "nodes_none": "No nodes in this list.",
+        "local_data": {
+            "title": "On this device",
+            "label_wallet": "Wallet",
+            "label_lock": "Wallet lock",
+            "label_keys": "Keys",
+            "label_accounts": "Accounts",
+            "label_current": "Last used",
+            "label_extension": "Wallet extension",
+            "label_preferences": "Preferences",
+            "wallet_none": "No local wallet",
+            "wallet_password": "No local wallet: you sign in with an account name and password",
+            "wallet_one": "Wallet \"%(name)s\"",
+            "wallet_several": "%(count)s wallets, \"%(name)s\" is the current one",
+            "locked": "Locked: the keys are encrypted until you unlock",
+            "unlocked": "Unlocked: transactions can be signed until it locks again",
+            "keys_none": "No keys stored in this browser",
+            "keys_some": "%(count)s keys stored in this browser, encrypted",
+            "accounts_none": "No accounts of yours on this device",
+            "accounts_some": "%(count)s accounts of yours",
+            "accounts_hidden": "%(count)s accounts of yours, %(hidden)s of them hidden",
+            "current_account": "%(name)s",
+            "extension_on": "Connected: it signs for its account",
+            "extension_off": "Not connected",
+            "preferences": "Language %(language)s, theme %(theme)s, node %(node)s",
+            "note": "Everything here is kept in this browser. Back up your wallet before you clear the browser's data.",
+            "delete": {
+                "button": "Delete local data…",
+                "hint": "Removes the wallet, the keys, the accounts and the settings from this browser. Your accounts and funds on the blockchain are not touched.",
+                "title": "Delete local data",
+                "step": "Step %(step)s of 2",
+                "warn_title": "Delete everything this browser holds?",
+                "warn_risk": "Without a backup of your keys or your brainkey you cannot sign for your accounts again, and funds can be lost for good. This cannot be undone.",
+                "warn_intro": "This is removed from this browser:",
+                "warn_wallet": "The local wallet and the encrypted keys in it (databases found: %(count)s)",
+                "warn_accounts": "The accounts you added on this device, and the list of hidden accounts",
+                "warn_prefs": "Saved preferences: language, theme, node and other settings (entries found: %(count)s)",
+                "warn_stays": "Not affected: your accounts, balances and orders on the blockchain.",
+                "backup_link": "Back up your wallet first",
+                "accept": "I have a backup, or I accept that my keys are lost for good",
+                "continue": "Continue",
+                "final_title": "Last step",
+                "final_text": "Type %(word)s to confirm. Then everything is deleted at once and the page reloads, as new.",
+                "final_label": "Type %(word)s to confirm",
+                "back": "Back",
+                "confirm": "Delete everything",
+                "blocked": "Another tab of this app still has the data open. Close the other tabs and try again.",
+                "failed": "Could not delete: %(reason)s"
+            }
+        }
     },
     "showcases": {
         "barter": {
@@ -3183,7 +3281,28 @@
         "description": "The BitShares blockchain allows the holders of its core token BTS to vote on block producers (witnesses), committee members (blockchain governance), worker proposals (reimbursement for tasks and strategic decisions through BSIPs/Polls).",
         "increase_voting_power": "Create Lock",
         "ticket_explanation": "Obtain voting power by locking away the core token BTS.",
-        "title": "Voting"
+        "title": "Voting",
+        "tickets": {
+            "title": "Your locks",
+            "col_ticket": "Lock",
+            "col_amount": "Amount",
+            "col_type": "Type",
+            "col_status": "Status",
+            "col_next": "Next change",
+            "status_charging": "Charging",
+            "status_stable": "Stable",
+            "status_withdrawing": "Withdrawing",
+            "change": "Change",
+            "update_title": "Change lock %(id)s",
+            "update_note": "A lock gains voting power the more firmly it is locked. Changing it to a looser type starts its unlocking; the chain carries out each step on its own schedule.",
+            "update_target": "New type",
+            "update_part": "Only this much (%(symbol)s)",
+            "update_part_help": "Leave empty to change the whole lock; a part is split off and changed, the rest stays as it is.",
+            "update_all": "The whole lock",
+            "update_submit": "Change lock",
+            "err_part": "An amount greater than zero and smaller than the lock.",
+            "success": "The lock was changed."
+        }
     },
     "walkthrough": {
         "buy_form": "Place buy orders using this form.",
@@ -3450,5 +3569,44 @@
         "trade_sold": "Sold %(pays)s, received %(receives)s",
         "trade_sold_maker": "Your order sold %(pays)s for %(receives)s",
         "unseen": "%(count)s new"
+    },
+    "order_update": {
+        "title": "Update order #%(order)s",
+        "loading": "Loading the order...",
+        "selling": "Selling %(amount)s %(sell)s for %(receive)s at %(price)s %(receive)s per %(sell)s.",
+        "amount_label": "Amount to sell (%(symbol)s)",
+        "amount_help": "More than the order holds is taken from your balance; less is given back.",
+        "price_label": "Price (%(receive)s per %(sell)s)",
+        "receive_help": "The order pays out %(amount)s %(symbol)s when it fills completely.",
+        "expires_label": "Expiration",
+        "expires_keep": "Keep the current expiration",
+        "expires_hour": "In 1 hour",
+        "expires_day": "In 1 day",
+        "expires_week": "In 7 days",
+        "expires_month": "In 30 days",
+        "expires_year": "In 1 year",
+        "submit": "Update order",
+        "button": "Update order",
+        "success": "The order was updated.",
+        "err_nothing_changed": "Change the amount, the price or the expiration.",
+        "err_amount_invalid": "Enter an amount greater than zero.",
+        "err_price_invalid": "Enter a price greater than zero.",
+        "err_too_small": "At this amount and price the order would be worth nothing. Cancel it instead.",
+        "err_too_big": "This price is too high for the amount."
+    },
+    "operation_dialog": {
+        "cancel": "Cancel",
+        "failed": "The transaction failed."
+    },
+    "pool_fees": {
+        "title": "Fees of liquidity pool %(id)s",
+        "note": "Only the owner of a pool - the issuer of its share asset - can change its fees. A change applies to every swap and withdrawal from then on.",
+        "taker": "Swap fee (%)",
+        "taker_help": "What a swap pays into the pool, in percent of the amount received.",
+        "withdrawal": "Withdrawal fee (%)",
+        "withdrawal_help": "What leaving the pool costs, in percent of what is withdrawn.",
+        "err_fee": "A percentage from 0 to 100 with at most two decimals.",
+        "submit": "Save fees",
+        "success": "The fees of the pool were updated."
     }
 }

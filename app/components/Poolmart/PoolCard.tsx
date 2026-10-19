@@ -35,6 +35,8 @@ export interface PoolCardProps {
     canAct: boolean;
     onSwap: () => void;
     onStake: () => void;
+    /** Given for a pool the signed-in account owns: change its fees. */
+    onEditFees?: () => void;
 }
 
 function Fact({
@@ -59,7 +61,8 @@ export function PoolCard({
     pool,
     canAct,
     onSwap,
-    onStake
+    onStake,
+    onEditFees
 }: PoolCardProps): JSX.Element {
     const m = pool.metrics;
     const inverse = m.priceBPerA ? 1 / m.priceBPerA : null;
@@ -167,6 +170,11 @@ export function PoolCard({
                 <Button disabled={!canAct} onClick={onStake}>
                     {t("add_remove")}
                 </Button>
+                {onEditFees ? (
+                    <Button disabled={!canAct} onClick={onEditFees}>
+                        {t("edit_fees")}
+                    </Button>
+                ) : null}
             </footer>
         </article>
     );

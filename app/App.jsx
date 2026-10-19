@@ -3,6 +3,14 @@ import {ChainStore} from "bitsharesjs";
 import AccountStore from "stores/AccountStore";
 import NotificationStore from "stores/NotificationStore";
 import {useLocation} from "react-router-dom";
+import Translate from "react-translate-component";
+import {
+    DESKTOP_QUERY,
+    DesktopModalContext,
+    ModalOrPage,
+    isDesktopModalPath
+} from "./next/desktopModal";
+import {useMediaQuery} from "./next/hooks/useMediaQuery";
 import SyncError from "./components/SyncError";
 import LoadingIndicator from "./components/LoadingIndicator";
 import BrowserNotifications from "./components/BrowserNotifications/BrowserNotificationsContainer";
@@ -266,6 +274,74 @@ const LoginRoute = withLegacyRouterProps(Login);
 const RegistrationSelectorRoute = withLegacyRouterProps(RegistrationSelector);
 const WalletRegistrationRoute = withLegacyRouterProps(WalletRegistration);
 const AccountRegistrationRoute = withLegacyRouterProps(AccountRegistration);
+
+// The small pages (one short form each) that open as a dialog over the page the user
+// came from on a desktop screen, and are a page of their own on a phone: the same
+// elements serve both (`ModalOrPage` reads which one it is).
+const desktopModalRoutes = [
+    <Route key="deposit" path="/deposit" element={<DepositPage />} />,
+    <Route key="withdraw" path="/withdraw" element={<WithdrawPage />} />,
+    <Route
+        key="instant"
+        path="/instant-trade"
+        element={
+            <ModalOrPage
+                title={<Translate content="showcases.instant_trade.title" />}
+                width={680}
+            >
+                <QuickTrade />
+            </ModalOrPage>
+        }
+    />,
+    <Route
+        key="instant-market"
+        path="/instant-trade/:marketID"
+        element={
+            <ModalOrPage
+                title={<Translate content="showcases.instant_trade.title" />}
+                width={680}
+            >
+                <QuickTrade />
+            </ModalOrPage>
+        }
+    />,
+    <Route
+        key="htlc"
+        path="/htlc"
+        element={
+            <ModalOrPage
+                title={<Translate content="showcases.htlc.title_short" />}
+                width={980}
+            >
+                <Htlc />
+            </ModalOrPage>
+        }
+    />,
+    <Route
+        key="direct-debit"
+        path="/direct-debit"
+        element={
+            <ModalOrPage
+                title={<Translate content="showcases.direct_debit.title" />}
+                width={980}
+            >
+                <DirectDebit />
+            </ModalOrPage>
+        }
+    />,
+    <Route
+        key="borrow"
+        path="/borrow"
+        element={
+            <ModalOrPage
+                title={<Translate content="showcases.borrow.title" />}
+                width={880}
+            >
+                <Borrow />
+            </ModalOrPage>
+        }
+    />
+];
 
 class App extends React.Component {
     constructor() {
@@ -577,180 +653,190 @@ class App extends React.Component {
                     <NewsHeadline />
                     <AppShell
                         content={
-                            <Routes>
-                                <Route path="/" element={<DashboardPage />} />
-                                <Route
-                                    path="/account/:account_name/*"
-                                    element={<AccountPage />}
-                                />
-                                <Route
-                                    path="/accounts"
-                                    element={<DashboardAccountsOnly />}
-                                />
-                                <Route
-                                    path="/market/:marketID"
-                                    element={<Exchange />}
-                                />
-                                <Route
-                                    path="/credit-offer"
-                                    element={<CreditOfferPage />}
-                                />
-                                <Route path="/send" element={<SendPage />} />
-                                <Route
-                                    path="/deposit"
-                                    element={<DepositPage />}
-                                />
-                                <Route
-                                    path="/withdraw"
-                                    element={<WithdrawPage />}
-                                />
-                                <Route
-                                    path="/timed-transfer"
-                                    element={<TimedTransferPage />}
-                                />
-                                <Route
-                                    path="/samet-funds"
-                                    element={<SametFundsPage />}
-                                />
-                                <Route
-                                    path="/settings/:tab"
-                                    element={<Settings />}
-                                />
-                                <Route
-                                    path="/settings"
-                                    element={<Settings />}
-                                />
-                                <Route
-                                    path="/invoice/:data"
-                                    element={<Invoice />}
-                                />
-                                <Route
-                                    path="/deposit-withdraw"
-                                    element={<Navigate to="/deposit" replace />}
-                                />
-                                <Route
-                                    path="/create-account/*"
-                                    element={<LoginSelector />}
-                                />
-                                <Route path="/login" element={<LoginRoute />} />
-                                <Route
-                                    path="/registration"
-                                    element={<RegistrationSelectorRoute />}
-                                />
-                                <Route
-                                    path="/registration/local"
-                                    element={<WalletRegistrationRoute />}
-                                />
-                                <Route
-                                    path="/registration/cloud"
-                                    element={<AccountRegistrationRoute />}
-                                />
-                                <Route path="/news" element={<News />} />
-                                <Route
-                                    path="/portfolio"
-                                    element={
-                                        <Navigate
-                                            to={`/account/${accountName}/overview`}
-                                            replace
-                                        />
+                            <>
+                                <Routes
+                                    location={
+                                        this.props.backgroundLocation ||
+                                        undefined
                                     }
-                                />
-                                <Route
-                                    path="/voting"
-                                    element={
-                                        <Navigate
-                                            to={`/account/${accountName}/voting`}
-                                            replace
-                                        />
-                                    }
-                                />
-                                {/* Explorer routes */}
-                                <Route
-                                    path="/explorer/pools"
-                                    element={<Navigate to="/pools" replace />}
-                                />
-                                <Route
-                                    path="/explorer/:tab"
-                                    element={<Explorer />}
-                                />
-                                <Route
-                                    path="/explorer"
-                                    element={<Explorer />}
-                                />
-                                <Route
-                                    path="/asset/:symbol"
-                                    element={<Asset />}
-                                />
-                                <Route
-                                    path="/block/:height"
-                                    element={<Block />}
-                                />
-                                <Route
-                                    path="/block/:height/:txIndex"
-                                    element={<Block />}
-                                />
-                                <Route path="/borrow" element={<Borrow />} />
+                                >
+                                    {desktopModalRoutes}
+                                    <Route
+                                        path="/"
+                                        element={<DashboardPage />}
+                                    />
+                                    <Route
+                                        path="/account/:account_name/*"
+                                        element={<AccountPage />}
+                                    />
+                                    <Route
+                                        path="/accounts"
+                                        element={<DashboardAccountsOnly />}
+                                    />
+                                    <Route
+                                        path="/market/:marketID"
+                                        element={<Exchange />}
+                                    />
+                                    <Route
+                                        path="/credit-offer"
+                                        element={<CreditOfferPage />}
+                                    />
+                                    <Route
+                                        path="/send"
+                                        element={<SendPage />}
+                                    />
+                                    <Route
+                                        path="/timed-transfer"
+                                        element={<TimedTransferPage />}
+                                    />
+                                    <Route
+                                        path="/samet-funds"
+                                        element={<SametFundsPage />}
+                                    />
+                                    <Route
+                                        path="/settings/:tab"
+                                        element={<Settings />}
+                                    />
+                                    <Route
+                                        path="/settings"
+                                        element={<Settings />}
+                                    />
+                                    <Route
+                                        path="/invoice/:data"
+                                        element={<Invoice />}
+                                    />
+                                    <Route
+                                        path="/deposit-withdraw"
+                                        element={
+                                            <Navigate to="/deposit" replace />
+                                        }
+                                    />
+                                    <Route
+                                        path="/create-account/*"
+                                        element={<LoginSelector />}
+                                    />
+                                    <Route
+                                        path="/login"
+                                        element={<LoginRoute />}
+                                    />
+                                    <Route
+                                        path="/registration"
+                                        element={<RegistrationSelectorRoute />}
+                                    />
+                                    <Route
+                                        path="/registration/local"
+                                        element={<WalletRegistrationRoute />}
+                                    />
+                                    <Route
+                                        path="/registration/cloud"
+                                        element={<AccountRegistrationRoute />}
+                                    />
+                                    <Route path="/news" element={<News />} />
+                                    <Route
+                                        path="/portfolio"
+                                        element={
+                                            <Navigate
+                                                to={`/account/${accountName}/overview`}
+                                                replace
+                                            />
+                                        }
+                                    />
+                                    <Route
+                                        path="/voting"
+                                        element={
+                                            <Navigate
+                                                to={`/account/${accountName}/voting`}
+                                                replace
+                                            />
+                                        }
+                                    />
+                                    {/* Explorer routes */}
+                                    <Route
+                                        path="/explorer/pools"
+                                        element={
+                                            <Navigate to="/pools" replace />
+                                        }
+                                    />
+                                    <Route
+                                        path="/explorer/:tab"
+                                        element={<Explorer />}
+                                    />
+                                    <Route
+                                        path="/explorer"
+                                        element={<Explorer />}
+                                    />
+                                    <Route
+                                        path="/asset/:symbol"
+                                        element={<Asset />}
+                                    />
+                                    <Route
+                                        path="/block/:height"
+                                        element={<Block />}
+                                    />
+                                    <Route
+                                        path="/block/:height/:txIndex"
+                                        element={<Block />}
+                                    />
 
-                                <Route path="/barter" element={<Barter />} />
-                                <Route
-                                    path="/direct-debit"
-                                    element={<DirectDebit />}
-                                />
+                                    <Route
+                                        path="/barter"
+                                        element={<Barter />}
+                                    />
 
-                                <Route
-                                    path="/spotlight"
-                                    element={<ShowcaseGrid />}
-                                />
+                                    <Route
+                                        path="/spotlight"
+                                        element={<ShowcaseGrid />}
+                                    />
 
-                                {/* Wallet backup/restore routes */}
-                                <Route
-                                    path="/wallet/*"
-                                    element={<WalletManager />}
-                                />
-                                <Route
-                                    path="/create-wallet-brainkey"
-                                    element={<CreateWalletFromBrainkey />}
-                                />
-                                <Route
-                                    path="/existing-account/*"
-                                    element={<ExistingAccount />}
-                                />
+                                    {/* Wallet backup/restore routes */}
+                                    <Route
+                                        path="/wallet/*"
+                                        element={<WalletManager />}
+                                    />
+                                    <Route
+                                        path="/create-wallet-brainkey"
+                                        element={<CreateWalletFromBrainkey />}
+                                    />
+                                    <Route
+                                        path="/existing-account/*"
+                                        element={<ExistingAccount />}
+                                    />
 
-                                <Route
-                                    path="/create-worker"
-                                    element={<CreateWorker />}
-                                />
+                                    <Route
+                                        path="/create-worker"
+                                        element={<CreateWorker />}
+                                    />
 
-                                {/* Help routes */}
-                                <Route path="/help" element={<Help />} />
-                                <Route path="/help/:path1" element={<Help />} />
-                                <Route
-                                    path="/help/:path1/:path2"
-                                    element={<Help />}
-                                />
-                                <Route
-                                    path="/help/:path1/:path2/:path3"
-                                    element={<Help />}
-                                />
-                                <Route path="/htlc" element={<Htlc />} />
-                                <Route
-                                    path="/prediction"
-                                    element={<PredictionMarketsPage />}
-                                />
-                                <Route
-                                    path="/instant-trade"
-                                    element={<QuickTrade />}
-                                />
-                                <Route
-                                    path="/instant-trade/:marketID"
-                                    element={<QuickTrade />}
-                                />
-                                <Route
-                                    path="/pools"
-                                    element={<PoolmartPage />}
-                                />
-                                <Route path="*" element={<Page404 />} />
-                            </Routes>
+                                    {/* Help routes */}
+                                    <Route path="/help" element={<Help />} />
+                                    <Route
+                                        path="/help/:path1"
+                                        element={<Help />}
+                                    />
+                                    <Route
+                                        path="/help/:path1/:path2"
+                                        element={<Help />}
+                                    />
+                                    <Route
+                                        path="/help/:path1/:path2/:path3"
+                                        element={<Help />}
+                                    />
+                                    <Route
+                                        path="/prediction"
+                                        element={<PredictionMarketsPage />}
+                                    />
+                                    <Route
+                                        path="/pools"
+                                        element={<PoolmartPage />}
+                                    />
+                                    <Route path="*" element={<Page404 />} />
+                                </Routes>
+                                {this.props.backgroundLocation ? (
+                                    <DesktopModalContext.Provider value={true}>
+                                        <Routes>{desktopModalRoutes}</Routes>
+                                    </DesktopModalContext.Provider>
+                                ) : null}
+                            </>
                         }
                     />
                     <ReactTooltip
@@ -806,7 +892,29 @@ class App extends React.Component {
 // semantics `useLocation()` provides, not just a reactive dependency.
 function AppWithLocation(props) {
     const location = useLocation();
-    return <App {...props} location={location} />;
+    // On a desktop a small page is a dialog over the page that was open, so that page
+    // stays on screen as the routes' background (the dashboard, when the address was
+    // opened directly); on a phone it is a page like any other.
+    const desktop = useMediaQuery(DESKTOP_QUERY);
+    const lastPage = React.useRef(null);
+    const asDialog = desktop && isDesktopModalPath(location.pathname);
+    if (!isDesktopModalPath(location.pathname)) lastPage.current = location;
+    const backgroundLocation = asDialog
+        ? lastPage.current || {
+              pathname: "/",
+              search: "",
+              hash: "",
+              state: null,
+              key: "dialog-background"
+          }
+        : null;
+    return (
+        <App
+            {...props}
+            location={location}
+            backgroundLocation={backgroundLocation}
+        />
+    );
 }
 
 export default AppWithLocation;

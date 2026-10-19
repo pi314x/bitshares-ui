@@ -70,6 +70,7 @@ import {ChainStore, FetchChain} from "bitsharesjs";
 import {LimitOrder, CallOrder} from "common/MarketClasses";
 import ReactTooltip from "react-tooltip";
 import {Button} from "../../design-system/Button";
+import OrderUpdateModal from "../Modal/OrderUpdateModal";
 import {MarketsOrderView, MarketOrdersRowView} from "./View/MarketOrdersView";
 import NotificationActions from "actions/NotificationActions";
 
@@ -167,6 +168,10 @@ function MarketOrdersInner(props: MarketOrdersProps) {
     const [activeTab, setActiveTab] = React.useState(activeTabProp);
     const [showAll, setShowAll] = React.useState(false);
     const [selectedOrders, setSelectedOrders] = React.useState<any[]>([]);
+    // one selected order can be updated (limit_order_update)
+    const [updatingOrder, setUpdatingOrder] = React.useState<string | null>(
+        null
+    );
 
     const viewRef = React.useRef<any>(null);
     const contentTransitionRef = React.useRef<any>(null);
@@ -532,10 +537,23 @@ function MarketOrdersInner(props: MarketOrdersProps) {
         );
 
         const cancelOrderButton = (
-            <div style={{display: "grid"}}>
+            <div style={{display: "grid", gap: 8}}>
+                {selectedOrders.length === 1 ? (
+                    <Button onClick={() => setUpdatingOrder(selectedOrders[0])}>
+                        <Translate content="order_update.button" />
+                    </Button>
+                ) : null}
                 <Button onClick={cancelSelected}>
                     <Translate content="exchange.cancel_selected_orders" />
                 </Button>
+                <OrderUpdateModal
+                    orderId={updatingOrder}
+                    onCancel={() => setUpdatingOrder(null)}
+                    onDone={() => {
+                        setUpdatingOrder(null);
+                        setSelectedOrders([]);
+                    }}
+                />
             </div>
         );
 

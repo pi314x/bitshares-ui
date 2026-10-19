@@ -34,6 +34,7 @@ import {Link} from "react-router-dom";
 import {MarketPrice} from "../Utility/MarketPrice";
 import FormattedPrice from "../Utility/FormattedPrice";
 import AssetName from "../Utility/AssetName";
+import OrderUpdateModal from "../Modal/OrderUpdateModal";
 import {EquivalentValueComponent} from "../Utility/EquivalentValueComponent";
 import utils from "common/utils";
 import asset_utils from "common/asset_utils";
@@ -748,6 +749,10 @@ function AccountOrders(props: AccountOrdersCoreProps) {
     };
 
     const {selectedOrders} = state;
+    // one selected order can be updated (limit_order_update)
+    const [updatingOrder, setUpdatingOrder] = React.useState<string | null>(
+        null
+    );
 
     const ordersTable = renderOrdersTable();
     const settleOrdersTable = renderSettleOrdersTable();
@@ -788,6 +793,19 @@ function AccountOrders(props: AccountOrdersCoreProps) {
             </div>
             {selectedOrders.length ? (
                 <span className="action-buttons">
+                    {selectedOrders.length === 1 ? (
+                        <>
+                            <Button
+                                key="update"
+                                onClick={() =>
+                                    setUpdatingOrder(selectedOrders[0])
+                                }
+                            >
+                                <Translate content="order_update.button" />
+                            </Button>
+                            &nbsp;
+                        </>
+                    ) : null}
                     <Button
                         key="submit"
                         variant="accent"
@@ -808,6 +826,14 @@ function AccountOrders(props: AccountOrdersCoreProps) {
     return (
         <div className={styles.page}>
             {toolbar}
+            <OrderUpdateModal
+                orderId={updatingOrder}
+                onCancel={() => setUpdatingOrder(null)}
+                onDone={() => {
+                    setUpdatingOrder(null);
+                    resetSelected();
+                }}
+            />
             <section className={styles.card}>
                 <div className={styles.cardHead}>
                     <h2 className={styles.cardTitle}>

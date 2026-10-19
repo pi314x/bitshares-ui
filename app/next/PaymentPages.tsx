@@ -1,5 +1,4 @@
 import * as React from "react";
-import {useNavigate} from "react-router-dom";
 import {ModalAsPage} from "../design-system/Modal";
 import {useReduxState} from "./hooks/useReduxState";
 import {selectAccountState} from "../store/slices/accountSlice";
@@ -7,6 +6,7 @@ import {selectGateway} from "../store/slices/gatewaySlice";
 import SendModal from "../components/Modal/SendModal";
 import DepositModal from "../components/Modal/DepositModal";
 import WithdrawModal from "../components/Modal/WithdrawModalNew";
+import {useDesktopModal, useLeave} from "./desktopModal";
 import styles from "./PaymentPages.module.scss";
 
 // Send, Deposit and Withdraw as pages of their own (menu: Payments). They are
@@ -14,19 +14,6 @@ import styles from "./PaymentPages.module.scss";
 // page instead of over it (`ModalAsPage`), so they can be reached, bookmarked
 // and left like any other screen. Cancelling or finishing returns to where the
 // user came from.
-
-function useLeave(): () => void {
-    const navigate = useNavigate();
-    return React.useCallback(() => {
-        // react-router numbers its history entries: index 0 is the first page
-        // of this tab, so there is nothing to go back to - the dashboard then
-        if (window.history.state && window.history.state.idx > 0) {
-            navigate(-1);
-        } else {
-            navigate("/", {replace: true});
-        }
-    }, [navigate]);
-}
 
 function useCurrentAccount(): string | null {
     const account = useReduxState<any>(selectAccountState);
@@ -59,38 +46,45 @@ export function SendPage(): JSX.Element {
 
 export function DepositPage(): JSX.Element {
     const leave = useLeave();
+    const asModal = useDesktopModal();
     const accountName = useCurrentAccount();
     const gateway = useReduxState<any>(selectGateway);
+    const dialog = (
+        <DepositModal
+            visible={true}
+            hideModal={leave}
+            showModal={() => undefined}
+            modalId="deposit_page"
+            account={accountName}
+            backedCoins={gateway.backedCoins}
+        />
+    );
+    // on a desktop the dialog opens over the page the user came from
+    if (asModal) return dialog;
     return (
         <div className={styles.page}>
-            <ModalAsPage>
-                <DepositModal
-                    visible={true}
-                    hideModal={leave}
-                    showModal={() => undefined}
-                    modalId="deposit_page"
-                    account={accountName}
-                    backedCoins={gateway.backedCoins}
-                />
-            </ModalAsPage>
+            <ModalAsPage>{dialog}</ModalAsPage>
         </div>
     );
 }
 
 export function WithdrawPage(): JSX.Element {
     const leave = useLeave();
+    const asModal = useDesktopModal();
     const gateway = useReduxState<any>(selectGateway);
+    const dialog = (
+        <WithdrawModal
+            visible={true}
+            hideModal={leave}
+            showModal={() => undefined}
+            modalId="withdraw_page"
+            backedCoins={gateway.backedCoins}
+        />
+    );
+    if (asModal) return dialog;
     return (
         <div className={styles.page}>
-            <ModalAsPage>
-                <WithdrawModal
-                    visible={true}
-                    hideModal={leave}
-                    showModal={() => undefined}
-                    modalId="withdraw_page"
-                    backedCoins={gateway.backedCoins}
-                />
-            </ModalAsPage>
+            <ModalAsPage>{dialog}</ModalAsPage>
         </div>
     );
 }

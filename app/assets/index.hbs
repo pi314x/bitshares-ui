@@ -66,14 +66,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding-top: 30vh;
+            /* The loading screen centres its whole group (ring, title, steps) in
+               the window; the ring here stands where that group's ring will, so
+               nothing moves when the screen takes over: the spacer below is the
+               height of what comes under the ring there. */
+            justify-content: center;
             margin: 0;
             color: var(--boot-ink);
             font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
             font-size: 17px;
             font-weight: 600;
             letter-spacing: -0.01em;
+        }
+
+        .centerDiv::after {
+            content: "";
+            flex: none;
+            height: 330px;
         }
 
         /* Same ring as components/LoadingIndicator (Ring) and the loading screen:

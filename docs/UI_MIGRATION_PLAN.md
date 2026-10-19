@@ -13149,6 +13149,59 @@ on an iPhone).
 - **Metadata**: the page title is "BitShares Desk" (it carried the package version with
   its "-rc1"), the head has a description, theme colour and Open Graph tags, and
   package.json has its own name, version and description.
+- **Operations 75-77 and the missing creation dialogs.** bitsharesjs 6.0.3 does not know
+  `liquidity_pool_update` (75), `credit_deal_update` (76) and `limit_order_update` (77):
+  `lib/chain/extraOperations.ts` registers them at run time (serializers, `ChainTypes`,
+  the operation tables) and is imported first in `app/index.js`, because other modules
+  take `Object.keys(operations)` when they load; the hex of each is checked against
+  the library's fork. The dialogs share `Utility/OperationDialog` (`DialogField`,
+  `DialogNote`, `useOperationSubmit`, `describeTxError`): **Update order** (77: amount and
+  price, expiry; `lib/common/orderUpdate.ts` plans it against the core rules - new price
+  base never above the amount for sale, no empty order, future expiry), **Auto-repay** on
+  a credit deal (76: 0/1/2), **Pool fees** for the pools whose share asset the account
+  issues (75: hundredths of a percent, at most 100 %), **Change lock** for a voting
+  ticket (58, `Account/TicketsList.tsx`, shown above the Voting tabs). History lines,
+  labels and details exist for all 78 operation types; `docs/OPERATION_COVERAGE.md` lists
+  the 14 that nothing in the UI creates. None of the four dialogs has been broadcast on a
+  chain; the serialization and the rules are covered by tests only.
+- **Desktop dialogs** (`next/desktopModal.tsx`, `App.jsx`): on a screen wider than 860px
+  Deposit, Withdraw, Instant trade, Timed transfer (htlc), Direct debit and Borrow open as a
+  dialog over the page that was open, with their own URL (the last page that is not a
+  dialog stays under it as `backgroundLocation`); on a phone the same routes stay pages.
+  `ModalOrPage` is the one wrapper; a new dialog route is one entry of `desktopModalRoutes`.
+- **Deposit copy** (`lib/common/clipboard.ts`, `DepositWithdraw/DepositCopy.tsx`): the
+  address, the memo and the QR code copy on click or touch. `navigator.clipboard` only
+  exists on https, and the site is also loaded over http, so the fallback selects a
+  hidden field and runs `execCommand("copy")` (what iOS accepts); the QR is an `<img>`
+  (press and hold works on a phone), copied as an image where the browser can and else
+  saved as a PNG, and a tap on it copies the address where an image cannot be copied.
+- **Loading sequence** (`lib/common/startupProgress.ts`, `LoadingScreen.tsx`,
+  `routerTransition.js`): one list of seven steps - latency check, node, database,
+  settings, keys, wallet, accounts. The local ones read what is on the device while the
+  app starts and show counts and names only, never keys. The first screen
+  (`assets/index.hbs`) and this one keep the ring at the same place on the hand-over.
+- **Settings -> Accounts -> "On this device"** (`Settings/LocalDataCard.tsx`,
+  `lib/common/localData.ts`): wallet, lock state, keys, accounts, extension and
+  preferences as they are now.
+- **Delete local data** (`Settings/DeleteLocalDialog.tsx`, `lib/common/deleteLocal.ts`),
+  in the same card: removes the wallet databases (`graphene_db*`, `graphene_v2_*`) and the
+  saved settings (`__graphene__*`, `__bts__*`, the theme) of this browser, nothing else.
+  Two approvals in two steps: the warning (what goes, what stays, link to the backup, a
+  checkbox) and then the word DELETE typed; nothing is deleted before the second, and
+  the delete function checks both again. The app's own connections are closed first
+  (`iDB.close()`, the root database) so that the delete is not held up by them; another
+  tab that holds a database open is reported ("close the other tabs") instead of
+  waited for, and the page reloads only when everything was deleted. Checked in Chromium
+  with the built bundle: a marker written into the app's own, open root database and
+  a marker database and key are gone afterwards, a foreign database and key stay, and
+  the first approval alone changes nothing.
+- **iOS date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the
+  native field has no intrinsic width and centres its text in Safari; `appearance: none`,
+  `display: block`, `width: 100%` and left-aligned `::-webkit-date-and-time-value` make
+  it the same height and width as the other fields.
+- **Trading chart**: the real-time update in `tradingViewClasses.js` no longer pushes a bar
+  older than the one the chart already has (the chart throws "time order violation"
+  when a history reload ends earlier than what it holds).
 - Harness: `smoke-boot.py` takes `--ls KEY=JSON` (localStorage before the page loads),
   `--overlap`, and its `#Trigger=Option` step falls back to a case-insensitive match
   (asset names are split into styled spans).

@@ -31,6 +31,7 @@ jest.mock("../../../components/Account/Voting/Witnesses", () => () => null);
 jest.mock("../../../components/Account/Voting/Committee", () => () => null);
 jest.mock("../../../components/Account/Voting/Workers", () => () => null);
 jest.mock("../../../components/Modal/CreateLockModal", () => () => null);
+jest.mock("../../../components/Account/TicketsList", () => () => null);
 jest.mock("../../../components/Account/AccountSelector", () => () => null);
 
 import AccountVoting from "../../../components/Account/AccountVoting";

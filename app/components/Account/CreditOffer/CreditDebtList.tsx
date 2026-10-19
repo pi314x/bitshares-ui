@@ -100,6 +100,8 @@ import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
 
 import {Asset} from "../../../lib/common/MarketClasses";
 import BalanceComponent from "../../Utility/BalanceComponent";
+import CreditDealUpdateModal from "./CreditDealUpdateModal";
+import {autoRepayOf} from "../../../lib/common/creditDeal";
 
 const getUninitializedFeeAmount = () =>
     new Asset({amount: 0, asset_id: "1.3.0"});
@@ -163,6 +165,9 @@ function CreditDebtList(props: CreditDebtListProps) {
 
     const stateRef = React.useRef(state);
     stateRef.current = state;
+
+    // the deal whose automatic repayment is being changed (credit_deal_update)
+    const [updatingDeal, setUpdatingDeal] = React.useState<any>(null);
 
     React.useEffect(() => {
         CreditOfferActions.getCreditDealsByBorrower({
@@ -646,6 +651,19 @@ function CreditDebtList(props: CreditDebtListProps) {
         ];
         if (account.get("name") == currentAccount) {
             header.push({
+                title: counterpart.translate("credit_offer.auto_repay.column"),
+                render: (_: any, row: any) => (
+                    <a
+                        onClick={() => setUpdatingDeal(row)}
+                        style={{whiteSpace: "nowrap"}}
+                    >
+                        {counterpart.translate(
+                            `credit_offer.auto_repay.mode_${autoRepayOf(row)}`
+                        )}
+                    </a>
+                )
+            });
+            header.push({
                 title: counterpart.translate("credit_offer.repay"),
                 render: (_: any, row: any) => (
                     <span style={{fontSize: 20}}>
@@ -681,6 +699,23 @@ function CreditDebtList(props: CreditDebtListProps) {
                         }}
                     />
                     {renderRepayModal()}
+                    <CreditDealUpdateModal
+                        account={account.get("id")}
+                        deal={updatingDeal}
+                        onCancel={() => setUpdatingDeal(null)}
+                        onDone={() => {
+                            const dealId = updatingDeal && updatingDeal.id;
+                            setUpdatingDeal(null);
+                            if (dealId) {
+                                CreditOfferActions.getCreditDealsByBorrower({
+                                    name_or_id: account.get("id"),
+                                    limit: 1,
+                                    start_id: dealId,
+                                    flag: "update"
+                                });
+                            }
+                        }}
+                    />
                 </div>
             </div>
         </div>
