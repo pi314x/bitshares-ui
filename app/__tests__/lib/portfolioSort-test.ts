@@ -1,4 +1,8 @@
-import {compareKeys, compareValues} from "../../lib/common/portfolioSort";
+import {
+    compareCoreLast,
+    compareKeys,
+    compareValues
+} from "../../lib/common/portfolioSort";
 
 describe("compareKeys", () => {
     it("is a comparator: -1, 0 or 1", () => {
@@ -77,5 +81,28 @@ describe("compareValues", () => {
                 );
             })
         );
+    });
+});
+
+describe("compareCoreLast", () => {
+    it("counts the core asset as the largest row and leaves the others alone", () => {
+        expect(compareCoreLast("BTS", "USD", "BTS")).toBe(1);
+        expect(compareCoreLast("USD", "BTS", "BTS")).toBe(-1);
+        expect(compareCoreLast("USD", "CNY", "BTS")).toBe(0);
+        expect(compareCoreLast("BTS", "BTS", "BTS")).toBe(0);
+    });
+
+    it("puts BTS first in a table that is descending by value", () => {
+        const rows = [
+            {key: "USD", value: 70},
+            {key: "BTS", value: 30},
+            {key: "CNY", value: 5}
+        ];
+        const compare = (a: any, b: any) =>
+            compareCoreLast(a.key, b.key, "BTS") ||
+            compareValues(a.value, b.value, a.key, b.key);
+        // what the table does: sort rising, then turn it round
+        const shown = [...rows].sort(compare).reverse();
+        expect(shown.map(r => r.key)).toEqual(["BTS", "USD", "CNY"]);
     });
 });

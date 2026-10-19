@@ -26,7 +26,13 @@ export interface HoldingRow extends HoldingInput {
     share: number | null;
 }
 
-/** Rows for the holdings table: biggest value first, unpriced last. */
+/** The core asset's id: BTS. */
+const CORE_ASSET_ID = "1.3.0";
+
+/**
+ * Rows for the holdings table: BTS first, then the biggest value, unpriced
+ * last.
+ */
 export function holdingRows(
     inputs: HoldingInput[]
 ): {rows: HoldingRow[]; total: number; unpriced: number} {
@@ -41,6 +47,9 @@ export function holdingRows(
         share: input.value !== null && total > 0 ? input.value / total : null
     }));
     rows.sort((a, b) => {
+        if ((a.assetId === CORE_ASSET_ID) !== (b.assetId === CORE_ASSET_ID)) {
+            return a.assetId === CORE_ASSET_ID ? -1 : 1;
+        }
         if (a.value === null && b.value === null) {
             return a.symbol.localeCompare(b.symbol);
         }

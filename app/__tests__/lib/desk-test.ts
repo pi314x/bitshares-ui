@@ -8,7 +8,7 @@ import {
 } from "../../lib/common/desk";
 
 describe("holdingRows", () => {
-    it("sorts by value, puts unpriced last, and gives shares of the priced total", () => {
+    it("puts BTS first, then sorts by value, unpriced last, and gives shares of the priced total", () => {
         const {rows, total, unpriced} = holdingRows([
             {
                 assetId: "1.3.2",
@@ -33,11 +33,13 @@ describe("holdingRows", () => {
             },
             {assetId: "1.3.9", symbol: "ZERO", precision: 4, units: 0, value: 0}
         ]);
-        expect(rows.map(r => r.symbol)).toEqual(["USD", "BTS", "AAA"]);
+        // BTS heads the list although USD is worth more
+        expect(rows.map(r => r.symbol)).toEqual(["BTS", "USD", "AAA"]);
         expect(total).toBe(100);
         expect(unpriced).toBe(1);
-        expect(rows[0].share).toBeCloseTo(0.7);
-        expect(rows[1].amount).toBe(30);
+        expect(rows[0].amount).toBe(30);
+        expect(rows[0].share).toBeCloseTo(0.3);
+        expect(rows[1].share).toBeCloseTo(0.7);
         expect(rows[2].share).toBeNull();
     });
 });

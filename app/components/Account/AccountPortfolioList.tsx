@@ -229,7 +229,11 @@ import {getBackedCoin} from "common/gatewayUtils";
 import {ChainStore} from "bitsharesjs";
 import {List} from "immutable";
 import {useMarketStatsSubscription} from "../../next/hooks/useMarketStatsSubscription";
-import {compareKeys, compareValues} from "../../lib/common/portfolioSort";
+import {
+    compareCoreLast,
+    compareKeys,
+    compareValues
+} from "../../lib/common/portfolioSort";
 import GatewayStore from "stores/GatewayStore";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectGateway} from "../../store/slices/gatewaySlice";
@@ -556,7 +560,11 @@ function AccountPortfolioListCore({
             b.adds.asset,
             false as any
         );
-        return compareValues(aValue, bValue, a.key, b.key);
+        // BTS first when the table opens (descending by value)
+        return (
+            compareCoreLast(a.key, b.key, coreSymbol) ||
+            compareValues(aValue, bValue, a.key, b.key)
+        );
     };
 
     const changeValue = (a: any, b: any) => {
@@ -1032,6 +1040,17 @@ function AccountPortfolioListCore({
                 );
                 fitted.push({
                     ...item,
+                    // The one column stands for the value as well: it sorts by
+                    // what the rows are worth (quantities of different assets
+                    // cannot be compared) and the table opens that way, BTS
+                    // first, as it does where the value has a column of its own.
+                    ...(valueColumn
+                        ? {
+                              dataIndex: valueColumn.dataIndex,
+                              sorter: valueColumn.sorter,
+                              defaultSortOrder: valueColumn.defaultSortOrder
+                          }
+                        : {}),
                     title: valueColumn ? (
                         <span>
                             {item.title} / {valueColumn.title}
@@ -1039,9 +1058,9 @@ function AccountPortfolioListCore({
                     ) : (
                         item.title
                     ),
-                    render: (cell: any, row: any) => (
+                    render: (_cell: any, row: any) => (
                         <span className={styles.qtyValue}>
-                            {item.render(cell, row)}
+                            {item.render(row.balance, row)}
                             {valueColumn &&
                             row.value !== undefined &&
                             typeof row.value !== "string" ? (
