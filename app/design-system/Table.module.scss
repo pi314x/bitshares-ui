@@ -36,6 +36,13 @@
     gap: 4px;
 }
 
+// a title with an asset logo inside it is wider than its box says (the
+// no-wrap run overflows a shrunk flex item), and the sort arrows were drawn over
+// its last letters: neither the title nor the arrows shrink
+.thContent > * {
+    flex: none;
+}
+
 .sortArrows {
     display: inline-flex;
     flex-direction: column;
