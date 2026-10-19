@@ -36,6 +36,7 @@ const mockGetLocked = jest.fn();
 jest.mock("../../actions/BalanceHistoryActions", () => ({
     __esModule: true,
     default: {
+        chainKey: () => "test",
         getBalances: (...a: any[]) => mockGetBalances(...a),
         getAssets: (...a: any[]) => mockGetAssets(...a),
         getHistory: (...a: any[]) => mockGetHistory(...a),
@@ -46,11 +47,11 @@ jest.mock("../../actions/BalanceHistoryActions", () => ({
             })),
         getBlockTimes: (...a: any[]) => mockGetBlockTimes(...a),
         getLockedInOrders: (...a: any[]) => mockGetLocked(...a)
-    },
-    olderStart: () => null
+    }
 }));
 
 import BalanceHistoryChart from "../../components/Account/BalanceHistoryChart";
+import {balanceHistory} from "../../lib/chain/balanceHistoryLoader";
 
 const ME = "1.2.10";
 
@@ -59,8 +60,10 @@ beforeAll(() => {
     (counterpart as any).setLocale("en");
 });
 
-beforeEach(() => {
+beforeEach(async () => {
     jest.clearAllMocks();
+    // the history store outlives a screen: each test starts with an empty one
+    await balanceHistory.reset();
     mockGetBalances.mockResolvedValue([
         {asset_id: "1.3.0", amount: "150000"},
         {asset_id: "1.3.121", amount: "5000"}

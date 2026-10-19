@@ -1,6 +1,6 @@
 import {Apis} from "bitsharesjs-ws";
 import SametFundActions from "./SametFundActions";
-import {HistoryEntry} from "../lib/common/balanceHistory";
+import {HistoryEntry, PAGE, olderStart} from "../lib/common/balanceHistory";
 import {settingsAPIs} from "api/apiConfig";
 import {
     MAIN_CHAIN_ID,
@@ -8,16 +8,7 @@ import {
     olderHistoryFromOtherNodes
 } from "../lib/chain/olderHistory";
 
-/** How many operations one request asks for (the node serves at most 100). */
-export const PAGE = 100;
-
-/** "1.11.57" -> "1.11.56": where the page of older operations starts. */
-export function olderStart(entries: HistoryEntry[]): string | null {
-    if (!entries.length) return null;
-    const last = entries[entries.length - 1].id.split(".");
-    const n = Number(last[2]);
-    return n > 1 ? `${last[0]}.${last[1]}.${n - 1}` : null;
-}
+export {PAGE, olderStart};
 
 function db(): any {
     return (Apis as any).instance().db_api();
@@ -28,6 +19,16 @@ function history(): any {
 }
 
 class BalanceHistoryActionsFacade {
+    /** The chain the connected node serves, for a cache that must not mix two. */
+    chainKey(): string {
+        try {
+            const id = (Apis as any).instance().chain_id;
+            return id ? String(id).substring(0, 8) : "chain";
+        } catch (e) {
+            return "chain";
+        }
+    }
+
     getBalances(accountId: string) {
         return SametFundActions.getBalances(accountId);
     }

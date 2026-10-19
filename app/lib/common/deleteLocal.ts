@@ -6,10 +6,15 @@
 //
 // Names of what is ours: IndexedDB `graphene_db_<chain>` (the root: which wallet is
 // current, the wallets' names) and `graphene_v2_<chain>_<wallet>` (one per wallet and
-// chain: the wallet record, its keys, the linked accounts); localStorage keys that
+// chain: the wallet record, its keys, the linked accounts) and `bts_desk_cache` (the saved
+// account histories of the balance chart: public chain data); localStorage keys that
 // start with `__graphene__` or `__bts__`, and the theme.
 
-export const INDEXED_DB_PREFIXES = ["graphene_db", "graphene_v2"];
+export const INDEXED_DB_PREFIXES = [
+    "graphene_db",
+    "graphene_v2",
+    "bts_desk_cache"
+];
 export const STORAGE_PREFIXES = ["__graphene__", "__bts__"];
 export const STORAGE_KEYS = ["bts-ui-theme"];
 

@@ -117,6 +117,17 @@ export interface HistoryEntry {
     block_num: number;
 }
 
+/** How many operations one request asks for (the node serves at most 100). */
+export const PAGE = 100;
+
+/** "1.11.57" -> "1.11.56": where the page of older operations starts. */
+export function olderStart(entries: HistoryEntry[]): string | null {
+    if (!entries.length) return null;
+    const last = entries[entries.length - 1].id.split(".");
+    const n = Number(last[2]);
+    return n > 1 ? `${last[0]}.${last[1]}.${n - 1}` : null;
+}
+
 export interface Resolved {
     delta: bigint;
     /** The change in what is locked in the account's open orders, in this

@@ -33,3 +33,27 @@ export function glideSpan(a: Span, b: Span, k: number): Span {
 export function sameSpan(a: Span, b: Span): boolean {
     return Math.abs(a.from - b.from) < 0.01 && Math.abs(a.to - b.to) < 0.01;
 }
+
+/**
+ * The span the chart should show for points at `times` (rising): the last `period`
+ * seconds, or the whole history when `period` is 0 - except that while older history is
+ * still arriving (`holdFrom` is the time the view was first drawn from) the whole
+ * history means only what was there at first, the most recent data, so that the view
+ * does not zoom out with every page. Half a bar either side, as the chart fits.
+ */
+export function targetSpan(
+    times: number[],
+    period: number,
+    holdFrom: number | null
+): Span {
+    const n = times.length;
+    const fromTime = period ? times[n - 1] - period : holdFrom;
+    const firstInside =
+        fromTime !== null
+            ? Math.max(
+                  0,
+                  times.findIndex(time => time >= fromTime)
+              )
+            : 0;
+    return {from: firstInside - 0.5, to: n - 1 + 0.5};
+}

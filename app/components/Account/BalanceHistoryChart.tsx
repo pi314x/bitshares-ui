@@ -14,18 +14,21 @@ import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import SametFundActions from "../../actions/SametFundActions";
 import {Select} from "../../design-system/Select";
+import AssetLabel from "../Utility/AssetLabel";
 import {Button} from "../../design-system/Button";
 import {SubMenu} from "../../design-system/SubMenu";
-import BalanceHistoryActions, {
-    olderStart
-} from "../../actions/BalanceHistoryActions";
+import BalanceHistoryActions from "../../actions/BalanceHistoryActions";
+import {balanceHistory} from "../../lib/chain/balanceHistoryLoader";
+import {useBalanceHistory} from "../../next/hooks/useBalanceHistory";
 import {AssetInfo, BalanceInfo} from "../../actions/SametFundActions";
-import {
-    HistoryEntry,
-    buildBalanceSeries
-} from "../../lib/common/balanceHistory";
+import {buildBalanceSeries} from "../../lib/common/balanceHistory";
 import {formatAmount} from "../../lib/common/sametFunds";
-import {Span, glideSpan, sameSpan} from "../../lib/common/rangeGlide";
+import {
+    Span,
+    glideSpan,
+    sameSpan,
+    targetSpan
+} from "../../lib/common/rangeGlide";
 import {changePercent, formatPercent} from "../../lib/common/balanceHistory";
 import {useUnitValue} from "../../next/hooks/useUnitValue";
 import styles from "./BalanceHistoryChart.module.scss";
@@ -33,11 +36,6 @@ import styles from "./BalanceHistoryChart.module.scss";
 const t = (key: string, params?: Record<string, any>) =>
     counterpart.translate(`balance_history.${key}`, params);
 
-/** Pages (of 100 operations) loaded up front. */
-const AUTO_PAGES = 5;
-/** More pages fetched, one at a time, to reach back as far as a chosen
- * period (a week, a month) asks for. */
-const EXTRA_PAGES = 5;
 /** How long the view takes to move to a new period. */
 const GLIDE_MS = 550;
 
@@ -138,30 +136,23 @@ export default function BalanceHistoryChart({
     const [assetId, setAssetId] = React.useState<string>("");
     // what the figures are worth in the currency chosen in the settings
     const unitValue = useUnitValue([assetId]);
-    const [entries, setEntries] = React.useState<HistoryEntry[]>([]);
-    const [times, setTimes] = React.useState<{[block: number]: number}>({});
-    const [next, setNext] = React.useState<string | null>(null);
+    // The account's operations: newest first, then the older ones page by page in the
+    // background, kept on this device (lib/common/balanceHistoryStore.ts). The store
+    // goes on loading when this screen is left for the other one that draws the chart.
+    const history = useBalanceHistory(accountId, assetId !== "");
+    const {entries, times} = history;
     const [lockedNow, setLockedNow] = React.useState<{
         [assetId: string]: string;
     }>({});
-    const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
-    const [started, setStarted] = React.useState(false);
     const [shown, setShown] = React.useState<Record<SeriesKey, boolean>>(
         readShown
     );
-    // a node other than the connected one supplied the older operations
-    const [source, setSource] = React.useState<string | null>(null);
     const [range, setRange] = React.useState<RangeKey>(readRange);
 
-    // balances, then the first page of history
+    // the balances
     React.useEffect(() => {
         let cancelled = false;
-        setStarted(false);
-        setEntries([]);
-        setTimes({});
-        setNext(null);
-        setSource(null);
         setError(null);
         BalanceHistoryActions.getLockedInOrders(accountId).then(locked => {
             if (!cancelled) setLockedNow(locked || {});
@@ -194,50 +185,6 @@ export default function BalanceHistoryChart({
         };
     }, [accountId]);
 
-    // One request returns at most 100 operations (the node's limit); the
-    // first load goes back several pages, "Load older" continues from there.
-    const loadPage = React.useCallback(
-        (
-            start: string | null,
-            pagesLeft: number = AUTO_PAGES
-        ): Promise<void> => {
-            setLoading(true);
-            return BalanceHistoryActions.getHistoryPage(accountId, start)
-                .then(({rows, source: from}) =>
-                    BalanceHistoryActions.getBlockTimes(
-                        rows.map(r => r.block_num)
-                    ).then(blockTimes => {
-                        if (from) setSource(from);
-                        setEntries(prev => prev.concat(rows));
-                        setTimes(prev => ({...prev, ...blockTimes}));
-                        const more =
-                            rows.length >= 100 ? olderStart(rows) : null;
-                        setNext(more);
-                        return more;
-                    })
-                )
-                .then(more =>
-                    more && pagesLeft > 1
-                        ? loadPage(more, pagesLeft - 1)
-                        : undefined
-                )
-                .catch(err => setError(String((err && err.message) || err)))
-                .then(() => {
-                    setLoading(false);
-                    setStarted(true);
-                });
-        },
-        [accountId]
-    );
-
-    React.useEffect(() => {
-        if (assetId && !started && !loading && entries.length === 0) {
-            loadPage(null);
-        }
-        // first page once there is an asset to draw
-        // eslint-disable-next-line
-    }, [assetId]);
-
     const asset = assetId ? assets[assetId] : undefined;
     const current = balances.find(b => b.asset_id === assetId);
 
@@ -265,6 +212,16 @@ export default function BalanceHistoryChart({
     const glideFrame = React.useRef(0);
     const viewKey = React.useRef("");
     const drawnAsset = React.useRef("");
+
+    // older history is still being loaded in the background (a period the user chose
+    // is shown at once, so only the default "All" holds back)
+    const rangeChosen = React.useRef(false);
+    const anchorFrom = React.useRef<number | null>(null);
+    React.useEffect(() => {
+        anchorFrom.current = null;
+        rangeChosen.current = false;
+    }, [accountId]);
+    const streaming = history.loading && !history.complete;
 
     const colors = {
         wallet: token("--accent", "#16b8f3"),
@@ -379,9 +336,21 @@ export default function BalanceHistoryChart({
         // The view follows the period and the data, not the choice of lines.
         const points = series.points;
         const n = points.length;
-        const key = `${assetId}|${range}|${n}|${n ? points[n - 1].time : 0}|${
-            n ? points[0].time : 0
-        }`;
+        // The most recent data first: while older history is still arriving, the
+        // view stays on what was there when the chart was first drawn (the newest
+        // operations) instead of zooming out with every page; when the history is
+        // all in, or when a period is chosen, it moves there in one glide.
+        if (n >= 2 && anchorFrom.current === null) {
+            anchorFrom.current = points[0].time;
+        }
+        const holding =
+            streaming &&
+            range === "all" &&
+            !rangeChosen.current &&
+            anchorFrom.current !== null;
+        const key = `${assetId}|${range}|${holding}|${n}|${
+            n ? points[n - 1].time : 0
+        }|${n ? points[0].time : 0}`;
         if (key === viewKey.current) return;
         viewKey.current = key;
         drawnAsset.current = assetId;
@@ -390,17 +359,11 @@ export default function BalanceHistoryChart({
             timeScale.fitContent();
             return;
         }
-        const span = RANGE_SECONDS[range];
-        const lastTime = points[n - 1].time;
-        // the first bar inside the period (the whole history when it is
-        // shorter); half a bar either side, as the chart itself fits
-        const firstInside = span
-            ? Math.max(
-                  0,
-                  points.findIndex(p => p.time >= lastTime - span)
-              )
-            : 0;
-        const target: Span = {from: firstInside - 0.5, to: n - 1 + 0.5};
+        const target = targetSpan(
+            points.map(p => p.time),
+            RANGE_SECONDS[range],
+            holding ? anchorFrom.current : null
+        );
 
         cancelAnimationFrame(glideFrame.current);
         const a = before ? timeScale.timeToIndex(before.from, true) : null;
@@ -421,27 +384,7 @@ export default function BalanceHistoryChart({
         };
         glideFrame.current = requestAnimationFrame(step);
         // eslint-disable-next-line
-    }, [series, asset, shown, range]);
-
-    // A period longer than the history loaded so far: fetch older operations
-    // (a few pages, one after the other) so the period has something to show;
-    // each page widens the chart through the same glide.
-    const extraPages = React.useRef(0);
-    React.useEffect(() => {
-        extraPages.current = 0;
-    }, [range, accountId, assetId]);
-    React.useEffect(() => {
-        const span = RANGE_SECONDS[range];
-        if (!span || !series || !next || loading) return;
-        if (extraPages.current >= EXTRA_PAGES) return;
-        const points = series.points;
-        if (!points.length) return;
-        const lastTime = points[points.length - 1].time;
-        if (points[0].time > lastTime - span) {
-            extraPages.current += 1;
-            loadPage(next, 1);
-        }
-    }, [range, series, next, loading]);
+    }, [series, asset, shown, range, streaming]);
 
     const toggle = (key: SeriesKey) => {
         setShown(prev => {
@@ -507,6 +450,7 @@ export default function BalanceHistoryChart({
                     }))}
                     value={range}
                     onChange={key => {
+                        rangeChosen.current = true;
                         setRange(key as RangeKey);
                         try {
                             window.localStorage.setItem(RANGE_KEY, key);
@@ -579,14 +523,21 @@ export default function BalanceHistoryChart({
             <div className={styles.foot}>
                 <span>
                     {series
-                        ? next || loading
-                            ? t("based_on", {count: entries.length})
-                            : t("whole_history", {count: entries.length})
+                        ? history.complete
+                            ? history.capped
+                                ? t("capped", {count: entries.length})
+                                : t("whole_history", {count: entries.length})
+                            : history.loading
+                            ? t("loading_history", {count: entries.length})
+                            : t("based_on", {count: entries.length})
                         : t("loading")}
                     {series && series.unresolved > 0
                         ? ` ${t("unresolved", {count: series.unresolved})}`
                         : ""}
-                    {source ? ` ${t("from_node", {node: hostOf(source)})}` : ""}
+                    {history.source
+                        ? ` ${t("from_node", {node: hostOf(history.source)})}`
+                        : ""}
+                    {history.error ? ` ${history.error}` : ""}
                 </span>
                 <div className={styles.controls}>
                     <Select
@@ -598,17 +549,18 @@ export default function BalanceHistoryChart({
                     >
                         {balances.map(b => (
                             <Select.Option key={b.asset_id} value={b.asset_id}>
-                                {assets[b.asset_id].symbol}
+                                <AssetLabel
+                                    symbol={assets[b.asset_id].symbol}
+                                />
                             </Select.Option>
                         ))}
                     </Select>
-                    {next ? (
+                    {!history.complete && !history.loading ? (
                         <Button
                             className={styles.older}
-                            disabled={loading}
-                            onClick={() => loadPage(next, 1)}
+                            onClick={() => balanceHistory.start(accountId)}
                         >
-                            {loading ? t("loading") : t("older")}
+                            {t("retry")}
                         </Button>
                     ) : null}
                 </div>

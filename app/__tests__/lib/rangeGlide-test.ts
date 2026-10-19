@@ -1,4 +1,9 @@
-import {easeInOut, glideSpan, sameSpan} from "../../lib/common/rangeGlide";
+import {
+    easeInOut,
+    glideSpan,
+    sameSpan,
+    targetSpan
+} from "../../lib/common/rangeGlide";
 
 describe("easeInOut", () => {
     it("runs from 0 to 1, gently at both ends", () => {
@@ -58,5 +63,42 @@ describe("sameSpan", () => {
     it("tells spans apart by a hundredth of a bar", () => {
         expect(sameSpan({from: 0, to: 10}, {from: 0.005, to: 10})).toBe(true);
         expect(sameSpan({from: 0, to: 10}, {from: 0.5, to: 10})).toBe(false);
+    });
+});
+
+describe("targetSpan", () => {
+    // a point a day for ten days: bars 0..9
+    const times = Array.from({length: 10}, (_, i) => 1000 + i * 86400);
+
+    it("shows the last period, or all of it for period 0", () => {
+        expect(targetSpan(times, 3 * 86400, null)).toEqual({
+            from: 6 - 0.5,
+            to: 9.5
+        });
+        expect(targetSpan(times, 0, null)).toEqual({from: -0.5, to: 9.5});
+        // a period longer than the history: all of it
+        expect(targetSpan(times, 99 * 86400, null)).toEqual({
+            from: -0.5,
+            to: 9.5
+        });
+    });
+
+    it("holds on the most recent data while older history arrives", () => {
+        // the view was first drawn from the 7th day (bar 6 of the first ten)
+        const holdFrom = times[6];
+        expect(targetSpan(times, 0, holdFrom)).toEqual({from: 5.5, to: 9.5});
+        // five older days came in at the left: the same days are in view, 5 bars on
+        const older = Array.from({length: 5}, (_, i) => 1000 - (5 - i) * 86400);
+        const more = older.concat(times);
+        expect(targetSpan(more, 0, holdFrom)).toEqual({from: 10.5, to: 14.5});
+        // released: everything
+        expect(targetSpan(more, 0, null)).toEqual({from: -0.5, to: 14.5});
+    });
+
+    it("does not hold a chosen period back", () => {
+        expect(targetSpan(times, 2 * 86400, times[6])).toEqual({
+            from: 6.5,
+            to: 9.5
+        });
     });
 });
