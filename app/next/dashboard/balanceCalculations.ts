@@ -112,7 +112,7 @@ export function convertAssetValue(
     // `if (!toAsset) return;` branch can't fire here - the `undefined` in
     // its inferred return type is unreachable at this call site, hence the
     // cast rather than widening this function's own return type to match.
-    return marketUtils.convertValue(
+    return (marketUtils as any).convertValueOrIdle(
         amount,
         toAsset,
         fromAsset,

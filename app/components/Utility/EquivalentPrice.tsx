@@ -58,7 +58,7 @@ const getFinalPrice = function(
     real = false
 ) {
     try {
-        return (MarketUtils as any).getFinalPrice(
+        return (MarketUtils as any).getFinalPriceOrIdle(
             coreAsset ? coreAsset : (ChainStore as any).getAsset("1.3.0"),
             fromAsset,
             toAsset ? toAsset : (ChainStore as any).getAsset("1.3.0"),

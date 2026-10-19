@@ -118,6 +118,61 @@ describe("design-system/Table", () => {
         );
     });
 
+    describe("columns without a `key` (the balances table's)", () => {
+        // antd knows such a column by its dataIndex; here every one of them
+        // used to be the same column, so the first took every sort
+        const keyless = ([
+            {
+                dataIndex: "name",
+                title: "Name",
+                sorter: (a: Row, b: Row) => (a.name < b.name ? -1 : 1)
+            },
+            {
+                dataIndex: "amount",
+                title: "Amount",
+                sorter: (a: Row, b: Row) => a.amount - b.amount,
+                defaultSortOrder: "descend" as const
+            }
+        ] as any) as TableColumn<Row>[];
+        const bodyText = (all: HTMLElement[]) =>
+            all.slice(1).map(row => row.textContent);
+
+        it("applies the default sort to the column that asked for it", () => {
+            const {getAllByRole} = render(
+                <Table columns={keyless} dataSource={rows} pagination={false} />
+            );
+            // by amount, biggest first - not by name
+            expect(bodyText(getAllByRole("row"))).toEqual([
+                "BTS3",
+                "CNY2",
+                "USD1"
+            ]);
+        });
+
+        it("sorts by the header that was clicked, and says which", () => {
+            const onChange = jest.fn();
+            const {getByText, getAllByRole} = render(
+                <Table
+                    columns={keyless}
+                    dataSource={rows}
+                    pagination={false}
+                    onChange={onChange}
+                />
+            );
+            fireEvent.click(getByText("Name"));
+            expect(bodyText(getAllByRole("row"))).toEqual([
+                "BTS3",
+                "CNY2",
+                "USD1"
+            ]);
+            expect(onChange).toHaveBeenCalledWith(
+                expect.objectContaining({current: 1}),
+                {},
+                {columnKey: "name", field: "name", order: "ascend"}
+            );
+        });
+    });
+
     it("paginates client-side and navigates with the next/prev buttons", () => {
         const {getByText, queryByText} = render(
             <Table

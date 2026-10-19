@@ -13110,6 +13110,24 @@ on an iPhone).
   row, then toggles + filter, quote pills, and a table with the supply (of the market's
   asset, "Supply" - the header said "Base supply"), volume, price and change in the
   mono face, change in the up/down colours, 38px rows; on a phone market, price and change.
+- **Order by value** (Dashboard holdings, Portfolio balances). Three causes, each
+  found by measuring in the browser: (1) the design-system `Table` knew a column by
+  its `key`, and the portfolio's columns have none (antd falls back to `dataIndex`),
+  so every column was the same column and the first (asset name) took every sort -
+  `withColumnKeys` restores antd's rule; (2) the value sort needs every row's price
+  but the prices were only requested by the cells that were on screen, so the list
+  now subscribes them all (`useMarketStatsSubscription`), and its tie-break returned
+  `true`/`false` instead of a number (`lib/common/portfolioSort.ts`); (3) a market with
+  no trade in the last 24 hours had no price (`getFinalPrice` wants volume), except
+  where the never-expiring `priceCache` (its timer was started without the market's
+  name) happened to hold one - so one holding was "no price" on the Dashboard (63 of
+  71 holdings for `johnr`) and a figure on the Portfolio. `market_utils.getFinalPriceOrIdle` /
+  `convertValueOrIdle` answer from the trades of the day and else from the last
+  price (kept in a cache entry of its own), the cache now expires, and the value
+  screens (`getEquivalentValue`, `EquivalentPrice`, `convertAssetValue`) use them.
+  Other callers of `getFinalPrice`/`convertValue` (withdraw modal, treemap, account
+  utils) still ask strictly. An idle price is the last trade, not a quote: a dead
+  market's last price can be far from what the holding would fetch.
 - Harness: `smoke-boot.py` takes `--ls KEY=JSON` (localStorage before the page loads),
   `--overlap`, and its `#Trigger=Option` step falls back to a case-insensitive match
   (asset names are split into styled spans).

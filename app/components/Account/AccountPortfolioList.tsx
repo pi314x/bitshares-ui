@@ -227,6 +227,9 @@ import BorrowModal from "../Modal/BorrowModal";
 import ReactTooltip from "react-tooltip";
 import {getBackedCoin} from "common/gatewayUtils";
 import {ChainStore} from "bitsharesjs";
+import {List} from "immutable";
+import {useMarketStatsSubscription} from "../../next/hooks/useMarketStatsSubscription";
+import {compareKeys, compareValues} from "../../lib/common/portfolioSort";
 import GatewayStore from "stores/GatewayStore";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectGateway} from "../../store/slices/gatewaySlice";
@@ -363,6 +366,26 @@ function AccountPortfolioListCore({
         setState(prev => ({...prev, ...partial}));
     };
 
+    // The value column sorts all the rows, so every row's price has to be
+    // known, not only the ones on screen (each cell asks for its own price
+    // once it is shown; the rows of other pages never did, and sorted as if
+    // they had none).
+    const priceAssets: any[] = [];
+    (balanceList || []).forEach((balanceId: any) => {
+        const balanceObject: any = ChainStore.getObject(balanceId);
+        const assetId = balanceObject && balanceObject.get("asset_type");
+        const asset: any = assetId ? ChainStore.getObject(assetId) : null;
+        if (asset && typeof asset.get === "function") priceAssets.push(asset);
+    });
+    const priceKey = priceAssets.map(a => a.get("id")).join(",");
+    const priceList = React.useMemo(() => List(priceAssets), [priceKey]);
+    useMarketStatsSubscription(
+        priceList,
+        ChainStore.getAsset(preferredUnit) || undefined,
+        ChainStore.getAsset("1.3.0") || undefined,
+        allMarketStats
+    );
+
     const changeRefsRef = React.useRef<{[key: string]: any}>({});
     const sendModalRef = React.useRef<{show: () => void} | null>(null);
 
@@ -451,7 +474,7 @@ function AccountPortfolioListCore({
 
     // sortFunctions: rebuilt fresh each render (never compared by
     // reference), closing over `coreAsset` and `changeRefsRef`.
-    const byKey = (a: any, b: any) => a.key > b.key;
+    const byKey = (a: any, b: any) => compareKeys(a.key, b.key);
 
     const byTypedValue = (a: any, b: any, aValueRaw: any, bValueRaw: any) => {
         const aValue = utils.convert_satoshi_to_typed(aValueRaw, a.asset);
@@ -533,15 +556,7 @@ function AccountPortfolioListCore({
             b.adds.asset,
             false as any
         );
-        if (aValue && bValue) {
-            return aValue - bValue;
-        } else if (!aValue && bValue) {
-            return -1;
-        } else if (aValue && !bValue) {
-            return 1;
-        } else {
-            return byKey(a, b);
-        }
+        return compareValues(aValue, bValue, a.key, b.key);
     };
 
     const changeValue = (a: any, b: any) => {

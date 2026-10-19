@@ -60,7 +60,7 @@ const getEquivalentValue = function(
     allMarketStats: any = null
 ) {
     try {
-        return (MarketUtils as any).convertValue(
+        return (MarketUtils as any).convertValueOrIdle(
             amount,
             toAsset,
             fromAsset,

@@ -155,8 +155,29 @@ function renderableCell(value: any): React.ReactNode {
     return value;
 }
 
+/**
+ * antd's rule: a column without a `key` is known by its `dataIndex`. The sort
+ * state and `onChange` name a column by key; without one every such column was
+ * the same column (`undefined === undefined`), so the first took every sort and
+ * a click on another header sorted by the first column's rule (the balances
+ * table "sorted by value" by asset name).
+ */
+export function withColumnKeys<T>(columns: TableColumn<T>[]): TableColumn<T>[] {
+    return columns.map((column, index) =>
+        column.key !== undefined && column.key !== null
+            ? column
+            : {
+                  ...column,
+                  key:
+                      column.dataIndex !== undefined
+                          ? String(column.dataIndex)
+                          : `__column${index}`
+              }
+    );
+}
+
 export function Table<T = any>({
-    columns,
+    columns: columnsProp,
     dataSource: dataSourceProp,
     rowKey = "key",
     pagination,
@@ -171,6 +192,7 @@ export function Table<T = any>({
     onHeaderRow,
     onChange
 }: TableProps<T>): JSX.Element {
+    const columns = withColumnKeys(columnsProp);
     const dataSource: T[] = dataSourceProp ?? [];
     const initialSort = React.useRef<{
         columnKey: string;
