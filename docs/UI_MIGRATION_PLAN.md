@@ -13266,6 +13266,13 @@ on an iPhone).
   the dashboard's holdings table. On a phone the "Qty / Value" column now stands for the value
   (it sorts by value and opens descending); before, it carried the quantity's sorter and no
   default order, so the phone list opened unsorted and BTS could be on page 20.
+- **Trade: the order forms open with the market's price** (`lib/common/orderForm.ts`,
+  `Exchange.tsx`): a buy form starts at the lowest ask and a sell form at the highest bid
+  (what fills at once), once per market and only while nothing has been typed, so a price
+  the user clears stays cleared. The "Lowest ask" / "Highest bid" line under each form puts
+  the price back; that click had been throwing a TypeError since the migration (the
+  Exchange's `setPrice` took the order type for the price). Checked on a live market:
+  854.63409 (ask) and 837.74455 (bid) in the fields, 2 x 854.63 = 1,709.27 as the total.
 - **CI for the container image** (`.github/workflows/docker.yml`, `scripts/check-container.sh`):
   on a pull request that touches the app, the Dockerfile or the nginx files, and on `develop`,
   the image is built (nothing is pushed) and the script checks what it serves: `nginx -t` for
