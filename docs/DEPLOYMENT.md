@@ -55,6 +55,11 @@ docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build   # ht
   `charting_library/*.md5`; the build needs the network for that.
 - Nothing is pushed anywhere by building it: tag and push the image yourself, and pin the base
   images by digest if you need exact builds.
+- `.github/workflows/docker.yml` builds the image on every pull request that touches the app, the
+  Dockerfile or `conf/`, and runs `scripts/check-container.sh` against it (the nginx files through
+  `nginx -t`, health, the unprivileged user, the headers and policy, caching, no source maps, the
+  TLS variant). The same check runs on a machine with Docker:
+  `docker build -t bitshares-desk:ci . && scripts/check-container.sh bitshares-desk:ci`.
 
 ## The headers
 
