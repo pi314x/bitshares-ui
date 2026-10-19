@@ -21,8 +21,7 @@ import styles from "./Advanced.module.scss";
 
 interface Card {
     id: string;
-    /** the operations of the chain behind it: ids and names */
-    ids: string;
+    /** the operations of the chain behind it, by name */
     names: string;
     Dialog: React.ComponentType<{onCancel: () => void; onDone: () => void}>;
 }
@@ -33,25 +32,21 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "custom_authorities",
-                ids: "54 55 56",
                 names: "custom_authority_create / _update / _delete",
                 Dialog: CustomAuthoritiesDialog as any
             },
             {
                 id: "custom",
-                ids: "35",
                 names: "custom",
                 Dialog: CustomDataDialog
             },
             {
                 id: "assert",
-                ids: "36",
                 names: "assert",
                 Dialog: AssertDialog
             },
             {
                 id: "account_transfer",
-                ids: "9",
                 names: "account_transfer",
                 Dialog: AccountTransferDialog
             }
@@ -62,7 +57,6 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "override",
-                ids: "38",
                 names: "override_transfer",
                 Dialog: OverrideTransferDialog
             }
@@ -73,13 +67,11 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "committee_member",
-                ids: "30",
                 names: "committee_member_update",
                 Dialog: CommitteeMemberDialog
             },
             {
                 id: "parameters",
-                ids: "31",
                 names: "committee_member_update_global_parameters",
                 Dialog: ChainParametersDialog
             }
@@ -90,7 +82,6 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "flash",
-                ids: "67 68",
                 names: "samet_fund_borrow + samet_fund_repay",
                 Dialog: FlashLoanDialog
             }
@@ -101,7 +92,6 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "blind",
-                ids: "39 40 41",
                 names:
                     "transfer_to_blind / blind_transfer / transfer_from_blind",
                 Dialog: BlindTransferDialog
@@ -113,7 +103,6 @@ const SECTIONS: Array<{id: string; cards: Card[]}> = [
         cards: [
             {
                 id: "json",
-                ids: "0-77",
                 names: "any",
                 Dialog: OperationJsonDialog
             }
@@ -143,14 +132,9 @@ export default function AdvancedPage() {
                     <div className={styles.grid}>
                         {section.cards.map(card => (
                             <div className={styles.card} key={card.id}>
-                                <div className={styles.cardFoot}>
-                                    <h4 className={styles.cardTitle}>
-                                        {t(`cards.${card.id}.title`)}
-                                    </h4>
-                                    <span className={styles.tag}>
-                                        {card.ids}
-                                    </span>
-                                </div>
+                                <h4 className={styles.cardTitle}>
+                                    {t(`cards.${card.id}.title`)}
+                                </h4>
                                 <p className={styles.cardText}>
                                     {t(`cards.${card.id}.text`)}
                                 </p>

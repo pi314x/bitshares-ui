@@ -160,17 +160,12 @@ describe("AdvancedPage", () => {
             "Flash loans",
             "Confidential"
         ].forEach(section => expect(page).toContain(section));
-        [
-            "54 55 56",
-            "35",
-            "36",
-            "9",
-            "38",
-            "30",
-            "31",
-            "67 68",
-            "39 40 41"
-        ].forEach(ids => expect(page).toContain(ids));
+        // the chain's names of the operations, but no operation numbers in the corner
+        // of a card (they said nothing to the person using the page)
+        expect(page).toContain("custom_authority_create");
+        expect(page).toContain("transfer_to_blind");
+        expect(page).not.toContain("54 55 56");
+        expect(page).not.toContain("39 40 41");
         expect(page).toContain("samet_fund_borrow + samet_fund_repay");
         expect(page).toContain("You act as alice");
     });

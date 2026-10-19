@@ -83,16 +83,6 @@
     gap: 8px;
 }
 
-// the chain's name of the thing, small, in the corner of a card
-.tag {
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--accent-wash);
-    color: var(--ink-2);
-    font-size: 11px;
-    font-weight: 600;
-}
-
 .mono,
 .mono textarea,
 textarea.mono {
