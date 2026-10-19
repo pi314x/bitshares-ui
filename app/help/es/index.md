@@ -28,4 +28,5 @@ BitShares es un exchange descentralizado y una billetera en una blockchain públ
 
 ## Más
  * [Spotlight](/spotlight): trueque, HTLC, domiciliaciones, préstamos y otras funciones.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Activos](assets/mpa.md), [Glosario](glossary.md), [Aviso legal](disclaimer.md)

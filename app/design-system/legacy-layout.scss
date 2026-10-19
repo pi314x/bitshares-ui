@@ -136,6 +136,17 @@ body[class][class] .tab-content .grid-block.large-12 {
     }
 }
 
+// Side by side (the columns are 50% each at this width): a gap between the two.
+@media (min-width: 1024px) {
+    body[class][class]
+        .tab-content
+        .grid-block.large-12
+        .grid-block
+        > .small-12.large-6:first-child {
+        padding-right: 16px;
+    }
+}
+
 // AccountSelector's outer wrapper is a Tooltip, which is `inline-block`: the
 // selector (and the right-aligned "#id" label above it, pulled up over the
 // field's caption with a negative margin) was as wide as its content, so on a
@@ -289,10 +300,27 @@ body[class][class] .asset-card {
 body[class][class] .asset-card {
     padding: 0 0 16px;
 
-    > :not(.card-divider) {
+    > :not(.card-divider):not(table) {
         padding-left: 16px;
         padding-right: 16px;
         box-sizing: border-box;
+    }
+
+    // a link that is a line of its own takes the padding on every line
+    > a {
+        display: block;
+    }
+
+    // a table's padding does nothing (the cells are what has it)
+    // (the key-value tables zero their first cell with !important)
+    > table th:first-child,
+    > table td:first-child {
+        padding-left: 16px !important;
+    }
+
+    > table th:last-child,
+    > table td:last-child {
+        padding-right: 16px;
     }
 
     > .card-divider + * {
@@ -381,4 +409,71 @@ body[class][class] .tab-content.padding {
 // takes no room either.
 body[class][class] .service-selector:empty {
     display: none;
+}
+
+// A range input (the decimals of a new asset) showed no track and a square thumb: the
+// old sheet only styled the thumb's colour. A thin track, a round thumb in the accent.
+body[class][class] input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 28px;
+    margin: 4px 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line);
+    }
+
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        margin-top: -8px;
+        border: 2px solid var(--surface);
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: var(--shadow-sm);
+    }
+
+    &::-moz-range-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line);
+    }
+
+    &::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--surface);
+        border-radius: 50%;
+        background: var(--accent);
+    }
+}
+
+// The red capitals of a form's warning ("WARNING: THE NUMBER OF DECIMALS ...") are a
+// sentence in the page's colour for warnings.
+body[class][class] #content .txtlabel {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+// A page's filter row with the old "padding" modifier carried 20px above and below it:
+// the row sat apart from the heading and the table it belongs to.
+body[class][class] #content .header-selector.padding {
+    padding: 0 0 16px;
+}
+
+// The asset page's grid blocks each padded 10px a side: the page's heading and cards sat
+// 10px in from every other page's edge.
+body[class][class] .grid-block.page-layout .main-content.wrap .grid-block {
+    padding-left: 0;
+    padding-right: 0;
 }

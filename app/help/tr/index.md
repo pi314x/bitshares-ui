@@ -28,4 +28,5 @@ BitShares, herkese açık bir blokzincir üzerinde merkeziyetsiz bir borsa ve c�
 
 ## Daha fazla
  * [Spotlight](/spotlight): takas, HTLC, otomatik ödeme, borçlanma ve diğer özellikler.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Varlıklar](assets/mpa.md), [Terimler Listesi](glossary.md), [Sorumluluk Reddi](disclaimer.md)

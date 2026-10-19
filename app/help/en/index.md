@@ -28,4 +28,5 @@ BitShares is a decentralized exchange and wallet on a public blockchain. This he
 
 ## More
  * [Spotlight](/spotlight): barter, HTLCs, direct debits, borrowing and other features.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Assets](assets/mpa.md), [Glossary](glossary.md), [Disclaimer](disclaimer.md)

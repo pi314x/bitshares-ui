@@ -28,4 +28,5 @@ BitShares — децентрализованная биржа и кошелёк 
 
 ## Ещё
  * [Spotlight](/spotlight): бартер, HTLC, прямое дебетование, займы и другие функции.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Активы](assets/mpa.md), [Глоссарий](glossary.md), [Отказ от ответственности](disclaimer.md)

@@ -28,4 +28,5 @@ BitShares est une bourse décentralisée et un portefeuille sur une blockchain p
 
 ## Plus
  * [Spotlight](/spotlight) : troc, HTLC, prélèvements, emprunts et autres fonctions.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Actifs](assets/mpa.md), [Glossaire](glossary.md), [Avertissement](disclaimer.md)

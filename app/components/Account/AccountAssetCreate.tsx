@@ -1029,7 +1029,10 @@ function AccountAssetCreateInner({
                                 />
 
                                 <label>
-                                    <div className="grid-block no-margin">
+                                    <div
+                                        className="grid-block no-margin"
+                                        style={{gap: 16}}
+                                    >
                                         {errors.quote_asset ? (
                                             <p className="grid-content has-error">
                                                 {errors.quote_asset}
@@ -1043,10 +1046,7 @@ function AccountAssetCreateInner({
                                         <div className="grid-block no-margin small-12 medium-6">
                                             <div
                                                 className="amount-selector"
-                                                style={{
-                                                    width: "100%",
-                                                    paddingRight: "10px"
-                                                }}
+                                                style={{width: "100%"}}
                                             >
                                                 <Translate
                                                     component="label"
@@ -1090,10 +1090,7 @@ function AccountAssetCreateInner({
                                                 ]}
                                                 placeholder="0.0"
                                                 tabIndex={1}
-                                                style={{
-                                                    width: "100%",
-                                                    paddingLeft: "10px"
-                                                }}
+                                                style={{width: "100%"}}
                                             />
                                         </div>
                                     </div>

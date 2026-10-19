@@ -28,4 +28,5 @@ BitShares 是公共区块链上的去中心化交易所和钱包。本帮助按�
 
 ## 更多
  * [Spotlight](/spotlight)：易物、HTLC、直接扣款、借贷及其他功能。
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [资产](assets/mpa.md)、[词汇表](glossary.md)、[免责声明](disclaimer.md)

@@ -28,4 +28,5 @@ BitShares ist eine dezentrale Börse und Wallet auf einer öffentlichen Blockcha
 
 ## Mehr
  * [Spotlight](/spotlight): Tauschgeschäft, HTLCs, Lastschriften, Kredite und weitere Funktionen.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Assets](assets/mpa.md), [Glossar](glossary.md), [Haftungsausschluss](disclaimer.md)

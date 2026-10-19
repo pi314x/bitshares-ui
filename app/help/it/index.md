@@ -28,4 +28,5 @@ BitShares è un exchange decentralizzato e un portafoglio su una blockchain pubb
 
 ## Altro
  * [Spotlight](/spotlight): baratto, HTLC, addebiti diretti, prestiti e altre funzioni.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
  * [Asset](assets/mpa.md), [Glossario](glossary.md), [Dichiarazione di non responsabilità](disclaimer.md)
