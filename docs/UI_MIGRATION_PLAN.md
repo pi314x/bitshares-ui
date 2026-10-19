@@ -13239,10 +13239,40 @@ on an iPhone).
   the headers and policy of `docs/DEPLOYMENT.md`; a TLS variant mounts `./certs`. Building it does not
   publish anything. `yarn install` still downloads the charting library (md5-checked) from the address in
   `charting_library/install-charting-library.cjs`, so the build needs the network.
-- **iOS date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the
-  native field has no intrinsic width and centres its text in Safari; `appearance: none`,
-  `display: block`, `width: 100%` and left-aligned `::-webkit-date-and-time-value` make
-  it the same height and width as the other fields.
+- **Date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the native
+  field has no intrinsic width in Safari and its value sits at the top of the box.
+  `appearance: none`, `width: 100%` and a flex box (`align-items` / `justify-content:
+  center`) put the value in the middle of the field's height and width, the same box as the
+  other fields; the browser's calendar button is taken out of the flow (absolute, right), so
+  the value is in the middle of the whole field, not of what is left beside the button.
+  Checked in Chromium (value centre = field centre, 332 x 38).
+- **Click to copy on the deposit screen** (`DepositCopy.tsx`, `CryptoLinkFormatter.tsx`,
+  `DepositModal.tsx`): a click or tap on the QR code copies it (the image where the browser
+  allows images on the clipboard, otherwise the address) and a click on the account name copies
+  the name, with "Copied" feedback in a line that keeps its height, so nothing moves; the code,
+  the buttons, the hint and the name are centred. `navigator.clipboard` exists only on secure
+  pages, so a plain-http page (a phone on a LAN address) falls back to a hidden textarea and
+  `execCommand`.
+- **One menu style** (`design-system/SubMenu.tsx`): the portfolio had three menus that
+  looked different (the account's sections as pills, the panel's Balances / Open orders /
+  Margin positions as an underline strip, the chart's 1D / 1W / 1M / All as an outlined box
+  with an accent fill). All are the pill row now; `SubMenu toggle` is the pressed / not pressed
+  group for a switch that changes what one control shows (chart range, pools List / Graph,
+  SameT fund balance change) and `flush` drops the space under it in a toolbar. `Tabs
+  variant="underline"` is gone (it had one user), so is the `variant` prop, and AGENTS.md
+  says not to style a segmented switch of one's own.
+- **BTS first** in the balances (`portfolioSort.compareCoreLast`, `desk.holdingRows`): the
+  portfolio opens descending by value with BTS on top, whatever else is worth more, and so does
+  the dashboard's holdings table. On a phone the "Qty / Value" column now stands for the value
+  (it sorts by value and opens descending); before, it carried the quantity's sorter and no
+  default order, so the phone list opened unsorted and BTS could be on page 20.
+- **CI for the container image** (`.github/workflows/docker.yml`, `scripts/check-container.sh`):
+  on a pull request that touches the app, the Dockerfile or the nginx files, and on `develop`,
+  the image is built (nothing is pushed) and the script checks what it serves: `nginx -t` for
+  all four nginx files, health, user 101, read-only file system, the headers and policy, caching
+  of hashed files, no source maps or hidden files, and the TLS variant's redirect and HSTS.
+  Run it locally the same way: `docker build -t bitshares-desk:ci . && scripts/check-container.sh
+  bitshares-desk:ci`.
 - **Trading chart**: the real-time update in `tradingViewClasses.js` no longer pushes a bar
   older than the one the chart already has (the chart throws "time order violation"
   when a history reload ends earlier than what it holds).
