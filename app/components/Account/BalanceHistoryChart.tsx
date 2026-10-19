@@ -24,6 +24,9 @@ import {
     buildBalanceSeries
 } from "../../lib/common/balanceHistory";
 import {formatAmount} from "../../lib/common/sametFunds";
+import {Span, glideSpan, sameSpan} from "../../lib/common/rangeGlide";
+import {changePercent, formatPercent} from "../../lib/common/balanceHistory";
+import {useUnitValue} from "../../next/hooks/useUnitValue";
 import styles from "./BalanceHistoryChart.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -31,6 +34,19 @@ const t = (key: string, params?: Record<string, any>) =>
 
 /** Pages (of 100 operations) loaded up front. */
 const AUTO_PAGES = 5;
+/** More pages fetched, one at a time, to reach back as far as a chosen
+ * period (a week, a month) asks for. */
+const EXTRA_PAGES = 5;
+/** How long the view takes to move to a new period. */
+const GLIDE_MS = 550;
+
+function prefersReducedMotion(): boolean {
+    try {
+        return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {
+        return false;
+    }
+}
 
 type SeriesKey = "wallet" | "orders" | "total";
 const SHOWN_KEY = "__graphene__balanceChartSeries";
@@ -119,6 +135,8 @@ export default function BalanceHistoryChart({
     const [balances, setBalances] = React.useState<BalanceInfo[]>([]);
     const [assets, setAssets] = React.useState<Record<string, AssetInfo>>({});
     const [assetId, setAssetId] = React.useState<string>("");
+    // what the figures are worth in the currency chosen in the settings
+    const unitValue = useUnitValue([assetId]);
     const [entries, setEntries] = React.useState<HistoryEntry[]>([]);
     const [times, setTimes] = React.useState<{[block: number]: number}>({});
     const [next, setNext] = React.useState<string | null>(null);
@@ -241,6 +259,11 @@ export default function BalanceHistoryChart({
     const walletRef = React.useRef<ISeriesApi<"Area"> | null>(null);
     const ordersRef = React.useRef<ISeriesApi<"Line"> | null>(null);
     const totalRef = React.useRef<ISeriesApi<"Line"> | null>(null);
+    // the view's glide: the animation frame in flight, and what the view was
+    // last set for (so that only a new period or new data moves it)
+    const glideFrame = React.useRef(0);
+    const viewKey = React.useRef("");
+    const drawnAsset = React.useRef("");
 
     const colors = {
         wallet: token("--accent", "#16b8f3"),
@@ -294,14 +317,24 @@ export default function BalanceHistoryChart({
         ordersRef.current = orders;
         totalRef.current = total;
         return () => {
+            cancelAnimationFrame(glideFrame.current);
             chart.remove();
             chartRef.current = walletRef.current = null;
             ordersRef.current = totalRef.current = null;
+            viewKey.current = "";
         };
     }, [assetId === "" ? "none" : "some"]);
 
     React.useEffect(() => {
         if (!walletRef.current || !series || !asset) return;
+        const chart = chartRef.current;
+        const timeScale = chart ? chart.timeScale() : null;
+        // where the view is now, in times: it survives the data changing
+        // (older history comes in at the left) so the move can start from it
+        const before =
+            timeScale && drawnAsset.current === assetId
+                ? timeScale.getVisibleRange()
+                : null;
         const precision = Math.min(asset.precision, 6);
         const format = {
             type: "price" as const,
@@ -340,21 +373,74 @@ export default function BalanceHistoryChart({
                 }))
             );
         }
-        const chart = chartRef.current;
-        if (chart) {
-            const points = series.points;
-            const span = RANGE_SECONDS[range];
-            const last = points.length ? points[points.length - 1].time : 0;
-            if (span && points.length > 1 && last - span > points[0].time) {
-                chart.timeScale().setVisibleRange({
-                    from: (last - span) as UTCTimestamp,
-                    to: last as UTCTimestamp
-                });
-            } else {
-                chart.timeScale().fitContent();
-            }
+        if (!chart || !timeScale) return;
+
+        // The view follows the period and the data, not the choice of lines.
+        const points = series.points;
+        const n = points.length;
+        const key = `${assetId}|${range}|${n}|${n ? points[n - 1].time : 0}|${
+            n ? points[0].time : 0
+        }`;
+        if (key === viewKey.current) return;
+        viewKey.current = key;
+        drawnAsset.current = assetId;
+
+        if (n < 2) {
+            timeScale.fitContent();
+            return;
         }
+        const span = RANGE_SECONDS[range];
+        const lastTime = points[n - 1].time;
+        // the first bar inside the period (the whole history when it is
+        // shorter); half a bar either side, as the chart itself fits
+        const firstInside = span
+            ? Math.max(
+                  0,
+                  points.findIndex(p => p.time >= lastTime - span)
+              )
+            : 0;
+        const target: Span = {from: firstInside - 0.5, to: n - 1 + 0.5};
+
+        cancelAnimationFrame(glideFrame.current);
+        const a = before ? timeScale.timeToIndex(before.from, true) : null;
+        const b = before ? timeScale.timeToIndex(before.to, true) : null;
+        if (a === null || b === null || b <= a || prefersReducedMotion()) {
+            timeScale.setVisibleLogicalRange(target);
+            return;
+        }
+        const origin: Span = {from: a - 0.5, to: b + 0.5};
+        timeScale.setVisibleLogicalRange(origin);
+        if (sameSpan(origin, target)) return;
+        const began = performance.now();
+        // (the clock read here, not the frame's timestamp: one time base)
+        const step = () => {
+            const k = Math.min(1, (performance.now() - began) / GLIDE_MS);
+            timeScale.setVisibleLogicalRange(glideSpan(origin, target, k));
+            if (k < 1) glideFrame.current = requestAnimationFrame(step);
+        };
+        glideFrame.current = requestAnimationFrame(step);
+        // eslint-disable-next-line
     }, [series, asset, shown, range]);
+
+    // A period longer than the history loaded so far: fetch older operations
+    // (a few pages, one after the other) so the period has something to show;
+    // each page widens the chart through the same glide.
+    const extraPages = React.useRef(0);
+    React.useEffect(() => {
+        extraPages.current = 0;
+    }, [range, accountId, assetId]);
+    React.useEffect(() => {
+        const span = RANGE_SECONDS[range];
+        if (!span || !series || !next || loading) return;
+        if (extraPages.current >= EXTRA_PAGES) return;
+        const points = series.points;
+        if (!points.length) return;
+        const lastTime = points[points.length - 1].time;
+        if (points[0].time > lastTime - span) {
+            extraPages.current += 1;
+            loadPage(next, 1);
+        }
+    }, [range, series, next, loading]);
 
     const toggle = (key: SeriesKey) => {
         setShown(prev => {
@@ -381,6 +467,8 @@ export default function BalanceHistoryChart({
     }
     const change =
         series && first && current ? walletUnits - first.balance : null;
+    const percent =
+        change !== null && first ? changePercent(change, first.balance) : null;
     const anyOrders =
         lockedUnits > BigInt(0) ||
         (series ? series.points.some(p => p.locked > BigInt(0)) : false);
@@ -390,6 +478,13 @@ export default function BalanceHistoryChart({
                   asset.symbol
               }`
             : "-";
+
+    // under a figure: what it is worth in the chosen currency (not for the
+    // currency itself, and not without a price)
+    const worth = (units: bigint): string | null =>
+        asset && unitValue.unit && unitValue.unit.symbol !== asset.symbol
+            ? unitValue.format(assetId, units)
+            : null;
 
     const choices: {key: SeriesKey; label: string; value: bigint}[] = [
         {key: "wallet", label: t("wallet"), value: walletUnits},
@@ -457,6 +552,11 @@ export default function BalanceHistoryChart({
                                 <span className={styles.figureValue}>
                                     {figure(choice.value)}
                                 </span>
+                                {worth(choice.value) ? (
+                                    <span className={styles.figureWorth}>
+                                        ≈ {worth(choice.value)}
+                                    </span>
+                                ) : null}
                             </button>
                         );
                     })}
@@ -468,7 +568,10 @@ export default function BalanceHistoryChart({
                         }`}
                     >
                         {change > BigInt(0) ? "+" : ""}
-                        {formatAmount(change, asset.precision)}{" "}
+                        {formatAmount(change, asset.precision)}
+                        {percent !== null
+                            ? ` (${formatPercent(percent)})`
+                            : ""}{" "}
                         {t("over_period")}
                     </div>
                 ) : null}

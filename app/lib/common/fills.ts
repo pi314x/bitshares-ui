@@ -42,3 +42,26 @@ export function newFills(
         .sort((a, b) => historySequence(a.id) - historySequence(b.id));
     return fills.slice(-limit);
 }
+
+/**
+ * An amount as the wallet writes it: the asset's symbol and the amount at the
+ * asset's own precision ("49,620.21536 BTS"), grouped by thousands, never
+ * rounded. `asset` is what is known of the asset (symbol and precision); the
+ * core asset is known without asking the chain.
+ */
+export function formatAssetAmount(
+    amount: {amount: string | number; asset_id: string} | null | undefined,
+    asset: {symbol: string; precision: number} | null | undefined,
+    locale?: string
+): string {
+    if (!amount) return "";
+    const known =
+        asset ||
+        (amount.asset_id === "1.3.0" ? {symbol: "BTS", precision: 5} : null);
+    if (!known) return `${amount.amount} ${amount.asset_id}`;
+    const value = Number(amount.amount) / Math.pow(10, known.precision);
+    return `${value.toLocaleString(locale, {
+        minimumFractionDigits: known.precision,
+        maximumFractionDigits: known.precision
+    })} ${known.symbol}`;
+}

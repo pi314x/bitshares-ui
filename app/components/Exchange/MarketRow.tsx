@@ -286,11 +286,12 @@ function MarketRow({
                     return (
                         <td
                             onClick={() => onClick(marketID)}
+                            className="text-right"
                             key={column.index}
                         >
                             {dynamic_data ? (
                                 <FormattedAsset
-                                    style={{fontWeight: "bold"}}
+                                    hide_asset
                                     amount={parseInt(
                                         dynamic_data.get("current_supply"),
                                         10

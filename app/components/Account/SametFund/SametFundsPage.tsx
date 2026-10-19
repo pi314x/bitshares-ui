@@ -29,6 +29,7 @@ import {
     UpdateFundModal,
     describeError
 } from "./SametFundModals";
+import SametOverview from "./SametOverview";
 import styles from "./SametFundsPage.module.scss";
 
 const TypedLink = Link as React.ComponentType<any>;
@@ -383,7 +384,9 @@ export default function SametFundsPage() {
             <p className={styles.intro}>{t("intro")}</p>
             <p className={styles.note}>{t("no_borrow")}</p>
 
-            <Tabs activeKey={tab} onChange={setTab}>
+            <SametOverview funds={all.funds} partial={!!all.next} />
+
+            <Tabs activeKey={tab} onChange={setTab} variant="pill">
                 <Tabs.TabPane tab={t("tab_all")} key="all">
                     {renderList(all, t("empty_all"), false)}
                 </Tabs.TabPane>

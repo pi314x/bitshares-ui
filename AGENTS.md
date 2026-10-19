@@ -181,6 +181,10 @@ gate at all.
   through `lib/common/inlineHost.ts`.
 - Use `design-system/Toolbar` for the fields and buttons above a list, and keep
   the 16px inset from a panel's edge (do not stack `.grid-content` paddings).
+- A menu inside a page (sections, tabs, sub menus) is the rounded pill row,
+  `design-system/SubMenu` (`Tabs variant="pill"` and the legacy
+  `components/Utility/Tabs` render it); do not add underline tab bars. A strip with
+  one tab shows no menu. See `docs/UI_MIGRATION_PLAN.md` §7.31.
 - BigInt: never `**` (the build turns it into `Math.pow`); use
   `BigInt("1" + "0".repeat(n))` or a loop.
 - A legacy rule like `body[class][class] ...` or `.darkTheme .table > ...`

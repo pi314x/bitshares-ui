@@ -98,6 +98,7 @@ import {Alert} from "../../../design-system/Alert";
 import assetUtils from "common/asset_utils";
 import SearchInput from "../../Utility/SearchInput";
 import CollateralCell from "./CollateralCell";
+import CreditOverview from "./CreditOverview";
 import LinkToAssetById from "../../Utility/LinkToAssetById";
 import FormattedAsset from "../../Utility/FormattedAsset";
 import LinkToAccountById from "../../Utility/LinkToAccountById";
@@ -858,6 +859,7 @@ function CreditOfferPage() {
     return (
         <div className="grid-content app-tables no-padding">
             <div className="content-block small-12">
+                <CreditOverview offers={allList || []} />
                 <div
                     className="generic-bordered-box"
                     style={{margin: "0 0 20px"}}

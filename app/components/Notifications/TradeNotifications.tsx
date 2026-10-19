@@ -5,12 +5,17 @@
 // was closed is announced once, the newest few.
 import * as React from "react";
 import counterpart from "counterpart";
-import {ChainStore} from "bitsharesjs";
+import {ChainStore, FetchChain} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {Notification} from "../../design-system/Notification";
-import {HistoryEntry, newFills, newestSequence} from "../../lib/common/fills";
+import {
+    HistoryEntry,
+    formatAssetAmount,
+    newFills,
+    newestSequence
+} from "../../lib/common/fills";
 
 const KEY = (account: string) => `__graphene__lastFillNotified_${account}`;
 
@@ -31,19 +36,28 @@ function writeBaseline(account: string, value: number) {
     }
 }
 
-function amountText(amount: any): string {
+// The asset of an amount as far as the chain store knows it now.
+function knownAsset(
+    assetId: string
+): {symbol: string; precision: number} | null {
+    const asset: any = (ChainStore as any).getAsset(assetId);
+    if (!asset || typeof asset.get !== "function") return null;
+    return {symbol: asset.get("symbol"), precision: asset.get("precision")};
+}
+
+// An amount with its asset's name and precision. An asset the store has not
+// loaded yet is asked for first (the fill used to be announced as "545967
+// 1.3.120"); when it cannot be had, the raw amount is all there is.
+async function amountText(amount: any): Promise<string> {
     if (!amount) return "";
-    const asset: any = (ChainStore as any).getAsset(amount.asset_id);
-    if (!asset || typeof asset.get !== "function") {
-        return `${amount.amount} ${amount.asset_id}`;
+    if (!knownAsset(amount.asset_id) && amount.asset_id !== "1.3.0") {
+        try {
+            await FetchChain("getAsset", amount.asset_id);
+        } catch (e) {
+            // announced with what is known
+        }
     }
-    const precision: number = asset.get("precision");
-    const value = Number(amount.amount) / Math.pow(10, precision);
-    const digits = Math.min(precision, value >= 1000 ? 2 : value >= 1 ? 4 : 6);
-    return `${value.toLocaleString(undefined, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: digits
-    })} ${asset.get("symbol")}`;
+    return formatAssetAmount(amount, knownAsset(amount.asset_id));
 }
 
 export function TradeNotifications(): null {
@@ -80,19 +94,21 @@ export function TradeNotifications(): null {
         const fills = newFills(entries, accountId, known, 3);
         fills.forEach(entry => {
             const op = entry.op[1];
-            const pays = amountText(op.pays);
-            const receives = amountText(op.receives);
-            Notification.success({
-                message: counterpart.translate(
-                    "notification_center.trade_done"
-                ),
-                description: counterpart.translate(
-                    op.is_maker
-                        ? "notification_center.trade_sold_maker"
-                        : "notification_center.trade_sold",
-                    {pays, receives}
-                )
-            });
+            Promise.all([amountText(op.pays), amountText(op.receives)]).then(
+                ([pays, receives]) => {
+                    Notification.success({
+                        message: counterpart.translate(
+                            "notification_center.trade_done"
+                        ),
+                        description: counterpart.translate(
+                            op.is_maker
+                                ? "notification_center.trade_sold_maker"
+                                : "notification_center.trade_sold",
+                            {pays, receives}
+                        )
+                    });
+                }
+            );
         });
         if (newest > known) {
             baseline.current[name] = newest;

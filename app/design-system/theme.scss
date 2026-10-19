@@ -35,6 +35,13 @@
     --down-wash: #{$palette-dark-down-wash};
     --warn: #{$palette-dark-warn};
     --on-accent: #{$palette-dark-on-accent};
+    --cat-1: #{$palette-dark-cat-1};
+    --cat-2: #{$palette-dark-cat-2};
+    --cat-3: #{$palette-dark-cat-3};
+    --cat-4: #{$palette-dark-cat-4};
+    --cat-5: #{$palette-dark-cat-5};
+    --cat-6: #{$palette-dark-cat-6};
+    --cat-other: #{$palette-dark-cat-other};
 
     // Form controls (buttons, inputs, selects). The field fill and border are
     // translucent mixes of the ink colour so one definition looks right on
@@ -89,6 +96,13 @@
     --down-wash: #{$palette-light-down-wash};
     --warn: #{$palette-light-warn};
     --on-accent: #{$palette-light-on-accent};
+    --cat-1: #{$palette-light-cat-1};
+    --cat-2: #{$palette-light-cat-2};
+    --cat-3: #{$palette-light-cat-3};
+    --cat-4: #{$palette-light-cat-4};
+    --cat-5: #{$palette-light-cat-5};
+    --cat-6: #{$palette-light-cat-6};
+    --cat-other: #{$palette-light-cat-other};
 
     --line-strong: #{mix($palette-light-line, $palette-light-muted, 70%)};
     --focus-ring: #{rgba($palette-light-accent, 0.28)};

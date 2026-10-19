@@ -42,28 +42,24 @@
 //   `require()` in a TypeScript file.
 import * as React from "react";
 import counterpart from "counterpart";
-import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
-import TranslateWithLinks from "./Utility/TranslateWithLinks";
 import SettingsActions from "actions/SettingsActions";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 import SettingsStore from "stores/SettingsStore";
 import IntlActions from "actions/IntlActions";
 import CreateAccount from "./Account/CreateAccount";
 import CreateAccountPassword from "./Account/CreateAccountPassword";
-import {Routes, Route} from "react-router-dom";
-import {getWalletName, getLogo, getAllowedLogins} from "branding";
+import {Routes, Route, Link, useNavigate} from "react-router-dom";
+import {getWalletName, getAllowedLogins} from "branding";
 import {Select} from "../design-system/Select";
-import {Row} from "../design-system/Row";
-import {Col} from "../design-system/Col";
+import {Button} from "../design-system/Button";
+import {OnboardingPage} from "./Wallet/OnboardingPage";
+import styles from "./LoginSelector.module.scss";
 import {Icon} from "../design-system/Icon";
 import {useReduxState} from "../next/hooks/useReduxState";
 import {selectAccountState} from "../store/slices/accountSlice";
 
-const LinkAny = Link as any;
 const RouteAny = Route as any;
-
-const logo = (getLogo as any)();
 
 interface LoginSelectorState {
     locales: any;
@@ -72,6 +68,7 @@ interface LoginSelectorState {
 
 export default function LoginSelector() {
     useReduxState<any>(selectAccountState);
+    const navigate = useNavigate();
 
     const [state, setState] = React.useState<LoginSelectorState>({
         locales: (SettingsStore as any).getState().defaults.locale,
@@ -115,7 +112,7 @@ export default function LoginSelector() {
             showSearch
             value={state.currentLocale}
             onChange={handleLanguageSelect}
-            style={{width: "123px", marginBottom: "16px"}}
+            style={{width: "160px"}}
         >
             {state.locales.map((locale: any) => (
                 <Select.Option key={locale} value={locale}>
@@ -125,135 +122,141 @@ export default function LoginSelector() {
         </Select>
     );
 
+    const allowed: string[] = (getAllowedLogins as any)();
+    const createTo = allowed.includes("password")
+        ? "/create-account/password"
+        : "/create-account/wallet";
+
+    // Only layout changed here (docs/UI_MIGRATION_PLAN.md §7.31): the same
+    // handlers, the same routes and the same two forms, in the frame the other
+    // onboarding pages use. Two tiles say what each way forward is for (create /
+    // log in), the other ways are a list of rows, the language sits in the
+    // card's foot, and the chosen form comes under them.
+    const t = (key: string) =>
+        counterpart.translate(`account.login_selector.${key}`) as string;
+
     return (
-        <div className="grid-block align-center" id="accountForm">
-            <div className="grid-block shrink vertical">
-                <div className="grid-content shrink text-center account-creation">
-                    <div>
-                        <img src={logo} />
-                    </div>
-
-                    <div>
-                        <Translate
-                            content="header.create_account"
-                            component="h4"
-                        />
-                    </div>
-
-                    <div>
-                        <Translate
-                            content="account.intro_text_title"
-                            component="h4"
-                            wallet_name={(getWalletName as any)()}
-                        />
-                        <Translate
-                            unsafe
-                            content="account.intro_text_1"
-                            component="p"
-                        />
-
-                        <div className="shrink text-center">
-                            <div className="grp-menu-item overflow-visible account-drop-down">
-                                <div
-                                    className="grp-menu-item overflow-visible login-selector--language-select"
-                                    style={{margin: "0 auto"}}
-                                    data-intro={counterpart.translate(
-                                        "walkthrough.language_flag"
-                                    )}
-                                >
-                                    <Row className="login-selector--language-select--wrapper">
-                                        <Col span={4}>
-                                            <Icon
-                                                type="global"
-                                                className="login-selector--language-select--icon"
-                                            />
-                                        </Col>
-                                        <Col span={20}>{flagDropdown}</Col>
-                                    </Row>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid-block account-login-options">
-                        <LinkAny
-                            id="account_login_button"
-                            to={
-                                (getAllowedLogins as any)().includes("password")
-                                    ? "/create-account/password"
-                                    : "/create-account/wallet"
-                            }
-                            className="button primary"
-                            data-intro={counterpart.translate(
-                                "walkthrough.create_cloud_wallet"
-                            )}
-                        >
-                            <Translate content="header.create_account" />
-                        </LinkAny>
-
-                        <span
-                            className="button hollow primary"
-                            onClick={() => {
-                                (SettingsActions as any).changeSetting.defer({
-                                    setting: "passwordLogin",
-                                    value: true
-                                });
-                                (WalletUnlockActions as any)
-                                    .unlock()
-                                    .catch(() => {});
-                            }}
-                        >
-                            <Translate content="header.unlock_short" />
-                        </span>
-                    </div>
-
-                    {(getAllowedLogins as any)().includes("wallet") && (
-                        <div className="additional-account-options">
-                            <h5 style={{textAlign: "center"}}>
-                                <TranslateWithLinks
-                                    string="account.optional.formatter"
-                                    keys={[
-                                        {
-                                            type: "link",
-                                            value: "/wallet/backup/restore",
-                                            translation:
-                                                "account.optional.restore_link",
-                                            dataIntro: counterpart.translate(
-                                                "walkthrough.restore_account"
-                                            ),
-                                            arg: "restore_link"
-                                        },
-                                        {
-                                            type: "link",
-                                            value: "/create-account/wallet",
-                                            translation:
-                                                "account.optional.restore_form",
-                                            dataIntro: counterpart.translate(
-                                                "walkthrough.create_local_wallet"
-                                            ),
-                                            arg: "restore_form"
-                                        }
-                                    ]}
-                                />
-                            </h5>
-                        </div>
+        <OnboardingPage
+            title={<Translate content="header.create_account" />}
+            subtitle={
+                <Translate
+                    content="account.intro_text_title"
+                    wallet_name={(getWalletName as any)()}
+                />
+            }
+            intro={<Translate unsafe content="account.intro_text_1" />}
+            footer={
+                <div
+                    className={styles.language}
+                    data-intro={counterpart.translate(
+                        "walkthrough.language_flag"
                     )}
-                    <Routes>
-                        {(getAllowedLogins as any)().includes("wallet") && (
-                            <RouteAny
-                                path="wallet"
-                                element={<CreateAccount />}
-                            />
+                >
+                    <span className={styles.languageLabel}>
+                        <Icon type="global" />
+                        {t("language")}
+                    </span>
+                    {flagDropdown}
+                </div>
+            }
+        >
+            <div className={styles.tiles}>
+                <div className={styles.tile}>
+                    <h3 className={styles.tileTitle}>{t("create_title")}</h3>
+                    <p className={styles.tileText}>{t("create_text")}</p>
+                    <Button
+                        id="account_login_button"
+                        variant="accent"
+                        onClick={() => navigate(createTo)}
+                        data-intro={counterpart.translate(
+                            "walkthrough.create_cloud_wallet"
                         )}
-                        {(getAllowedLogins as any)().includes("password") && (
-                            <RouteAny
-                                path="password"
-                                element={<CreateAccountPassword />}
-                            />
-                        )}
-                    </Routes>
+                    >
+                        <Translate content="header.create_account" />
+                    </Button>
+                </div>
+                <div className={styles.tile}>
+                    <h3 className={styles.tileTitle}>{t("login_title")}</h3>
+                    <p className={styles.tileText}>{t("login_text")}</p>
+                    <Button
+                        onClick={() => {
+                            (SettingsActions as any).changeSetting.defer({
+                                setting: "passwordLogin",
+                                value: true
+                            });
+                            (WalletUnlockActions as any)
+                                .unlock()
+                                .catch(() => {});
+                        }}
+                    >
+                        <Translate content="header.unlock_short" />
+                    </Button>
                 </div>
             </div>
-        </div>
+
+            {allowed.includes("wallet") && (
+                <div className={styles.other}>
+                    <h3 className={styles.otherTitle}>{t("other_title")}</h3>
+                    <ul className={styles.rows}>
+                        <li>
+                            <Link
+                                to="/wallet/backup/restore"
+                                className={styles.row}
+                                data-intro={counterpart.translate(
+                                    "walkthrough.restore_account"
+                                )}
+                            >
+                                <Icon type="download" />
+                                <span className={styles.rowText}>
+                                    <span className={styles.rowTitle}>
+                                        {t("restore_title")}
+                                    </span>
+                                    <span className={styles.rowSub}>
+                                        {t("restore_text")}
+                                    </span>
+                                </span>
+                                <Icon type="caret-right" />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                to="/create-account/wallet"
+                                className={styles.row}
+                                data-intro={counterpart.translate(
+                                    "walkthrough.create_local_wallet"
+                                )}
+                            >
+                                <Icon type="key" />
+                                <span className={styles.rowText}>
+                                    <span className={styles.rowTitle}>
+                                        {t("advanced_title")}
+                                    </span>
+                                    <span className={styles.rowSub}>
+                                        {t("advanced_text")}
+                                    </span>
+                                </span>
+                                <Icon type="caret-right" />
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            )}
+
+            {/* `id`: the forms scroll their first field into view inside it
+                (react-scroll `containerId: "accountForm"`) */}
+            <div className={styles.form} id="accountForm">
+                <Routes>
+                    {allowed.includes("wallet") && (
+                        <RouteAny path="wallet" element={<CreateAccount />} />
+                    )}
+                    {allowed.includes("password") && (
+                        <RouteAny
+                            path="password"
+                            element={<CreateAccountPassword />}
+                        />
+                    )}
+                </Routes>
+            </div>
+        </OnboardingPage>
     );
 }

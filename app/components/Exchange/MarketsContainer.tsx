@@ -19,10 +19,11 @@
 // other importer.
 import * as React from "react";
 import MyMarkets from "./MyMarkets";
+import styles from "./MarketsContainer.module.scss";
 
 export default function MarketsContainer() {
     return (
-        <div className="grid-block vertical no-overflow">
+        <div className={`grid-block vertical no-overflow ${styles.markets}`}>
             <MyMarkets
                 style={{width: "100%"}}
                 // no height of its own: the list is as long as it is and the

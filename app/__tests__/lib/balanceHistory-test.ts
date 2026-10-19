@@ -2,7 +2,9 @@ import {
     HistoryEntry,
     buildBalanceSeries,
     newOrderTracker,
-    operationDelta
+    operationDelta,
+    changePercent,
+    formatPercent
 } from "../../lib/common/balanceHistory";
 
 const ME = "1.2.10";
@@ -422,5 +424,29 @@ describe("open orders in the series", () => {
         expect(series.points).toEqual([
             {time: 5000, balance: BigInt(700), locked: BigInt(300)}
         ]);
+    });
+});
+
+describe("changePercent / formatPercent", () => {
+    it("measures a change against where the balance started", () => {
+        expect(changePercent(BigInt(2340), BigInt(10000))).toBe(23.4);
+        expect(changePercent(BigInt(-410), BigInt(10000))).toBe(-4.1);
+        expect(changePercent(BigInt(0), BigInt(10000))).toBe(0);
+    });
+
+    it("has no percentage when the balance started at nothing", () => {
+        expect(changePercent(BigInt(500), BigInt(0))).toBeNull();
+    });
+
+    it("keeps its precision for balances beyond a double's integers", () => {
+        const start = BigInt("900000000000000000000");
+        expect(changePercent(start, start)).toBe(100);
+    });
+
+    it("writes a sign and one decimal, none from 100% on", () => {
+        expect(formatPercent(23.4)).toBe("+23.4%");
+        expect(formatPercent(-4.1)).toBe("-4.1%");
+        expect(formatPercent(0)).toBe("0.0%");
+        expect(formatPercent(1234.56)).toBe("+1,235%");
     });
 });

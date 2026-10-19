@@ -92,6 +92,7 @@ function Invoice(props: InvoiceProps) {
                 <Tabs
                     activeKey={location.pathname}
                     animated={false}
+                    variant="pill"
                     onChange={onTabChange}
                 >
                     {tabs.map(tab => {

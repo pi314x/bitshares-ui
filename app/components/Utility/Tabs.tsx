@@ -42,6 +42,7 @@ import counterpart from "counterpart";
 import {useNavigate} from "react-router-dom";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {SubMenu} from "../../design-system/SubMenu";
 
 interface TabProps {
     changeTab?: (index: number, isLinkTo: string) => void;
@@ -135,10 +136,7 @@ interface TabsCoreProps {
 function TabsCore({
     setting,
     defaultActiveTab = 0,
-    segmented = true,
     contentClass = "",
-    tabsClass,
-    style = {},
     className,
     actionButtons,
     onChangeTab,
@@ -227,49 +225,64 @@ function TabsCore({
         activeContent = tabs[0].props.children;
     }
 
+    // The page-level menu of the app: the same rounded row of choices as the
+    // portfolio's section menu (design-system/SubMenu), scrolling sideways on a
+    // phone - the select that replaced the strip under 900px is gone.
+    const menuItems = React.Children.map(children, (child: any, index) => {
+        if (!child || child.props.disabled) return null;
+        let title = child.props.title;
+        if (typeof title === "string" && title.indexOf(".") > 0) {
+            title = counterpart.translate(title);
+        }
+        const sub =
+            typeof child.props.subText === "string"
+                ? child.props.subText.trim()
+                : child.props.subText;
+        return {
+            key: String(index),
+            label: (
+                <>
+                    {title}
+                    {child.props.updatedTab ? "*" : ""}
+                    {sub ? <span className="tab-subtext"> {sub}</span> : null}
+                </>
+            )
+        };
+    })?.filter(Boolean) as Array<{key: string; label: React.ReactNode}>;
+
     return (
         <div
             className={cnames(!!actionButtons ? "with-buttons" : "", className)}
         >
-            <div className="service-selector">
-                <ul
-                    style={style}
-                    className={cnames("button-group no-margin", tabsClass, {
-                        segmented
-                    })}
-                >
-                    {collapseTabs ? (
-                        <li
-                            style={{
-                                paddingLeft: 10,
-                                paddingRight: 10,
-                                minWidth: "15rem"
-                            }}
-                        >
-                            <select
-                                value={activeTab}
-                                style={{marginTop: 10, marginBottom: 10}}
-                                className="bts-select"
-                                onChange={e => {
-                                    const ind = parseInt(e.target.value, 10);
-                                    changeTab(
-                                        ind,
-                                        (e.target as any)[ind].attributes[
-                                            "data-is-link-to"
-                                        ].value
-                                    );
-                                }}
-                            >
-                                {tabs}
-                            </select>
-                        </li>
-                    ) : (
-                        tabs
-                    )}
-                    {actionButtons ? (
-                        <li className="tabs-action-buttons">{actionButtons}</li>
-                    ) : null}
-                </ul>
+            <div
+                className="service-selector"
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: "0 16px"
+                }}
+            >
+                {/* one choice is no choice: nothing to pick, no menu */}
+                {menuItems && menuItems.length > 1 ? (
+                    <SubMenu
+                        items={menuItems}
+                        value={String(activeTab)}
+                        onChange={key => {
+                            const child: any = React.Children.toArray(children)[
+                                Number(key)
+                            ];
+                            changeTab(
+                                Number(key),
+                                (child && child.props.isLinkTo) || ""
+                            );
+                        }}
+                    />
+                ) : null}
+                {actionButtons ? (
+                    <div className="tabs-action-buttons">{actionButtons}</div>
+                ) : null}
             </div>
             <div className={cnames("tab-content", contentClass)}>
                 {activeContent}

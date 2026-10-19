@@ -437,6 +437,7 @@ def main():
     ap.add_argument("--pinch", default="", help="CSS selector: on each route, do a two-finger pinch-out on that element (touch events through the devtools protocol) and print its viewBox before and after")
     ap.add_argument("--insets", action="store_true", help="also print how far the page's content sits from the left, top and right edge of the content region (the convention is 24/24/24, and 12/16/12 on a phone)")
     ap.add_argument("--overlap", action="store_true", help="also fail on a button, link or field that another element sits on (a control that cannot be clicked)")
+    ap.add_argument("--ls", action="append", default=[], help="KEY=JSON: put this into localStorage before the app starts (repeatable); for example --ls '__graphene__settings_v4={\"unit\":6}' (settings keep the index of a chosen unit)")
     ap.add_argument("--contain", action="store_true", help="also fail on an element that sticks out of the card, panel or menu it is in (what reads as 'goes beyond the borders')")
     ap.add_argument("--chromium-path", default=os.environ.get("CHROMIUM_PATH", "/opt/pw-browsers/chromium"))
     args = ap.parse_args()
@@ -465,6 +466,9 @@ def main():
                 " localStorage.setItem('__graphene__starredAccounts_' + c, JSON.stringify({[n]: {name: n}})); } catch (e) {}"
                 % json.dumps(args.account)
             )
+        for entry in args.ls:
+            key, _, value = entry.partition("=")
+            page.add_init_script("try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(key), json.dumps(value)))
         if args.live_node:
             page.add_init_script(LIVE_WEBSOCKET)
         elif not args.no_stub_chain:
@@ -630,6 +634,13 @@ def main():
                 page.wait_for_timeout(600)
                 if choose:
                     option = page.get_by_role("option", name=choose, exact=True).first
+                    if not option.count():
+                        # an asset name is split into styled spans: fall back
+                        # to a case-insensitive match on the whole name
+                        option = page.get_by_role(
+                            "option",
+                            name=re.compile(r"^\s*" + re.escape(choose) + r"\s*$", re.I),
+                        ).first
                     if option.count():
                         (option.tap if phone else option.click)()
                         page.wait_for_timeout(1500)

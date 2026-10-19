@@ -102,29 +102,59 @@ body[class][class] .quoteTabs {
     }
 }
 
-// "My markets | Find markets": two tabs like the page's other tab strips, not
-// two uppercase bars.
-body[class][class] .tabHeader {
-    gap: 4px;
-    border-bottom: 1px solid var(--line);
-    background: transparent;
+// "My markets | Find markets": the pill menu the pages' other sub menus use
+.subMenu {
+    margin: 0 0 12px;
+}
 
-    > div {
-        flex: none;
-        width: auto;
-        padding: 8px 16px;
-        border: 0;
-        border-bottom: 2px solid transparent;
-        background: transparent;
-        color: var(--muted);
-        font-size: 14px;
-        font-weight: 500;
-        letter-spacing: 0;
-        text-transform: none;
+.subMenu > div {
+    margin: 0;
+}
+
+// The list: a table of rows made to touch, numbers in the mono face so the
+// columns line up, a quiet rule between rows. (The legacy sheet sizes every
+// cell, hence `body[class][class]`.)
+body[class][class] .list {
+    table {
+        width: 100%;
+        border-collapse: collapse;
     }
 
-    > div:global(:not(.inactive)) {
-        color: var(--accent);
-        border-bottom-color: var(--accent);
+    thead th {
+        padding: 10px 12px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    tbody td {
+        height: 38px;
+        padding: 4px 12px;
+        border: 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    tbody td:global(.text-right) {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // the star: a narrow column of its own
+    tr > :first-child {
+        width: 36px;
+        padding-right: 0;
+    }
+
+    tbody tr:hover td {
+        background: var(--hover);
     }
 }

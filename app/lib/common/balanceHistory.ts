@@ -435,3 +435,27 @@ export function buildBalanceSeries(
     });
     return {points: strict, unresolved, applied};
 }
+
+/**
+ * The change of a balance over a period as a percentage of where it started,
+ * e.g. 23.4 for a balance that went from 100 to 123.4. `null` when there is no
+ * start to measure against (it started at zero or below). Done in integers up
+ * to the last step, so a balance of any size keeps its precision.
+ */
+export function changePercent(change: bigint, start: bigint): number | null {
+    if (start <= BigInt(0)) return null;
+    // thousandths of a percent, as an integer
+    const thousandths = (change * BigInt(100000)) / start;
+    return Number(thousandths) / 1000;
+}
+
+/** "+23.4%", "-4.1%", "0.0%": one decimal below 100%, none from there on. */
+export function formatPercent(percent: number): string {
+    const abs = Math.abs(percent);
+    const digits = abs >= 100 ? 0 : 1;
+    const text = abs.toLocaleString("en-US", {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    });
+    return `${percent > 0 ? "+" : percent < 0 ? "-" : ""}${text}%`;
+}

@@ -32,6 +32,15 @@ export interface ThemeTokens {
     downWash: string;
     warn: string;
     onAccent: string;
+    // categorical chart colours, in the order they are assigned (validated as a
+    // set: lightness band, CVD separation, contrast; `catOther` folds the tail)
+    cat1: string;
+    cat2: string;
+    cat3: string;
+    cat4: string;
+    cat5: string;
+    cat6: string;
+    catOther: string;
 }
 
 export const themes: Record<ThemeName, ThemeTokens> = {
@@ -54,7 +63,14 @@ export const themes: Record<ThemeName, ThemeTokens> = {
         upWash: "#0F2A21",
         downWash: "#2D171B",
         warn: "#E0A93B",
-        onAccent: "#04202B"
+        onAccent: "#04202B",
+        cat1: "#3987E5",
+        cat2: "#D95926",
+        cat3: "#199E70",
+        cat4: "#C98500",
+        cat5: "#D55181",
+        cat6: "#008300",
+        catOther: "#627085"
     },
     light: {
         ground: "#F3F5F9",
@@ -75,7 +91,14 @@ export const themes: Record<ThemeName, ThemeTokens> = {
         upWash: "#E3F4EC",
         downWash: "#FBE9EB",
         warn: "#956309",
-        onAccent: "#FFFFFF"
+        onAccent: "#FFFFFF",
+        cat1: "#2A78D6",
+        cat2: "#EB6834",
+        cat3: "#1BAF7A",
+        cat4: "#EDA100",
+        cat5: "#E87BA4",
+        cat6: "#008300",
+        catOther: "#98A2B3"
     }
 };
 

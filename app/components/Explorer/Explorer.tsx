@@ -113,7 +113,8 @@ export default function Explorer() {
         <Tabs
             activeKey={active}
             animated={false}
-            className={styles.panel}
+            variant="pill"
+            className={styles.page}
             onChange={onChange}
         >
             {tabs.map(tab => {

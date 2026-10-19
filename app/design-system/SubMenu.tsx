@@ -4,6 +4,8 @@ import styles from "./SubMenu.module.scss";
 export interface SubMenuItem {
     key: string;
     label: React.ReactNode;
+    /** The walkthrough's text for this entry (`data-intro`). */
+    dataIntro?: string;
 }
 
 export interface SubMenuProps {
@@ -33,6 +35,7 @@ export function SubMenu({
                     className={`${styles.item} ${
                         item.key === value ? styles.active : ""
                     }`}
+                    data-intro={item.dataIntro}
                     onClick={() => onChange(item.key)}
                 >
                     {item.label}

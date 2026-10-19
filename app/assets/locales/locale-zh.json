@@ -480,7 +480,19 @@
             "whitelist_authorities": "白名单权限",
             "whitelist_market_fee_sharing": "白名单分享市场手续费"
         },
-        "more_actions": "More actions"
+        "more_actions": "More actions",
+        "login_selector": {
+            "advanced_text": "在本地钱包中创建账户，并将其备份为文件。",
+            "advanced_title": "高级表单",
+            "create_text": "选择账户名和密码。密钥在此浏览器中生成。",
+            "create_title": "新用户？",
+            "language": "语言",
+            "login_text": "使用账户名和密码登录。",
+            "login_title": "已有账户？",
+            "other_title": "其他开始方式",
+            "restore_text": "从备份文件或脑钱包密钥恢复。",
+            "restore_title": "恢复账户"
+        }
     },
     "account_browsing_mode": {
         "go_back": "返回我的账户",
@@ -643,7 +655,22 @@
         "total_amount": "总数量",
         "total_to_repay": "Repay Total",
         "validity_period": "有效期",
-        "whitelist_account": "白名单账号"
+        "whitelist_account": "白名单账号",
+        "overview": {
+            "title": "Credit overview",
+            "total_credit": "Total credit",
+            "available": "Available to borrow",
+            "avg_rate": "Average rate",
+            "offers_count": "%(count)s offers",
+            "no_price": "%(count)s without a price not counted",
+            "of_total": "%(percent)s of the credit on offer",
+            "rate_hint": "Per repay period, weighted by what is available",
+            "by_asset": "Credit by asset",
+            "other": "Other",
+            "no_prices": "No prices yet for the assets on offer.",
+            "collateral": "Accepted collateral",
+            "accepted_by": "%(count)s of %(total)s offers"
+        }
     },
     "customizable_table": {
         "customize_the_columns": "自定义列"
@@ -2329,7 +2356,25 @@
         "title": "SameT funds",
         "update": "Update",
         "update_title": "Update SameT fund %(id)s",
-        "updated": "SameT fund updated"
+        "updated": "SameT fund updated",
+        "overview": {
+            "avg_rate": "Average fee rate",
+            "by_asset": "Balance by asset",
+            "by_rate": "Balance by fee rate",
+            "funds_count": "%(count)s funds · %(assets)s assets",
+            "no_price": "%(count)s without a price not counted",
+            "no_prices": "No prices yet for the assets in the funds.",
+            "of_balance": "%(percent)s of the balance",
+            "other": "Other",
+            "partial": "Based on the funds loaded so far; load more below to include the rest.",
+            "rate_range": "Lowest %(min)s, highest %(max)s",
+            "tier_free": "No fee",
+            "tier_over": "Over %(rate)s",
+            "tier_up_to": "Up to %(rate)s",
+            "title": "SameT funds overview",
+            "total": "Held in funds",
+            "unpaid": "Unpaid fees"
+        }
     },
     "scaled_orders": {
         "action": {

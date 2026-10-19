@@ -243,3 +243,42 @@ body[class][class] .send-page span:has(> textarea) {
     display: block;
     width: 100%;
 }
+
+// The invoice (merchant protocol) pages were a 640px minimum wide, centred strip:
+// wider than a phone, so the page scrolled sideways. One column at the page's
+// inset like the other pages.
+body[class][class] .merchant-protocol {
+    min-width: 0;
+    max-width: 760px;
+    margin: 0;
+    padding: 0;
+}
+
+// A Foundation row inside a tab (membership statistics) pulled itself 24px out
+// of the tab on both sides (the grid's negative margins), so it stuck out of the
+// box it is in.
+body[class][class] .tab-content .grid-block.large-12 {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+// Pages whose tabs are the pill menu: the menu and what it chooses sit on the
+// page itself, not in a second card with its own border, background and 20px of
+// padding (that stacked a frame inside the page's inset).
+body[class][class] .tabs-container.generic-bordered-box {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body[class][class] .tab-content.padding {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+// A tab strip with a single tab shows no menu (nothing to choose): its empty row
+// takes no room either.
+body[class][class] .service-selector:empty {
+    display: none;
+}

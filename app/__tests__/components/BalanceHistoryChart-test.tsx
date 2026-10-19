@@ -5,17 +5,27 @@ import localeEn from "../../assets/locales/locale-en.json";
 
 // lightweight-charts draws on a canvas, which this jsdom has not got
 const mockSetData = jest.fn();
+const mockSetLogical = jest.fn();
 jest.mock("lightweight-charts", () => ({
     __esModule: true,
     AreaSeries: {},
     LineSeries: {},
     LineType: {Simple: 0, WithSteps: 1, Curved: 2},
     ColorType: {Solid: "solid"},
-    createChart: () => ({
-        addSeries: () => ({setData: mockSetData, applyOptions: () => {}}),
-        timeScale: () => ({fitContent: () => {}}),
-        remove: () => {}
-    })
+    createChart: () => {
+        // the view as the chart reports it: bars 0 and 1 (times 1000 and 2000)
+        const timeScale = {
+            fitContent: () => {},
+            getVisibleRange: () => ({from: 1000, to: 2000}),
+            timeToIndex: (time: number) => (time <= 1000 ? 0 : 1),
+            setVisibleLogicalRange: (range: any) => mockSetLogical(range)
+        };
+        return {
+            addSeries: () => ({setData: mockSetData, applyOptions: () => {}}),
+            timeScale: () => timeScale,
+            remove: () => {}
+        };
+    }
 }));
 
 const mockGetBalances = jest.fn();
@@ -154,6 +164,48 @@ describe("BalanceHistoryChart", () => {
                 ) as string
             ).orders
         ).toBe(true);
+    });
+
+    it("moves the view to a new period in steps, from where it is to where it ends", async () => {
+        window.localStorage.removeItem("__graphene__balanceChartRange");
+        // one operation a few days ago, one a minute ago
+        const now = Math.floor(Date.now() / 1000);
+        mockGetBlockTimes.mockResolvedValue({10: now - 200000, 20: now - 60});
+        const {container} = render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        const bars = mockSetData.mock.calls.slice(-1)[0][0].length;
+        // the history arriving after the first point is a widening of its own:
+        // let that settle before looking at the move to a new period
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 800));
+        });
+        expect(mockSetLogical).toHaveBeenCalled();
+        mockSetLogical.mockClear();
+
+        const day = Array.from(container.querySelectorAll("button")).find(
+            b => (b.textContent || "").trim() === "1D"
+        ) as HTMLButtonElement;
+        await act(async () => {
+            day.click();
+        });
+        // (the effect that moves the view runs once the click has rendered)
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 800));
+        });
+        const spans = mockSetLogical.mock.calls.map(([r]) => r);
+        // starts where the view was (bars 0 and 1, half a bar either side) ...
+        expect(spans[0]).toEqual({from: -0.5, to: 1.5});
+        // ... gets there in more than one step ...
+        expect(spans.length).toBeGreaterThan(3);
+        // ... and ends on the bars of the day: the right edge on the last bar
+        // (half a bar beyond), the left edge further in than where it began
+        const end = spans[spans.length - 1];
+        expect(end.to).toBeCloseTo(bars - 0.5, 6);
+        expect(end.from).toBeGreaterThan(-0.5);
+        // the right edge never goes back
+        for (let i = 1; i < spans.length; i++) {
+            expect(spans[i].to).toBeGreaterThanOrEqual(spans[i - 1].to - 1e-9);
+        }
     });
 
     it("draws nothing for an account without balances", async () => {

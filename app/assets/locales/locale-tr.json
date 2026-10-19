@@ -480,7 +480,19 @@
             "whitelist_authorities": "Beyaz liste yetkilisi",
             "whitelist_market_fee_sharing": "Piyasa ücreti paylaşım beyaz listesi"
         },
-        "more_actions": "More actions"
+        "more_actions": "More actions",
+        "login_selector": {
+            "advanced_text": "Dosya olarak yedeklediğiniz yerel bir cüzdanda hesap oluşturun.",
+            "advanced_title": "Gelişmiş form",
+            "create_text": "Bir hesap adı ve parola seçin. Anahtarlarınız bu tarayıcıda oluşturulur.",
+            "create_title": "Yeni misiniz?",
+            "language": "Dil",
+            "login_text": "Hesap adınız ve parolanızla giriş yapın.",
+            "login_title": "Zaten hesabınız var mı?",
+            "other_title": "Başlamanın diğer yolları",
+            "restore_text": "Bir yedek dosyasından veya brainkey'den.",
+            "restore_title": "Hesabı geri yükle"
+        }
     },
     "account_browsing_mode": {
         "go_back": "Hesabıma geri dön",
@@ -643,7 +655,22 @@
         "total_amount": "Total",
         "total_to_repay": "Repay Total",
         "validity_period": "Expiration",
-        "whitelist_account": "Account"
+        "whitelist_account": "Account",
+        "overview": {
+            "title": "Credit overview",
+            "total_credit": "Total credit",
+            "available": "Available to borrow",
+            "avg_rate": "Average rate",
+            "offers_count": "%(count)s offers",
+            "no_price": "%(count)s without a price not counted",
+            "of_total": "%(percent)s of the credit on offer",
+            "rate_hint": "Per repay period, weighted by what is available",
+            "by_asset": "Credit by asset",
+            "other": "Other",
+            "no_prices": "No prices yet for the assets on offer.",
+            "collateral": "Accepted collateral",
+            "accepted_by": "%(count)s of %(total)s offers"
+        }
     },
     "customizable_table": {
         "customize_the_columns": "Sütunları Özelleştirin"
@@ -2329,7 +2356,25 @@
         "title": "SameT funds",
         "update": "Update",
         "update_title": "Update SameT fund %(id)s",
-        "updated": "SameT fund updated"
+        "updated": "SameT fund updated",
+        "overview": {
+            "avg_rate": "Average fee rate",
+            "by_asset": "Balance by asset",
+            "by_rate": "Balance by fee rate",
+            "funds_count": "%(count)s funds · %(assets)s assets",
+            "no_price": "%(count)s without a price not counted",
+            "no_prices": "No prices yet for the assets in the funds.",
+            "of_balance": "%(percent)s of the balance",
+            "other": "Other",
+            "partial": "Based on the funds loaded so far; load more below to include the rest.",
+            "rate_range": "Lowest %(min)s, highest %(max)s",
+            "tier_free": "No fee",
+            "tier_over": "Over %(rate)s",
+            "tier_up_to": "Up to %(rate)s",
+            "title": "SameT funds overview",
+            "total": "Held in funds",
+            "unpaid": "Unpaid fees"
+        }
     },
     "scaled_orders": {
         "action": {

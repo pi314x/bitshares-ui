@@ -106,6 +106,14 @@
     letter-spacing: -0.01em;
 }
 
+// what a figure is worth in the chosen currency: quieter, under it
+.figureWorth {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 640px) {
     .figure {
         flex: 1 1 calc(50% - 8px);

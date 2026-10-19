@@ -44,6 +44,7 @@ import {set} from "lodash-es";
 import {getAllowedLogins, getFaucet} from "../../branding";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
+import {SubMenu} from "../../design-system/SubMenu";
 import styles from "./Settings.module.scss";
 
 function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
@@ -407,74 +408,36 @@ export default function Settings(props: SettingsProps) {
             break;
     }
 
+    // The menu is the page menu of the app (the rounded row the portfolio has),
+    // above the section it chooses; the section is one column under it. (It was
+    // a list down the left side that took a quarter of the screen.)
     return (
         <Form layout={"vertical"}>
-            <div className={deprecated ? "" : "grid-block settings-container"}>
-                <div className="grid-block main-content margin-block wrap">
-                    <div
-                        className="grid-content shrink settings-menu"
-                        style={{paddingRight: "2rem"}}
-                    >
+            <div className={deprecated ? "" : "settings-container"}>
+                <div className={styles.page}>
+                    <SubMenu
+                        aria-label={counterpart.translate("header.settings")}
+                        items={menuEntries.map(entry => ({
+                            key: entry,
+                            label: counterpart.translate("settings." + entry)
+                        }))}
+                        value={menuEntries[activeSetting] || menuEntries[0]}
+                        onChange={entry => redirectToEntry(entry)}
+                    />
+
+                    <div className={styles.content}>
                         <Translate
-                            style={{paddingBottom: 10, paddingLeft: 10}}
                             component="h3"
-                            content="header.settings"
-                            className={"panel-bg-color"}
+                            content={"settings." + menuEntries[activeSetting]}
                         />
-
-                        <ul className={styles.nav}>
-                            {menuEntries.map((entry, index) => {
-                                return (
-                                    <li
-                                        className={
-                                            styles.navItem +
-                                            (index === activeSetting
-                                                ? ` active ${styles.navItemActive}`
-                                                : "")
-                                        }
-                                        onClick={() => redirectToEntry(entry)}
-                                        key={entry}
-                                    >
-                                        <Translate
-                                            content={"settings." + entry}
-                                        />
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-
-                    <div
-                        className={`grid-content ${styles.content}`}
-                        style={{
-                            height: "100%"
-                        }}
-                    >
-                        <div
-                            className="grid-block small-12 no-margin vertical"
-                            style={{
-                                maxWidth: 1000
-                            }}
-                        >
+                        {activeEntry != "access" && (
                             <Translate
-                                component="h3"
-                                content={
-                                    "settings." + menuEntries[activeSetting]
-                                }
+                                unsafe
+                                content={`settings.${menuEntries[activeSetting]}_text`}
+                                className={styles.lead}
                             />
-                            {activeEntry != "access" && (
-                                <Translate
-                                    unsafe
-                                    style={{
-                                        paddingTop: 5,
-                                        marginBottom: 30
-                                    }}
-                                    content={`settings.${menuEntries[activeSetting]}_text`}
-                                    className="panel-bg-color"
-                                />
-                            )}
-                            {entries}
-                        </div>
+                        )}
+                        {entries}
                     </div>
                 </div>
                 <WebsocketAddModal

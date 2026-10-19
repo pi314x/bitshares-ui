@@ -13066,6 +13066,54 @@ the far right of the top bar and, on a phone, its panel is a sheet 12px from bot
 edges under the bar (it hung from the bell's right edge and ran off the left edge
 on an iPhone).
 
+### 7.31 One menu style, values in your currency, overviews, create account
+
+- **One menu style.** The rounded pill row of the portfolio's sections
+  (`design-system/SubMenu`) is what every menu inside a page uses now: the
+  design-system `Tabs` has `variant="pill"` (Explorer, Voting, SameT funds, invoice),
+  the legacy `components/Utility/Tabs` renders the same row (Accounts, the account's
+  Assets/Membership/Permissions/..., Whitelist, Signed messages), Settings has its
+  sections as the row at the top of the page, and the Markets tab's "My markets / Find
+  markets" is the row too. The legacy tab box (a second card with its own border,
+  background and 20px of padding) is flattened under it
+  (`legacy-layout.scss`); a strip with a single tab shows no menu. Panel tabs that
+  carry a value beside the name (balances 3,531.02) stay as they are.
+- **Percentage and currency.** The Dashboard/Portfolio chart's change line has the
+  percentage (`changePercent`/`formatPercent`, `lib/common/balanceHistory.ts`) and the
+  figures have a worth line in the preferred unit. Settings -> preferred unit lists
+  XBTSX.USDT and XBTSX.USDC (`getUnits()` in `branding.js`; the setting stores an
+  index into that list, so the list is append-only); `useUnitValue` /
+  `lib/common/unitValue.ts` turn amounts into it through `convertAssetValue`. An asset
+  without a price (no trades in the last 24 h, e.g. XBTSX.USDC/BTS) is left out and
+  said so, never guessed.
+- **Notifications** name the asset and use its decimals (`formatAssetAmount`,
+  `lib/common/fills.ts`; the asset is fetched when it is not known yet).
+- **Overviews** above the credit offers and the SameT funds
+  (`Account/OverviewCards.module.scss`, `CreditOffer/CreditOverview.tsx`,
+  `SametFund/SametOverview.tsx`): three figures and two cards. The spread over assets is
+  a stacked bar with its legend as a table (a part of a whole is read as a length, never
+  a donut; the colour is not the only carrier of meaning); the other card is a meter per
+  class (collateral accepted / balance by fee rate). The categorical colours are
+  `--cat-1..6` and `--cat-other` (`_palette.scss`, `tokens.ts`), fixed order by size,
+  checked with the dataviz skill's `validate_palette.js`. Sums come from market prices
+  in the chosen currency (`lib/common/creditOverview.ts`, `sametOverview.ts`).
+- **The chart's period** (Dashboard) no longer jumps: a longer period, or older history
+  that has just been loaded, moves the view from where it is to the new span over 550 ms
+  (`lib/common/rangeGlide.ts`: right edge in a line, width by a constant ratio,
+  ease-in-out, in the chart's logical units; not with `prefers-reduced-motion`). A week
+  or a month longer than the history loaded so far fetches up to five more pages, one at
+  a time, each widening the view through the same glide.
+- **Create account** (`/create-account`) is two tiles (create / log in, each saying what it
+  is for), a list of the other ways (restore, advanced form) and the language in the
+  card's foot; the same handlers and routes, the forms under a rule.
+- **Markets** (Explorer tab; the trade page's side list shares the component): the pill
+  row, then toggles + filter, quote pills, and a table with the supply (of the market's
+  asset, "Supply" - the header said "Base supply"), volume, price and change in the
+  mono face, change in the up/down colours, 38px rows; on a phone market, price and change.
+- Harness: `smoke-boot.py` takes `--ls KEY=JSON` (localStorage before the page loads),
+  `--overlap`, and its `#Trigger=Option` step falls back to a case-insensitive match
+  (asset names are split into styled spans).
+
 ## 8. Testing strategy ("Vergiss Tests nicht")
 
 Today: 2 real Jest unit tests, a handful of Mocha market/wallet tests, zero

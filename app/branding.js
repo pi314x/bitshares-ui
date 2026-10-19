@@ -92,7 +92,18 @@ export function getUnits() {
     if (_isTestnet()) {
         return ["TEST"];
     }
-    return ["BTS", "USD", "CNY", "BTC", "EUR", "GBP"];
+    // the currencies the user can value the portfolio in (Settings: preferred
+    // unit of account); the gateway stablecoins are what most holders count in
+    return [
+        "BTS",
+        "USD",
+        "CNY",
+        "BTC",
+        "EUR",
+        "GBP",
+        "XBTSX.USDT",
+        "XBTSX.USDC"
+    ];
 }
 
 export function getDefaultMarket() {

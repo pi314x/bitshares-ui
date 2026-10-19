@@ -136,6 +136,7 @@ import {ChainValidation, ChainStore} from "bitsharesjs";
 import debounceRender from "react-debounce-render";
 import {getPossibleGatewayPrefixes, gatewayPrefixes} from "common/gateways";
 import QuoteSelectionModal from "./QuoteSelectionModal";
+import {SubMenu} from "../../design-system/SubMenu";
 import styles from "./MyMarkets.module.scss";
 import SearchInputUntyped from "../Utility/SearchInput";
 
@@ -162,6 +163,8 @@ interface MarketGroupProps {
     index: number;
     findMarketTab: boolean;
     onlyLiquid?: boolean;
+    /** No gutter for a scrollbar on the right: the page scrolls, not the list. */
+    flush?: boolean;
 }
 
 function getInitialGroupState(props: {
@@ -192,7 +195,8 @@ function MarketGroupInner(props: MarketGroupProps) {
         viewSettings,
         index,
         findMarketTab,
-        onlyLiquid = false
+        onlyLiquid = false,
+        flush = false
     } = props;
 
     const [groupState, setGroupState] = React.useState(() =>
@@ -276,8 +280,8 @@ function MarketGroupInner(props: MarketGroupProps) {
 
             case "quoteSupply":
                 return (
-                    <th key={header.name}>
-                        <Translate content="exchange.base_supply" />
+                    <th key={header.name} style={{textAlign: "right"}}>
+                        <Translate content="markets.supply" />
                     </th>
                 );
 
@@ -414,7 +418,7 @@ function MarketGroupInner(props: MarketGroupProps) {
         });
 
     return (
-        <div style={{paddingRight: 10}}>
+        <div style={{paddingRight: flush ? 0 : 10}}>
             {open ? (
                 <table className="table table-hover text-right">
                     <thead>
@@ -900,9 +904,6 @@ function MyMarketsInner(props: MyMarketsProps) {
 
     const {baseGroups, otherMarkets} = getMarkets();
     const hasOthers = otherMarkets && otherMarkets.length;
-    const hc = "mymarkets-header clickable";
-    const starClass = cnames(hc, {inactive: !myMarketTab});
-    const allClass = cnames(hc, {inactive: myMarketTab});
 
     const listStyle: any = {
         minWidth: minWidth,
@@ -919,28 +920,29 @@ function MyMarketsInner(props: MyMarketsProps) {
     return (
         <div className={className} style={style}>
             {tabHeader ? (
-                <div
-                    style={headerStyle}
-                    className={`grid-block shrink left-orderbook-header bottom-header ${styles.tabHeader}`}
-                >
-                    <div
-                        className={starClass}
-                        onClick={() => changeTab("my-market")}
-                        data-intro={counterpart.translate(
-                            "walkthrough.my_markets_tab"
-                        )}
-                    >
-                        <Translate content="exchange.market_name" />
-                    </div>
-                    <div
-                        className={allClass}
-                        onClick={() => changeTab("find-market")}
-                        data-intro={counterpart.translate(
-                            "walkthrough.find_markets_tab"
-                        )}
-                    >
-                        <Translate content="exchange.more" />
-                    </div>
+                <div style={headerStyle} className={styles.subMenu}>
+                    <SubMenu
+                        value={myMarketTab ? "my-market" : "find-market"}
+                        onChange={changeTab}
+                        items={[
+                            {
+                                key: "my-market",
+                                label: (
+                                    <Translate content="exchange.market_name" />
+                                ),
+                                dataIntro: counterpart.translate(
+                                    "walkthrough.my_markets_tab"
+                                )
+                            },
+                            {
+                                key: "find-market",
+                                label: <Translate content="exchange.more" />,
+                                dataIntro: counterpart.translate(
+                                    "walkthrough.find_markets_tab"
+                                )
+                            }
+                        ]}
+                    />
                 </div>
             ) : null}
             {noHeader || tabHeader ? null : (
@@ -1105,7 +1107,7 @@ function MyMarketsInner(props: MyMarketsProps) {
 
             <div
                 style={listStyle}
-                className="table-container grid-block vertical mymarkets-list"
+                className={`table-container grid-block vertical mymarkets-list ${styles.list}`}
                 ref={favoritesRef}
             >
                 {assetsLoading ? (
@@ -1146,6 +1148,7 @@ function MyMarketsInner(props: MyMarketsProps) {
                                 base={base}
                                 findMarketTab={!myMarketTab}
                                 onlyLiquid={onlyLiquid && myMarketTab}
+                                flush={!!autoHeight}
                             />
                         );
                     })}
@@ -1163,6 +1166,7 @@ function MyMarketsInner(props: MyMarketsProps) {
                         markets={otherMarkets}
                         base="others"
                         findMarketTab={!myMarketTab}
+                        flush={!!autoHeight}
                     />
                 ) : null}
             </div>

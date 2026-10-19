@@ -39,3 +39,14 @@
     padding-left: 0;
     padding-right: 0;
 }
+
+// The explorer's tabs are the page menu (the pill row); the screen of a tab is
+// the page's own width, not a panel inside a panel.
+.page {
+    width: 100%;
+    min-width: 0;
+}
+
+.page .pane {
+    padding: 0;
+}

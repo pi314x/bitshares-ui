@@ -1,5 +1,6 @@
 import * as React from "react";
 import styles from "./Tabs.module.scss";
+import {SubMenu} from "./SubMenu";
 
 // Seventeenth component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md), following `Modal`/`Tooltip`/
@@ -74,6 +75,12 @@ export interface TabsProps {
     tabBarExtraContent?: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
+    /**
+     * `"pill"`: the row of choices the portfolio's section menu has (a rounded
+     * box, the chosen one raised) - the page-level menu of the app. The default
+     * is the underlined strip for the tabs of a panel.
+     */
+    variant?: "underline" | "pill";
     children?: React.ReactNode;
 }
 
@@ -84,6 +91,7 @@ function TabsBase({
     tabBarExtraContent,
     className,
     style,
+    variant = "underline",
     children
 }: TabsProps): JSX.Element {
     const tabs = collectTabs(children);
@@ -98,6 +106,29 @@ function TabsBase({
     }
 
     const active = tabs.find(t => t.key === currentKey);
+
+    if (variant === "pill") {
+        return (
+            <div
+                className={[styles.wrap, className].filter(Boolean).join(" ")}
+                style={style}
+            >
+                <div className={styles.pillRow}>
+                    <SubMenu
+                        items={tabs.map(t => ({key: t.key, label: t.tab}))}
+                        value={String(currentKey)}
+                        onChange={select}
+                    />
+                    {tabBarExtraContent ? (
+                        <div className={styles.barExtra}>
+                            {tabBarExtraContent}
+                        </div>
+                    ) : null}
+                </div>
+                <div className={styles.pillContent}>{active?.content}</div>
+            </div>
+        );
+    }
 
     return (
         <div

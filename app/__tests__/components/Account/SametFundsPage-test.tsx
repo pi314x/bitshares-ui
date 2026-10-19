@@ -410,10 +410,26 @@ describe("SameT locale strings", () => {
             precision: 5,
             value: "0.03%"
         };
-        Object.keys((localeEn as any).samet).forEach(key => {
-            const text = (counterpart as any).translate(`samet.${key}`, params);
+        // `samet.overview` is a group of its own: its keys are rendered too
+        const paths: string[] = [];
+        const collect = (node: any, prefix: string) =>
+            Object.keys(node).forEach(key =>
+                typeof node[key] === "string"
+                    ? paths.push(`${prefix}${key}`)
+                    : collect(node[key], `${prefix}${key}.`)
+            );
+        collect((localeEn as any).samet, "samet.");
+        paths.forEach(path => {
+            const text = (counterpart as any).translate(path, {
+                ...params,
+                min: "0%",
+                max: "100%",
+                percent: "1.00%",
+                rate: "0.05%"
+            });
             expect(text).not.toMatch(/missing translation/i);
             expect(text).not.toMatch(/%\(/);
         });
+        expect(paths).toContain("samet.overview.by_rate");
     });
 });
