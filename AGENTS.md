@@ -128,6 +128,12 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   See `docs/UI_MIGRATION_PLAN.md` §7.4 and §7.6. A `yarn build-preview`
   screenshot does not load the legacy global CSS, so check new screens in the
   real app too.
+- Container: `docker compose up --build` (http://localhost:8080; multi-stage `Dockerfile`, nginx as an
+  unprivileged user; TLS variant `docker-compose.tls.yml`). The page's security policy is the `<meta>`
+  tag in `app/assets/index.hbs`; `conf/headers.*.conf` and `conf/nginx.https.conf.example` carry the same
+  policy as a header and `app/__tests__/security/headers-test.ts` keeps them in step - change them
+  together. No third-party script on the page (password strength is bundled, not a CDN). See
+  `docs/DEPLOYMENT.md`.
 - Format check (pre-commit hook): `pretty-quick --staged` (via husky)
 
 `.github/workflows/ci.yml` runs lint + typecheck + test on every PR — this

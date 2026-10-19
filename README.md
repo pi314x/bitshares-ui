@@ -99,7 +99,12 @@ This will compile the UI with some special modifications for use with Electron, 
 
 ### Docker
 
-Clone this repository, run `docker-compose up` and visit localhost:8080
+Clone this repository, run `docker compose up --build` and visit http://localhost:8080
+
+The image is built from this source (Node, `yarn build`) and served by nginx as an unprivileged
+user, with the security headers of [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). It speaks plain HTTP:
+for the wallet put it behind HTTPS, with a reverse proxy in front or with
+`docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build` and a certificate in `./certs`.
 
 ## Contributing & Coding style guideline
 

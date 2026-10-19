@@ -12,9 +12,21 @@ var fs = require("fs");
  * For staging builds, set the version to the latest commit hash, for
  * production set it to the package version
  */
-let branch = !!process.env.BRANCH ? process.env.BRANCH : git.branch();
+// A build without a .git folder (a container build) takes what it is told (BRANCH, GIT_REV).
+const fromGit = (read, fallback) => {
+    try {
+        return read();
+    } catch (e) {
+        return fallback;
+    }
+};
+let branch = !!process.env.BRANCH
+    ? process.env.BRANCH
+    : fromGit(() => git.branch(), "unknown");
 var __VERSION__ =
-    branch === "develop" ? git.short() : require("./package.json").version;
+    branch === "develop"
+        ? process.env.GIT_REV || fromGit(() => git.short(), "unknown")
+        : require("./package.json").version;
 
 // BASE APP DIR
 var root_dir = path.resolve(__dirname);
@@ -119,7 +131,7 @@ module.exports = function(env) {
             // or "lightweight". Users can still switch in the chart's own toggle.
             __CHART_ENGINE__: JSON.stringify(env.chartEngine || "auto"),
             DEFAULT_SYMBOL: "BTS",
-            __GIT_BRANCH__: JSON.stringify(git.branch())
+            __GIT_BRANCH__: JSON.stringify(branch)
         }),
         new webpack.ContextReplacementPlugin(
             /moment[\/\\]locale$/,

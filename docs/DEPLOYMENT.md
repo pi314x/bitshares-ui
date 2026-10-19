@@ -25,8 +25,36 @@ keys. So the server and the way it serves matter.
 4. Check the result in the browser's developer tools (Network, the page's response headers, and
    the Console for "Refused to ..." lines) and with an online header checker.
 
-`conf/nginx.conf` (the Docker image's) stays plain HTTP, with the headers that do not need
-HTTPS; put it behind a TLS terminator, or use the example.
+`conf/nginx.conf` stays plain HTTP, with the headers that do not need HTTPS; put it behind a TLS
+terminator, or use the example.
+
+## As a container
+
+`Dockerfile` builds the app from the source (Node 20, `yarn install --frozen-lockfile`,
+`yarn build`) and serves it with nginx as an unprivileged user, in a second stage that holds
+only the built files and the configuration (no Node, no sources).
+
+```
+docker compose up --build            # http://localhost:8080
+docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build   # https, with ./certs
+```
+
+- The image listens on 8080 (and 8443 with TLS), and sends the headers of
+  `conf/headers.common.conf` and the policy of `conf/headers.csp.conf` (the same as the example).
+- It runs with a read-only file system, no added capabilities and `no-new-privileges` (see
+  `docker-compose.yml`); `/healthz` answers for health checks.
+- Plain HTTP by default: put a TLS terminator in front, or mount a certificate chain and key in
+  `./certs` (`fullchain.pem`, `privkey.pem`) and use the TLS variant. The server runs as user 101,
+  so the key file must be readable by it (`chown 101 certs/privkey.pem` and `chmod 600`, or a
+  group). Never put the key in an image or in the repository.
+- Three packages are fetched from GitHub at build time, each pinned by its commit in `yarn.lock`
+  (`bitshares-report`, `jdenticon`, `perfect-scrollbar`), so the build needs `git` (the build stage
+  has it) and the network.
+- `yarn install` downloads the charting library from the address in
+  `charting_library/install-charting-library.cjs` and checks its md5 against
+  `charting_library/*.md5`; the build needs the network for that.
+- Nothing is pushed anywhere by building it: tag and push the image yourself, and pin the base
+  images by digest if you need exact builds.
 
 ## The headers
 

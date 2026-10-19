@@ -33,3 +33,6 @@ charting_library/*
 !charting_library/install-charting-library.cjs
 
 __pycache__/
+
+# certificate and key of the TLS container variant (docker-compose.tls.yml): never committed
+/certs/

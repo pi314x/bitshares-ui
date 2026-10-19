@@ -13231,6 +13231,14 @@ on an iPhone).
   cache rules; `__tests__/security/headers-test.ts` keeps meta tag and header in step. Checked
   in the built bundle: eval is blocked, the main screens and the trade chart raise no policy
   violation, the strength meter works. Not run through `nginx -t` (no nginx here).
+- **Container image** (`Dockerfile`, `docker-compose*.yml`, `conf/nginx.container*.conf`,
+  `conf/headers.*.conf`): the old image (Node 6, `npm install`, a build at every start, plain nginx as
+  root) could not build this version (Node >= 16). Now a multi-stage build (Node 20, `yarn install
+  --frozen-lockfile`, `yarn build`) and a runtime of only the built files in
+  `nginx-unprivileged`: port 8080, non-root, read-only file system in the compose file, `/healthz`,
+  the headers and policy of `docs/DEPLOYMENT.md`; a TLS variant mounts `./certs`. Building it does not
+  publish anything. `yarn install` still downloads the charting library (md5-checked) from the address in
+  `charting_library/install-charting-library.cjs`, so the build needs the network.
 - **iOS date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the
   native field has no intrinsic width and centres its text in Safari; `appearance: none`,
   `display: block`, `width: 100%` and left-aligned `::-webkit-date-and-time-value` make
