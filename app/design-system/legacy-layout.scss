@@ -55,6 +55,87 @@
     }
 }
 
+// The action buttons of an account page's tab bar (Reset / Save / Create paper wallet,
+// Timed transfer ...) sat on one line with the legacy button margins (0 16px 0 8px) and
+// no gap below: wrapped, they touched. A row of their own with a gap each way.
+body[class][class] div.tabs-action-buttons {
+    padding-bottom: 12px;
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .action-buttons > button.button,
+    .action-buttons > a.button {
+        margin: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    body[class][class] div.tabs-action-buttons .action-buttons {
+        justify-content: flex-start;
+
+        > button.button,
+        > a.button {
+            flex: 1 1 auto;
+        }
+    }
+}
+
+// A row of an account (its image, the name or key, a weight, the add button), as the
+// permissions and the whitelist pages have it: the parts touched each other. One line,
+// a gap between, the field taking what the image and the button leave.
+body[class][class] .inline-label.input-wrapper:has(> .account-image) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    > .account-image {
+        flex: none;
+        margin: 0;
+    }
+
+    > input,
+    > div {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0;
+    }
+
+    > input.weight-input {
+        flex: 0 1 96px;
+    }
+
+    > span {
+        flex: none;
+        margin: 0;
+    }
+}
+
+// The membership page's grid: columns inside a content block inside a content block, each
+// with 24px of padding and a -24px margin to cancel it, which left the text 48px in from
+// the page's edge and the cards narrower than their tab. Columns stack with a gap; the
+// page's own inset is all there is.
+body[class][class] .tab-content .grid-block.large-12 {
+    .grid-content {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .grid-block {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .grid-block > .small-12 {
+        padding-right: 0;
+        margin-bottom: 16px;
+    }
+}
+
 // AccountSelector's outer wrapper is a Tooltip, which is `inline-block`: the
 // selector (and the right-aligned "#id" label above it, pulled up over the
 // field's caption with a negative margin) was as wide as its content, so on a
@@ -198,6 +279,21 @@ body[class][class] .asset-card {
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     overflow: hidden;
+}
+
+// What is in the card sat on its edge (only the heading was padded).
+body[class][class] .asset-card {
+    padding: 0 0 16px;
+
+    > :not(.card-divider) {
+        padding-left: 16px;
+        padding-right: 16px;
+        box-sizing: border-box;
+    }
+
+    > .card-divider + * {
+        margin-top: 14px;
+    }
 }
 
 body[class][class] .asset-card > .card-divider {

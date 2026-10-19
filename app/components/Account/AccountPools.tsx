@@ -78,6 +78,7 @@ import Icon from "../Icon/Icon";
 import PoolExchangeModal from "../Modal/PoolExchangeModal";
 import PoolStakeModal from "../Modal/PoolStakeModal";
 import CreatePoolModal from "../Modal/CreatePoolModal";
+import styles from "./AccountPools.module.scss";
 import DeletePoolModal from "../Modal/DeletePoolModal";
 import {List} from "immutable";
 import ApplicationApi from "api/ApplicationApi";
@@ -433,72 +434,62 @@ function AccountPools({
     });
 
     return (
-        <div className="generic-bordered-box">
-            <div className="padding">
+        <div>
+            <div>
                 {/* one tab only: no tab strip (the page's view switch names it) */}
                 <div>
                     <div className="grid-block vertical">
-                        <div className="grid-content no-padding">
-                            <SearchInput
-                                placeholder={counterpart.translate(
-                                    "poolmart.liquidity_pools.asset_a"
-                                )}
-                                value={state.filterAssetA}
-                                onChange={onFilterAssetA}
-                                style={{
-                                    width: "200px",
-                                    marginBottom: "12px",
-                                    marginTop: "4px"
-                                }}
-                            />
-                            <SearchInput
-                                placeholder={counterpart.translate(
-                                    "poolmart.liquidity_pools.asset_b"
-                                )}
-                                value={state.filterAssetB}
-                                onChange={onFilterAssetB}
-                                style={{
-                                    width: "200px",
-                                    marginLeft: "20px",
-                                    marginBottom: "12px",
-                                    marginTop: "4px"
-                                }}
-                            />
-                            <SearchInput
-                                placeholder={counterpart.translate(
-                                    "poolmart.liquidity_pools.share_asset"
-                                )}
-                                value={state.filterShareAsset}
-                                onChange={onFilterShareAsset}
-                                style={{
-                                    width: "200px",
-                                    marginLeft: "20px",
-                                    marginBottom: "12px",
-                                    marginTop: "4px"
-                                }}
-                            />
-                            <Select
-                                style={{
-                                    width: "150px",
-                                    marginLeft: "24px",
-                                    marginTop: "4px"
-                                }}
-                                value={state.limit}
-                                onChange={handleRowsChange}
-                            >
-                                <Select.Option key={"10"} value={"10"}>
-                                    10 rows
-                                </Select.Option>
-                                <Select.Option key={"25"} value={"25"}>
-                                    25 rows
-                                </Select.Option>
-                                <Select.Option key={"50"} value={"50"}>
-                                    50 rows
-                                </Select.Option>
-                                <Select.Option key={"100"} value={"100"}>
-                                    100 rows
-                                </Select.Option>
-                            </Select>
+                        <div className={styles.filters}>
+                            <div className={styles.filter}>
+                                <SearchInput
+                                    placeholder={counterpart.translate(
+                                        "poolmart.liquidity_pools.asset_a"
+                                    )}
+                                    value={state.filterAssetA}
+                                    onChange={onFilterAssetA}
+                                    style={{width: "100%"}}
+                                />
+                            </div>
+                            <div className={styles.filter}>
+                                <SearchInput
+                                    placeholder={counterpart.translate(
+                                        "poolmart.liquidity_pools.asset_b"
+                                    )}
+                                    value={state.filterAssetB}
+                                    onChange={onFilterAssetB}
+                                    style={{width: "100%"}}
+                                />
+                            </div>
+                            <div className={styles.filter}>
+                                <SearchInput
+                                    placeholder={counterpart.translate(
+                                        "poolmart.liquidity_pools.share_asset"
+                                    )}
+                                    value={state.filterShareAsset}
+                                    onChange={onFilterShareAsset}
+                                    style={{width: "100%"}}
+                                />
+                            </div>
+                            <div className={styles.rows}>
+                                <Select
+                                    style={{width: "100%"}}
+                                    value={String(state.limit)}
+                                    onChange={handleRowsChange}
+                                >
+                                    <Select.Option key={"10"} value={"10"}>
+                                        10 rows
+                                    </Select.Option>
+                                    <Select.Option key={"25"} value={"25"}>
+                                        25 rows
+                                    </Select.Option>
+                                    <Select.Option key={"50"} value={"50"}>
+                                        50 rows
+                                    </Select.Option>
+                                    <Select.Option key={"100"} value={"100"}>
+                                        100 rows
+                                    </Select.Option>
+                                </Select>
+                            </div>
                         </div>
                         <div className="grid-content no-padding">
                             <Table
@@ -511,7 +502,7 @@ function AccountPools({
                                 }}
                             />
                         </div>
-                        <div className="content-block">
+                        <div className={styles.actions}>
                             <button
                                 className="button"
                                 onClick={() => showCreatePoolModal()}
