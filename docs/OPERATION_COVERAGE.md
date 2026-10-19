@@ -15,6 +15,14 @@ bitsharesjs 6.0.3 (the version the UI depends on, the latest on npm) does not kn
 `lib/chain/extraOperations.ts` registers them (serializers checked byte for byte against bitsharesjs's develop
 branch; `app/index.js` imports it first); it leaves a name alone once the dependency knows it.
 
+Serializing the operations behind the Advanced page needed three more fixes to bitsharesjs 6.0.3, in
+`lib/chain/fixedOperations.ts`: the restrictions of custom authorities (operations 54 and 55: nested lists
+pointed at a serializer that did not exist yet, the `variant_assert` argument was missing, object types were
+misnamed), the id of a custom authority (54-56), and the chain parameters of operation 31 (the extension block
+is an object, and the fee schedule could not hold `fill_order` or operations 75-77). Each operation's bytes are
+compared with what a node itself makes of the same JSON (`database_api.get_transaction_hex`,
+`scripts/serialization-vectors.py`, fixtures in `app/__tests__/fixtures/`).
+
 | id | operation | Create | History line | Detail | Label | Note |
 |---|---|---|---|---|---|---|
 | 0 | `transfer` | yes | yes | yes | yes |  |
@@ -26,7 +34,7 @@ branch; `app/index.js` imports it first); it leaves a name alone once the depend
 | 6 | `account_update` | yes | yes | yes | yes |  |
 | 7 | `account_whitelist` | yes | yes | yes | yes |  |
 | 8 | `account_upgrade` | yes | yes | yes | yes |  |
-| 9 | `account_transfer` | **no** | yes | yes | yes | disabled by a hardfork |
+| 9 | `account_transfer` | yes | yes | yes | yes | Advanced -> Transfer account; the chain has no handler for it (the node refuses it) |
 | 10 | `asset_create` | yes | yes | yes | yes |  |
 | 11 | `asset_update` | yes | yes | yes | yes |  |
 | 12 | `asset_update_bitasset` | yes | yes | yes | yes |  |
@@ -47,18 +55,18 @@ branch; `app/index.js` imports it first); it leaves a name alone once the depend
 | 27 | `withdraw_permission_claim` | yes | yes | **no** | yes |  |
 | 28 | `withdraw_permission_delete` | yes | yes | **no** | yes |  |
 | 29 | `committee_member_create` | yes | yes | yes | yes |  |
-| 30 | `committee_member_update` | **no** | yes | **no** | yes | committee members only; not offered |
-| 31 | `committee_member_update_global_parameters` | **no** | yes | **no** | yes | committee only (a proposal); not offered |
+| 30 | `committee_member_update` | yes | yes | **no** | yes | Advanced -> Update committee member (committee members only) |
+| 31 | `committee_member_update_global_parameters` | yes | yes | **no** | yes | Advanced -> Propose chain parameters (a proposal; the committee approves) |
 | 32 | `vesting_balance_create` | yes | yes | **no** | yes |  |
 | 33 | `vesting_balance_withdraw` | yes | yes | yes | yes |  |
 | 34 | `worker_create` | yes | yes | yes | yes |  |
-| 35 | `custom` | **no** | yes | **no** | yes | no UI use |
-| 36 | `assert` | **no** | yes | **no** | yes | no UI use |
+| 35 | `custom` | yes | yes | **no** | yes | Advanced -> Custom data |
+| 36 | `assert` | yes | yes | **no** | yes | Advanced -> Assertion (with the operations it guards) |
 | 37 | `balance_claim` | yes | yes | yes | yes |  |
-| 38 | `override_transfer` | **no** | yes | **no** | yes | issuer-only; not offered |
-| 39 | `transfer_to_blind` | **no** | yes | yes | yes | blind transfers are not offered |
-| 40 | `blind_transfer` | **no** | yes | yes | yes | blind transfers are not offered |
-| 41 | `transfer_from_blind` | **no** | yes | yes | yes | blind transfers are not offered |
+| 38 | `override_transfer` | yes | yes | **no** | yes | Advanced -> Override transfer (issuer, asset with override authority) |
+| 39 | `transfer_to_blind` | yes | yes | yes | yes | Advanced -> Blind transfers (commitments and range proofs from another tool) |
+| 40 | `blind_transfer` | yes | yes | yes | yes | Advanced -> Blind transfers (commitments and range proofs from another tool) |
+| 41 | `transfer_from_blind` | yes | yes | yes | yes | Advanced -> Blind transfers (commitments and range proofs from another tool) |
 | 42 | `asset_settle_cancel` | virtual | yes | **no** | yes |  |
 | 43 | `asset_claim_fees` | yes | yes | yes | yes |  |
 | 44 | `fba_distribute` | virtual | yes | **no** | yes |  |
@@ -71,9 +79,9 @@ branch; `app/index.js` imports it first); it leaves a name alone once the depend
 | 51 | `htlc_redeemed` | virtual | yes | **no** | yes |  |
 | 52 | `htlc_extend` | yes | yes | yes | yes |  |
 | 53 | `htlc_refund` | virtual | yes | **no** | yes |  |
-| 54 | `custom_authority_create` | **no** | yes | **no** | yes | custom authorities are not offered (shown in histories) |
-| 55 | `custom_authority_update` | **no** | yes | **no** | yes | custom authorities are not offered (shown in histories) |
-| 56 | `custom_authority_delete` | **no** | yes | **no** | yes | custom authorities are not offered (shown in histories) |
+| 54 | `custom_authority_create` | yes | yes | **no** | yes | Advanced -> Custom authorities (BSIP 40 is not on the main network) |
+| 55 | `custom_authority_update` | yes | yes | **no** | yes | Advanced -> Custom authorities (BSIP 40 is not on the main network) |
+| 56 | `custom_authority_delete` | yes | yes | **no** | yes | Advanced -> Custom authorities (BSIP 40 is not on the main network) |
 | 57 | `ticket_create` | yes | yes | **no** | yes |  |
 | 58 | `ticket_update` | yes | yes | **no** | yes | Voting: Your locks -> Change |
 | 59 | `liquidity_pool_create` | yes | yes | **no** | yes |  |
@@ -84,8 +92,8 @@ branch; `app/index.js` imports it first); it leaves a name alone once the depend
 | 64 | `samet_fund_create` | yes | yes | **no** | yes |  |
 | 65 | `samet_fund_delete` | yes | yes | **no** | yes |  |
 | 66 | `samet_fund_update` | yes | yes | **no** | yes |  |
-| 67 | `samet_fund_borrow` | **no** | yes | **no** | yes | flash loan: one transaction made by a program, by design (plan 7.8) |
-| 68 | `samet_fund_repay` | **no** | yes | **no** | yes | flash loan: one transaction made by a program, by design (plan 7.8) |
+| 67 | `samet_fund_borrow` | yes | yes | **no** | yes | Advanced -> Flash loan (borrow + steps + repay in one transaction) |
+| 68 | `samet_fund_repay` | yes | yes | **no** | yes | Advanced -> Flash loan (borrow + steps + repay in one transaction) |
 | 69 | `credit_offer_create` | yes | yes | **no** | yes |  |
 | 70 | `credit_offer_delete` | yes | yes | **no** | yes |  |
 | 71 | `credit_offer_update` | yes | yes | **no** | yes |  |

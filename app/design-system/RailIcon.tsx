@@ -109,6 +109,13 @@ const PATHS: {[name: string]: React.ReactNode} = {
     spotlight: (
         <path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8L12 3.5Z" />
     ),
+    advanced: (
+        <>
+            <path d="m8 8-4 4 4 4" />
+            <path d="m16 8 4 4-4 4" />
+            <path d="m13.5 5.5-3 13" />
+        </>
+    ),
     help: (
         <>
             <circle cx="12" cy="12" r="8.5" />

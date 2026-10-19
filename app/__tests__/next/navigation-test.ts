@@ -27,7 +27,12 @@ describe("left navigation rail", () => {
             expect.arrayContaining(["Instant trade", "Prediction markets"])
         );
         // the old header's Spotlight hub: barter, HTLC, direct debit, ...
-        expect(labels("More")).toEqual(["Spotlight", "Settings", "Help"]);
+        expect(labels("More")).toEqual([
+            "Spotlight",
+            "Advanced",
+            "Settings",
+            "Help"
+        ]);
         // settings are not an everyday page: they are under More, not Account
         expect(labels("Account")).not.toContain("Settings");
     });
@@ -102,6 +107,7 @@ describe("topbar title", () => {
     it("reads naturally for the lending screens", () => {
         expect(crumbFromPath("/credit-offer")).toBe("Credit offers");
         expect(crumbFromPath("/samet-funds")).toBe("SameT funds");
+        expect(crumbFromPath("/advanced")).toBe("Advanced");
     });
 
     it("names the restored entries", () => {

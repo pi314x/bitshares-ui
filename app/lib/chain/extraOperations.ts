@@ -9,6 +9,7 @@
 // Import this module before anything reads `ChainTypes.operations` (several modules
 // turn it into a list when they are loaded): `app/index.js` imports it first.
 import {Serializer, types, ops, ChainTypes} from "bitsharesjs";
+import {applyFixedOperations} from "./fixedOperations";
 
 const {
     uint8,
@@ -98,3 +99,5 @@ export function registerExtraOperations(): string[] {
 }
 
 registerExtraOperations();
+// after the extra operations: the fee schedule needs to know all of them
+applyFixedOperations();

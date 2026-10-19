@@ -83,6 +83,14 @@ const SametFundsPage = Loadable({
     loading: LoadingIndicator
 });
 
+const AdvancedPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "explorer" */ "./components/Advanced/AdvancedPage"
+        ),
+    loading: LoadingIndicator
+});
+
 // Send, Deposit and Withdraw as pages (the same dialogs, shown in the page)
 const paymentPage = name =>
     Loadable({
@@ -692,6 +700,10 @@ class App extends React.Component {
                                     <Route
                                         path="/samet-funds"
                                         element={<SametFundsPage />}
+                                    />
+                                    <Route
+                                        path="/advanced"
+                                        element={<AdvancedPage />}
                                     />
                                     <Route
                                         path="/settings/:tab"

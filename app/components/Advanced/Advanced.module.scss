@@ -1,0 +1,215 @@
+// The Advanced operations page (a grid of cards) and the small pieces its dialogs share:
+// a mono text area, rows of a list, a table of parameters. Tokens only.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1040px;
+}
+
+.intro {
+    margin: 0;
+    max-width: 720px;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+// (the doubled class beats the legacy heading rules)
+.sectionTitle.sectionTitle {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.cardTitle {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.cardText {
+    margin: 0;
+    flex: 1;
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.cardMeta {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.cardFoot {
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+// the chain's name of the thing, small, in the corner of a card
+.tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-wash);
+    color: var(--ink-2);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.mono,
+.mono textarea,
+textarea.mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: start;
+}
+
+.rowThree {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+    gap: 8px;
+    align-items: start;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+    gap: 4px 14px;
+    margin: 0;
+    font-size: 13px;
+}
+
+.facts dt {
+    margin: 0;
+    color: var(--muted);
+}
+
+.facts dd {
+    margin: 0;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+}
+
+.params {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.params th {
+    padding: 6px 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.params td {
+    padding: 4px 8px;
+    border-top: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+.paramName {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.paramNow {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.paramInput {
+    width: 100%;
+    min-width: 90px;
+}
+
+.lines {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+@media (max-width: 560px) {
+    .rowThree {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .facts {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

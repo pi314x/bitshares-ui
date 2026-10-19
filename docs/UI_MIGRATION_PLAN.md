@@ -13195,6 +13195,32 @@ on an iPhone).
   with the built bundle: a marker written into the app's own, open root database and
   a marker database and key are gone afterwards, a foreign database and key stay, and
   the first approval alone changes nothing.
+- **Advanced operations** (`/advanced`, More -> Advanced; `components/Advanced/`): a screen for each
+  of the 14 operation types nothing created before. Cards by section - your account (custom
+  authorities 54-56, custom data 35, assertion 36, transfer account 9), assets (override transfer
+  38), committee (update member 30, propose chain parameters 31), flash loans (borrow + steps +
+  repay 67/68), confidential (blind transfers 39-41), any operation as JSON. The rules are
+  bitshares-core's (`lib/common/advancedOps.ts`, `customAuthorities.ts`, `restrictions.ts`,
+  `chainParameters.ts`, `opJson.ts`), checked before the wallet prompt; every dialog is the
+  `OperationDialog` kit. What the chain says about them, found by reading the source and asking a
+  node: operation 9 has no evaluator (every node refuses it; the card says so); 54-56 need
+  BSIP 40, which the main network has not switched on (`custom_authority_options` is missing from
+  its parameters; the form says so and blocks Create); `max_predicate_opcode` is 1 on the main
+  network, so an assertion can only test an account's name; blind transfers need range proofs (a
+  library this application does not have), so the dialog takes the commitments and proofs that the
+  command-line wallet made and signs the operation; 31 is only valid inside a proposal, which is what
+  the dialog makes (bitsharesjs sets its 14-day review period).
+  The library could not serialize some of them. `lib/chain/fixedOperations.ts` fixes
+  the restrictions (nested lists pointed at a serializer that did not exist yet, no `variant_assert`
+  argument, a wrong object type), the custom authority ids and the chain parameters (the extension
+  block is an object; the fee schedule had no `fill_order` and no 75-77). Every operation's bytes
+  are checked against what a node makes of the same JSON (`get_transaction_hex`, regenerate with
+  `scripts/serialization-vectors.py`, fixtures in `app/__tests__/fixtures/`). The fixes change the
+  library's own serializer objects in place: in the production bundle `ops` is a namespace whose
+  members cannot be assigned (found by the smoke boot, not by Jest). Checked against the main
+  network from the built bundle: the flash loan dialog read fund 1.20.9 (balance, rate, fee), the
+  parameter proposal with the real fee schedule reached the wallet prompt, and the node priced all 14
+  operations and a proposal holding 31. Nothing was signed or broadcast.
 - **iOS date and time fields** (`legacy-controls.scss`, `DatePicker.module.scss`): the
   native field has no intrinsic width and centres its text in Safari; `appearance: none`,
   `display: block`, `width: 100%` and left-aligned `::-webkit-date-and-time-value` make

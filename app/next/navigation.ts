@@ -107,6 +107,11 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 match: /^\/(spotlight|borrow|barter|direct-debit|htlc)(\/|$)/
             },
             {
+                label: "Advanced",
+                icon: "advanced",
+                to: "/advanced"
+            },
+            {
                 label: "Settings",
                 icon: "settings",
                 to: "/settings",
@@ -157,6 +162,7 @@ const CRUMB_TITLES: Record<string, string> = {
     portfolio: "Portfolio",
     "credit-offer": "Credit offers",
     "samet-funds": "SameT funds",
+    advanced: "Advanced",
     "timed-transfer": "Timed transfer",
     send: "Send",
     deposit: "Deposit",
