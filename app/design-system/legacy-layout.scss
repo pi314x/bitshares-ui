@@ -234,6 +234,14 @@ body[class][class] .settings--notifications--help:hover {
     text-decoration: underline;
 }
 
+// the text of the box at the size of the options above it, not the alert's 16px bold
+body[class][class] .settings--notifications--help [role="alert"],
+body[class][class] .settings--notifications--help [role="alert"] * {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
 // ---------------------------------------------------------------------------
 // One look for the pages that were written against the old sheet.
 // ---------------------------------------------------------------------------
