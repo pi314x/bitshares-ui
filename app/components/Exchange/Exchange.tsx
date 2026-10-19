@@ -202,6 +202,12 @@ import {Notification} from "../../design-system/Notification";
 import PriceAlert from "./PriceAlert";
 import counterpart from "counterpart";
 import {numberExponentToLarge} from "../../lib/common/numberExplonentConversion";
+import {
+    applyMarketPrice,
+    setForSaleHelper,
+    setReceiveHelper,
+    withMarketPrice
+} from "../../lib/common/orderForm";
 
 function initialOrderState(baseAsset: any, quoteAsset: any) {
     const bid: any = {
@@ -302,26 +308,6 @@ function getInitialExchangeState(props: any) {
             2: "my_orders"
         })
     };
-}
-
-function setReceiveHelper(state: any) {
-    if (state.price.isValid() && state.for_sale.hasAmount()) {
-        state.to_receive = state.for_sale.times(state.price);
-        state.toReceiveText = state.to_receive
-            .getAmount({real: true})
-            .toString();
-        return true;
-    }
-    return false;
-}
-
-function setForSaleHelper(state: any) {
-    if (state.price.isValid() && state.to_receive.hasAmount()) {
-        state.for_sale = state.to_receive.times(state.price, true);
-        state.forSaleText = state.for_sale.getAmount({real: true}).toString();
-        return true;
-    }
-    return false;
 }
 
 function setPriceHelper(state: any) {
@@ -792,6 +778,39 @@ function ExchangeInner(props: any) {
                 quoteAsset.get("symbol") + "_" + baseAsset.get("symbol")
         });
     }, [quoteAsset.get("symbol"), baseAsset.get("symbol")]);
+
+    // The forms open with the market's price: a buy at the lowest ask, a sell at the
+    // highest bid (what fills at once), unless something has been typed in. Once per
+    // market, so a price the user clears stays cleared; a click on "Lowest ask" /
+    // "Highest bid" puts it back.
+    const defaultedMarket = React.useRef<{bid: string; ask: string}>({
+        bid: "",
+        ask: ""
+    });
+    const marketKey = `${baseAsset.get("id")}_${quoteAsset.get("id")}`;
+    const lowestAskNow = marketData && marketData.lowestAsk;
+    const highestBidNow = marketData && marketData.highestBid;
+    React.useEffect(() => {
+        if (!marketReady) return;
+        const sides: Array<["bid" | "ask", any]> = [
+            ["bid", lowestAskNow],
+            ["ask", highestBidNow]
+        ];
+        sides.forEach(([type, order]) => {
+            if (!order || defaultedMarket.current[type] === marketKey) return;
+            defaultedMarket.current[type] = marketKey;
+            const price = order.sellPrice();
+            const isBid = type === "bid";
+            const update = (prev: any) => withMarketPrice(prev, isBid, price);
+            if (isBid) setBid(update);
+            else setAsk(update);
+        });
+    }, [
+        marketReady,
+        marketKey,
+        lowestAskNow ? lowestAskNow.getPrice() : null,
+        highestBidNow ? highestBidNow.getPrice() : null
+    ]);
 
     // componentDidUpdate's unconditional tail call + one-time tutorial
     // trigger, both mount-skipped.
@@ -1568,14 +1587,7 @@ function ExchangeInner(props: any) {
 
     const currentPriceClick = (type: "bid" | "ask", price: any) => {
         const isBid = type === "bid";
-        const current = {...(type === "bid" ? bid : ask)};
-        current.price = price[isBid ? "invert" : "clone"]();
-        current.priceText = current.price.toReal();
-        if (isBid) {
-            setForSaleHelper(current) || setReceiveHelper(current);
-        } else {
-            setReceiveHelper(current) || setForSaleHelper(current);
-        }
+        const current = applyMarketPrice(isBid ? bid : ask, isBid, price);
         if (isBid) setBid(current);
         else setAsk(current);
     };
@@ -1987,7 +1999,9 @@ function ExchangeInner(props: any) {
                     base={base}
                     amountChange={(e: any) => onInputReceive("bid", true, e)}
                     priceChange={(e: any) => onInputPrice("bid", e)}
-                    setPrice={(price: any) => currentPriceClick("bid", price)}
+                    setPrice={(_type: any, price: any) =>
+                        currentPriceClick("bid", price)
+                    }
                     totalChange={(e: any) => onInputSell("bid", false, e)}
                     balance={baseBalance}
                     balanceId={base.get("id")}
@@ -2127,7 +2141,9 @@ function ExchangeInner(props: any) {
                     }
                     amountChange={(e: any) => onInputSell("ask", false, e)}
                     priceChange={(e: any) => onInputPrice("ask", e)}
-                    setPrice={(price: any) => currentPriceClick("ask", price)}
+                    setPrice={(_type: any, price: any) =>
+                        currentPriceClick("ask", price)
+                    }
                     totalChange={(e: any) => onInputReceive("ask", true, e)}
                     balance={quoteBalance}
                     balanceId={quote.get("id")}
