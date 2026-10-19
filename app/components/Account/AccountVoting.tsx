@@ -902,7 +902,6 @@ function AccountVoting({
                 <Tabs
                     activeKey={location.pathname}
                     animated={false}
-                    variant="pill"
                     style={{width: "100%"}}
                     onChange={onTabChange}
                 >

@@ -11,6 +11,7 @@ import {Button} from "../../../design-system/Button";
 import {Input} from "../../../design-system/Input";
 import {Select} from "../../../design-system/Select";
 import {Alert} from "../../../design-system/Alert";
+import {SubMenu} from "../../../design-system/SubMenu";
 import {Notification} from "../../../design-system/Notification";
 import SametFundActions, {
     AccountInfo,
@@ -427,22 +428,14 @@ export function UpdateFundModal({
                     value: `${formatAmount(fund.balance, precision)} ${symbol}`
                 })}
             >
-                <div className={styles.modes}>
-                    {modes.map(([value, label]) => (
-                        <button
-                            key={value}
-                            type="button"
-                            className={
-                                mode === value
-                                    ? `${styles.mode} ${styles.modeActive}`
-                                    : styles.mode
-                            }
-                            onClick={() => setMode(value)}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
+                <SubMenu
+                    toggle
+                    flush
+                    aria-label={t("balance_change")}
+                    items={modes.map(([key, label]) => ({key, label}))}
+                    value={mode}
+                    onChange={key => setMode(key as Mode)}
+                />
             </Field>
             {mode !== "none" ? (
                 <Field

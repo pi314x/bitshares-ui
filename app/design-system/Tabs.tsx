@@ -75,13 +75,6 @@ export interface TabsProps {
     tabBarExtraContent?: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
-    /**
-     * `"pill"`: the row of choices the portfolio's section menu has (a rounded
-     * box, the chosen one raised) - the menu of the app, on every page. The
-     * default. `"underline"` is the strip of a panel's own tabs that carry a
-     * figure beside the name (the portfolio's balances / orders / positions).
-     */
-    variant?: "underline" | "pill";
     children?: React.ReactNode;
 }
 
@@ -92,7 +85,6 @@ function TabsBase({
     tabBarExtraContent,
     className,
     style,
-    variant = "pill",
     children
 }: TabsProps): JSX.Element {
     const tabs = collectTabs(children);
@@ -108,59 +100,24 @@ function TabsBase({
 
     const active = tabs.find(t => t.key === currentKey);
 
-    if (variant === "pill") {
-        return (
-            <div
-                className={[styles.wrap, className].filter(Boolean).join(" ")}
-                style={style}
-            >
-                <div className={styles.pillRow}>
-                    <SubMenu
-                        items={tabs.map(t => ({key: t.key, label: t.tab}))}
-                        value={String(currentKey)}
-                        onChange={select}
-                    />
-                    {tabBarExtraContent ? (
-                        <div className={styles.barExtra}>
-                            {tabBarExtraContent}
-                        </div>
-                    ) : null}
-                </div>
-                <div className={styles.pillContent}>{active?.content}</div>
-            </div>
-        );
-    }
-
+    // The row of choices the portfolio's section menu has (a rounded box, the
+    // chosen one raised): the menu of the app, on every page.
     return (
         <div
             className={[styles.wrap, className].filter(Boolean).join(" ")}
             style={style}
         >
-            <div className={styles.barRow}>
-                <div className={styles.bar} role="tablist">
-                    {tabs.map(t => (
-                        <button
-                            type="button"
-                            role="tab"
-                            key={t.key}
-                            aria-selected={t.key === currentKey}
-                            className={[
-                                styles.tab,
-                                t.key === currentKey ? styles.active : ""
-                            ]
-                                .filter(Boolean)
-                                .join(" ")}
-                            onClick={() => select(t.key)}
-                        >
-                            {t.tab}
-                        </button>
-                    ))}
-                </div>
+            <div className={styles.pillRow}>
+                <SubMenu
+                    items={tabs.map(t => ({key: t.key, label: t.tab}))}
+                    value={String(currentKey)}
+                    onChange={select}
+                />
                 {tabBarExtraContent ? (
                     <div className={styles.barExtra}>{tabBarExtraContent}</div>
                 ) : null}
             </div>
-            <div className={styles.content}>{active?.content}</div>
+            <div className={styles.pillContent}>{active?.content}</div>
         </div>
     );
 }

@@ -7,62 +7,11 @@
     max-width: 100%;
 }
 
-.barRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-width: 0;
-    border-bottom: 1px solid var(--line);
-}
-
-// The strip scrolls sideways (finger or trackpad) with no bar shown, and the
-// tabs keep their own width and a single line.
-.bar {
-    display: flex;
-    gap: 4px;
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.bar::-webkit-scrollbar {
-    display: none;
-}
-
 .barExtra {
     padding: 0 8px;
 }
 
-.tab {
-    flex: none;
-    white-space: nowrap;
-    padding: 8px 16px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: none;
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.tab:hover {
-    color: var(--ink);
-}
-
-.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-}
-
-.content {
-    padding-top: 12px;
-}
-
-// the pill variant: the menu row, then the content (no rule under the tabs)
+// the menu row, then the content (no rule under the tabs)
 .pillRow {
     display: flex;
     flex-wrap: wrap;

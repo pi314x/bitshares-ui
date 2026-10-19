@@ -23,6 +23,7 @@ import {Table} from "../../design-system/Table";
 import {Select} from "../../design-system/Select";
 import {Toolbar} from "../../design-system/Toolbar";
 import {Button} from "../../design-system/Button";
+import {SubMenu} from "../../design-system/SubMenu";
 import AssetName from "../Utility/AssetName";
 import SearchInput from "../Utility/SearchInput";
 import PoolmartActions from "../../actions/PoolmartActions";
@@ -400,21 +401,21 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
                         />
                     </Toolbar.Grow>
                     <Toolbar.End>
-                        <span className={styles.views} role="group">
-                            {(["list", "graph"] as const).map(choice => (
-                                <button
-                                    key={choice}
-                                    type="button"
-                                    aria-pressed={view === choice}
-                                    className={`${styles.view} ${
-                                        view === choice ? styles.viewOn : ""
-                                    }`}
-                                    onClick={() => setView(choice)}
-                                >
-                                    {t(`view_${choice}`)}
-                                </button>
-                            ))}
-                        </span>
+                        <SubMenu
+                            toggle
+                            flush
+                            aria-label={`${t("view_list")} / ${t(
+                                "view_graph"
+                            )}`}
+                            items={(["list", "graph"] as const).map(choice => ({
+                                key: choice,
+                                label: t(`view_${choice}`)
+                            }))}
+                            value={view}
+                            onChange={choice =>
+                                setView(choice as "list" | "graph")
+                            }
+                        />
                         <Select
                             style={{width: "170px"}}
                             value={sortKey}

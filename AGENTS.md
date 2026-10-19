@@ -189,10 +189,12 @@ gate at all.
   the 16px inset from a panel's edge (do not stack `.grid-content` paddings).
 - A menu inside a page (sections, tabs, sub menus) is the rounded pill row,
   `design-system/SubMenu` (the design-system `Tabs` is the pill row by default and the
-  legacy `components/Utility/Tabs` renders it); do not add underline tab bars. The one
-  exception is `Tabs variant="underline"`: a panel's own tabs that carry a figure beside
-  the name (the portfolio's Balances / Open orders / Margin positions). A strip with
-  one tab shows no menu. See `docs/UI_MIGRATION_PLAN.md` §7.31.
+  legacy `components/Utility/Tabs` renders it); do not add underline tab bars, and do
+  not style a small segmented switch of your own (a time range, list / graph, active /
+  visual): use `SubMenu` (`toggle` for a pressed / not pressed group, `flush` in a
+  toolbar). A panel's own tabs that carry a figure beside the name (the portfolio's
+  Balances / Open orders / Margin positions) are the same pill row. A strip with one tab
+  shows no menu. See `docs/UI_MIGRATION_PLAN.md` §7.31.
 - BigInt: never `**` (the build turns it into `Math.pow`); use
   `BigInt("1" + "0".repeat(n))` or a loop.
 - A legacy rule like `body[class][class] ...` or `.darkTheme .table > ...`

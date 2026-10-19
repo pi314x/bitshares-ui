@@ -416,6 +416,7 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                             />
                         </div>
                         <SubMenu
+                            flush
                             aria-label={counterpart.translate(
                                 "account.portfolio"
                             )}
@@ -634,7 +635,6 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                 <BalanceHistoryChart accountId={account.get("id")} />
                 <div className={styles.panel}>
                     <Tabs
-                        variant="underline"
                         activeKey={activeKey}
                         animated={false}
                         onChange={onTab}

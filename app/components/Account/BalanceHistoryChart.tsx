@@ -15,6 +15,7 @@ import {selectAccountState} from "../../store/slices/accountSlice";
 import SametFundActions from "../../actions/SametFundActions";
 import {Select} from "../../design-system/Select";
 import {Button} from "../../design-system/Button";
+import {SubMenu} from "../../design-system/SubMenu";
 import BalanceHistoryActions, {
     olderStart
 } from "../../actions/BalanceHistoryActions";
@@ -496,32 +497,24 @@ export default function BalanceHistoryChart({
         <section className={styles.card} aria-label={t("title")}>
             <div className={styles.head}>
                 <h3 className={styles.title}>{t("title")}</h3>
-                <div
-                    className={styles.ranges}
-                    role="group"
+                <SubMenu
+                    toggle
+                    flush
                     aria-label={t("range")}
-                >
-                    {RANGES.map(key => (
-                        <button
-                            key={key}
-                            type="button"
-                            aria-pressed={range === key}
-                            className={`${styles.rangeBtn} ${
-                                range === key ? styles.rangeOn : ""
-                            }`}
-                            onClick={() => {
-                                setRange(key);
-                                try {
-                                    window.localStorage.setItem(RANGE_KEY, key);
-                                } catch (e) {
-                                    // not remembered
-                                }
-                            }}
-                        >
-                            {t(`range_${key}`)}
-                        </button>
-                    ))}
-                </div>
+                    items={RANGES.map(key => ({
+                        key,
+                        label: t(`range_${key}`)
+                    }))}
+                    value={range}
+                    onChange={key => {
+                        setRange(key as RangeKey);
+                        try {
+                            window.localStorage.setItem(RANGE_KEY, key);
+                        } catch (e) {
+                            // not remembered
+                        }
+                    }}
+                />
             </div>
             <div className={styles.headFigures}>
                 <div className={styles.figures} role="group">

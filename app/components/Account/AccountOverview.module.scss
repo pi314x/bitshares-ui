@@ -10,9 +10,11 @@
     overflow: hidden;
 }
 
-// the tab strip is the panel's own header: inset, with its rule under it
+// the menu of the panel's views is its header: the same pill row as the
+// account's sections above it, inset 16px; the menu keeps 16px under it, so the
+// first thing in a view starts at its own top
 .tabs > :first-child {
-    padding: 0 8px;
+    padding: 16px 16px 0;
 }
 
 .pane {
@@ -42,7 +44,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px;
+    padding: 0 16px 16px;
 }
 
 .filter {
@@ -60,7 +62,7 @@
 }
 
 .padded {
-    padding: 16px;
+    padding: 0 16px 16px;
 }
 
 // "Total (BTS)  47,877.37": the label and the figure at the two ends of a row

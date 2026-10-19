@@ -11,6 +11,11 @@
     scrollbar-width: none;
 }
 
+// in a toolbar or a head row: the row sets the space
+.flush {
+    margin: 0;
+}
+
 .menu::-webkit-scrollbar {
     display: none;
 }

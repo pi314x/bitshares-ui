@@ -77,27 +77,3 @@
 .page :global(td) {
     white-space: nowrap;
 }
-
-.views {
-    display: inline-flex;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
-}
-
-.view {
-    min-height: var(--control-h-sm, 30px);
-    padding: 0 14px;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    font: inherit;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.viewOn {
-    background: var(--accent-wash);
-    color: var(--accent);
-    font-weight: 600;
-}

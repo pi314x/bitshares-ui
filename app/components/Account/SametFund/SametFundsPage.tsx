@@ -390,7 +390,7 @@ export default function SametFundsPage() {
 
             <SametOverview funds={all.funds} partial={!!all.next} />
 
-            <Tabs activeKey={tab} onChange={setTab} variant="pill">
+            <Tabs activeKey={tab} onChange={setTab}>
                 <Tabs.TabPane tab={t("tab_all")} key="all">
                     {renderList(all, t("empty_all"), false)}
                 </Tabs.TabPane>
