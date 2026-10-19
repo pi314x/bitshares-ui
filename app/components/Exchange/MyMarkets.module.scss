@@ -133,6 +133,22 @@ body[class][class] .list {
         white-space: nowrap;
     }
 
+    // the side panel is narrow: tighter cells, so the last column is in view
+    &:not(.flush) tbody td,
+    &:not(.flush) thead th {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    &:not(.flush) tbody td:global(.text-right) {
+        font-size: 12px;
+    }
+
+    &:not(.flush) thead th {
+        font-size: 10.5px;
+        letter-spacing: 0.03em;
+    }
+
     tbody td {
         height: 38px;
         padding: 4px 12px;

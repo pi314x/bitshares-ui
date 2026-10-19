@@ -77,8 +77,9 @@ export interface TabsProps {
     style?: React.CSSProperties;
     /**
      * `"pill"`: the row of choices the portfolio's section menu has (a rounded
-     * box, the chosen one raised) - the page-level menu of the app. The default
-     * is the underlined strip for the tabs of a panel.
+     * box, the chosen one raised) - the menu of the app, on every page. The
+     * default. `"underline"` is the strip of a panel's own tabs that carry a
+     * figure beside the name (the portfolio's balances / orders / positions).
      */
     variant?: "underline" | "pill";
     children?: React.ReactNode;
@@ -91,7 +92,7 @@ function TabsBase({
     tabBarExtraContent,
     className,
     style,
-    variant = "underline",
+    variant = "pill",
     children
 }: TabsProps): JSX.Element {
     const tabs = collectTabs(children);

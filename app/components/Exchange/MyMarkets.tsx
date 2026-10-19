@@ -1107,7 +1107,9 @@ function MyMarketsInner(props: MyMarketsProps) {
 
             <div
                 style={listStyle}
-                className={`table-container grid-block vertical mymarkets-list ${styles.list}`}
+                className={`table-container grid-block vertical mymarkets-list ${
+                    styles.list
+                } ${autoHeight ? styles.flush : ""}`}
                 ref={favoritesRef}
             >
                 {assetsLoading ? (

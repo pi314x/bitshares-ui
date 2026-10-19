@@ -345,3 +345,32 @@ body[class][class] .buy-sell-container {
         width: 100%;
     }
 }
+
+// The order forms' tabs (Limit / Scaled) are the pill row, with what the form
+// is for ("Buy BTS") on the same line, inside the card at its inset.
+body[class][class] .exchange--buy-sell-form > div:first-child {
+    align-items: center;
+    padding: 12px 16px 0;
+}
+
+body[class][class]
+    .exchange--buy-sell-form
+    > div:first-child
+    > div:first-child {
+    margin-bottom: 0;
+}
+
+body[class][class] .exchange--buy-sell-form .exchange-content-header {
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+// The market list in the side panel: its menu has the panel's inset, and the
+// rows are tighter than a page's table so that the change column fits.
+body[class][class] .left-order-book .footer > div {
+    padding: 12px 12px 0;
+}

@@ -24,6 +24,11 @@
     background: transparent;
     color: var(--muted);
     font: inherit;
+    // (legacy wrappers pass down lowercase small-caps and spacing, e.g. the
+    // trade page's footer rows)
+    font-variant: normal;
+    letter-spacing: 0;
+    text-transform: none;
     font-size: 13px;
     font-weight: 500;
     white-space: nowrap;

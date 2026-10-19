@@ -634,6 +634,7 @@ function AccountOverview(props: AccountOverviewCoreProps) {
                 <BalanceHistoryChart accountId={account.get("id")} />
                 <div className={styles.panel}>
                     <Tabs
+                        variant="underline"
                         activeKey={activeKey}
                         animated={false}
                         onChange={onTab}
