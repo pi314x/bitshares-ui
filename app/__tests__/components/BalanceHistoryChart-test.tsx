@@ -1,5 +1,5 @@
 import * as React from "react";
-import {render, act} from "@testing-library/react";
+import {render, act, fireEvent} from "@testing-library/react";
 import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
 
@@ -217,5 +217,44 @@ describe("BalanceHistoryChart", () => {
         await flush();
         expect(container.textContent).toBe("");
         expect(mockGetHistory).not.toHaveBeenCalled();
+    });
+});
+
+describe("BalanceHistoryChart currency drop-down", () => {
+    const optionNames = () =>
+        Array.from(document.body.querySelectorAll('[role="option"]')).map(o =>
+            (o.textContent || "").trim()
+        );
+
+    it("sits in the card's head, and narrows the assets while typing", async () => {
+        const {container} = render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        const head = container.querySelector("section > div") as HTMLElement;
+        const trigger = head.querySelector(
+            '[aria-haspopup="listbox"]'
+        ) as HTMLElement;
+        // beside the title, not down in the footer
+        expect(trigger).not.toBeNull();
+        expect(head.textContent).toContain("Balance over time");
+
+        fireEvent.click(trigger);
+        expect(optionNames()).toEqual(["BTS", "USD"]);
+
+        const search = document.body.querySelector(
+            '[role="listbox"] input'
+        ) as HTMLInputElement;
+        fireEvent.change(search, {target: {value: "us"}});
+        expect(optionNames()).toEqual(["USD"]);
+
+        fireEvent.change(search, {target: {value: "zzz"}});
+        expect(optionNames()).toEqual([]);
+        expect(document.body.textContent).toContain("No asset matches.");
+
+        fireEvent.change(search, {target: {value: "us"}});
+        fireEvent.click(
+            document.body.querySelector('[role="option"]') as HTMLElement
+        );
+        await flush();
+        expect(container.textContent).toContain("0.5000 USD");
     });
 });

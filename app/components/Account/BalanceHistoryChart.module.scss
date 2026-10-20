@@ -121,24 +121,40 @@
     }
 }
 
-// The currency dropdown and "Load older" sit together at the right of the
-// footer and are the same size.
+// The controls at the right of the head: the currency the chart is drawn for and the
+// range, side by side and the same height. On a phone they take the row under the title
+// (the currency takes what the range leaves).
 .controls {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-left: auto;
+    min-width: 0;
 }
 
-.card .select,
-.card .older {
-    width: 148px;
-    min-width: 148px;
+.card .select {
+    width: 132px;
+    min-width: 112px;
     height: var(--control-h);
     box-sizing: border-box;
 }
 
+@media (max-width: 640px) {
+    .controls {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .card .select {
+        flex: 1 1 112px;
+        width: auto;
+    }
+}
+
+// "Try again" in the footer, the size of a control
 .card .older {
+    height: var(--control-h);
+    box-sizing: border-box;
     justify-content: center;
 }
 

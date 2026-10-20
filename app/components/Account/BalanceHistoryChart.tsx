@@ -440,25 +440,52 @@ export default function BalanceHistoryChart({
         <section className={styles.card} aria-label={t("title")}>
             <div className={styles.head}>
                 <h3 className={styles.title}>{t("title")}</h3>
-                <SubMenu
-                    toggle
-                    flush
-                    aria-label={t("range")}
-                    items={RANGES.map(key => ({
-                        key,
-                        label: t(`range_${key}`)
-                    }))}
-                    value={range}
-                    onChange={key => {
-                        rangeChosen.current = true;
-                        setRange(key as RangeKey);
-                        try {
-                            window.localStorage.setItem(RANGE_KEY, key);
-                        } catch (e) {
-                            // not remembered
+                <div className={styles.controls}>
+                    {/* the currency the chart is drawn for, beside the range; typing in
+                        the open list narrows it to the assets whose symbol matches */}
+                    <Select
+                        showSearch
+                        className={styles.select}
+                        dropdownMatchSelectWidth={false}
+                        value={assetId}
+                        onChange={value => {
+                            setAssetId(String(value));
+                        }}
+                        notFoundContent={t("no_asset")}
+                        filterOption={(input, option) =>
+                            (assets[String(option.value)]?.symbol || "")
+                                .toLowerCase()
+                                .indexOf(input.trim().toLowerCase()) !== -1
                         }
-                    }}
-                />
+                    >
+                        {balances.map(b => (
+                            <Select.Option key={b.asset_id} value={b.asset_id}>
+                                <AssetLabel
+                                    symbol={assets[b.asset_id].symbol}
+                                />
+                            </Select.Option>
+                        ))}
+                    </Select>
+                    <SubMenu
+                        toggle
+                        flush
+                        aria-label={t("range")}
+                        items={RANGES.map(key => ({
+                            key,
+                            label: t(`range_${key}`)
+                        }))}
+                        value={range}
+                        onChange={key => {
+                            rangeChosen.current = true;
+                            setRange(key as RangeKey);
+                            try {
+                                window.localStorage.setItem(RANGE_KEY, key);
+                            } catch (e) {
+                                // not remembered
+                            }
+                        }}
+                    />
+                </div>
             </div>
             <div className={styles.headFigures}>
                 <div className={styles.figures} role="group">
@@ -539,31 +566,14 @@ export default function BalanceHistoryChart({
                         : ""}
                     {history.error ? ` ${history.error}` : ""}
                 </span>
-                <div className={styles.controls}>
-                    <Select
-                        className={styles.select}
-                        value={assetId}
-                        onChange={value => {
-                            setAssetId(String(value));
-                        }}
+                {!history.complete && !history.loading ? (
+                    <Button
+                        className={styles.older}
+                        onClick={() => balanceHistory.start(accountId)}
                     >
-                        {balances.map(b => (
-                            <Select.Option key={b.asset_id} value={b.asset_id}>
-                                <AssetLabel
-                                    symbol={assets[b.asset_id].symbol}
-                                />
-                            </Select.Option>
-                        ))}
-                    </Select>
-                    {!history.complete && !history.loading ? (
-                        <Button
-                            className={styles.older}
-                            onClick={() => balanceHistory.start(accountId)}
-                        >
-                            {t("retry")}
-                        </Button>
-                    ) : null}
-                </div>
+                        {t("retry")}
+                    </Button>
+                ) : null}
             </div>
         </section>
     );

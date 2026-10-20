@@ -3544,7 +3544,8 @@
         "range_1d": "1D",
         "range_1m": "1M",
         "range_1w": "1W",
-        "range_all": "All"
+        "range_all": "All",
+        "no_asset": "No asset matches."
     },
     "toolbar": {
         "rows": "%(count)s rows",
