@@ -94,10 +94,11 @@ class AccountActionsFacade {
         asset: any,
         memo: any,
         propose_account: any = null,
-        fee_asset_id = "1.3.0"
+        fee_asset_id: any = null
     ) {
-        // Set the fee asset to use
-        fee_asset_id = (accountUtils as any).getFinalFeeAsset(
+        // Set the fee asset to use: the one chosen in the dialog when it can pay the fee,
+        // else the default of the settings (null: nothing was chosen)
+        fee_asset_id = (accountUtils as any).chooseFeeAsset(
             propose_account || from_account,
             "transfer",
             fee_asset_id
