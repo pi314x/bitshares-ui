@@ -19,3 +19,5 @@ charting_library/*
 !charting_library/scss
 !charting_library/*.md5
 !charting_library/*.cjs
+# what the MCP server prepared lately
+.mcp-state.json*

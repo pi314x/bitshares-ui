@@ -36,3 +36,10 @@ __pycache__/
 
 # certificate and key of the TLS container variant (docker-compose.tls.yml): never committed
 /certs/
+
+# local settings and secrets (a copy of the example, see docs/MCP.md): never committed
+.env
+.env.*
+!.env.example
+# what the MCP server prepared lately (docs/MCP.md)
+.mcp-state.json*

@@ -7,6 +7,13 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 var locales = require("./app/assets/locales");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 var fs = require("fs");
+// MCP (docs/MCP.md): whether the application has the MCP page and the review of
+// transactions an AI assistant prepared. Off unless MCP_ENABLED (and MCP_TRADING_ENABLED
+// for the review) is true in the environment or in the local settings file of the project's
+// root (see the example file there).
+const {loadEnvFile, buildFlags} = require("./mcp/src/env");
+loadEnvFile(path.join(__dirname, ".env"), process.env, /^MCP_/);
+const MCP = buildFlags(process.env);
 
 /*
  * For staging builds, set the version to the latest commit hash, for
@@ -131,7 +138,9 @@ module.exports = function(env) {
             // or "lightweight". Users can still switch in the chart's own toggle.
             __CHART_ENGINE__: JSON.stringify(env.chartEngine || "auto"),
             DEFAULT_SYMBOL: "BTS",
-            __GIT_BRANCH__: JSON.stringify(branch)
+            __GIT_BRANCH__: JSON.stringify(branch),
+            __MCP_ENABLED__: MCP.enabled,
+            __MCP_TRADING__: MCP.trading
         }),
         new webpack.ContextReplacementPlugin(
             /moment[\/\\]locale$/,

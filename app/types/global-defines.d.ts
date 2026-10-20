@@ -8,3 +8,7 @@ declare const __BASE_URL__: string;
 declare const __DEV__: boolean;
 declare const __HASH_HISTORY__: boolean;
 declare const __CHART_ENGINE__: "auto" | "tradingview" | "lightweight";
+// The MCP page, and the review of what an AI assistant prepared (docs/MCP.md); both off
+// unless MCP_ENABLED / MCP_TRADING_ENABLED are true when the app is built.
+declare const __MCP_ENABLED__: boolean;
+declare const __MCP_TRADING__: boolean;

@@ -81,6 +81,8 @@
             "__TESTNET__": false,
             "__DEPRECATED__": false,
             "__CHART_ENGINE__": "auto",
+            "__MCP_ENABLED__": false,
+            "__MCP_TRADING__": false,
             "DEFAULT_SYMBOL": "BTS",
             "__GIT_BRANCH__": "test",
             "__DEV__": true
