@@ -1,0 +1,417 @@
+// The MCP page and the review page. Cards, tables and chips on the design tokens only.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 960px;
+}
+
+// `.page .title`: the legacy sheet gives every h2 its own margin and size
+.page .title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.lead {
+    margin: 0;
+    max-width: 72ch;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+// the legacy sheet gives lists, definition lists and paragraphs margins of their own
+.page :where(ul, ol, dl, dt, dd, p) {
+    margin: 0;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.page .heading {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.muted {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 80ch;
+}
+
+.status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+}
+
+.status li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--faint);
+}
+
+.dotOn {
+    background: var(--up);
+}
+
+.dotOff {
+    background: var(--faint);
+}
+
+// ---- code ----
+.codeWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.code {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre;
+}
+
+// ---- tools ----
+.legend {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.legend summary {
+    cursor: pointer;
+    color: var(--ink-2, var(--ink));
+}
+
+.legend ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.page .groupTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.count {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--raised);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.toolList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tool {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--ground);
+}
+
+.toolHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.toolTitle {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.toolName {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+}
+
+.toolBody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 14px 12px;
+}
+
+.toolText {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.chip {
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 11.5px;
+    white-space: nowrap;
+    cursor: help;
+}
+
+.chip_good {
+    border-color: var(--up);
+    color: var(--up);
+}
+
+.chip_care {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+.chip_bad {
+    border-color: var(--down);
+    color: var(--down);
+}
+
+.args {
+    display: grid;
+    grid-template-columns: minmax(130px, max-content) 1fr;
+    gap: 4px 14px;
+    margin: 0;
+    font-size: 12.5px;
+}
+
+.args dt {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.args dt code {
+    font-family: var(--font-mono);
+    color: var(--ink);
+}
+
+.argType {
+    color: var(--faint);
+    font-size: 11.5px;
+}
+
+.args dd {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.noArgs {
+    margin: 0;
+    color: var(--faint);
+    font-size: 12.5px;
+}
+
+// ---- security ----
+.layers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.layers li strong {
+    display: block;
+    font-weight: 600;
+}
+
+.layers li span {
+    color: var(--muted);
+}
+
+// ---- settings ----
+.tableWrap {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.table th,
+.table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+.table th {
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.table td code {
+    font-family: var(--font-mono);
+}
+
+.table td:first-child {
+    white-space: nowrap;
+}
+
+.table td:last-child {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+// ---- the review page ----
+.summary {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.reference {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid var(--line-strong, var(--line));
+    border-radius: var(--radius);
+    background: var(--raised);
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: minmax(120px, max-content) 1fr;
+    gap: 6px 16px;
+    font-size: 13.5px;
+}
+
+.facts dt {
+    color: var(--muted);
+}
+
+.facts dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.checks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13.5px;
+    line-height: 1.45;
+}
+
+.checks li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.mark {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    border: 2px solid var(--faint);
+    box-sizing: border-box;
+}
+
+.markOk {
+    border-color: var(--up);
+    background: var(--up);
+}
+
+.markWarn {
+    border-color: var(--warn);
+}
+
+.markBad {
+    border-color: var(--down);
+    background: var(--down);
+}
+
+@media (max-width: 640px) {
+    .args,
+    .facts {
+        grid-template-columns: 1fr;
+    }
+
+    .chips {
+        margin-left: 0;
+    }
+}

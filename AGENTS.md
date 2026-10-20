@@ -56,6 +56,18 @@ signing are refused on purpose. Read `docs/UI_MIGRATION_PLAN.md` §7.11 and §7.
 (and the extension's source, not only its README) before changing any of it;
 keep `isActive()` false until the user connects the extension.
 
+**MCP** (`mcp/`, `docs/MCP.md`): a dependency-free Node server that lets an AI assistant read the
+chain and, if `MCP_TRADING_ENABLED`, *prepare* an order that a person reviews on `/mcp/review` and
+signs with their own wallet. It never holds a key and has no tool that signs or sends; keep it so.
+It is off unless `MCP_ENABLED` is true in the environment or in a `.env` file (see `.env.example`;
+`.env` is git-ignored, and agents are denied access to it). The web build reads the same two flags
+once, when webpack starts (`__MCP_ENABLED__`, `__MCP_TRADING__`; read them only through
+`lib/common/mcpFlags.ts`, a bare global throws in a bundle that lacks it, e.g. a dev server started
+before the flag existed). The files the bundle imports from `mcp/src/` (`catalog`, `settings`,
+`format`, `policy`, `proposal`) must not require a Node module (a test keeps it so); the server-only
+code is the rest. New tools go in `catalog.js` (with annotations) and `tools.js`, and need tests in
+`app/__tests__/mcp/`.
+
 The left rail's entries live in `app/next/navigation.ts` (a test checks every
 entry points at a route registered in `App.jsx`); add a screen to the menu
 there (an entry whose route redirects needs `match` so the rail still

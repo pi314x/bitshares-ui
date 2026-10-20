@@ -116,6 +116,13 @@ const PATHS: {[name: string]: React.ReactNode} = {
             <path d="m13.5 5.5-3 13" />
         </>
     ),
+    // an assistant: a large and a small spark
+    assistant: (
+        <>
+            <path d="m10.5 4 1.7 4.8 4.8 1.7-4.8 1.7-1.7 4.8-1.7-4.8L4 10.5l4.8-1.7L10.5 4Z" />
+            <path d="m17.5 14.5.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" />
+        </>
+    ),
     help: (
         <>
             <circle cx="12" cy="12" r="8.5" />

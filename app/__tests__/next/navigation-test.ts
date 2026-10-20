@@ -4,7 +4,12 @@
 // SameT funds) must stay reachable.
 import * as fs from "fs";
 import * as path from "path";
-import {NAV_GROUPS, crumbFromPath, withLastMarket} from "../../next/navigation";
+import {
+    NAV_GROUPS,
+    crumbFromPath,
+    withLastMarket,
+    withMcp
+} from "../../next/navigation";
 import {isNavItemActive} from "../../design-system/Rail";
 
 const app = fs.readFileSync(path.join(__dirname, "../../App.jsx"), "utf8");
@@ -144,7 +149,7 @@ describe("rail icons", () => {
             path.join(__dirname, "../../design-system/RailIcon.tsx"),
             "utf8"
         );
-        NAV_GROUPS.forEach(group =>
+        withMcp(NAV_GROUPS, true).forEach(group =>
             group.items.forEach(item => {
                 expect(item.icon).toBeTruthy();
                 expect(source).toContain(`    ${item.icon}:`);
@@ -166,7 +171,11 @@ describe("crumbs of an account's pages", () => {
 });
 
 describe("every page has one entry in the menu", () => {
-    const items = NAV_GROUPS.reduce<any[]>((all, g) => all.concat(g.items), []);
+    // with the AI assistants' page in the menu too (a build made with MCP_ENABLED has it)
+    const items = withMcp(NAV_GROUPS, true).reduce<any[]>(
+        (all, g) => all.concat(g.items),
+        []
+    );
     const activeLabels = (pathname: string) =>
         items.filter(i => isNavItemActive(i, pathname)).map(i => i.label);
 

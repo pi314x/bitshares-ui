@@ -127,6 +127,41 @@ export const NAV_GROUPS: RailNavGroup[] = [
     }
 ];
 
+/**
+ * The menu with the AI assistants' page (MCP, docs/MCP.md) behind Advanced, when the app was
+ * built with it. A build without it has no entry and no route.
+ */
+export function withMcp(
+    groups: RailNavGroup[],
+    enabled: boolean
+): RailNavGroup[] {
+    if (!enabled) return groups;
+    return groups.map(group =>
+        group.label !== "More"
+            ? group
+            : {
+                  ...group,
+                  items: group.items.reduce(
+                      (items, item) =>
+                          items.concat(
+                              item.to === "/advanced"
+                                  ? [
+                                        item,
+                                        {
+                                            label: "AI assistants",
+                                            icon: "assistant",
+                                            to: "/mcp",
+                                            match: /^\/mcp(\/|$)/
+                                        }
+                                    ]
+                                  : [item]
+                          ),
+                      [] as typeof group.items
+                  )
+              }
+    );
+}
+
 // A market's name as the trade page takes it: BASE_QUOTE.
 const MARKET_NAME = /^[A-Za-z0-9._-]+_[A-Za-z0-9._-]+$/;
 
@@ -163,6 +198,7 @@ const CRUMB_TITLES: Record<string, string> = {
     "credit-offer": "Credit offers",
     "samet-funds": "SameT funds",
     advanced: "Advanced",
+    mcp: "AI assistants",
     "timed-transfer": "Timed transfer",
     send: "Send",
     deposit: "Deposit",

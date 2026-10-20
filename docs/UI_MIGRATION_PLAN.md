@@ -13568,3 +13568,33 @@ introduced); each has a regression test or a measurable check.
 - Re-enable immer's auto-freeze (`store/immerConfig.ts`) after auditing the
   `getState()` consumers; and decide whether to extract CSS Modules in the
   production build (§7.5).
+
+### 7.32 MCP: an assistant that reads the chain and prepares trades you sign
+
+Full description and threat model: `docs/MCP.md`. In short:
+
+- `mcp/` is a separate, dependency-free Node server (MCP over stdio or a local HTTP address) with
+  11 read tools and, with `MCP_TRADING_ENABLED`, 3 trading tools that only **prepare** (a limit
+  order, cancelling one, and the limits in force). Off unless `MCP_ENABLED` is true (environment or
+  `.env`; `.env.example` documents every setting). Checked against the official TypeScript SDK client
+  over stdio and streamable HTTP, against a live node.
+- The application has two screens behind compile-time flags (`__MCP_ENABLED__`, `__MCP_TRADING__`,
+  set by webpack from the same settings; absent from a build made without them): **AI assistants**
+  (`/mcp`: how to connect, every tool with its arguments and annotations read from the server's own
+  catalog, the security layers, the settings) and the **review** of a prepared transaction
+  (`/mcp/review#p=...`: the link is read strictly, the reference code is recomputed, the order is put
+  in words from the operation, the chain / account / time / market price are checked with the app's own
+  data, and signing goes through the same `WalletDb.process_transaction` as everything else).
+- Security design in one line: no key and no signing tool on the server; allow-listed accounts and
+  assets with per-order and per-day limits kept in a file across restarts; a price guard on the server
+  and again in the review; a reference code to compare; prepare tools not marked read-only so the
+  client asks first; text from the chain is cleaned and marked untrusted; the HTTP transport is
+  loopback, token, Host/Origin checked, no CORS.
+- Lessons: the legacy sheet gives every `ul`/`ol`/`dl`/`p`/`h1` margins (a `:where(...)` reset on the
+  page root) and `body[class][class] #content p` caps a `p` at `82ch`; a bare compile-time global
+  throws in a dev server that was started before it existed (use `mcpFlags.ts`); a module the
+  browser bundle imports from `mcp/src/` must not `require("fs")`; `.env` text in a shell command is
+  blocked by the sandbox's policy (use the editor tools, or a script file, for the example file).
+- Not done: the server cannot sign for a bot (a separate design with its own key and limits, or an
+  on-chain proposal, would be needed); no transfer tool; the review has no end-to-end signing test
+  against a funded testnet account (the signing path itself is the existing, tested one).

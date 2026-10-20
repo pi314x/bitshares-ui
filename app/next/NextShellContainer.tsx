@@ -20,7 +20,8 @@ import {LocaleSwitcher} from "../design-system/LocaleSwitcher";
 import {Button} from "../design-system/Button";
 import {useTheme} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
-import {NAV_GROUPS, crumbFromPath, withLastMarket} from "./navigation";
+import {NAV_GROUPS, crumbFromPath, withLastMarket, withMcp} from "./navigation";
+import {mcpEnabled} from "../lib/common/mcpFlags";
 import {Apis} from "bitsharesjs-ws";
 import {useReduxState} from "./hooks/useReduxState";
 import {selectAccountState} from "../store/slices/accountSlice";
@@ -247,9 +248,9 @@ export default function NextShellContainer({
     } catch (e) {
         // no connection yet: the default market stays
     }
-    const navGroups = withLastMarket(
-        NAV_GROUPS,
-        settings.viewSettings.get(lastMarketKey)
+    const navGroups = withMcp(
+        withLastMarket(NAV_GROUPS, settings.viewSettings.get(lastMarketKey)),
+        mcpEnabled()
     );
     const activeNode = settings.settings.get("activeNode") as string | null;
     const themeValue = legacyThemeToThemeName(settings.settings.get("themes"));

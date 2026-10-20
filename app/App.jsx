@@ -91,6 +91,21 @@ const AdvancedPage = Loadable({
     loading: LoadingIndicator
 });
 
+// The AI assistants' page and the review of what an assistant prepared (MCP, docs/MCP.md):
+// only in a build made with MCP_ENABLED / MCP_TRADING_ENABLED (the routes below are absent
+// otherwise, and so is the code: the flags are compile-time constants)
+const McpPage = Loadable({
+    loader: () =>
+        import(/* webpackChunkName: "mcp" */ "./components/Mcp/McpPage"),
+    loading: LoadingIndicator
+});
+
+const McpReviewPage = Loadable({
+    loader: () =>
+        import(/* webpackChunkName: "mcp" */ "./components/Mcp/McpReviewPage"),
+    loading: LoadingIndicator
+});
+
 // Send, Deposit and Withdraw as pages (the same dialogs, shown in the page)
 const paymentPage = name =>
     Loadable({
@@ -275,6 +290,7 @@ import GatewaySelectorModal from "./components/Gateways/GatewaySelectorModal";
 import SettingsStore from "./stores/SettingsStore";
 import GatewayActions from "./actions/GatewayActions";
 import {allowedGateway} from "./branding";
+import {mcpEnabled, mcpTrading} from "./lib/common/mcpFlags";
 
 // Route components that still read react-router v5's match/history/location
 // props (see components/Utility/withLegacyRouterProps.tsx).
@@ -705,6 +721,18 @@ class App extends React.Component {
                                         path="/advanced"
                                         element={<AdvancedPage />}
                                     />
+                                    {mcpEnabled() ? (
+                                        <Route
+                                            path="/mcp"
+                                            element={<McpPage />}
+                                        />
+                                    ) : null}
+                                    {mcpTrading() ? (
+                                        <Route
+                                            path="/mcp/review"
+                                            element={<McpReviewPage />}
+                                        />
+                                    ) : null}
                                     <Route
                                         path="/settings/:tab"
                                         element={<Settings />}
