@@ -6,11 +6,16 @@ import {
     saveImage
 } from "../../lib/common/clipboard";
 
-const setSecure = (value: boolean) =>
-    Object.defineProperty(window, "isSecureContext", {
-        value,
-        configurable: true
-    });
+// One getter, defined once: Node 16's vm global ignores a second defineProperty
+// of the same property, so redefining it per test left it at the first value.
+let secure = false;
+Object.defineProperty(window, "isSecureContext", {
+    get: () => secure,
+    configurable: true
+});
+const setSecure = (value: boolean) => {
+    secure = value;
+};
 const setClipboard = (value: any) =>
     Object.defineProperty(navigator, "clipboard", {
         value,
