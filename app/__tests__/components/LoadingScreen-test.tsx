@@ -164,6 +164,43 @@ describe("LoadingScreen", () => {
         expect(container.textContent).toContain("wss://node.xbts.io/ws");
     });
 
+    it("keeps the same lines whether the status and the chosen node are known yet or not, so the ring does not move", () => {
+        const empty = render(<LoadingScreen />);
+        const lines = (c: HTMLElement) =>
+            Array.from(c.querySelectorAll(".detail")).map(p => ({
+                text: p.textContent,
+                hidden: p.getAttribute("aria-hidden")
+            }));
+        // two lines, empty and hidden from a screen reader, in the group
+        expect(lines(empty.container)).toEqual([
+            {text: "\u00a0", hidden: "true"},
+            {text: "\u00a0", hidden: "true"}
+        ]);
+        empty.unmount();
+        const full = render(
+            <LoadingScreen
+                status="Connecting to API server: wss://node.xbts.io/ws"
+                server="wss://node.xbts.io/ws"
+            />
+        );
+        const shown = lines(full.container);
+        expect(shown.length).toBe(2);
+        expect(shown[0].hidden).toBeNull();
+        expect(shown[1].text).toContain("wss://node.xbts.io/ws");
+    });
+
+    it("puts what comes under the group (the node list) outside it", () => {
+        const {container} = render(
+            <LoadingScreen>
+                <button>Pick a node</button>
+            </LoadingScreen>
+        );
+        const group = container.querySelector(".group") as HTMLElement;
+        expect(group).not.toBeNull();
+        expect(group.contains(container.querySelector("button"))).toBe(false);
+        expect(container.textContent).toContain("Pick a node");
+    });
+
     it("follows the legacy theme for the tokens", () => {
         render(<LoadingScreen theme="lightTheme" />);
         expect(document.documentElement.getAttribute("data-theme")).toBe(

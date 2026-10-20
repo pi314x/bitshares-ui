@@ -13,6 +13,7 @@
     height: 22px;
     vertical-align: middle;
     animation: spin 0.9s linear infinite;
+    will-change: transform;
 }
 
 .ringSmall {
@@ -72,9 +73,76 @@
     font-size: 13px;
 }
 
-.overlay .ring {
-    width: 28px;
-    height: 28px;
+// The ring with the BitShares mark in its middle: a faint track and an arc whose tail
+// fades out behind a round head, turned by `transform` only (compositor, so it does not
+// stutter while the page is busy). Same geometry as the SVG ring: 87.5% of the box, a
+// band 12.5% thick. The splash in index.hbs draws the same.
+.logoRing {
+    --ring-t: calc(var(--logo-ring-size, 56px) * 0.125);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: var(--logo-ring-size, 56px);
+    height: var(--logo-ring-size, 56px);
+    color: var(--accent);
+}
+
+.logoTrack,
+.logoSpin {
+    position: absolute;
+    inset: 6.25%;
+    border-radius: 50%;
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - var(--ring-t)),
+        #000 calc(100% - var(--ring-t))
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - var(--ring-t)),
+        #000 calc(100% - var(--ring-t))
+    );
+}
+
+.logoTrack {
+    background: currentColor;
+    opacity: 0.18;
+}
+
+.logoSpin {
+    background: conic-gradient(
+        from 0deg,
+        transparent 50deg,
+        currentColor 360deg
+    );
+    animation: spin 1.2s linear infinite;
+    will-change: transform;
+}
+
+// the round head of the arc, at the top where the tail ends
+.logoSpin::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--ring-t);
+    height: var(--ring-t);
+    margin-left: calc(var(--ring-t) / -2);
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.logoMark {
+    position: relative;
+    // inside the ring's inner edge (the ring is 75% of the box, its stroke 3/24)
+    height: 44%;
+    width: auto;
+}
+
+.overlay {
+    --logo-ring-size: 48px;
 }
 
 .text {
@@ -101,7 +169,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .ring {
+    .ring,
+    .logoSpin {
         animation-duration: 3s;
     }
 

@@ -12678,7 +12678,21 @@ differently from English.
   `chartEngine` view setting (a toggle on the chart when both exist).
 - **Loaders.** `LoadingIndicator` is an SVG ring / three soft dots on the tokens
   (CSS Module); the pre-JS splash in `index.hbs` follows the system light/dark
-  scheme and shows a ring instead of Helvetica "Loading...".
+  scheme and shows a ring instead of Helvetica "Loading...". The page-level loaders
+  (the start-up screen, the default panel overlay: `LogoRing`) put the BitShares mark
+  in the middle of the ring; the ring is a faint track and an arc with a fading tail
+  and a round head, turned by `transform` alone so it stays smooth while the page is
+  busy starting (the small inline rings are the plain SVG one). The **start-up screen
+  keeps its place**: the ring, title, seven steps and two lines (status, chosen node)
+  have fixed heights and are always there, centred in the window, so the ring does
+  not move when the status or the chosen node arrive; the node list (`children`)
+  sits in a row under the group and cannot move it. The splash puts its ring where
+  the screen's will be (spacer = 332px, the sum of the heights under the ring). Legacy
+  traps met: `body.darkTheme h1` gives every h1 `margin: 24px 0`, `ol` has a bottom
+  margin, and `body[class][class] #content p` caps every p at `82ch` - hence the
+  stronger selectors and the two lines being divs. Verified by measuring the ring
+  centre of the splash and of the screen at 1400x900, 390x844, 360x640 and 1000x500:
+  equal, also with long status and node lines.
 - **Dropdowns** are drawn in a portal on `<body>` (fixed, from the trigger's
   rect, flips upward near the bottom edge), so a modal body can no longer clip
   the list - this was the awkward deposit/withdraw select.
@@ -12715,7 +12729,10 @@ What changed after §7.17, in the order a user meets it.
   as a dashed "available + in orders" line with the amount in the header. The
   first load reads five pages of 100 operations; "Load older" reads more. The
   node returns what it keeps: `node.xbts.io` returned exactly 100 operations for
-  the test account, so that is the depth there.
+  the test account, so that is the depth there. The currency drop-down sits in
+  the card's head beside the title (it used to be at the foot, far from what it
+  changes) and is searched while typing: the open list has a filter box on the
+  symbol, each asset with its logo, "No asset matches." when nothing does.
 - **Recent activity** shows up to 100 operations on the dashboard (it was 10) and
   has "Load older": `lib/chain/extendAccountHistory.ts` asks the node for the
   next page below the oldest operation the store holds and appends it to the

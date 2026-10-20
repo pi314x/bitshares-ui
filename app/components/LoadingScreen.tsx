@@ -1,7 +1,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import styles from "./LoadingScreen.module.scss";
-import {Ring} from "./LoadingIndicator";
+import {LogoRing} from "./LoadingIndicator";
 import {
     LOCAL_STEP_ORDER,
     describeLocalStep,
@@ -112,42 +112,64 @@ export function LoadingScreen({
             role="status"
             aria-live="polite"
         >
-            <span className={styles.ringWrap}>
-                <Ring />
-            </span>
-            <h1 className={styles.title}>
-                {counterpart.translate("app_init.loading_title")}
-            </h1>
-            <ol className={styles.steps}>
-                {rows.map(row => (
-                    <li
-                        key={row.id}
-                        className={[
-                            styles.step,
-                            row.state === "done" ? styles.done : "",
-                            row.state === "active" || row.id === activeId
-                                ? styles.active
-                                : "",
-                            row.state === "failed" ? styles.failed : ""
-                        ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        data-state={row.state}
-                        aria-current={row.id === activeId ? "step" : undefined}
-                    >
-                        <span className={styles.mark} aria-hidden="true" />
-                        {row.text}
-                    </li>
-                ))}
-            </ol>
-            {status ? <p className={styles.detail}>{status}</p> : null}
-            {server ? (
-                <p className={styles.detail}>
-                    {counterpart.translate("app_init.node_label")}{" "}
-                    <strong>{server}</strong>
-                </p>
-            ) : null}
-            {children}
+            <div className={styles.group}>
+                <span className={styles.ringWrap}>
+                    <LogoRing />
+                </span>
+                <h1 className={styles.title}>
+                    {counterpart.translate("app_init.loading_title")}
+                </h1>
+                <ol className={styles.steps}>
+                    {rows.map(row => (
+                        <li
+                            key={row.id}
+                            className={[
+                                styles.step,
+                                row.state === "done" ? styles.done : "",
+                                row.state === "active" || row.id === activeId
+                                    ? styles.active
+                                    : "",
+                                row.state === "failed" ? styles.failed : ""
+                            ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            data-state={row.state}
+                            aria-current={
+                                row.id === activeId ? "step" : undefined
+                            }
+                        >
+                            <span className={styles.mark} aria-hidden="true" />
+                            {row.text}
+                        </li>
+                    ))}
+                </ol>
+                {/* Both lines are always there, empty or not: the group keeps its
+                    height, so the ring does not move when a line appears. */}
+                <div
+                    className={styles.detail}
+                    title={status || undefined}
+                    aria-hidden={status ? undefined : true}
+                >
+                    {status || "\u00a0"}
+                </div>
+                <div
+                    className={styles.detail}
+                    title={server || undefined}
+                    aria-hidden={server ? undefined : true}
+                >
+                    {server ? (
+                        <>
+                            {counterpart.translate("app_init.node_label")}{" "}
+                            <strong>{server}</strong>
+                        </>
+                    ) : (
+                        "\u00a0"
+                    )}
+                </div>
+            </div>
+            {/* What may come under the group (the node list): below it, so it never
+                moves the group off the centre of the window. */}
+            {children ? <div className={styles.extra}>{children}</div> : null}
         </div>
     );
 }

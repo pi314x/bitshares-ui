@@ -3,10 +3,13 @@
 // design tokens (LoadingIndicator.module.scss): "circle"/"circle-small" are an
 // SVG ring, "three-bounce" three soft dots, anything else (the default and
 // LoadingButton's "loading-overlay") a centred ring over the parent with the
-// optional text. The legacy `progress` counter that always rendered "0" is gone.
+// optional text, with the BitShares mark in the middle of the ring (LogoRing: the
+// ring turns, the mark stands still). The legacy `progress` counter that always
+// rendered "0" is gone.
 //
 // Not security-sensitive per AGENTS.md: purely presentational.
 import * as React from "react";
+import logo from "assets/logo-ico-blue.png";
 import styles from "./LoadingIndicator.module.scss";
 
 interface LoadingIndicatorProps {
@@ -28,6 +31,21 @@ export function Ring({small}: {small?: boolean}) {
             <circle className={styles.ringTrack} cx="12" cy="12" r="9" />
             <circle className={styles.ringArc} cx="12" cy="12" r="9" />
         </svg>
+    );
+}
+
+/** The ring with the BitShares mark in its middle: for the page-level loaders (the
+ * start-up screen, a panel that is loading), not for the small inline ones. The
+ * size is `--logo-ring-size` (56px). The ring is a faint track and an arc with a
+ * fading tail that turns by `transform` alone (the browser's compositor draws it,
+ * so it stays smooth while the page is busy starting); the mark stands still. */
+export function LogoRing() {
+    return (
+        <span className={styles.logoRing} role="status" aria-label="Loading">
+            <span className={styles.logoTrack} aria-hidden="true" />
+            <span className={styles.logoSpin} aria-hidden="true" />
+            <img className={styles.logoMark} src={logo} alt="" />
+        </span>
     );
 }
 
@@ -56,7 +74,7 @@ export default function LoadingIndicator({
         default:
             return (
                 <div className={styles.overlay}>
-                    <Ring />
+                    <LogoRing />
                     {loadingText && (
                         <p className={styles.text}>{loadingText}</p>
                     )}

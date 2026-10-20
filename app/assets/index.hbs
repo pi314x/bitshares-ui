@@ -66,10 +66,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* The loading screen centres its whole group (ring, title, steps) in
-               the window; the ring here stands where that group's ring will, so
-               nothing moves when the screen takes over: the spacer below is the
-               height of what comes under the ring there. */
+            /* The loading screen centres its whole group (ring, title, the steps and
+               the two lines for the status and the chosen node, all of fixed
+               height) in the window; the ring here stands where that group's ring
+               will, so nothing moves when the screen takes over: the spacer below is
+               the height of what comes under the ring there (18 + 24 + 18 + 200 +
+               18 + 18 + 18 + 18, see LoadingScreen.module.scss). */
             justify-content: center;
             margin: 0;
             color: var(--boot-ink);
@@ -82,31 +84,62 @@
         .centerDiv::after {
             content: "";
             flex: none;
-            height: 330px;
+            height: 332px;
         }
 
-        /* Same ring as components/LoadingIndicator (Ring) and the loading screen:
-           24x24 viewBox, r=9, 3px stroke, a short arc, 0.9s per turn. */
-        .centerDiv .boot-ring {
-            width: 34px;
-            height: 34px;
+        /* Same ring, with the BitShares mark in it, as components/LoadingIndicator
+           (LogoRing) and the loading screen: a 56px box, a track and an arc with a
+           fading tail and a round head that turns by transform only (smooth while
+           the page is busy), a 12.5% band at 87.5% of the box; the mark stands
+           still. The mark is the data URL of assets/logo-ico-blue.png (img-src
+           allows data:). */
+        .centerDiv .boot-logo-ring {
+            --ring-t: 7px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
             color: var(--boot-accent);
-            animation: boot-spin 0.9s linear infinite;
         }
 
-        .centerDiv .boot-ring circle {
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 3;
-            stroke-linecap: round;
+        .centerDiv .boot-track,
+        .centerDiv .boot-spin {
+            position: absolute;
+            inset: 6.25%;
+            border-radius: 50%;
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-t)), #000 calc(100% - var(--ring-t)));
+            mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-t)), #000 calc(100% - var(--ring-t)));
         }
 
-        .centerDiv .boot-ring .track {
+        .centerDiv .boot-track {
+            background: currentColor;
             opacity: 0.18;
         }
 
-        .centerDiv .boot-ring .arc {
-            stroke-dasharray: 18 100;
+        .centerDiv .boot-spin {
+            background: conic-gradient(from 0deg, transparent 50deg, currentColor 360deg);
+            animation: boot-spin 1.2s linear infinite;
+            will-change: transform;
+        }
+
+        .centerDiv .boot-spin::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: var(--ring-t);
+            height: var(--ring-t);
+            margin-left: calc(var(--ring-t) / -2);
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .centerDiv .boot-logo {
+            position: relative;
+            height: 44%;
+            width: auto;
         }
 
         @keyframes boot-spin {
@@ -116,7 +149,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .centerDiv .boot-ring {
+            .centerDiv .boot-spin {
                 animation-duration: 3s;
             }
         }
@@ -141,7 +174,7 @@
 
 <body spellcheck="false">
     <main id="content">
-        <div class="centerDiv" role="status"><svg class="boot-ring" viewBox="0 0 24 24" aria-hidden="true"><circle class="track" cx="12" cy="12" r="9"></circle><circle class="arc" cx="12" cy="12" r="9"></circle></svg></div>
+        <div class="centerDiv" role="status"><span class="boot-logo-ring"><span class="boot-track" aria-hidden="true"></span><span class="boot-spin" aria-hidden="true"></span><img class="boot-logo" alt="" src="data:image/png;base64,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"></span></div>
     </main>
     <script>
         function ieVersion(uaString) {
