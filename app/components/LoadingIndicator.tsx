@@ -40,10 +40,24 @@ export function Ring({small}: {small?: boolean}) {
  * fading tail that turns by `transform` alone (the browser's compositor draws it,
  * so it stays smooth while the page is busy starting); the mark stands still. */
 export function LogoRing() {
+    const spin = React.useRef<HTMLSpanElement>(null);
+    // The splash (index.hbs) was turning this ring before the app existed and noted when its
+    // turn began (`window.__ringStart`, on the document's timeline). This ring takes up the
+    // same turn, so that the hand-over does not make it jump back to the top. Before the
+    // first paint, so that nobody sees the other angle.
+    React.useLayoutEffect(() => {
+        const element = spin.current;
+        const start = (window as any).__ringStart;
+        if (!element || typeof start !== "number" || !element.getAnimations) {
+            return;
+        }
+        const animation = element.getAnimations()[0];
+        if (animation) animation.startTime = start;
+    }, []);
     return (
         <span className={styles.logoRing} role="status" aria-label="Loading">
             <span className={styles.logoTrack} aria-hidden="true" />
-            <span className={styles.logoSpin} aria-hidden="true" />
+            <span ref={spin} className={styles.logoSpin} aria-hidden="true" />
             <img className={styles.logoMark} src={logo} alt="" />
         </span>
     );
