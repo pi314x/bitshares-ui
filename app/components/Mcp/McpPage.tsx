@@ -35,6 +35,13 @@ interface Tool {
     };
 }
 
+/** Text with `code` in backticks as code. */
+function rich(text: string): React.ReactNode[] {
+    return text
+        .split(/`([^`]+)`/)
+        .map((part, i) => (i % 2 ? <code key={i}>{part}</code> : part));
+}
+
 const SERVER = "/path/to/bitshares-ui/mcp/server.js";
 
 type Client = "code" | "desktop" | "http";
@@ -75,17 +82,19 @@ function CodeBlock({text}: {text: string}) {
     return (
         <div className={styles.codeWrap}>
             <pre className={styles.code}>{text}</pre>
-            <Button
-                size="small"
-                onClick={() => {
-                    copyText(text).then(ok => {
-                        setCopied(ok);
-                        if (ok) setTimeout(() => setCopied(false), 1500);
-                    });
-                }}
-            >
-                {t(copied ? "copied" : "copy")}
-            </Button>
+            <span className={styles.copy}>
+                <Button
+                    size="small"
+                    onClick={() => {
+                        copyText(text).then(ok => {
+                            setCopied(ok);
+                            if (ok) setTimeout(() => setCopied(false), 1500);
+                        });
+                    }}
+                >
+                    {t(copied ? "copied" : "copy")}
+                </Button>
+            </span>
         </div>
     );
 }
@@ -157,17 +166,18 @@ function ToolCard({tool}: {tool: Tool}) {
     return (
         <details className={styles.tool} data-tool={tool.name}>
             <summary className={styles.toolHead}>
+                <span className={styles.chevron} aria-hidden="true" />
                 <span className={styles.toolTitle}>{tool.title}</span>
                 <code className={styles.toolName}>{tool.name}</code>
                 <Chips tool={tool} />
             </summary>
             <div className={styles.toolBody}>
-                <p className={styles.toolText}>{tool.description}</p>
+                <p className={styles.toolText}>{rich(tool.description)}</p>
                 {names.length ? (
-                    <dl className={styles.args}>
+                    <ul className={styles.args}>
                         {names.map(name => (
-                            <React.Fragment key={name}>
-                                <dt>
+                            <li key={name}>
+                                <span className={styles.argHead}>
                                     <code>{name}</code>
                                     <span className={styles.argType}>
                                         {props[name].type}
@@ -177,11 +187,13 @@ function ToolCard({tool}: {tool: Tool}) {
                                             ? `, ${t("required")}`
                                             : ""}
                                     </span>
-                                </dt>
-                                <dd>{props[name].description || ""}</dd>
-                            </React.Fragment>
+                                </span>
+                                <span className={styles.argText}>
+                                    {rich(props[name].description || "")}
+                                </span>
+                            </li>
                         ))}
-                    </dl>
+                    </ul>
                 ) : (
                     <p className={styles.noArgs}>{t("no_arguments")}</p>
                 )}
@@ -288,6 +300,11 @@ export default function McpPage() {
                                 showIcon
                                 message={t(
                                     trading
+                                        ? "tools.trade_on_title"
+                                        : "tools.trade_off_title"
+                                )}
+                                description={t(
+                                    trading
                                         ? "tools.trade_on"
                                         : "tools.trade_off"
                                 )}
@@ -330,34 +347,35 @@ export default function McpPage() {
             <section className={styles.card} aria-label={t("settings.title")}>
                 <h3 className={styles.heading}>{t("settings.title")}</h3>
                 <p className={styles.muted}>{t("settings.intro")}</p>
-                <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>{t("settings.name")}</th>
-                                <th>{t("settings.default")}</th>
-                                <th>{t("settings.text")}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {SETTINGS.map((setting: any) => (
-                                <tr key={setting.name}>
-                                    <td>
+                {["server", "http", "trading"].map(group => (
+                    <div key={group} className={styles.settingsGroup}>
+                        <h4 className={styles.groupTitle}>
+                            {t(`settings.group_${group}`)}
+                        </h4>
+                        <ul className={styles.settings}>
+                            {SETTINGS.filter(
+                                (setting: any) => setting.group === group
+                            ).map((setting: any) => (
+                                <li key={setting.name}>
+                                    <span className={styles.settingHead}>
                                         <code>{setting.name}</code>
-                                    </td>
-                                    <td>
-                                        <code>
-                                            {setting.default === ""
-                                                ? "-"
-                                                : setting.default}
-                                        </code>
-                                    </td>
-                                    <td>{setting.text}</td>
-                                </tr>
+                                        <span className={styles.settingDefault}>
+                                            {t("settings.default")}:{" "}
+                                            <code>
+                                                {setting.default === ""
+                                                    ? "-"
+                                                    : setting.default}
+                                            </code>
+                                        </span>
+                                    </span>
+                                    <span className={styles.settingText}>
+                                        {setting.text}
+                                    </span>
+                                </li>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </ul>
+                    </div>
+                ))}
                 <p className={styles.muted}>{t("docs")}</p>
             </section>
         </div>

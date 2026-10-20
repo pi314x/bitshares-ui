@@ -1,25 +1,12 @@
-// The MCP page and the review page. Cards, tables and chips on the design tokens only.
+// The MCP page and the review page. Cards, lists and chips on the design tokens only.
+// One spacing scale: 4 / 8 / 12 / 16 / 24 (a card's padding 20, 16 on a phone; 16 between
+// the blocks of a card, 12 on a phone; 16 between cards).
 .page {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-width: 960px;
-}
-
-// `.page .title`: the legacy sheet gives every h2 its own margin and size
-.page .title {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-}
-
-.lead {
-    margin: 0;
-    max-width: 72ch;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
+    max-width: 920px;
+    padding-bottom: 24px;
 }
 
 // the legacy sheet gives lists, definition lists and paragraphs margins of their own
@@ -27,53 +14,70 @@
     margin: 0;
 }
 
+// `.page .title`: the legacy sheet gives every h2 its own margin and size
+.page .title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.lead {
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
 .card {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px 18px;
+    gap: 16px;
+    padding: 20px;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--surface);
 }
 
 .page .heading {
-    margin: 0;
+    margin: 0 0 2px;
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
     text-transform: uppercase;
     color: var(--muted);
 }
 
 .muted {
-    margin: 0;
+    max-width: 76ch;
     color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
-    max-width: 80ch;
+    font-size: 13.5px;
+    line-height: 1.55;
 }
 
+// ---- this build ----
 .status {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin: 0;
+    gap: 10px;
     padding: 0;
     list-style: none;
     font-size: 14px;
+    line-height: 1.5;
 }
 
 .status li {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .dot {
     flex: none;
     width: 9px;
     height: 9px;
+    margin-top: 0.55em;
     border-radius: 50%;
     background: var(--faint);
 }
@@ -88,17 +92,15 @@
 
 // ---- code ----
 .codeWrap {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    position: relative;
 }
 
-.code {
+// `.page` before every code and pre rule: `body.darkTheme code` sets font-size: 1em
+.page .code {
     box-sizing: border-box;
     width: 100%;
     margin: 0;
-    padding: 12px 14px;
+    padding: 14px 76px 14px 16px;
     overflow-x: auto;
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -106,8 +108,16 @@
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 12.5px;
-    line-height: 1.55;
-    white-space: pre;
+    line-height: 1.6;
+    // wraps rather than scrolls: a command is read whole, and never runs under the button
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
 // ---- tools ----
@@ -118,31 +128,32 @@
 
 .legend summary {
     cursor: pointer;
-    color: var(--ink-2, var(--ink));
+    color: var(--ink);
 }
 
 .legend ul {
-    margin: 8px 0 0;
-    padding-left: 18px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    padding: 10px 0 0 18px;
+    line-height: 1.5;
 }
 
 .group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 6px;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 .page .groupTitle {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 4px 0 0;
+    margin: 0;
     font-size: 15px;
     font-weight: 600;
+    line-height: 1.3;
 }
 
 .count {
@@ -157,7 +168,7 @@
 .toolList {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .tool {
@@ -166,44 +177,60 @@
     background: var(--ground);
 }
 
-.toolHead {
-    display: flex;
-    flex-wrap: wrap;
+// the closed row: a chevron, the title, the name, the annotations. On a phone the name
+// and the annotations take a line each under the title.
+// `.page .tool > .toolHead`: a legacy rule keeps every summary a list item
+.page .tool > .toolHead {
+    display: grid;
+    grid-template-columns: 14px max-content minmax(0, 1fr) auto;
+    grid-template-areas: "chev title name chips";
     align-items: center;
-    gap: 6px 10px;
-    padding: 10px 14px;
+    gap: 4px 10px;
+    padding: 12px 14px;
+    list-style: none;
     cursor: pointer;
 }
 
-.toolTitle {
-    font-size: 14px;
-    font-weight: 600;
+.page .tool > .toolHead::-webkit-details-marker {
+    display: none;
 }
 
-.toolName {
+.chevron {
+    grid-area: chev;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid var(--muted);
+    border-bottom: 2px solid var(--muted);
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+}
+
+.tool[open] .chevron {
+    transform: rotate(45deg);
+}
+
+.toolTitle {
+    grid-area: title;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.page .toolName {
+    grid-area: name;
+    min-width: 0;
     color: var(--accent);
     font-family: var(--font-mono);
     font-size: 12.5px;
-}
-
-.toolBody {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 14px 12px;
-}
-
-.toolText {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .chips {
+    grid-area: chips;
     display: inline-flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 6px;
-    margin-left: auto;
 }
 
 .chip {
@@ -212,6 +239,7 @@
     border-radius: 999px;
     color: var(--muted);
     font-size: 11.5px;
+    line-height: 1.5;
     white-space: nowrap;
     cursor: help;
 }
@@ -231,23 +259,53 @@
     color: var(--down);
 }
 
-.args {
-    display: grid;
-    grid-template-columns: minmax(130px, max-content) 1fr;
-    gap: 4px 14px;
-    margin: 0;
-    font-size: 12.5px;
-}
-
-.args dt {
+.toolBody {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 12px;
+    padding: 0 14px 14px 38px;
 }
 
-.args dt code {
-    font-family: var(--font-mono);
+.toolText {
+    max-width: 76ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.page .toolText code,
+.page .argText code {
     color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.args {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    list-style: none;
+}
+
+.args li {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+}
+
+.argHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+}
+
+.page .argHead code {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
 }
 
 .argType {
@@ -255,14 +313,13 @@
     font-size: 11.5px;
 }
 
-.args dd {
-    margin: 0;
+.argText {
     color: var(--muted);
-    line-height: 1.45;
+    font-size: 12.5px;
+    line-height: 1.5;
 }
 
 .noArgs {
-    margin: 0;
     color: var(--faint);
     font-size: 12.5px;
 }
@@ -271,15 +328,20 @@
 .layers {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin: 0;
-    padding-left: 20px;
+    gap: 14px;
+    padding-left: 22px;
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1.55;
+}
+
+.layers li::marker {
+    color: var(--faint);
+    font-size: 12.5px;
 }
 
 .layers li strong {
     display: block;
+    margin-bottom: 2px;
     font-weight: 600;
 }
 
@@ -288,51 +350,65 @@
 }
 
 // ---- settings ----
-.tableWrap {
-    overflow-x: auto;
+.settingsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12.5px;
+.settings {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    list-style: none;
 }
 
-.table th,
-.table td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--line);
-    text-align: left;
-    vertical-align: top;
+.settings li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
 }
 
-.table th {
-    color: var(--muted);
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+.settingHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 16px;
 }
 
-.table td code {
+.page .settingHead > code {
+    color: var(--ink);
     font-family: var(--font-mono);
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
 }
 
-.table td:first-child {
-    white-space: nowrap;
+.settingDefault {
+    color: var(--faint);
+    font-size: 12px;
 }
 
-.table td:last-child {
+.page .settingDefault code {
     color: var(--muted);
-    line-height: 1.45;
+    font-family: var(--font-mono);
+    overflow-wrap: anywhere;
+}
+
+.settingText {
+    max-width: 76ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
 }
 
 // ---- the review page ----
 .summary {
-    margin: 0;
     font-size: 18px;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
 .reference {
@@ -350,8 +426,9 @@
 .facts {
     display: grid;
     grid-template-columns: minmax(120px, max-content) 1fr;
-    gap: 6px 16px;
+    gap: 8px 16px;
     font-size: 13.5px;
+    line-height: 1.45;
 }
 
 .facts dt {
@@ -359,7 +436,6 @@
 }
 
 .facts dd {
-    margin: 0;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
 }
@@ -367,8 +443,7 @@
 .checks {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin: 0;
+    gap: 10px;
     padding: 0;
     list-style: none;
     font-size: 13.5px;
@@ -383,9 +458,9 @@
 
 .mark {
     flex: none;
-    width: 18px;
-    height: 18px;
-    margin-top: 1px;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
     border-radius: 50%;
     border: 2px solid var(--faint);
     box-sizing: border-box;
@@ -406,12 +481,55 @@
 }
 
 @media (max-width: 640px) {
-    .args,
-    .facts {
-        grid-template-columns: 1fr;
+    .page {
+        gap: 12px;
+    }
+
+    .card {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .page .title {
+        font-size: 22px;
+    }
+
+    // the button gets a line of its own above the command
+    .page .code {
+        padding-right: 14px;
+        padding-top: 44px;
+    }
+
+    .page .tool > .toolHead {
+        grid-template-columns: 14px minmax(0, 1fr);
+        grid-template-areas:
+            "chev title"
+            ".    name"
+            ".    chips";
+        gap: 2px 10px;
+        padding: 10px 12px;
     }
 
     .chips {
-        margin-left: 0;
+        justify-content: flex-start;
+        margin-top: 2px;
+    }
+
+    .toolBody {
+        padding: 0 12px 12px;
+    }
+
+    .settingHead {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .facts {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .facts dd {
+        margin-bottom: 8px;
     }
 }

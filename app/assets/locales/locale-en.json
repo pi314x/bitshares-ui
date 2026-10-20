@@ -3552,8 +3552,10 @@
             "intro": "What an assistant can do through the server. Each tool carries annotations: hints that the client may use to decide what to ask you about. They are hints, not guarantees; the limits below are what the server enforces.",
             "group_read": "Read the chain",
             "group_trade": "Prepare an order for you to sign",
-            "trade_on": "On in this build. These tools only prepare: nothing is signed or sent until you do it on the review page.",
-            "trade_off": "Off in this build, and the server does not offer them unless MCP_TRADING_ENABLED is true for it as well."
+            "trade_on_title": "On in this build",
+            "trade_on": "These tools only prepare: nothing is signed or sent until you do it on the review page.",
+            "trade_off_title": "Off in this build",
+            "trade_off": "The server does not offer them either, unless MCP_TRADING_ENABLED is true for it as well."
         },
         "annotations": {
             "title": "What the annotations mean",
@@ -3601,9 +3603,10 @@
         "settings": {
             "title": "Settings",
             "intro": "Set them in the environment, or in a file called .env in the application's folder (copy .env.example). The web build reads MCP_ENABLED and MCP_TRADING_ENABLED too.",
-            "name": "Name",
-            "default": "Default",
-            "text": "What it does"
+            "default": "default",
+            "group_server": "Server",
+            "group_http": "HTTP transport",
+            "group_trading": "Trading"
         },
         "docs": "The whole design, with the threat model, is in docs/MCP.md.",
         "review": {

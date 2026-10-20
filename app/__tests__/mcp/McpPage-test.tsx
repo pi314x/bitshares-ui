@@ -113,17 +113,29 @@ describe("the MCP page", () => {
         expect(container.querySelectorAll("ol li").length).toBe(9);
     });
 
-    it("lists every setting with its default", () => {
+    it("lists every setting with its default, in groups", () => {
         const {container} = render(<McpPage />);
-        const rows = Array.from(container.querySelectorAll("tbody tr"));
-        expect(
-            rows.map(
-                r => (r.querySelector("td code") as HTMLElement).textContent
-            )
-        ).toEqual(SETTINGS.map((s: any) => s.name));
-        const enabled = rows.find(r =>
-            /MCP_ENABLED/.test(r.textContent || "")
+        const names = Array.from(
+            container.querySelectorAll(".settings li > .settingHead > code")
+        ).map(c => c.textContent);
+        expect(names.slice().sort()).toEqual(
+            SETTINGS.map((s: any) => s.name).sort()
+        );
+        const enabled = Array.from(
+            container.querySelectorAll(".settings li")
+        ).find(li => /MCP_ENABLED/.test(li.textContent || ""))!;
+        expect(enabled.textContent).toContain("default: false");
+        ["Server", "HTTP transport", "Trading"].forEach(title =>
+            expect(container.textContent).toContain(title)
+        );
+    });
+
+    it("writes `code` in a description as code", () => {
+        const {container} = render(<McpPage />);
+        const text = container.querySelector(
+            '[data-tool="bitshares_prepare_limit_order"] p'
         )!;
-        expect(enabled.textContent).toContain("false");
+        expect(text.querySelector("code")!.textContent).toBe("sell_amount");
+        expect(text.textContent).not.toContain("`");
     });
 });
