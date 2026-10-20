@@ -1,10 +1,16 @@
 import {
     createExtensionSigner,
+    toCapabilities,
     toSignerError
 } from "../../wallet-extension/adapter";
 import {findProvider, waitForProvider} from "../../wallet-extension/provider";
 import {ExternalSignerError} from "../../wallet-extension/types";
-import {makeFakeProvider, MAINNET, TESTNET} from "../utils/fakeProvider";
+import {
+    CAPABILITIES,
+    makeFakeProvider,
+    MAINNET,
+    TESTNET
+} from "../utils/fakeProvider";
 
 const tx = {
     operations: [
@@ -280,5 +286,46 @@ describe("signAndBroadcast", () => {
             )
         );
         expect(error.message).toBe("Assert Exception: insufficient balance");
+    });
+});
+
+describe("capabilities", () => {
+    it("reports what the extension says it can do", async () => {
+        const fake = makeFakeProvider({capabilities: CAPABILITIES});
+        const signer = createExtensionSigner(() => fake.provider);
+        expect(await signer.capabilities()).toEqual(CAPABILITIES);
+        expect(fake.calls.map(c => c.method)).toContain("getCapabilities");
+    });
+
+    it("is null for an extension that does not know the method", async () => {
+        // (the fake answers "Unknown method" as an older extension does)
+        const signer = createExtensionSigner(() => makeFakeProvider().provider);
+        expect(await signer.capabilities()).toBeNull();
+    });
+
+    it("is null, not an error, when there is no extension", async () => {
+        const signer = createExtensionSigner(() => null);
+        expect(await signer.capabilities()).toBeNull();
+    });
+
+    it("believes only a well-formed answer, and only an explicit true", () => {
+        expect(toCapabilities(null)).toBeNull();
+        expect(toCapabilities("yes")).toBeNull();
+        expect(toCapabilities({operations: "all"})).toBeNull();
+        expect(toCapabilities({operations: [0, "1"]})).toBeNull();
+        const found = toCapabilities({
+            protocol: 2,
+            version: "0.9.0",
+            operations: [0, 1],
+            memoEncryption: "true",
+            feeAsset: 1
+        });
+        expect(found).toEqual({
+            protocol: 2,
+            version: "0.9.0",
+            operations: [0, 1],
+            memoEncryption: false,
+            feeAsset: false
+        });
     });
 });

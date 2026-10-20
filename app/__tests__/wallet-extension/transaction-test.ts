@@ -1,9 +1,12 @@
 import {PrivateKey, TransactionBuilder} from "bitsharesjs";
 import {
+    EXTENSION_MEMO_NONCE,
     actsForOtherAccount,
     assertOperationsBelongTo,
+    extensionMemoText,
     toExtensionTransaction
 } from "../../wallet-extension/transaction";
+import {CAPABILITIES} from "../utils/fakeProvider";
 import {ExternalSignerError} from "../../wallet-extension/types";
 
 function build(name: string, op: any) {
@@ -101,6 +104,114 @@ describe("toExtensionTransaction", () => {
         expect(
             codeOf(() => toExtensionTransaction([[0, {from: "nonsense"}]]))
         ).toBe("failed");
+    });
+});
+
+describe("memos for an extension that encrypts them", () => {
+    const key = (PrivateKey as any)
+        .fromSeed("memo-test")
+        .toPublicKey()
+        .toPublicKeyString();
+    // what ApplicationApi builds for the extension's own account
+    const marked = (text: string) => ({
+        from: key,
+        to: key,
+        nonce: EXTENSION_MEMO_NONCE,
+        message: Buffer.from(text, "utf-8")
+    });
+
+    it("turns the marked memo into plain text for the extension to encrypt", () => {
+        const tx = toExtensionTransaction(
+            build("transfer", transfer({memo: marked("Rechnung 42 \u2713")})),
+            CAPABILITIES
+        );
+        expect(tx.operations[0][1].memo).toBe("Rechnung 42 \u2713");
+    });
+
+    it("refuses it for an extension that does not say it encrypts", () => {
+        const op = build("transfer", transfer({memo: marked("hello")}));
+        expect(codeOf(() => toExtensionTransaction(op, null))).toBe(
+            "unsupported"
+        );
+        expect(
+            codeOf(() =>
+                toExtensionTransaction(op, {
+                    ...CAPABILITIES,
+                    memoEncryption: false
+                })
+            )
+        ).toBe("unsupported");
+    });
+
+    it("refuses any other memo, whatever the extension can do", () => {
+        // an ordinary memo (encrypted for someone else, or sent unencrypted on purpose)
+        const op = build(
+            "transfer",
+            transfer({
+                memo: {from: key, to: key, nonce: "1", message: "deadbeef"}
+            })
+        );
+        expect(codeOf(() => toExtensionTransaction(op, CAPABILITIES))).toBe(
+            "unsupported"
+        );
+    });
+
+    it("does not read a marked memo off anything but the marker", () => {
+        expect(extensionMemoText(null)).toBeNull();
+        expect(extensionMemoText({nonce: "5", message: "6869"})).toBeNull();
+        expect(
+            extensionMemoText({nonce: EXTENSION_MEMO_NONCE, message: "zz"})
+        ).toBeNull();
+        expect(
+            extensionMemoText({nonce: EXTENSION_MEMO_NONCE, message: "6869"})
+        ).toBe("hi");
+    });
+});
+
+describe("what an extension that says so can do", () => {
+    it("pays the fee in the asset the transaction names", () => {
+        const op = build(
+            "transfer",
+            transfer({fee: {amount: 0, asset_id: "1.3.861"}})
+        );
+        expect(codeOf(() => toExtensionTransaction(op, null))).toBe(
+            "unsupported"
+        );
+        const tx = toExtensionTransaction(op, CAPABILITIES);
+        expect(tx.operations[0][1].fee.asset_id).toBe("1.3.861");
+        expect(
+            codeOf(() =>
+                toExtensionTransaction(op, {...CAPABILITIES, feeAsset: false})
+            )
+        ).toBe("unsupported");
+    });
+
+    it("refuses an operation the extension does not sign for a site, by name", () => {
+        let message = "";
+        try {
+            toExtensionTransaction(
+                build("account_transfer", {
+                    fee: {amount: 0, asset_id: 0},
+                    account_id: "1.2.100",
+                    new_owner: "1.2.200"
+                }),
+                CAPABILITIES
+            );
+        } catch (e) {
+            message = (e as Error).message;
+        }
+        expect(message).toMatch(/does not sign account_transfer/);
+        // an extension that cannot say answers for itself
+        expect(() =>
+            toExtensionTransaction(
+                build("account_transfer", {
+                    fee: {amount: 0, asset_id: 0},
+                    account_id: "1.2.100",
+                    new_owner: "1.2.200"
+                }),
+                null
+            )
+        ).not.toThrow();
     });
 });
 

@@ -15,6 +15,7 @@ import counterpart from "counterpart";
 import Immutable from "immutable";
 import {Apis} from "bitsharesjs-ws";
 import {PrivateKey, TransactionBuilder} from "bitsharesjs";
+import {EXTENSION_MEMO_NONCE} from "../../wallet-extension/transaction";
 import localeEn from "../../assets/locales/locale-en.json";
 import {patchState} from "../../store/slices/accountSlice";
 import {reduxStore} from "../../store/reduxStore";
@@ -28,7 +29,7 @@ import WalletUnlockActions from "../../actions/WalletUnlockActions";
 import WalletDb from "../../stores/WalletDb";
 import AccountStore from "../../stores/AccountStore";
 import {startExternalAccountSync} from "../../stores/ExternalAccountSync";
-import {makeFakeProvider, MAINNET} from "../utils/fakeProvider";
+import {CAPABILITIES, makeFakeProvider, MAINNET} from "../utils/fakeProvider";
 
 const win = window as any;
 let fake: ReturnType<typeof makeFakeProvider>;
@@ -518,5 +519,141 @@ describe("the account menu decides who signs", () => {
         expect(
             (AccountStore as any).getState().myActiveAccounts.has("carol")
         ).toBe(true);
+    });
+});
+
+describe("memos, fee assets and operations through the extension", () => {
+    const memoKey = (PrivateKey as any)
+        .fromSeed("memo-key")
+        .toPublicKey()
+        .toPublicKeyString();
+    const markedMemo = (text: string) => ({
+        from: memoKey,
+        to: memoKey,
+        nonce: EXTENSION_MEMO_NONCE,
+        message: Buffer.from(text, "utf-8")
+    });
+
+    it("hands a memo over as plain text for the extension to encrypt", async () => {
+        fake = makeFakeProvider({connected: true, capabilities: CAPABILITIES});
+        win.bitsharesWallet = fake.provider;
+        await useExtension();
+        await (WalletDb as any).process_transaction(
+            transferTx({memo: markedMemo("Rechnung 42")}),
+            null,
+            true
+        );
+        expect(signCalls()).toHaveLength(1);
+        // text, not the app's own marker object: nothing readable by the app was encrypted
+        expect(signCalls()[0].params.operations[0][1].memo).toBe("Rechnung 42");
+    });
+
+    it("refuses a memo, with a reason, for an extension that cannot encrypt one", async () => {
+        // (no capabilities: an older extension)
+        await useExtension();
+        await (WalletDb as any).process_transaction(
+            transferTx({memo: markedMemo("Rechnung 42")}),
+            null,
+            true
+        );
+        expect(signCalls()).toHaveLength(0);
+        expect((notification() as any).message).toMatch(/memo/i);
+        expect((notification() as any).message).toMatch(/unencrypted/);
+    });
+
+    it("pays the fee in the asset chosen, when the extension honours it", async () => {
+        fake = makeFakeProvider({connected: true, capabilities: CAPABILITIES});
+        win.bitsharesWallet = fake.provider;
+        await useExtension();
+        await (WalletDb as any).process_transaction(
+            transferTx({fee: {amount: 0, asset_id: "1.3.861"}}),
+            null,
+            true
+        );
+        expect(signCalls()).toHaveLength(1);
+        expect(signCalls()[0].params.operations[0][1].fee.asset_id).toBe(
+            "1.3.861"
+        );
+    });
+
+    it("does not ask the extension to sign what it says it does not sign", async () => {
+        fake = makeFakeProvider({connected: true, capabilities: CAPABILITIES});
+        win.bitsharesWallet = fake.provider;
+        await useExtension();
+        const tr = new (TransactionBuilder as any)();
+        tr.add_type_operation("account_transfer", {
+            fee: {amount: 0, asset_id: 0},
+            account_id: "1.2.100",
+            new_owner: "1.2.200"
+        });
+        await (WalletDb as any).process_transaction(tr, null, true);
+        expect(signCalls()).toHaveLength(0);
+        expect((notification() as any).message).toMatch(/account_transfer/);
+    });
+});
+
+describe("the extension switches account", () => {
+    const bob = {name: "bob", id: "1.2.300"};
+    const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+
+    it("goes on when the account it switched to is connected to this site", async () => {
+        await useExtension();
+        fake.state.connectedIds.add(bob.id);
+        fake.switchTo(bob);
+        await flush();
+        const state = ExternalSignerActions.getState();
+        expect(state.status).toBe("connected");
+        expect(state.account).toEqual({
+            accountName: "bob",
+            accountId: "1.2.300"
+        });
+        expect(ExternalSignerActions.isSigningFor("bob")).toBe(true);
+    });
+
+    it("says so, and offers to connect, when it is not connected: it cannot sign here", async () => {
+        await useExtension();
+        fake.switchTo(bob);
+        await flush();
+        const state = ExternalSignerActions.getState();
+        // not "Connected as bob": the extension would refuse to sign for him on this site
+        expect(state.status).toBe("disconnected");
+        expect(state.account).toBeNull();
+        expect(state.error).toMatch(/bob/);
+        expect(state.error).toMatch(/not connected to this site/);
+        expect(ExternalSignerActions.isSigningFor("bob")).toBe(false);
+        expect(ExternalSignerActions.isActive()).toBe(false);
+    });
+
+    it("is connected as him once he is connected, one click", async () => {
+        await useExtension();
+        fake.switchTo(bob);
+        await flush();
+        expect(ExternalSignerActions.getState().status).toBe("disconnected");
+        await ExternalSignerActions.connect();
+        const state = ExternalSignerActions.getState();
+        expect(state.status).toBe("connected");
+        expect(state.account).toEqual({
+            accountName: "bob",
+            accountId: "1.2.300"
+        });
+        expect(state.error).toBeNull();
+    });
+
+    it("looks again when the user comes back to the page after approving in the extension", async () => {
+        await useExtension();
+        fake.switchTo(bob);
+        await flush();
+        expect(ExternalSignerActions.getState().status).toBe("disconnected");
+        // the user approved the connection in the extension's popup ...
+        fake.state.connectedIds.add(bob.id);
+        fake.state.connected = true;
+        // ... and returns to this window
+        window.dispatchEvent(new Event("focus"));
+        await flush();
+        await flush();
+        expect(ExternalSignerActions.getState().status).toBe("connected");
+        expect(ExternalSignerActions.getState().account?.accountName).toBe(
+            "bob"
+        );
     });
 });

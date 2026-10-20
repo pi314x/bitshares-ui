@@ -12,8 +12,11 @@
 //   - the chain, lock state and connected account are re-checked on every
 //     signing call (`wallet-extension/adapter.ts`);
 //   - what the extension cannot do faithfully is refused here, not attempted:
-//     memos (it would publish them unencrypted), a fee in a non-core asset (it
-//     overwrites fees), unbroadcast or extra-key signing (balance claims);
+//     a memo it cannot encrypt (an older extension would publish it
+//     unencrypted), a fee in a non-core asset for an extension that overwrites
+//     fees, an operation it does not sign for a site, unbroadcast or extra-key
+//     signing (balance claims: the claimed balance's key is in the local
+//     wallet, not in the extension, so such a claim is the local wallet's);
 //   - a failure resolves `undefined` like the local path does, but is always
 //     shown to the user, and an unknown outcome (timeout) says so instead of
 //     inviting a blind retry.
@@ -52,6 +55,8 @@ const t = (key: string, params?: Record<string, string>) =>
 class ExternalSignerActionsFacade {
     private signer: ExternalSigner = createExtensionSigner();
     private detach: (() => void) | null = null;
+    /** the extension's account that was switched to but is not connected to this site yet */
+    private awaiting: string | null = null;
 
     getState(): ExternalSignerState {
         return selectExternalSigner(reduxStore.getState());
@@ -155,6 +160,7 @@ class ExternalSignerActionsFacade {
 
     /** `makeCurrent`: the user connected it just now, so its account is theirs to use. */
     private onConnected(account: ExternalSignerAccount, makeCurrent: boolean) {
+        this.awaiting = null;
         this.patch({status: "connected", account, error: null, makeCurrent});
         this.subscribe(findProvider());
     }
@@ -168,10 +174,9 @@ class ExternalSignerActionsFacade {
                 typeof data.name === "string" &&
                 /^1\.2\.\d+$/.test(data.id)
             ) {
-                this.patch({
-                    account: {accountName: data.name, accountId: data.id},
-                    makeCurrent: false
-                });
+                const account = {accountName: data.name, accountId: data.id};
+                this.patch({account, makeCurrent: false});
+                void this.checkSwitched(account);
             }
         };
         const onLocked = () => this.patch({locked: true});
@@ -179,12 +184,53 @@ class ExternalSignerActionsFacade {
         provider.on("accountChanged", onAccount);
         provider.on("locked", onLocked);
         provider.on("unlocked", onUnlocked);
+        if (typeof window !== "undefined") {
+            window.addEventListener("focus", this.onWindowFocus);
+        }
         this.detach = () => {
             provider.off("accountChanged", onAccount);
             provider.off("locked", onLocked);
             provider.off("unlocked", onUnlocked);
+            if (typeof window !== "undefined") {
+                window.removeEventListener("focus", this.onWindowFocus);
+            }
         };
     }
+
+    /**
+     * The extension keeps a connection per account AND site, so the account it has just
+     * switched to may not be connected to this site, and then it cannot sign here: the
+     * signing call would fail with "no longer connected". Ask the extension (silently) and,
+     * when it is not connected, say so and offer Connect, instead of showing "Connected as"
+     * an account that cannot sign. Looked at again when the user comes back to this window
+     * (the extension asks for the connection in its own popup).
+     */
+    private async checkSwitched(account: ExternalSignerAccount) {
+        try {
+            const linked = await this.signer.restore(this.chainId());
+            if (linked && linked.accountId === account.accountId) {
+                this.awaiting = null;
+                return;
+            }
+            this.awaiting = account.accountName;
+            this.patch({
+                status: "disconnected",
+                account: null,
+                makeCurrent: false,
+                error: t("externalSigner.switched", {
+                    account: account.accountName
+                })
+            });
+        } catch (e) {
+            // the extension did not answer: every signing call checks again
+        }
+    }
+
+    private onWindowFocus = () => {
+        if (this.awaiting && this.getState().status === "disconnected") {
+            void this.restore();
+        }
+    };
 
     private unsubscribe() {
         if (this.detach) this.detach();
@@ -224,7 +270,12 @@ class ExternalSignerActionsFacade {
                     t("externalSigner.notConnected")
                 );
             }
-            const transaction = toExtensionTransaction(tr.operations);
+            // what this extension can do (memo encryption, a fee asset, which operations)
+            const capabilities = await this.signer.capabilities();
+            const transaction = toExtensionTransaction(
+                tr.operations,
+                capabilities
+            );
             NotificationActions.info({
                 message: t("externalSigner.waiting"),
                 autoDismiss: 8

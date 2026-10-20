@@ -12,6 +12,8 @@ import {
 } from "bitsharesjs";
 import counterpart from "counterpart";
 import {Notification} from "../design-system/Notification";
+import ExternalSignerActions from "actions/ExternalSignerActions";
+import {EXTENSION_MEMO_NONCE} from "../wallet-extension/transaction";
 
 const ApplicationApi = {
     create_account(
@@ -159,21 +161,33 @@ const ApplicationApi = {
 
                 let memo_object;
                 if (memo) {
+                    // The wallet extension holds the memo key of its own account: it is
+                    // handed the memo as TEXT (marked, wallet-extension/transaction.ts)
+                    // and encrypts it itself; this app has no key to do it with.
+                    const via_extension =
+                        encrypt_memo &&
+                        !propose_account &&
+                        ExternalSignerActions.isSigningFor(
+                            chain_from.get("name")
+                        );
                     let memo_sender = this._get_memo_keys(
                         chain_memo_sender,
-                        encrypt_memo
+                        encrypt_memo && !via_extension
                     );
                     let memo_to = this._get_memo_keys(chain_to, false);
                     if (!!memo_sender.public_key && !!memo_to.public_key) {
-                        let nonce =
-                            optional_nonce == null
-                                ? TransactionHelper.unique_nonce_uint64()
-                                : optional_nonce;
+                        let nonce = via_extension
+                            ? EXTENSION_MEMO_NONCE
+                            : optional_nonce == null
+                            ? TransactionHelper.unique_nonce_uint64()
+                            : optional_nonce;
                         memo_object = {
                             from: memo_sender.public_key,
                             to: memo_to.public_key,
                             nonce,
-                            message: encrypt_memo
+                            message: via_extension
+                                ? Buffer.from(String(memo), "utf-8")
+                                : encrypt_memo
                                 ? Aes.encrypt_with_checksum(
                                       memo_sender.private_key,
                                       memo_to.public_key,

@@ -2,25 +2,65 @@
 // extension's `signTransaction` takes, and refuses what the extension cannot
 // sign faithfully. Pure functions; no chain access, no keys.
 //
-// What the extension does with a transaction (read from its source, v0.8.7):
-//   - it overwrites every operation's `fee` with the node's required fee in the
-//     CORE asset, so a different fee asset chosen in the UI would be silently
-//     ignored -> refused here;
-//   - it serialises a memo as given, so a plain-text memo would land on chain
-//     UNENCRYPTED, and the app has no memo key to encrypt it -> refused here;
+// What the extension does with a transaction (read from its source):
+//   - an older extension overwrites every operation's `fee` with the node's
+//     required fee in the CORE asset, so a different fee asset chosen in the UI
+//     would be silently ignored -> refused here unless the extension says
+//     (`getCapabilities`) that it honours `fee.asset_id`;
+//   - an older extension serialises a memo as given, so a plain-text memo would
+//     land on chain UNENCRYPTED. The app has no memo key. A newer one encrypts a
+//     transfer's memo when it is handed over as plain TEXT: the app marks the
+//     memo it builds for the extension's account (`EXTENSION_MEMO_NONCE`) and
+//     turns it into that text here; any other memo, and any memo for an
+//     extension that does not say it encrypts, is refused;
 //   - it signs with the connected account's ACTIVE key, and only checks the
 //     authority fields it knows about -> every authority-bearing account field
 //     is checked here against the connected account;
 //   - it only accepts a whitelist of operation types and answers the rest with
 //     an error, which is passed on as it is.
 import {ops} from "bitsharesjs";
+import {ChainTypes} from "bitsharesjs";
 import {
+    ExtensionCapabilities,
     ExtensionOperation,
     ExtensionTransaction,
     ExternalSignerError
 } from "./types";
 
 export const CORE_ASSET_ID = "1.3.0";
+
+/**
+ * The nonce that marks a transfer memo as "this is the plain text, encrypt it for me":
+ * the largest uint64, which a real encrypted memo (a random 64-bit nonce) has no
+ * practical chance of carrying. The memo's `message` is the text as UTF-8 bytes.
+ */
+export const EXTENSION_MEMO_NONCE = "18446744073709551615";
+
+/** The text of a memo built for the extension, or `null` for any other memo. */
+export function extensionMemoText(memo: any): string | null {
+    if (
+        !memo ||
+        typeof memo !== "object" ||
+        String(memo.nonce) !== EXTENSION_MEMO_NONCE ||
+        typeof memo.message !== "string" ||
+        !/^([0-9a-f]{2})+$/i.test(memo.message)
+    ) {
+        return null;
+    }
+    try {
+        return Buffer.from(memo.message, "hex").toString("utf8");
+    } catch (e) {
+        return null;
+    }
+}
+
+function operationName(id: number): string {
+    const names = Object.keys((ChainTypes as any).operations || {});
+    return (
+        names.find(name => (ChainTypes as any).operations[name] === id) ||
+        `operation ${id}`
+    );
+}
 
 // Fields that name the account whose authority signs the operation. A superset
 // of the extension's own list: it misses `owner_account` (samet_fund_*,
@@ -58,7 +98,8 @@ function unsupported(message: string): ExternalSignerError {
 
 /** Canonical node JSON for the builder's operations, with the guards above. */
 export function toExtensionTransaction(
-    operations: unknown[]
+    operations: unknown[],
+    capabilities: ExtensionCapabilities | null = null
 ): ExtensionTransaction {
     if (!Array.isArray(operations) || !operations.length) {
         throw unsupported("There is nothing to sign.");
@@ -75,17 +116,43 @@ export function toExtensionTransaction(
             );
         }
         const [id, data] = object as ExtensionOperation;
-        if (data && data.memo) {
+        // What this extension signs for a site, when it says (an older one answers
+        // for itself, with its own message, which is passed on as it is).
+        if (capabilities && capabilities.operations.indexOf(id) === -1) {
             throw unsupported(
-                "A memo cannot be sent through the extension yet: it would be " +
-                    "published unencrypted. Remove the memo or sign with the local wallet."
+                "The wallet extension does not sign " +
+                    operationName(id) +
+                    " for a site. Choose an account of the local wallet for this."
             );
         }
+        if (data && data.memo) {
+            const text = extensionMemoText(data.memo);
+            if (text === null) {
+                throw unsupported(
+                    "This memo cannot be sent through the extension: it is not text the " +
+                        "extension can encrypt, and sending it as it is would publish it " +
+                        "unencrypted. Remove the memo or sign with the local wallet."
+                );
+            }
+            if (!capabilities || !capabilities.memoEncryption) {
+                throw unsupported(
+                    "A memo cannot be sent through this version of the extension: it would " +
+                        "be published unencrypted. Update the extension, remove the memo, or " +
+                        "sign with the local wallet."
+                );
+            }
+            // the extension encrypts a transfer's memo given as plain text
+            data.memo = text;
+        }
         const feeAsset = data && data.fee && data.fee.asset_id;
-        if (feeAsset !== CORE_ASSET_ID) {
+        if (
+            feeAsset !== CORE_ASSET_ID &&
+            !(capabilities && capabilities.feeAsset)
+        ) {
             throw unsupported(
-                "The extension pays fees in the core asset only. Choose the core " +
-                    "asset as the fee asset or sign with the local wallet."
+                "This version of the extension pays fees in the core asset only. Choose " +
+                    "the core asset as the fee asset, update the extension, or sign with " +
+                    "the local wallet."
             );
         }
         return [id, data];

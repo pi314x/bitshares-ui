@@ -43,12 +43,31 @@ export class ExternalSignerError extends Error {
     }
 }
 
+/**
+ * What the extension tells a site it can do (its `getCapabilities`, protocol 2). An older
+ * extension does not know the method: that is `null` here, and the app keeps to what every
+ * version does (no memo, core-asset fee, whatever operations the extension answers for).
+ */
+export interface ExtensionCapabilities {
+    protocol: number;
+    version: string;
+    /** the operation ids `signTransaction` accepts from a site */
+    operations: number[];
+    /** a transfer's plain-text `memo` string is encrypted by the extension */
+    memoEncryption: boolean;
+    /** `fee.asset_id` of the operations is the asset the fee is paid in */
+    feeAsset: boolean;
+}
+
 export interface ExternalSigner {
     /** Whether the extension is installed and reachable in this browser. */
     isAvailable(): Promise<boolean>;
 
     /** Whether the extension's wallet is locked (it must be unlocked there). */
     isLocked(): Promise<boolean>;
+
+    /** What the extension can do; `null` for an extension that cannot say. Never rejects. */
+    capabilities(): Promise<ExtensionCapabilities | null>;
 
     /**
      * Prompts the user, in the extension, to link an account to this site. The

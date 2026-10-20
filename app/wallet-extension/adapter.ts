@@ -12,6 +12,7 @@ import {
     ProviderAccount
 } from "./provider";
 import {
+    ExtensionCapabilities,
     ExternalSigner,
     ExternalSignerAccount,
     ExternalSignerError,
@@ -66,6 +67,28 @@ function toAccount(
     return {accountName: value.name, accountId: value.id};
 }
 
+/** The extension's answer is untrusted: only a well-formed one is believed, else `null`. */
+export function toCapabilities(answer: any): ExtensionCapabilities | null {
+    if (
+        !answer ||
+        typeof answer !== "object" ||
+        !Array.isArray(answer.operations) ||
+        !answer.operations.every(
+            (id: unknown) => typeof id === "number" && Number.isInteger(id)
+        )
+    ) {
+        return null;
+    }
+    return {
+        protocol: Number(answer.protocol) || 0,
+        version: typeof answer.version === "string" ? answer.version : "",
+        operations: answer.operations,
+        // only an explicit `true` counts
+        memoEncryption: answer.memoEncryption === true,
+        feeAsset: answer.feeAsset === true
+    };
+}
+
 function sameChain(a: unknown, b: string): boolean {
     return typeof a === "string" && a.toLowerCase() === b.toLowerCase();
 }
@@ -113,6 +136,19 @@ export function createExtensionSigner(
         },
 
         isLocked,
+
+        async capabilities() {
+            try {
+                return toCapabilities(
+                    await need().request("getCapabilities", {})
+                );
+            } catch (e) {
+                // "Unknown method" from an older extension, or the extension is not
+                // there / does not answer: nothing is promised, the app stays with
+                // what every version does
+                return null;
+            }
+        },
 
         async connect(chainId) {
             try {
