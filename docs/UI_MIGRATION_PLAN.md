@@ -12390,13 +12390,33 @@ must be that account. The extension's answers are treated as untrusted (shape
 checked, error text cut to its first line: it appends the whole operation JSON
 to broadcast errors).
 
-**Refused on purpose, with a message** (`wallet-extension/transaction.ts`):
-- **memos**: `signTransaction` serialises a plain-text memo as given, i.e.
-  **unencrypted on chain**, and this app has no memo key to encrypt it;
-- **a fee in a non-core asset**: the extension overwrites every fee with the
-  core-asset fee, so the user's fee-asset choice would be silently ignored;
-- **transactions not to be broadcast, and extra signing keys (balance claims)**:
-  the extension signs and broadcasts in one step and only holds its own keys.
+**What the extension says it can do** (`getCapabilities`, protocol 2; an older extension
+answers "Unknown method" and the app keeps to the old behaviour below): the operation ids it
+signs for a site, whether it encrypts a transfer's memo (`memoEncryption`), whether it honours
+`fee.asset_id` (`feeAsset`). The answer is untrusted: only a well-formed one is believed, and only
+an explicit `true` counts (`adapter.toCapabilities`).
+
+- **Memos** go through. The extension holds the memo key, the app does not: for the extension's
+  own account `ApplicationApi._create_transfer_op` builds the memo with the marker nonce
+  (`EXTENSION_MEMO_NONCE`, the largest uint64) and the text as its message, `toExtensionTransaction`
+  turns that into the plain text the extension encrypts at signing (the signing account's memo key
+  for the recipient's, hybrid post-quantum when the recipient has a PQ memo key). Any other memo is
+  refused (an ordinary memo, or one that is meant to be unencrypted, would be published as it is),
+  and so is a memo for an extension that does not say it encrypts.
+- **A fee in another asset** goes through: the extension prices `fee.asset_id` at the node
+  (`get_required_fees` in that asset) instead of overwriting every fee with the core asset; one
+  asset per transaction. An extension that does not say so is refused as before.
+- **An operation the extension does not sign for a site** is refused by name before the user is
+  asked, when the extension has said which it signs.
+
+**Refused on purpose, with a message** (`wallet-extension/transaction.ts`,
+`ExternalSignerActions`):
+- **claiming balances / extra signing keys:** the key of a claimed balance is in the local wallet,
+  not in the extension, so such a claim is the local wallet's. Not a gap: nothing the extension
+  could hold would sign it;
+- **transactions not to be broadcast:** the extension signs and broadcasts in one step. No screen
+  asks for an unbroadcast signature (every `process_transaction` caller passes `broadcast = true`),
+  so nothing is lost; the message is there for a future caller.
 
 **An unknown outcome is not a failure.** The extension's content script gives up
 with a bare "Request timeout" after 60 s, which can fire after the user
@@ -12404,32 +12424,65 @@ approved at 59 s and the transaction was signed and sent. That (and "Extension
 disconnected") is reported as *unknown outcome: check your account history
 before trying again*, never as a plain failure.
 
-**Verified.** 69 Jest suites / 5,893 tests (adapter against a fake that mirrors
-the documented protocol, transaction conversion, the `process_transaction`
-delegation incl. "the default path never changes and the local unlock is never
-touched in extension mode", the account sync, the settings panel); and in a real
-browser against the live node with the extension's **real `inpage.js`** loaded
-and a stub standing in for its background (it never broadcasts): connect sends
-`chain_id`, the app adopts the account, a Send of 1 BTS reaches the extension as
-exactly `[0, {from: 1.2.12376, to: 1.2.18503, amount: {amount: "100000",
-asset_id: "1.3.0"}, fee: {...}}]` after the lock, chain and account checks, and
-rejection, timeout and a broadcast error each show the right message. The local
-wallet lifecycle (create, backup, delete, restore, unlock) still passes
-unchanged. Screenshots: `docs/screenshots/signing-extension-*.png`.
+**Verified, against the REAL extension** (2026-10-20: the extension loaded unpacked into Chromium,
+its own service worker, popup and approval dialog, the built app served on 127.0.0.1, the BitShares
+testnet, a throwaway wallet whose account the faucet registered; nothing was stubbed on the
+extension's side):
+- connect: the extension's own connection dialog, the app shows "Connected as ..." and the lock pill
+  "Extension"; the testnet balance (1,000 TEST) and fee schedule come through;
+- **a transfer with a memo**: the app hands over `memo: "e2e memo ..."`, the extension's approval dialog
+  shows it with the fee, and the transfer on the chain carries an encrypted memo (random nonce,
+  ciphertext, both memo keys); the wallet's own `decryptHistoryMemo` reads it back to the text that was
+  typed;
+- **a fee in another asset**: a throwaway user-issued asset with a funded fee pool, issued to the
+  account; chosen in the Send dialog, the transaction on the chain pays its fee in that asset (8,687
+  units = 0.8687 of it, the balance fell by exactly that);
+- **switching accounts in the extension**: the app follows (account menu, "Transactions for X are signed
+  by the wallet extension"); the extension keeps a connection per account AND site, so the app now asks
+  the extension on every switch and, for an account not connected to this site, says so and offers
+  Connect (before it said "Connected as X" and the signing failed with "no longer connected"); after
+  Connect (the extension's dialog for the new account) it signs for X;
+- **an unanswered approval**: after the extension's own 60 s the app shows the extension's message
+  ("Transaction signing request timed out ..."), not a bare "Request timeout" (the content script
+  waited 60 s too and raced the background; it waits 180 s now).
+69 Jest suites / 5,893 tests at the first increment; 156 suites / 8,447 tests now (adapter and
+`ExternalSignerActions` against a fake that mirrors the protocol, with per-account connections and
+capabilities; transaction conversion; the `process_transaction` delegation incl. "the default path
+never changes and the local unlock is never touched in extension mode"). The extension has its own
+394 (authority fields of every operation a site may submit against the fixtures, memo encryption
+read back by the recipient, fee asset, key comparison across address prefixes).
 
-**Not done / needs a person.** Nothing here has signed a real transaction with
-the real extension (no Chrome extension was loaded; the stub answers for its
-background), so a run against a throwaway account on the testnet is still the
-real test, and a second reviewer should read `WalletDb.process_transaction`'s
-new first branch, `AccountStore.getMyAuthorityForAccount`'s early return and
-`wallet-extension/*`. Memos need an encryption path (the extension's `transfer`
-method encrypts, `signTransaction` does not). Findings in the extension itself
-(not changed from here): `signTransaction` leaves a memo unencrypted; its
-authority-field list lacks `owner_account` / `borrower` / `owner` (the node
-would still reject a wrong signer); the 60 s bridge timeout can fire after a
-late approval; the README's `transfer` example does not match the code and
-says the approval window is 2 minutes where the code uses 60 s;
-`BeetCompatAPI.requestIdentity` reads `.name` off `{account, balances}`.
+**What the real run found** (each fixed, with a test): the extension compared its key with the
+chain's by whole string, `BTS...` against `TEST...`, so nothing could be signed on the testnet
+("This wallet's key is not in the account's active authority"); the fee estimate of a Send with a memo
+encrypted a dummy memo with fixed `BTS...` keys, which bitsharesjs refuses on a chain whose keys begin
+with `TEST` (the fee was "Unknown" and Send stayed disabled; `trxHelper.withChainPrefix`); the fee
+asset chosen in the Send dialog was replaced by the default of the settings (`getFinalFeeAsset` puts it
+first; `accountUtils.chooseFeeAsset` honours the choice when the account can pay the fee in it); the
+extension's approval dialog printed a fee in another asset ten times too big (core units with the
+asset's precision; now at the asset's core exchange rate); the account switch described above. The
+service worker of an unpacked extension is cached in the browser profile: after changing the
+extension's code remove `Default/Service Worker` from a test profile.
+
+**Changes in the extension** (`pi314x/bitshares-wallet-browser-extension`, working tree, not
+committed): `getCapabilities`; plain-text memos in `signTransaction`; `fee.asset_id` honoured; the
+signer field of every operation a site may submit (`OP_AUTH_FIELD`: `owner_account`, `borrower`,
+`owner`, `bidder`, `redeemer`, `update_issuer`, `creator`, `deposit_to_account`); the key comparison;
+the approval dialog's fee; timeouts (content script 180 s, page 200 s, approval 60 s); `requestIdentity`;
+README (`transfer` takes whole units, the approval window is 60 s, `window.scatter` is not set).
+
+**Reviewed, not signed off.** `WalletDb.process_transaction`'s first branch, the early return of
+`AccountStore.getMyAuthorityForAccount`, `ExternalAccountSync` and `wallet-extension/*` were read
+again for this increment (by the author of the change, which is not a second reviewer): the
+extension is used only while connected and only for the account it is connected as; the chain, lock
+state and connected account are re-checked on every signing call; its answers (capabilities,
+errors, results) are validated and cut to a line; a transaction that names another account goes to
+the local wallet (`actsForOtherAccount`) and one that names several is not the extension's; the
+marker nonce cannot be produced by an encrypted memo in practice (a random 64-bit nonce); `isSigningFor`
+compares names, which cannot collide on one chain. Residual risks, all on the extension's side: a
+site marked *trusted* signs without a dialog; the extension signs with the account's active key only,
+so owner-authority operations (`account_update`, `account_transfer`, ...) are refused and said to be.
+A person still has to read the wallet-signing code before this is called reviewed.
 
 ### 7.12 Lint to zero, one-time formatting (complete)
 
@@ -12900,7 +12953,8 @@ the menu without being asked.
 - The top bar's lock pill now comes **after** the account menu (it reads as the
   state of the account just chosen: "Extension" for the extension's account, the
   local wallet's lock otherwise); the "Connect extension" chip stays before it.
-- Still unverified: signing with the real extension (§7.11 "Not done").
+- Verified since against the real extension on the testnet, including a switch of the
+  extension's account (§7.11 "Verified").
 
 ### 7.25 One home per page, what the original had, portfolio and nodes
 
@@ -13467,21 +13521,24 @@ introduced); each has a regression test or a measurable check.
 - **Eleven dependencies declare React <=17 peers** (§7.4, §7.9); none breaks on 18
   today, all are unmaintained.
 - **Phase 6 (wallet extension signing)**: a first opt-in increment exists
-  (§7.11): the extension is `pi314x/bitshares-wallet-browser-extension`, signing
-  works for operations without memos and with a core-asset fee, and it has not
-  yet signed a real transaction with the real extension. Memos, a non-core fee
-  asset and balance claims are refused with a message.
+  (§7.11): the extension is `pi314x/bitshares-wallet-browser-extension`; signing,
+  memos (encrypted by the extension), a fee in another asset and switching
+  accounts were run against the REAL extension on the testnet (§7.11 "Verified");
+  claiming balances and unbroadcast signing are the local wallet's.
 
 **Needs a human, cannot be done from an agent sandbox:**
 - A second-reviewer sign-off on the wallet/signing screens (Phase 5/§7.2:
   `WalletDb`, backup/restore, key import/export, transaction confirmation).
   Their password/key code paths are unchanged apart from imports and the
   `AccountPermissions` state seed, but a person has to read them.
-- A pass with an **unlocked wallet that signs**: send/withdraw/limit-order/
+- A pass with an **unlocked local wallet that signs**: send/withdraw/limit-order/
   update-account end to end against a testnet or a throwaway account. The
   local-wallet lifecycle (create, unlock, change password, backup, delete,
   restore) was driven in a browser (§7.6), but the main smoke runs are
-  read-only (wallet locked, no keys), so no signing flow has been exercised.
+  read-only (wallet locked, no keys). Signing through the wallet *extension*
+  was exercised against the real extension on the testnet (§7.11); the same
+  harness (extension loaded unpacked into Chromium, the built app, a faucet
+  account) can be pointed at the local wallet.
 - **Live updates**: the bridge answers each call once and never pushes
   subscription updates, so order-book/balance refreshes over a WebSocket are
   untested.
