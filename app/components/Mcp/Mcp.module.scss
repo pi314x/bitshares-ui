@@ -349,61 +349,6 @@
     color: var(--muted);
 }
 
-// ---- settings ----
-.settingsGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.settings {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    list-style: none;
-}
-
-.settings li {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 0;
-    border-top: 1px solid var(--line);
-}
-
-.settingHead {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 2px 16px;
-}
-
-.page .settingHead > code {
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    overflow-wrap: anywhere;
-}
-
-.settingDefault {
-    color: var(--faint);
-    font-size: 12px;
-}
-
-.page .settingDefault code {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    overflow-wrap: anywhere;
-}
-
-.settingText {
-    max-width: 76ch;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.55;
-}
-
 // ---- the review page ----
 .summary {
     font-size: 18px;
@@ -517,11 +462,6 @@
 
     .toolBody {
         padding: 0 12px 12px;
-    }
-
-    .settingHead {
-        flex-direction: column;
-        align-items: flex-start;
     }
 
     .facts {

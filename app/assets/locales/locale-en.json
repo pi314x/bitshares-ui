@@ -3531,7 +3531,7 @@
             "page": "The MCP page is part of this build (MCP_ENABLED=true).",
             "trading_on": "Trading tools: the review page is part of this build (MCP_TRADING_ENABLED=true). An assistant can prepare an order, and you sign it here.",
             "trading_off": "Trading tools: off in this build. An assistant can only read.",
-            "note": "The server is a separate program: this page cannot tell whether it is running. Its settings are listed at the end of the page."
+            "note": "The server is a separate program: this page cannot tell whether it is running. Its settings are in the example file and in docs/MCP.md."
         },
         "connect": {
             "title": "Connect an assistant",
@@ -3599,14 +3599,6 @@
             "not_done_text": "Transfers, withdrawals and any change to an account's keys or permissions are not tools at all, and the server never signs for you. A bot that signs by itself would need its own design (a key of its own with a small balance, hard limits, an allow-list) and is not part of this.",
             "residual_title": "What this does not protect against",
             "residual_text": "Your own signature on something that looks fine; a compromised computer; a node that lies about prices (use your own). The price guard is not a promise that a price is good."
-        },
-        "settings": {
-            "title": "Settings",
-            "intro": "Set them in the environment, or in a file called .env in the application's folder (copy .env.example). The web build reads MCP_ENABLED and MCP_TRADING_ENABLED too.",
-            "default": "default",
-            "group_server": "Server",
-            "group_http": "HTTP transport",
-            "group_trading": "Trading"
         },
         "docs": "The whole design, with the threat model, is in docs/MCP.md.",
         "review": {

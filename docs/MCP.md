@@ -154,16 +154,16 @@ time and a nonce. **No key, no signature.**
 
 ## Settings
 
-See `.env.example` (every setting, with its default and what it does) and the table at the end of
-the application's *AI assistants* page. `app/__tests__/mcp/review-test.ts` checks that the example
-file, the page's table and the server's defaults agree.
+See `.env.example`: every setting, with its default and what it does. The application's *AI assistants*
+page does not list them. `mcp/src/settings.js` holds the same list as data, and
+`app/__tests__/mcp/review-test.ts` checks that the example file, that list and the server's defaults agree.
 
 ## Where things are
 
 ```
 mcp/server.js             entry: --check, --new-token, stdio or http
 mcp/src/catalog.js        the tools as data (page and server share it; no requires)
-mcp/src/settings.js       the settings as data (page, example file and tests share it)
+mcp/src/settings.js       the settings as data (the example file and the tests share it)
 mcp/src/tools.js          what each tool asks the node and answers
 mcp/src/policy.js         the trading rules and the ledger (also read by the review page)
 mcp/src/proposal.js       the document in a link: make, read strictly, reference, words

@@ -13581,7 +13581,7 @@ Full description and threat model: `docs/MCP.md`. In short:
 - The application has two screens behind compile-time flags (`__MCP_ENABLED__`, `__MCP_TRADING__`,
   set by webpack from the same settings; absent from a build made without them): **AI assistants**
   (`/mcp`: how to connect, every tool with its arguments and annotations read from the server's own
-  catalog, the security layers, the settings) and the **review** of a prepared transaction
+  catalog, the security layers; not the settings, those are in `.env.example` and `docs/MCP.md`) and the **review** of a prepared transaction
   (`/mcp/review#p=...`: the link is read strictly, the reference code is recomputed, the order is put
   in words from the operation, the chain / account / time / market price are checked with the app's own
   data, and signing goes through the same `WalletDb.process_transaction` as everything else).

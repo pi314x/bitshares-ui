@@ -1,8 +1,8 @@
 "use strict";
 // The settings the MCP server and the web build read, as data: the name, the value it has
-// when nothing is set, and what it does. The application's MCP page shows this table; a test
-// checks that the example file, the server's parser and this table agree. No code and no
-// requires here: the browser bundle imports this file.
+// when nothing is set, and what it does. A test checks that the example file, the server's
+// parser and this list agree (the application's MCP page does not show them). No code and no
+// requires here.
 const SETTINGS = [
     {
         name: "MCP_ENABLED",

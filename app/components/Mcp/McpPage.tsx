@@ -1,6 +1,6 @@
 // The page for the AI assistants' side of BitShares Desk (MCP, docs/MCP.md): what the MCP
 // server is, how to connect an assistant to it, every tool with its arguments and its
-// annotations, how trading through an assistant is kept safe, and the settings. The tool
+// annotations, and how trading through an assistant is kept safe. The tool
 // list is the server's own catalog (mcp/src/catalog.js), so the page cannot describe a tool
 // the server does not have. Only in a build made with MCP_ENABLED=true.
 import * as React from "react";
@@ -11,7 +11,6 @@ import {SubMenu} from "../../design-system/SubMenu";
 import {copyText} from "../../lib/common/clipboard";
 import {mcpTrading} from "../../lib/common/mcpFlags";
 import {TOOLS} from "../../../mcp/src/catalog";
-import {SETTINGS} from "../../../mcp/src/settings";
 import styles from "./Mcp.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -344,40 +343,7 @@ export default function McpPage() {
                 />
             </section>
 
-            <section className={styles.card} aria-label={t("settings.title")}>
-                <h3 className={styles.heading}>{t("settings.title")}</h3>
-                <p className={styles.muted}>{t("settings.intro")}</p>
-                {["server", "http", "trading"].map(group => (
-                    <div key={group} className={styles.settingsGroup}>
-                        <h4 className={styles.groupTitle}>
-                            {t(`settings.group_${group}`)}
-                        </h4>
-                        <ul className={styles.settings}>
-                            {SETTINGS.filter(
-                                (setting: any) => setting.group === group
-                            ).map((setting: any) => (
-                                <li key={setting.name}>
-                                    <span className={styles.settingHead}>
-                                        <code>{setting.name}</code>
-                                        <span className={styles.settingDefault}>
-                                            {t("settings.default")}:{" "}
-                                            <code>
-                                                {setting.default === ""
-                                                    ? "-"
-                                                    : setting.default}
-                                            </code>
-                                        </span>
-                                    </span>
-                                    <span className={styles.settingText}>
-                                        {setting.text}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
-                <p className={styles.muted}>{t("docs")}</p>
-            </section>
+            <p className={styles.muted}>{t("docs")}</p>
         </div>
     );
 }

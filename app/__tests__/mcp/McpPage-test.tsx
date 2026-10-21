@@ -3,7 +3,6 @@ import {render, fireEvent, act} from "@testing-library/react";
 import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
 import {TOOLS} from "../../../mcp/src/catalog";
-import {SETTINGS} from "../../../mcp/src/settings";
 import McpPage from "../../components/Mcp/McpPage";
 
 beforeAll(() => {
@@ -113,21 +112,12 @@ describe("the MCP page", () => {
         expect(container.querySelectorAll("ol li").length).toBe(9);
     });
 
-    it("lists every setting with its default, in groups", () => {
+    it("does not list the server's settings (they are in the example file and docs/MCP.md)", () => {
         const {container} = render(<McpPage />);
-        const names = Array.from(
-            container.querySelectorAll(".settings li > .settingHead > code")
-        ).map(c => c.textContent);
-        expect(names.slice().sort()).toEqual(
-            SETTINGS.map((s: any) => s.name).sort()
-        );
-        const enabled = Array.from(
-            container.querySelectorAll(".settings li")
-        ).find(li => /MCP_ENABLED/.test(li.textContent || ""))!;
-        expect(enabled.textContent).toContain("default: false");
-        ["Server", "HTTP transport", "Trading"].forEach(title =>
-            expect(container.textContent).toContain(title)
-        );
+        expect(container.textContent).not.toContain("MCP_AUTH_TOKEN");
+        expect(container.textContent).not.toContain("MCP_TRADE_LIMITS");
+        expect(container.querySelector("table")).toBeNull();
+        expect(container.textContent).toContain("docs/MCP.md");
     });
 
     it("writes `code` in a description as code", () => {
