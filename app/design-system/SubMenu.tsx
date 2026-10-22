@@ -21,6 +21,8 @@ export interface SubMenuProps {
     toggle?: boolean;
     /** No space under it: it sits in a toolbar or a card's head row. */
     flush?: boolean;
+    /** Closer buttons, for a row of four or more that must fit a phone. */
+    compact?: boolean;
 }
 
 // A second level of tabs inside a page (the voting page's Witnesses tab: vote,
@@ -34,11 +36,14 @@ export function SubMenu({
     onChange,
     "aria-label": ariaLabel,
     toggle,
-    flush
+    flush,
+    compact
 }: SubMenuProps): JSX.Element {
     return (
         <div
-            className={`${styles.menu} ${flush ? styles.flush : ""}`}
+            className={`${styles.menu} ${flush ? styles.flush : ""} ${
+                compact ? styles.compact : ""
+            }`}
             role={toggle ? "group" : "tablist"}
             aria-label={ariaLabel}
         >

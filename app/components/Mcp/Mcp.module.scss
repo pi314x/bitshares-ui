@@ -285,8 +285,12 @@
     line-height: 1.6;
 }
 
+.page .muted code,
 .page .toolText code,
 .page .argText code {
+    padding: 0;
+    border: 0;
+    background: none;
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 12px;

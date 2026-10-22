@@ -43,7 +43,7 @@ function rich(text: string): React.ReactNode[] {
 
 const SERVER = "/path/to/bitshares-ui/mcp/server.js";
 
-type Client = "local" | "http";
+type Client = "opencode" | "code" | "desktop" | "http";
 
 /** The settings the trading tools need, when the build has them (the same names as the
  * example file; the accounts and limits are examples to change). */
@@ -60,32 +60,72 @@ function environment(trading: boolean): Record<string, string> {
 
 const SCHEMA = "https://opencode.ai/config.json";
 const TOKEN = "<the token>";
+const ADDRESS = "http://127.0.0.1:8765/mcp";
 
-/** What to show for connecting opencode: one or more blocks of text, each with a caption
- * key. `local` is a server opencode starts itself; `http` is one that is already running. */
+const json = (value: any) => JSON.stringify(value, null, 2);
+
+/** opencode.json: a server opencode starts itself (`local`) or one already running (`remote`). */
+const opencodeLocal = (trading: boolean) =>
+    json({
+        $schema: SCHEMA,
+        mcp: {
+            desk: {
+                type: "local",
+                command: ["node", SERVER],
+                enabled: true,
+                environment: environment(trading)
+            }
+        }
+    });
+
+const opencodeRemote = () =>
+    json({
+        $schema: SCHEMA,
+        mcp: {
+            desk: {
+                type: "remote",
+                url: ADDRESS,
+                enabled: true,
+                headers: {Authorization: `Bearer ${TOKEN}`}
+            }
+        }
+    });
+
+/** The `claude mcp add` command for a server Claude Code starts itself. */
+function claudeCommand(trading: boolean): string {
+    const env = environment(trading);
+    const flags = Object.keys(env).map(name => `--env ${name}=${env[name]}`);
+    return flags.length > 1
+        ? `claude mcp add desk \\\n  ${flags.join(
+              " \\\n  "
+          )} \\\n  -- node ${SERVER}`
+        : `claude mcp add desk ${flags[0]} -- node ${SERVER}`;
+}
+
+/** What to show for a client: one or more blocks of text, each with a caption key. */
 function snippets(
     client: Client,
     trading: boolean
 ): Array<{key: string; text: string}> {
-    if (client === "local") {
+    if (client === "opencode") {
+        return [{key: "config", text: opencodeLocal(trading)}];
+    }
+    if (client === "code") {
+        return [{key: "command", text: claudeCommand(trading)}];
+    }
+    if (client === "desktop") {
         return [
             {
                 key: "config",
-                text: JSON.stringify(
-                    {
-                        $schema: SCHEMA,
-                        mcp: {
-                            desk: {
-                                type: "local",
-                                command: ["node", SERVER],
-                                enabled: true,
-                                environment: environment(trading)
-                            }
+                text: json({
+                    mcpServers: {
+                        desk: {
+                            command: "node",
+                            args: [SERVER],
+                            env: environment(trading)
                         }
-                    },
-                    null,
-                    2
-                )
+                    }
+                })
             }
         ];
     }
@@ -98,23 +138,10 @@ function snippets(
     return [
         {key: "token", text: `node ${SERVER} --new-token`},
         {key: "start", text: start},
+        {key: "opencode", text: opencodeRemote()},
         {
-            key: "config",
-            text: JSON.stringify(
-                {
-                    $schema: SCHEMA,
-                    mcp: {
-                        desk: {
-                            type: "remote",
-                            url: "http://127.0.0.1:8765/mcp",
-                            enabled: true,
-                            headers: {Authorization: `Bearer ${TOKEN}`}
-                        }
-                    }
-                },
-                null,
-                2
-            )
+            key: "code",
+            text: `claude mcp add --transport http desk ${ADDRESS} \\\n  --header "Authorization: Bearer ${TOKEN}"`
         }
     ];
 }
@@ -258,7 +285,7 @@ const LAYERS = [
 
 export default function McpPage() {
     const trading = mcpTrading();
-    const [client, setClient] = React.useState<Client>("local");
+    const [client, setClient] = React.useState<Client>("opencode");
     const tools = (TOOLS as unknown) as Tool[];
     const groups = [
         {id: "read", tools: tools.filter(tool => tool.group === "read")},
@@ -293,13 +320,16 @@ export default function McpPage() {
 
             <section className={styles.card} aria-label={t("connect.title")}>
                 <h3 className={styles.heading}>{t("connect.title")}</h3>
-                <p className={styles.muted}>{t("connect.intro")}</p>
+                <p className={styles.muted}>{rich(t("connect.intro"))}</p>
                 <SubMenu
                     toggle
                     flush
+                    compact
                     aria-label={t("connect.title")}
                     items={[
-                        {key: "local", label: t("connect.tab_local")},
+                        {key: "opencode", label: t("connect.tab_opencode")},
+                        {key: "code", label: t("connect.tab_code")},
+                        {key: "desktop", label: t("connect.tab_desktop")},
                         {key: "http", label: t("connect.tab_http")}
                     ]}
                     value={client}
@@ -316,7 +346,9 @@ export default function McpPage() {
                         <CodeBlock text={block.text} />
                     </div>
                 ))}
-                <p className={styles.muted}>{rich(t("connect.check"))}</p>
+                <p className={styles.muted}>
+                    {rich(t(`connect.check_${client}`))}
+                </p>
             </section>
 
             <section className={styles.card} aria-label={t("tools.title")}>

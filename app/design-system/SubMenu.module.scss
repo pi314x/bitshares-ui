@@ -16,6 +16,11 @@
     margin: 0;
 }
 
+// four or more buttons on a phone
+.compact .item {
+    padding: 0 9px;
+}
+
 .menu::-webkit-scrollbar {
     display: none;
 }

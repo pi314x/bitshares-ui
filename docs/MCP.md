@@ -1,7 +1,7 @@
 # MCP: an AI assistant that reads BitShares, and prepares trades you sign
 
 BitShares Desk ships a small **MCP server** (`mcp/`). MCP, the Model Context Protocol, is the
-way an AI assistant (opencode, or any client that speaks it) calls tools. The
+way an AI assistant (Claude, opencode, or any client that speaks it) calls tools. The
 server gives the assistant tools to **read the BitShares chain** and, if you switch it on, to
 **prepare an order that you review and sign yourself**. It is off by default, and it has no key.
 
@@ -34,13 +34,14 @@ node mcp/server.js                # start it (stdio, or http: MCP_TRANSPORT)
 node mcp/server.js --new-token    # print a random token for MCP_AUTH_TOKEN
 ```
 
-### Connecting opencode
+### Connecting an assistant
 
-opencode reads its MCP servers from `opencode.json` (in the project you start it in, or in your
-global opencode config). The server below is called `desk`, so its tools appear as
-`desk_bitshares_...`. Check with `opencode mcp list`.
+In every client the server is called `desk`. The application's *AI assistants* page shows the same
+entries, with the settings for trading when the build has it.
 
-Local (opencode starts the server when it needs it; nothing listens on a port):
+**opencode** reads its MCP servers from `opencode.json` (in the project you start it in, or in your
+global opencode config); the tools appear as `desk_bitshares_...`; check with `opencode mcp list`.
+Local, a server opencode starts when it needs it (nothing listens on a port):
 
 ```json
 {
@@ -56,12 +57,26 @@ Local (opencode starts the server when it needs it; nothing listens on a port):
 }
 ```
 
-Remote (a server that is already running; a token on every call):
+**Claude Code**:
+
+```
+claude mcp add desk --env MCP_ENABLED=true -- node /path/to/bitshares-ui/mcp/server.js
+```
+
+**Claude Desktop** (`claude_desktop_config.json`, then restart it):
+
+```json
+{"mcpServers": {"desk": {"command": "node", "args": ["/path/to/bitshares-ui/mcp/server.js"], "env": {"MCP_ENABLED": "true"}}}}
+```
+
+**HTTP**, for a server that is already running (a token on every call):
 
 ```
 node mcp/server.js --new-token
 MCP_ENABLED=true MCP_TRANSPORT=http MCP_AUTH_TOKEN=<the token> node mcp/server.js
 ```
+
+opencode (`opencode.json`):
 
 ```json
 {
@@ -75,6 +90,12 @@ MCP_ENABLED=true MCP_TRANSPORT=http MCP_AUTH_TOKEN=<the token> node mcp/server.j
     }
   }
 }
+```
+
+Claude Code:
+
+```
+claude mcp add --transport http desk http://127.0.0.1:8765/mcp --header "Authorization: Bearer <the token>"
 ```
 
 Any other client that speaks MCP over stdio or streamable HTTP connects the same way.
