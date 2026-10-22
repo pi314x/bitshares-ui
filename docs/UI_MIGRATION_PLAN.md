@@ -13598,3 +13598,35 @@ Full description and threat model: `docs/MCP.md`. In short:
 - Not done: the server cannot sign for a bot (a separate design with its own key and limits, or an
   on-chain proposal, would be needed); no transfer tool; the review has no end-to-end signing test
   against a funded testnet account (the signing path itself is the existing, tested one).
+
+### 7.33 The trade page's tables and forms, and the prediction markets
+
+The order forms took their inset from five wrappers (a 5px padding in inline styles
+around the form, the form card's 15px `exchange-padded` on the right as an
+`!important`, a 5px on the container): the fields started 39px in from the card and
+ended 26px short of it on a phone. The inline paddings are gone (the form brings
+its own 16px; the phone card its pane's 12px), `exchange-padded` is not on the two
+form cards any more. Buy and Sell are green and red (the button, disabled too, and
+the title of the form; the title is not shown on a phone, the Buy/Sell tabs say
+it), and the data rows wrap instead of running out of the card.
+
+The open-orders table has four columns everywhere (the checkbox, the price with its
+expiration under it, the two amounts): five columns of figures ran into each other
+in the half-width cards of the desktop and on a phone. Its cells are centred on the
+row line (the checkbox sat above the figures), the header's checkbox is centred
+(a legacy `text-align: right !important` is now `th:not(.order-col-check)`), and the
+table is as tall as its rows (a `min-height: 260px` stretched one order to 260px).
+The trades table is right-aligned like its header. An empty list is one quiet line
+(`.exchange-empty`), not an italic block with an inline style.
+
+The prediction markets: both tables show columns by the room they have (the
+overview: house, resolution date, confidence and description come with more room;
+a phone shows the asset with its prediction under it, the odds and the action;
+the offers: premium, winnings, commission and the order number come with more room;
+a phone shows the predictor with the prediction under the name, the likelihood and
+the action), so the action is always in view (it was scrolled off to the right at
+1400px). A description is two lines with the whole text on hover, the bid-ask range
+is a muted line under the likelihood (a red/green pair placed absolutely over the
+next row), "Details" is translated, the select-all checkbox is not drawn in the
+overview (`hideDefaultSelections`), and the pagination's total and pager do not
+break in the middle on a phone (the pager is one group that wraps as one).

@@ -86,6 +86,10 @@ export interface TableRowSelection<T = any> {
      * (`Gateways/GatewaySelectorModal.tsx`, disabling selection for
      * rows whose on-chain config says the service isn't enabled). */
     getCheckboxProps?: (record: T) => {disabled?: boolean};
+    /** No select-all checkbox in the header (antd's name for it): real at
+     * `PredictionMarkets/PredictionMarketsOverviewTable.tsx`, where the only
+     * checkbox left is the selected market's, to deselect it. */
+    hideDefaultSelections?: boolean;
 }
 
 export interface TableSorterInfo {
@@ -374,7 +378,8 @@ export function Table<T = any>({
                         <tr {...(onHeaderRow ? onHeaderRow(columns, 0) : {})}>
                             {rowSelection ? (
                                 <th className={styles.selectionCell}>
-                                    {selectionType === "checkbox" ? (
+                                    {selectionType === "checkbox" &&
+                                    !rowSelection.hideDefaultSelections ? (
                                         <input
                                             type="checkbox"
                                             aria-label="Select all"
@@ -581,25 +586,27 @@ export function Table<T = any>({
                             ))}
                         </Select>
                     ) : null}
-                    <button
-                        type="button"
-                        className={styles.pageButton}
-                        disabled={currentPage <= 1}
-                        onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                        ‹
-                    </button>
-                    <span className={styles.pageIndicator}>
-                        {currentPage} / {pageCount}
-                    </span>
-                    <button
-                        type="button"
-                        className={styles.pageButton}
-                        disabled={currentPage >= pageCount}
-                        onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                        ›
-                    </button>
+                    <div className={styles.pager}>
+                        <button
+                            type="button"
+                            className={styles.pageButton}
+                            disabled={currentPage <= 1}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                        >
+                            ‹
+                        </button>
+                        <span className={styles.pageIndicator}>
+                            {currentPage} / {pageCount}
+                        </span>
+                        <button
+                            type="button"
+                            className={styles.pageButton}
+                            disabled={currentPage >= pageCount}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                        >
+                            ›
+                        </button>
+                    </div>
                 </div>
             ) : null}
             {loading ? (

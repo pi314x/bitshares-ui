@@ -97,3 +97,39 @@
     font-size: 13px;
     white-space: nowrap;
 }
+
+// a long text (the prediction, the description) in a table cell: two lines, the whole
+// text on hover; the rows of the list are then of one height
+.clamp {
+    display: -webkit-box;
+    max-width: 360px;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.4;
+}
+
+// a figure's second line (the prediction under the asset, the bid-ask range under the
+// likelihood)
+.sub {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+// the asset's prediction on a phone: its own lines under the name
+.under {
+    display: -webkit-box;
+    max-width: 180px;
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}

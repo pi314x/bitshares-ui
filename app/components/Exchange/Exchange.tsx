@@ -1910,7 +1910,11 @@ function ExchangeInner(props: any) {
 
     const buySellTitle = (isBidTitle: boolean) => {
         return (
-            <div className="exchange-content-header">
+            <div
+                className={`exchange-content-header buy-sell-title buy-sell-title--${
+                    isBidTitle ? "bid" : "ask"
+                }`}
+            >
                 <TranslateWithLinks
                     string="exchange.buysell_formatter"
                     noLink
@@ -1951,7 +1955,7 @@ function ExchangeInner(props: any) {
                     : centerContainerWidth > 800
                     ? "medium-6"
                     : "",
-                "small-12 exchange-padded middle-content",
+                "small-12 middle-content",
                 flipBuySell
                     ? `order-${buySellTop ? 2 : 3} large-order-${
                           buySellTop ? 2 : 5
@@ -1977,10 +1981,7 @@ function ExchangeInner(props: any) {
                     currentBridges={bridgeCoins.get(base.get("symbol")) || null}
                     isOpen={buySellOpen}
                     parentWidth={centerContainerWidth}
-                    styles={{
-                        padding: 5,
-                        paddingRight: mirrorPanels ? 15 : 5
-                    }}
+                    styles={{padding: 0}}
                     type="bid"
                     hideHeader={true}
                     expirationType={expirationType["bid"]}
@@ -2091,7 +2092,7 @@ function ExchangeInner(props: any) {
                     : centerContainerWidth > 800
                     ? "medium-6"
                     : "",
-                "small-12 exchange-padded middle-content",
+                "small-12 middle-content",
                 flipBuySell
                     ? `order-${buySellTop ? 1 : 2} large-order-${
                           buySellTop ? 1 : 4
@@ -2119,10 +2120,7 @@ function ExchangeInner(props: any) {
                     }
                     isOpen={buySellOpen}
                     parentWidth={centerContainerWidth}
-                    styles={{
-                        padding: 5,
-                        paddingRight: mirrorPanels ? 15 : 5
-                    }}
+                    styles={{padding: 0}}
                     type="ask"
                     hideHeader={true}
                     amount={numberExponentToLarge(ask.forSaleText)}
@@ -2622,7 +2620,7 @@ function ExchangeInner(props: any) {
             key={`actionCard_${actionCardIndex++}`}
             className={"left-order-book small-12"}
             style={{
-                paddingLeft: 5,
+                paddingLeft: !smallScreen ? 5 : 0,
                 width: !smallScreen ? 300 : "auto"
             }}
         >

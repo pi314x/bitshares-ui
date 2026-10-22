@@ -126,6 +126,10 @@ div#CenterContent {
     > thead > tr > th {
         font-size: 14px;
         padding: 5px 5px;
+    }
+
+    // (the select-all checkbox column centres its own box)
+    > thead > tr > th:not(.order-col-check) {
         text-align: right !important;
     }
 

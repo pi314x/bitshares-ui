@@ -881,7 +881,7 @@ const ScaledOrderFormInner = React.forwardRef<
     ));
 
     return (
-        <div className="buy-sell-container" style={{padding: "5px"}}>
+        <div className="buy-sell-container">
             <Form className="order-form" layout="vertical">
                 <Form.Item
                     {...formItemProps}

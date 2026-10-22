@@ -56,6 +56,8 @@ import {Tooltip} from "../../design-system/Tooltip";
 import {ChainStore} from "bitsharesjs";
 import PaginatedList from "components/Utility/PaginatedList";
 import FormattedAsset from "../Utility/FormattedAsset";
+import {useElementWidth} from "../../next/hooks/useElementWidth";
+import styles from "./PredictionMarkets.module.scss";
 
 interface PredictionMarketDetailsTableProps {
     predictionMarketData?: any;
@@ -70,7 +72,8 @@ function getHeader(
     currentAccount: any,
     opinionFilter: string | undefined,
     onOppose: (dataItem: any) => void,
-    onCancel: (dataItem: any) => void
+    onCancel: (dataItem: any) => void,
+    narrow: boolean
 ): any[] {
     const currentAccountId = currentAccount.get("id");
     return [
@@ -110,7 +113,7 @@ function getHeader(
                     .get("name");
                 return a_name > b_name ? 1 : a_name < b_name ? -1 : 0;
             },
-            render: (item: any) => {
+            render: (item: any, row: any) => {
                 return (
                     <div
                         style={{
@@ -118,6 +121,16 @@ function getHeader(
                         }}
                     >
                         <LinkToAccountById account={item} />
+                        {narrow ? (
+                            <div className={styles.sub}>
+                                {counterpart.translate(
+                                    "prediction.details." +
+                                        (row.opinion == "yes"
+                                            ? "proves_true"
+                                            : "incorrect")
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 );
             }
@@ -319,7 +332,32 @@ export default function PredictionMarketDetailsTable({
     detailsSearchTerm,
     opinionFilter
 }: PredictionMarketDetailsTableProps) {
-    const header = getHeader(currentAccount, opinionFilter, onOppose, onCancel);
+    // Columns by the room the table has: the predictor, the prediction, the likelihood
+    // and the action are ~460px; the premium, the winnings, the commission and the order
+    // number come with more. Under 600px (a phone) it is the predictor (with the
+    // prediction under the name), the likelihood and the action.
+    const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+    const room = boxWidth === null ? 1000 : boxWidth;
+    const narrow = room < 600;
+    const NEEDS_ROOM: {[key: string]: number} = {
+        premium: 680,
+        potentialProfit: 820,
+        commission: 960,
+        order_id: 1040
+    };
+    const NARROW_COLUMNS = ["opinionator", "likelihood", undefined];
+    const header = getHeader(
+        currentAccount,
+        opinionFilter,
+        onOppose,
+        onCancel,
+        narrow
+    ).filter((column: any) =>
+        narrow
+            ? NARROW_COLUMNS.indexOf(column.dataIndex) !== -1
+            : NEEDS_ROOM[column.dataIndex] === undefined ||
+              room >= NEEDS_ROOM[column.dataIndex]
+    );
 
     let filteredOpinions = predictionMarketData.opinions.filter((item: any) => {
         const accountName = (ChainStore as any).getAccount(item.opinionator)
@@ -353,6 +391,12 @@ export default function PredictionMarketDetailsTable({
     }));
 
     return (
-        <PaginatedList rows={filteredOpinions} header={header} pageSize={10} />
+        <div ref={boxRef}>
+            <PaginatedList
+                rows={filteredOpinions}
+                header={header}
+                pageSize={10}
+            />
+        </div>
     );
 }

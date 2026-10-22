@@ -232,6 +232,39 @@ describe("design-system/Table", () => {
         expect(checkboxes[3].disabled).toBe(false);
     });
 
+    it("has no select-all checkbox in the header with hideDefaultSelections", () => {
+        const {queryByLabelText, getAllByRole} = render(
+            <Table
+                columns={columns}
+                dataSource={rows}
+                pagination={false}
+                rowSelection={{
+                    selectedRowKeys: [],
+                    hideDefaultSelections: true
+                }}
+            />
+        );
+        expect(queryByLabelText("Select all")).toBeNull();
+        // one checkbox per row, none for the header
+        expect(getAllByRole("checkbox")).toHaveLength(rows.length);
+    });
+
+    it("keeps the pagination's previous/next buttons and the page number as one group", () => {
+        const {container} = render(
+            <Table
+                columns={columns}
+                dataSource={rows}
+                pagination={{pageSize: 2}}
+            />
+        );
+        const pagination = container.querySelector(".ds-table-pagination")!;
+        const buttons = pagination.querySelectorAll("button");
+        expect(buttons).toHaveLength(2);
+        // the same parent: the group wraps (on a narrow screen) as one
+        expect(buttons[0].parentElement).toBe(buttons[1].parentElement);
+        expect(buttons[0].parentElement).not.toBe(pagination);
+    });
+
     it("calls onRow's handlers for each rendered row", () => {
         const onRowClick = jest.fn();
         const {getByText} = render(

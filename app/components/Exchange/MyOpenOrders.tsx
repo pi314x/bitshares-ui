@@ -523,14 +523,7 @@ function MarketOrdersInner(props: MarketOrdersProps) {
 
         const emptyRow = (
             <tr>
-                <td
-                    style={{
-                        textAlign: "center",
-                        lineHeight: 4,
-                        fontStyle: "italic"
-                    }}
-                    colSpan={5}
-                >
+                <td className="exchange-empty" colSpan={5}>
                     <Translate content="account.no_orders" />
                 </td>
             </tr>

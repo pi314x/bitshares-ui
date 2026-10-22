@@ -95,7 +95,6 @@ function MarketHistoryView({
     activeTab,
     quoteSymbol,
     baseSymbol,
-    tinyScreen,
     totalRows,
     historyRows,
     showAll,
@@ -105,14 +104,7 @@ function MarketHistoryView({
 }: MarketHistoryViewProps) {
     const emptyRow = (
         <tr>
-            <td
-                style={{
-                    textAlign: "center",
-                    lineHeight: 4,
-                    fontStyle: "italic"
-                }}
-                colSpan={5}
-            >
+            <td className="exchange-empty" colSpan={5}>
                 <Translate content="account.no_trades" />
             </td>
         </tr>
@@ -135,7 +127,7 @@ function MarketHistoryView({
                     </div>
                 )}
                 <div className="grid-block shrink left-orderbook-header market-right-padding-only">
-                    <table className="table table-no-padding order-table text-left fixed-table market-right-padding">
+                    <table className="table table-no-padding order-table history-table text-left fixed-table market-right-padding">
                         <thead>
                             <tr>
                                 <th style={{textAlign: "right"}}>
@@ -174,13 +166,12 @@ function MarketHistoryView({
                     className="table-container grid-block market-right-padding-only no-overflow"
                     ref={historyContainerRef}
                     style={{
-                        minHeight: !tinyScreen ? 260 : 0,
                         maxHeight: 260,
                         overflow: "hidden",
                         lineHeight: "13px"
                     }}
                 >
-                    <table className="table order-table no-stripes table-hover fixed-table text-right no-overflow">
+                    <table className="table order-table history-table no-stripes table-hover fixed-table text-right no-overflow">
                         <TransitionWrapper
                             ref={historyTransitionRef}
                             component="tbody"

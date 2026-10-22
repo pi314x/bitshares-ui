@@ -1008,7 +1008,7 @@ function BuySellInner(props: BuySellProps) {
 
     return (
         <div className={cnames(props.className)} style={props.styles}>
-            <div className="buy-sell-container" style={{paddingRight: 5}}>
+            <div className="buy-sell-container">
                 {!hideHeader ? (
                     <div
                         className={
@@ -1250,11 +1250,7 @@ function BuySellInner(props: BuySellProps) {
                                             }
                                         >
                                             <Button
-                                                className={
-                                                    disabled
-                                                        ? "order-submit"
-                                                        : `order-submit ${buttonClass}`
-                                                }
+                                                className={`order-submit ${type}`}
                                                 disabled={disabled}
                                                 onClick={(e: any) =>
                                                     onSubmit(true, e)

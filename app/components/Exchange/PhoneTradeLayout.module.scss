@@ -57,6 +57,29 @@
     white-space: normal;
 }
 
+// The form brings its own 16px inset (the exchange layout); a phone card has the pane's
+// 12px, like every other card, and no second heading: the Buy / Sell tabs above already
+// say what the form is for. `body[class][class]` and the doubled `.pane`: the exchange
+// layout's own rules (`body[class][class] .buy-sell-container form.order-form`) are specific.
+body[class][class] .pane.pane :global(.buy-sell-title) {
+    display: none;
+}
+
+body[class][class]
+    .pane.pane
+    :global(.buy-sell-container)
+    > :global(form.order-form) {
+    padding: 16px 0 12px;
+}
+
+body[class][class]
+    .pane.pane
+    :global(.exchange--buy-sell-form)
+    > :global(div:first-child) {
+    padding-left: 0;
+    padding-right: 0;
+}
+
 // The order form was laid out for a 300px column: a label on the left, the
 // field on the right. A phone gets the label above the field and the field and
 // the Buy / Sell button the width of the card.

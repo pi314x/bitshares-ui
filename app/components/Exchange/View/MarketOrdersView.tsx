@@ -51,7 +51,7 @@ function MarketOrdersViewTableHeader({
     return (
         <thead>
             <tr>
-                <th style={{width: "6%", textAlign: "center"}}>
+                <th className="order-col-check">
                     {onCancelToggle ? (
                         <Tooltip
                             title={counterpart.translate(
@@ -67,27 +67,27 @@ function MarketOrdersViewTableHeader({
                         </Tooltip>
                     ) : null}
                 </th>
-                <th style={rightAlign}>
+                <th className="order-col-price" style={rightAlign}>
                     <Translate
                         className="header-sub-title"
                         content="exchange.price"
                     />
                 </th>
-                <th style={rightAlign}>
+                <th className="order-col-amount" style={rightAlign}>
                     {baseSymbol ? (
                         <span className="header-sub-title">
                             <AssetName dataPlace="top" name={quoteSymbol} />
                         </span>
                     ) : null}
                 </th>
-                <th style={rightAlign}>
+                <th className="order-col-amount" style={rightAlign}>
                     {baseSymbol ? (
                         <span className="header-sub-title">
                             <AssetName dataPlace="top" name={baseSymbol} />
                         </span>
                     ) : null}
                 </th>
-                <th style={rightAlign}>
+                <th className="order-col-expiry" style={rightAlign}>
                     <Translate
                         className="header-sub-title"
                         content="transaction.expiration"
@@ -123,7 +123,7 @@ function MarketOrdersRowView({
 
     return (
         <tr key={order.id}>
-            <td className="text-center" style={{width: "6%"}}>
+            <td className="order-col-check">
                 {isCall ? null : (
                     <Checkbox
                         className="orderCancel"
@@ -132,10 +132,18 @@ function MarketOrdersRowView({
                     />
                 )}
             </td>
-            <td className={tdClass} style={{paddingLeft: 10}}>
+            <td className={`order-col-price ${tdClass}`}>
                 <PriceText price={order.getPrice()} base={base} quote={quote} />
+                {isCall ? null : (
+                    <span className="order-expiry-under">
+                        {counterpart.localize(new Date(order.expiration), {
+                            type: "date",
+                            format: "short_custom"
+                        })}
+                    </span>
+                )}
             </td>
-            <td>
+            <td className="order-col-amount">
                 {(utils as any).format_number(
                     order[
                         !isBid ? "amountForSale" : "amountToReceive"
@@ -143,7 +151,7 @@ function MarketOrdersRowView({
                     quote.get("precision")
                 )}{" "}
             </td>
-            <td>
+            <td className="order-col-amount">
                 {(utils as any).format_number(
                     order[
                         !isBid ? "amountToReceive" : "amountForSale"
@@ -151,7 +159,7 @@ function MarketOrdersRowView({
                     base.get("precision")
                 )}{" "}
             </td>
-            <td>
+            <td className="order-col-expiry">
                 <Tooltip title={order.expiration.toLocaleString()}>
                     <div
                         style={{
@@ -213,7 +221,6 @@ const MarketsOrderView = React.forwardRef<any, MarketsOrderViewProps>(
             headerStyle,
             noHeader,
             isSelected,
-            tinyScreen,
             activeTab,
             baseSymbol,
             quoteSymbol,
@@ -258,7 +265,6 @@ const MarketsOrderView = React.forwardRef<any, MarketsOrderViewProps>(
                         ref={containerRef}
                         style={{
                             overflow: "hidden",
-                            minHeight: tinyScreen ? 260 : 0,
                             maxHeight: 260,
                             lineHeight: "13px"
                         }}

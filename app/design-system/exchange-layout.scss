@@ -244,9 +244,10 @@ body[class][class] .buy-sell-container {
     // a figure that is data: "Lowest ask      0.014701 bitUSD/BTS" on one row
     .grid-block.wrap.shrink:has(> .small-8.buy-sell-label) {
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: space-between;
         align-items: baseline;
-        gap: 12px;
+        gap: 2px 12px;
         margin-bottom: 16px;
     }
 
@@ -272,6 +273,9 @@ body[class][class] .buy-sell-container {
     .grid-block.wrap.shrink > .small-8.buy-sell-label {
         width: auto;
         flex: 0 1 auto;
+        min-width: 0;
+        margin-left: auto;
+        overflow-wrap: anywhere;
         text-align: right;
         font-size: 15px;
         font-weight: 400;
@@ -373,4 +377,146 @@ body[class][class] .exchange--buy-sell-form .exchange-content-header {
 // rows are tighter than a page's table so that the change column fits.
 body[class][class] .left-order-book .footer > div {
     padding: 12px 12px 0;
+}
+
+// Buy and Sell carry the side's colour: green for a bid, red for an ask (the title of the
+// form too), not the accent for both. A disabled one is the same colour, faded.
+body[class][class] .buy-sell-container .order-submit.bid,
+body[class][class] .buy-sell-container .order-submit.bid:hover:not(:disabled) {
+    border-color: var(--up);
+    background: var(--up);
+    color: var(--on-accent);
+}
+
+body[class][class] .buy-sell-container .order-submit.ask,
+body[class][class] .buy-sell-container .order-submit.ask:hover:not(:disabled) {
+    border-color: var(--down);
+    background: var(--down);
+    color: var(--on-accent);
+}
+
+body[class][class] .buy-sell-container .order-submit:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+body[class][class] .exchange--buy-sell-form .buy-sell-title--bid {
+    color: var(--up);
+}
+
+body[class][class] .exchange--buy-sell-form .buy-sell-title--ask {
+    color: var(--down);
+}
+
+// An empty list (no trades, no open orders): a quiet line, not an italic block
+body[class][class] .exchange-empty {
+    padding: 28px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: normal;
+    line-height: 1.4;
+    text-align: center;
+}
+
+// The order tables (open orders, trades): every cell centred on its row line, with
+// the checkbox and the figures on one axis (a cell's content sat on the baseline, the
+// checkbox above it), and figures that do not change width as they change.
+body[class][class] .order-table > thead > tr > th,
+body[class][class] .order-table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+body[class][class] .order-table > tbody > tr > td {
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35;
+}
+
+// Four columns, in the half-width cards of the desktop as on a phone (five columns of
+// figures ran into each other in 340-370px): the checkbox, the price with its expiration
+// under it, and the two amounts, which have the width they need. The header and the rows
+// are two tables of fixed layout, so the same widths keep the columns on one line.
+body[class][class] .order-table .order-col-check {
+    width: 32px;
+    text-align: center;
+}
+
+body[class][class] .order-table .order-col-price {
+    width: 24%;
+}
+
+body[class][class] .order-table .order-col-expiry {
+    display: none;
+}
+
+body[class][class] .order-table > tbody > tr > td.order-col-price,
+body[class][class] .order-table > tbody > tr > td.order-col-amount {
+    padding: 10px 4px;
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+
+body[class][class] .order-table > thead > tr > th.order-col-price,
+body[class][class] .order-table > thead > tr > th.order-col-amount {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+body[class][class] .order-table .order-col-check label {
+    display: flex;
+    justify-content: center;
+}
+
+body[class][class] .order-table th.order-col-check,
+body[class][class] .order-table td.order-col-check {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+// a column's header, its asset icon and name, on one line
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-price
+    > .header-sub-title,
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-amount
+    > .header-sub-title,
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-expiry
+    > .header-sub-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+// the expiration, under the price
+body[class][class] .order-table .order-expiry-under {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+// The trades tables (market trades, my trades): the four columns of figures right-aligned
+// like their headers, the date on one line.
+body[class][class] .history-table > thead > tr > th,
+body[class][class] .history-table > tbody > tr > td:not(.exchange-empty) {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+body[class][class] .history-table > tbody > tr > td:not(.exchange-empty) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 11.5px;
+    text-align: right;
+    white-space: nowrap;
 }

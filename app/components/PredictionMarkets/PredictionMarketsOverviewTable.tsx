@@ -83,12 +83,14 @@ import debounceRender from "react-debounce-render";
 import FormattedAsset from "../Utility/FormattedAsset";
 import utils from "common/utils";
 
+import styles from "./PredictionMarkets.module.scss";
 import "./prediction.scss";
 
 function getHeader(
     currentAccount: any,
     ticker: any,
-    onMarketAction: (dataItem: any, option?: any) => void
+    onMarketAction: (dataItem: any, option?: any) => void,
+    narrow: boolean
 ): any[] {
     const isOwnedByCurrent = (id: any) => currentAccount.get("id") === id;
     return [
@@ -100,7 +102,7 @@ function getHeader(
             sorter: (a: any, b: any) => {
                 return a.symbol > b.symbol ? 1 : a.symbol < b.symbol ? -1 : 0;
             },
-            render: (item: any) => {
+            render: (item: any, row: any) => {
                 return (
                     <div
                         style={{
@@ -108,6 +110,11 @@ function getHeader(
                         }}
                     >
                         <LinkToAssetById asset={item} />
+                        {narrow && row.condition ? (
+                            <div className={styles.under} title={row.condition}>
+                                {row.condition}
+                            </div>
+                        ) : null}
                     </div>
                 );
             }
@@ -150,12 +157,8 @@ function getHeader(
             },
             render: (item: any) => {
                 return (
-                    <div
-                        style={{
-                            whiteSpace: "normal"
-                        }}
-                    >
-                        <span>{item}</span>
+                    <div className={styles.clamp} title={item}>
+                        {item}
                     </div>
                 );
             }
@@ -228,7 +231,9 @@ function getHeader(
         },
         {
             title: counterpart.translate(
-                "prediction.overview.market_predicated_likelihood"
+                narrow
+                    ? "prediction.overview.odds"
+                    : "prediction.overview.market_predicated_likelihood"
             ),
             dataIndex: "marketLikelihood",
             align: "left",
@@ -287,19 +292,10 @@ function getHeader(
                     }
                     return rowTicker.latest !== "-" ? (
                         <React.Fragment>
-                            <span>
-                                {rowTicker.latest}
-                                &nbsp;
-                            </span>
-                            <span className="supsub">
-                                <sup className="superscript">
-                                    {rowTicker.highest_bid}
-                                </sup>
-                                <sub className="subscript">
-                                    {rowTicker.lowest_ask}
-                                </sub>
-                            </span>
-                            &nbsp;&nbsp;&nbsp;
+                            <span>{rowTicker.latest}</span>
+                            <div className={styles.sub}>
+                                {rowTicker.highest_bid} – {rowTicker.lowest_ask}
+                            </div>
                         </React.Fragment>
                     ) : (
                         "-"
@@ -320,12 +316,8 @@ function getHeader(
             },
             render: (item: any) => {
                 return (
-                    <div
-                        style={{
-                            whiteSpace: "normal"
-                        }}
-                    >
-                        <span>{item}</span>
+                    <div className={styles.clamp} title={item}>
+                        {item}
                     </div>
                 );
             }
@@ -343,7 +335,7 @@ function getHeader(
                 return (
                     <div
                         style={{
-                            whiteSpace: "normal"
+                            whiteSpace: "nowrap"
                         }}
                     >
                         <span>{item}</span>
@@ -365,7 +357,7 @@ function getHeader(
                     >
                         {isOwnedByCurrent(dataItem.issuer) ? (
                             <Button
-                                style={{width: "170px"}}
+                                style={narrow ? undefined : {width: "170px"}}
                                 className="align-middle"
                                 onClick={() =>
                                     onMarketAction(dataItem, "resolve")
@@ -384,13 +376,14 @@ function getHeader(
                                 }}
                             >
                                 <Button
-                                    style={{marginRight: "5px"}}
                                     className="align-middle"
                                     onClick={() =>
                                         onMarketAction(dataItem, "yes")
                                     }
                                 >
-                                    Details
+                                    {counterpart.translate(
+                                        "account.user_issued_assets.details"
+                                    )}
                                 </Button>
                                 {/*<Button*/}
                                 {/*style={{marginLeft: "5px"}}*/}
@@ -470,22 +463,31 @@ function PredictionMarketsOverviewTable({
         return selectedPredictionMarket ? "selected-row" : "";
     };
 
-    // Columns by the room the table has, not the window: the asset, what is
-    // predicted, the likelihood and the actions are always there; the issuer
-    // (house), the market's confidence and the description come with more room,
-    // the resolution date with a little.
+    // Columns by the room the table has, not the window. Each column that comes with more
+    // room is added when the ones before it fit: the asset, what is predicted, the
+    // likelihood and the action are ~600px; the house, the resolution date, the market's
+    // confidence and the description add ~150, ~110, ~150 and ~300. Under 600px (a phone)
+    // it is the asset (with its prediction under it), the odds and the action.
     const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
     const room = boxWidth === null ? 1000 : boxWidth;
+    const narrow = room < 600;
     const NEEDS_ROOM: {[key: string]: number} = {
-        expiry: 520,
-        issuer: 640,
-        marketConfidence: 760,
-        description: 900
+        issuer: 760,
+        expiry: 880,
+        marketConfidence: 1030,
+        description: 1330
     };
-    const header = getHeader(currentAccount, ticker, onMarketAction).filter(
-        (column: any) =>
-            NEEDS_ROOM[column.dataIndex] === undefined ||
-            room >= NEEDS_ROOM[column.dataIndex]
+    const NARROW_COLUMNS = ["asset_id", "marketLikelihood", undefined];
+    const header = getHeader(
+        currentAccount,
+        ticker,
+        onMarketAction,
+        narrow
+    ).filter((column: any) =>
+        narrow
+            ? NARROW_COLUMNS.indexOf(column.dataIndex) !== -1
+            : NEEDS_ROOM[column.dataIndex] === undefined ||
+              room >= NEEDS_ROOM[column.dataIndex]
     );
 
     let filteredMarkets: any[] = [];
