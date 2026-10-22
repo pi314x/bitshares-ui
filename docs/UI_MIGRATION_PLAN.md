@@ -13574,7 +13574,7 @@ introduced); each has a regression test or a measurable check.
 Full description and threat model: `docs/MCP.md`. In short:
 
 - `mcp/` is a separate, dependency-free Node server (MCP over stdio or a local HTTP address) with
-  11 read tools and, with `MCP_TRADING_ENABLED`, 3 trading tools that only **prepare** (a limit
+  19 read tools and, with `MCP_TRADING_ENABLED`, 3 trading tools that only **prepare** (a limit
   order, cancelling one, and the limits in force). Off unless `MCP_ENABLED` is true (environment or
   `.env`; `.env.example` documents every setting). Checked against the official TypeScript SDK client
   over stdio and streamable HTTP, against a live node.

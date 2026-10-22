@@ -94,6 +94,14 @@ Any other client that speaks MCP over stdio or streamable HTTP connects the same
 | `bitshares_get_account_history` | read | recent operations by name (no memos) |
 | `bitshares_get_pool` | read | one liquidity pool |
 | `bitshares_find_pools` | read | pools that hold an asset, or two |
+| `bitshares_get_price_history` | read | candles (5 min, 1 hour, 1 day) with exact volumes |
+| `bitshares_get_recent_trades` | read | the latest trades of a market |
+| `bitshares_get_margin_positions` | read | an account's borrow positions: collateral ratio from the feed, distance to a margin call, a risk word |
+| `bitshares_get_bitasset` | read | how a smartcoin is backed: collateral, feed, ratios, settlement rules |
+| `bitshares_get_vesting_balances` | read | vesting balances and what can be claimed now, by each vesting rule |
+| `bitshares_get_fees` | read | the chain's fee for named operations, in BTS |
+| `bitshares_search_accounts` | read | account names by prefix (to compare an exact name) |
+| `bitshares_get_proposals` | read | proposals waiting for an account's approval, and who is missing |
 | `bitshares_trading_policy` | trade | the limits the person set (answers from the settings) |
 | `bitshares_prepare_limit_order` | trade | **prepares** an order: a summary, a reference code and a link |
 | `bitshares_prepare_cancel_order` | trade | **prepares** cancelling one open order |

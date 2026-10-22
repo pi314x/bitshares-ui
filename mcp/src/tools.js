@@ -218,6 +218,74 @@ function pool(raw, assets, shares) {
     };
 }
 
+const BUCKETS = {"5m": 300, "1h": 3600, "1d": 86400};
+// the operations a person is most likely to ask the price of
+const DEFAULT_FEE_OPERATIONS = [
+    "transfer",
+    "limit_order_create",
+    "limit_order_cancel",
+    "limit_order_update",
+    "call_order_update",
+    "account_update",
+    "proposal_create",
+    "liquidity_pool_exchange",
+    "liquidity_pool_deposit",
+    "asset_create"
+];
+
+/** A price as a number of 8 significant digits, or null when it is not one. */
+/** A percentage to two decimals. */
+const pct = x => (Number.isFinite(x) ? Number(x.toFixed(2)) : null);
+
+const price8 = x => (Number.isFinite(x) ? Number(x.toPrecision(8)) : null);
+
+/** Whether a price of {base, quote} units has both sides. */
+const usable = p =>
+    !!p && big(p.base.amount) > BigInt(0) && big(p.quote.amount) > BigInt(0);
+
+/** The claimable part of a vesting balance now, by its rule (units, BigInt), and the rule's name. */
+function vestingClaimable(row, nowSec) {
+    const balance = big(row.balance.amount);
+    const kind = row.policy[0];
+    const rule = row.policy[1] || {};
+    const zero = BigInt(0);
+    if (kind === 2) return {kind: "instant", claimable: balance};
+    if (kind === 0) {
+        const begin = parseChainTime(rule.begin_timestamp) / 1000;
+        const duration = Number(rule.vesting_duration_seconds);
+        const cliff = Number(rule.vesting_cliff_seconds || 0);
+        const elapsed = nowSec - begin;
+        if (!(duration > 0) || elapsed < cliff)
+            return {kind: "linear", claimable: zero};
+        const start = big(rule.begin_balance);
+        const vested =
+            elapsed >= duration
+                ? start
+                : (start * BigInt(Math.floor(elapsed))) / BigInt(duration);
+        const withdrawn = start - balance;
+        const claim = vested > withdrawn ? vested - withdrawn : zero;
+        return {kind: "linear", claimable: claim > balance ? balance : claim};
+    }
+    if (kind === 1) {
+        const seconds = BigInt(Number(rule.vesting_seconds) || 1);
+        const last =
+            parseChainTime(rule.coin_seconds_earned_last_update) / 1000;
+        const start = parseChainTime(rule.start_claim) / 1000;
+        let earned = big(rule.coin_seconds_earned);
+        if (nowSec > last)
+            earned += balance * BigInt(Math.floor(nowSec - last));
+        const most = balance * seconds;
+        if (earned > most) earned = most;
+        if (nowSec < start) return {kind: "coin-seconds", claimable: zero};
+        const claim = earned / seconds;
+        return {
+            kind: "coin-seconds",
+            claimable: claim > balance ? balance : claim
+        };
+    }
+    return {kind: "operation_" + kind, claimable: zero};
+}
+
 const reads = {
     async bitshares_chain_info(ctx) {
         const [properties, chainId] = await Promise.all([
@@ -517,6 +585,428 @@ const reads = {
         return {
             count: rows.length,
             pools: rows.map(r => pool(r, assets, assets))
+        };
+    },
+
+    async bitshares_get_price_history(ctx, args) {
+        const base = await getAsset(ctx, args.base);
+        const quote = await getAsset(ctx, args.quote);
+        if (base.id === quote.id)
+            throw new UserError("The two assets of a market must differ.");
+        const interval = args.interval || "1h";
+        const seconds = BUCKETS[interval];
+        const limit = args.limit || 48;
+        const end = ctx.now();
+        const rows =
+            (await ctx.rpc.call("history", "get_market_history", [
+                base.id,
+                quote.id,
+                seconds,
+                chainTime(new Date(end - limit * seconds * 1000)),
+                chainTime(new Date(end))
+            ])) || [];
+        const scaleBase = Math.pow(10, base.precision);
+        const scaleQuote = Math.pow(10, quote.precision);
+        const candles = rows
+            .map(r => {
+                // the amounts are of the pair as the node keeps it: key.base and key.quote
+                const flipped = r.key.base !== base.id;
+                const price = (b, q) =>
+                    flipped
+                        ? Number(q) / scaleBase / (Number(b) / scaleQuote)
+                        : Number(b) / scaleBase / (Number(q) / scaleQuote);
+                const high = price(r.high_base, r.high_quote);
+                const low = price(r.low_base, r.low_quote);
+                return {
+                    time: r.key.open + " UTC",
+                    open: price8(price(r.open_base, r.open_quote)),
+                    high: price8(Math.max(high, low)),
+                    low: price8(Math.min(high, low)),
+                    close: price8(price(r.close_base, r.close_quote)),
+                    base_volume: fromUnits(
+                        big(flipped ? r.quote_volume : r.base_volume),
+                        base.precision
+                    ),
+                    quote_volume: fromUnits(
+                        big(flipped ? r.base_volume : r.quote_volume),
+                        quote.precision
+                    )
+                };
+            })
+            .sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
+        return {
+            base: brief(base),
+            quote: brief(quote),
+            price_unit: `${base.symbol} per 1 ${quote.symbol}`,
+            interval,
+            count: candles.length,
+            candles
+        };
+    },
+
+    async bitshares_get_recent_trades(ctx, args) {
+        const base = await getAsset(ctx, args.base);
+        const quote = await getAsset(ctx, args.quote);
+        if (base.id === quote.id)
+            throw new UserError("The two assets of a market must differ.");
+        const now = ctx.now();
+        const rows =
+            (await db(ctx, "get_trade_history", [
+                base.id,
+                quote.id,
+                chainTime(new Date(now)),
+                chainTime(new Date(now - 90 * 86400 * 1000)),
+                args.limit || 20
+            ])) || [];
+        return {
+            base: brief(base),
+            quote: brief(quote),
+            price_unit: `${base.symbol} per 1 ${quote.symbol}`,
+            count: rows.length,
+            trades: rows.map(t => ({
+                time: t.date + " UTC",
+                price: t.price,
+                quote_amount: t.amount,
+                base_amount: t.value,
+                // as the node labels it
+                type: t.type
+            }))
+        };
+    },
+
+    async bitshares_get_margin_positions(ctx, args) {
+        const account = await getAccount(ctx, args.account);
+        const rows =
+            (await db(ctx, "get_margin_positions", [account.id])) || [];
+        const assets = await getAssets(
+            ctx,
+            rows.reduce(
+                (ids, r) =>
+                    ids.concat([
+                        r.call_price.base.asset_id,
+                        r.call_price.quote.asset_id
+                    ]),
+                []
+            )
+        );
+        const bitassetIds = Array.from(
+            new Set(
+                rows
+                    .map(
+                        r =>
+                            assets[r.call_price.quote.asset_id] &&
+                            assets[r.call_price.quote.asset_id].bitasset_data_id
+                    )
+                    .filter(Boolean)
+            )
+        );
+        const bitassets = {};
+        if (bitassetIds.length) {
+            ((await db(ctx, "get_objects", [bitassetIds])) || []).forEach(b => {
+                if (b) bitassets[b.asset_id] = b;
+            });
+        }
+        const positions = rows.map(r => {
+            const debtAsset = assets[r.call_price.quote.asset_id];
+            const collateralAsset = assets[r.call_price.base.asset_id];
+            const feed =
+                debtAsset &&
+                bitassets[debtAsset.id] &&
+                bitassets[debtAsset.id].current_feed;
+            const sp = feed && feed.settlement_price;
+            const collateral = big(r.collateral);
+            const debt = big(r.debt);
+            let ratio = null;
+            let maintenance = null;
+            let risk = "unknown";
+            let feedPrice = null;
+            let drop = null;
+            if (
+                sp &&
+                usable(sp) &&
+                debt > BigInt(0) &&
+                sp.base.asset_id === (debtAsset && debtAsset.id)
+            ) {
+                // the feed: base is the debt asset, quote the collateral, in units
+                ratio =
+                    ((Number(collateral) * Number(big(sp.base.amount))) /
+                        (Number(debt) * Number(big(sp.quote.amount)))) *
+                    100;
+                maintenance = feed.maintenance_collateral_ratio / 10;
+                feedPrice = price8(
+                    Number(big(sp.quote.amount)) /
+                        Math.pow(
+                            10,
+                            collateralAsset ? collateralAsset.precision : 0
+                        ) /
+                        (Number(big(sp.base.amount)) /
+                            Math.pow(10, debtAsset.precision))
+                );
+                risk =
+                    ratio < maintenance * 1.05
+                        ? "danger"
+                        : ratio < maintenance * 1.25
+                        ? "watch"
+                        : "ok";
+                drop =
+                    ratio > maintenance
+                        ? pct((1 - maintenance / ratio) * 100)
+                        : 0;
+            }
+            return {
+                id: r.id,
+                debt: {
+                    asset: debtAsset
+                        ? debtAsset.symbol
+                        : r.call_price.quote.asset_id,
+                    amount: debtAsset
+                        ? fromUnits(debt, debtAsset.precision)
+                        : String(r.debt)
+                },
+                collateral: {
+                    asset: collateralAsset
+                        ? collateralAsset.symbol
+                        : r.call_price.base.asset_id,
+                    amount: collateralAsset
+                        ? fromUnits(collateral, collateralAsset.precision)
+                        : String(r.collateral)
+                },
+                feed_price: feedPrice,
+                feed_price_unit:
+                    debtAsset && collateralAsset
+                        ? `${collateralAsset.symbol} per 1 ${debtAsset.symbol}`
+                        : null,
+                collateral_ratio_percent: ratio === null ? null : pct(ratio),
+                maintenance_ratio_percent: maintenance,
+                target_collateral_ratio_percent: r.target_collateral_ratio
+                    ? r.target_collateral_ratio / 10
+                    : null,
+                collateral_value_can_fall_percent: drop,
+                risk
+            };
+        });
+        return {
+            account: {id: account.id, name: account.name},
+            count: positions.length,
+            risk_basis:
+                "danger: within 5% of the maintenance ratio; watch: within 25%; ok: further away. The chain margin-calls a position under the maintenance ratio.",
+            positions
+        };
+    },
+
+    async bitshares_get_bitasset(ctx, args) {
+        const asset = await getAsset(ctx, args.asset);
+        if (!asset.bitasset_data_id) {
+            throw new UserError(
+                `${asset.symbol} is not a market-pegged asset: it has no collateral and no feed.`
+            );
+        }
+        const bit = ((await db(ctx, "get_objects", [
+            [asset.bitasset_data_id]
+        ])) || [])[0];
+        if (!bit)
+            throw new UserError(
+                `The node has no data for ${asset.symbol}.`,
+                "not_found"
+            );
+        const options = bit.options || {};
+        const collateral = (
+            await getAssets(ctx, [options.short_backing_asset])
+        )[options.short_backing_asset];
+        const feed = bit.current_feed || {};
+        const sp = feed.settlement_price;
+        const unit = collateral
+            ? `${collateral.symbol} per 1 ${asset.symbol}`
+            : null;
+        const perDebt = p =>
+            usable(p) && collateral
+                ? price8(
+                      Number(big(p.quote.amount)) /
+                          Math.pow(10, collateral.precision) /
+                          (Number(big(p.base.amount)) /
+                              Math.pow(10, asset.precision))
+                  )
+                : null;
+        const initial =
+            feed.initial_collateral_ratio !== undefined
+                ? feed.initial_collateral_ratio
+                : options.extensions &&
+                  options.extensions.initial_collateral_ratio;
+        return {
+            asset: brief(asset),
+            collateral_asset: collateral
+                ? brief(collateral)
+                : {id: options.short_backing_asset},
+            feed: {
+                price: perDebt(sp),
+                price_unit: unit,
+                published_at: bit.current_feed_publication_time
+                    ? bit.current_feed_publication_time + " UTC"
+                    : null,
+                maintenance_collateral_ratio_percent:
+                    feed.maintenance_collateral_ratio !== undefined
+                        ? feed.maintenance_collateral_ratio / 10
+                        : null,
+                initial_collateral_ratio_percent:
+                    initial !== undefined ? initial / 10 : null,
+                max_short_squeeze_ratio_percent:
+                    feed.maximum_short_squeeze_ratio !== undefined
+                        ? feed.maximum_short_squeeze_ratio / 10
+                        : null
+            },
+            feeds_published: (bit.feeds || []).length,
+            minimum_feeds: options.minimum_feeds,
+            feed_lifetime_hours: options.feed_lifetime_sec
+                ? options.feed_lifetime_sec / 3600
+                : null,
+            force_settlement: {
+                delay_hours: options.force_settlement_delay_sec
+                    ? options.force_settlement_delay_sec / 3600
+                    : null,
+                offset_percent:
+                    options.force_settlement_offset_percent !== undefined
+                        ? options.force_settlement_offset_percent / 100
+                        : null,
+                max_volume_percent:
+                    options.maximum_force_settlement_volume !== undefined
+                        ? options.maximum_force_settlement_volume / 100
+                        : null
+            },
+            prediction_market: !!bit.is_prediction_market,
+            globally_settled: usable(bit.settlement_price),
+            settlement_price: usable(bit.settlement_price)
+                ? perDebt(bit.settlement_price)
+                : null
+        };
+    },
+
+    async bitshares_get_vesting_balances(ctx, args) {
+        const account = await getAccount(ctx, args.account);
+        const rows =
+            (await db(ctx, "get_vesting_balances", [account.id])) || [];
+        const assets = await getAssets(
+            ctx,
+            rows.map(r => r.balance.asset_id)
+        );
+        const nowSec = Math.floor(ctx.now() / 1000);
+        return {
+            account: {id: account.id, name: account.name},
+            count: rows.length,
+            balances: rows.map(r => {
+                const info = assets[r.balance.asset_id];
+                const rule = vestingClaimable(r, nowSec);
+                const show = units =>
+                    info ? fromUnits(units, info.precision) : String(units);
+                return {
+                    id: r.id,
+                    type: text(r.balance_type, 40),
+                    rule: rule.kind,
+                    asset: info ? info.symbol : r.balance.asset_id,
+                    amount: show(big(r.balance.amount)),
+                    claimable_now: show(rule.claimable)
+                };
+            })
+        };
+    },
+
+    async bitshares_get_fees(ctx, args) {
+        const names =
+            args.operations && args.operations.length
+                ? args.operations
+                : DEFAULT_FEE_OPERATIONS;
+        const unknown = names.filter(n => OPERATION_NAMES.indexOf(n) === -1);
+        if (unknown.length)
+            throw new UserError(
+                `Not operations of the chain: ${unknown
+                    .map(n => cleanText(n, 40))
+                    .join(", ")}.`
+            );
+        const properties = await db(ctx, "get_global_properties", []);
+        const schedule = properties.parameters.current_fees;
+        const scale = BigInt(schedule.scale || 10000);
+        const core = await getAsset(ctx, CORE);
+        return {
+            unit: core.symbol,
+            scale_percent: Number(scale) / 100,
+            fees: names.map(name => {
+                const entry = schedule.parameters.find(
+                    e => e[0] === OPERATION_NAMES.indexOf(name)
+                );
+                if (!entry) return {operation: name, fees: null};
+                const out = {};
+                Object.keys(entry[1]).forEach(key => {
+                    if (/^\d+$/.test(String(entry[1][key]))) {
+                        out[key] = fromUnits(
+                            (big(entry[1][key]) * scale) / BigInt(10000),
+                            core.precision
+                        );
+                    }
+                });
+                return {operation: name, fees: out};
+            })
+        };
+    },
+
+    async bitshares_search_accounts(ctx, args) {
+        const prefix = args.prefix;
+        const rows =
+            (await db(ctx, "lookup_accounts", [
+                prefix,
+                args.limit || 10,
+                false
+            ])) || [];
+        return {
+            prefix,
+            accounts: rows
+                .filter(r => r[0].indexOf(prefix) === 0)
+                .map(r => ({name: r[0], id: r[1]}))
+        };
+    },
+
+    async bitshares_get_proposals(ctx, args) {
+        const account = await getAccount(ctx, args.account);
+        const rows =
+            (await db(ctx, "get_proposed_transactions", [account.id])) || [];
+        return {
+            account: {id: account.id, name: account.name},
+            count: rows.length,
+            proposals: rows.slice(0, 50).map(p => {
+                const operations =
+                    (p.proposed_transaction &&
+                        p.proposed_transaction.operations) ||
+                    [];
+                const activeNeeded = p.required_active_approvals || [];
+                const activeHave = p.available_active_approvals || [];
+                const ownerNeeded = p.required_owner_approvals || [];
+                const ownerHave = p.available_owner_approvals || [];
+                const activeMissing = activeNeeded.filter(
+                    x => activeHave.indexOf(x) === -1
+                );
+                const ownerMissing = ownerNeeded.filter(
+                    x => ownerHave.indexOf(x) === -1
+                );
+                return {
+                    id: p.id,
+                    expires: p.expiration_time + " UTC",
+                    review_period_ends: p.review_period_time
+                        ? p.review_period_time + " UTC"
+                        : null,
+                    operation_count: operations.length,
+                    operations: operations.slice(0, 5).map(o => ({
+                        operation: OPERATION_NAMES[o[0]] || "operation_" + o[0],
+                        fields: tame(o[1], 0)
+                    })),
+                    active_approvals_missing: activeMissing,
+                    owner_approvals_missing: ownerMissing,
+                    approved_by: activeHave
+                        .concat(ownerHave)
+                        .filter((x, i, all) => all.indexOf(x) === i),
+                    waiting_for_this_account:
+                        activeMissing
+                            .concat(ownerMissing)
+                            .indexOf(account.id) !== -1
+                };
+            })
         };
     }
 };
