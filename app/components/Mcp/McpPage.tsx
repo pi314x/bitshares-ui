@@ -365,7 +365,6 @@ export default function McpPage() {
                     <SubMenu
                         toggle
                         flush
-                        compact
                         aria-label={t("connect.title")}
                         items={[
                             {key: "opencode", label: t("connect.tab_opencode")},

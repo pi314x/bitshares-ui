@@ -3544,7 +3544,7 @@
             "intro": "Start from the folder of this application (Node.js 18 or later) and replace /path/to/bitshares-ui with where it is. In each client the server is called `desk`.",
             "tab_opencode": "opencode",
             "tab_code": "Claude Code",
-            "tab_desktop": "Desktop",
+            "tab_desktop": "Claude Desktop",
             "tab_codex": "Codex",
             "tab_http": "HTTP",
             "text_opencode": "opencode reads its servers from `opencode.json`, in the project you start it in or in your global opencode config. It starts this one itself when it needs it, and nothing listens on a port. The tools appear as `desk_bitshares_...`.",

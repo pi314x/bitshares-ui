@@ -105,7 +105,7 @@ describe("the MCP page", () => {
         expect(tabs).toEqual([
             "opencode",
             "Claude Code",
-            "Desktop",
+            "Claude Desktop",
             "Codex",
             "HTTP"
         ]);
@@ -149,7 +149,7 @@ describe("the MCP page", () => {
         expect(container.textContent).toContain("claude mcp list");
 
         // Claude Desktop: the config file
-        fireEvent.click(getByText("Desktop"));
+        fireEvent.click(getByText("Claude Desktop"));
         expect(JSON.parse(blocks()[0]).mcpServers.desk).toEqual({
             command: "node",
             args: ["/path/to/bitshares-ui/mcp/server.js"],
@@ -257,7 +257,7 @@ describe("the MCP page", () => {
                     [
                         "opencode",
                         "Claude Code",
-                        "Desktop",
+                        "Claude Desktop",
                         "Codex",
                         "HTTP"
                     ].forEach(client => {

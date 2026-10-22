@@ -21,8 +21,6 @@ export interface SubMenuProps {
     toggle?: boolean;
     /** No space under it: it sits in a toolbar or a card's head row. */
     flush?: boolean;
-    /** Closer buttons, for a row of four or more that must fit a phone. */
-    compact?: boolean;
 }
 
 // A second level of tabs inside a page (the voting page's Witnesses tab: vote,
@@ -36,14 +34,30 @@ export function SubMenu({
     onChange,
     "aria-label": ariaLabel,
     toggle,
-    flush,
-    compact
+    flush
 }: SubMenuProps): JSX.Element {
+    const row = React.useRef<HTMLDivElement>(null);
+    // A row that is wider than the screen slides sideways. The chosen button is brought to the
+    // middle of it (the row only: the page does not move), so that a tap on a button that was
+    // half out of sight does not leave it there.
+    React.useEffect(() => {
+        const menu = row.current;
+        if (!menu || typeof menu.scrollTo !== "function") return;
+        if (menu.scrollWidth <= menu.clientWidth) return;
+        const active = menu.querySelector<HTMLElement>(
+            '[aria-selected="true"], [aria-pressed="true"]'
+        );
+        if (!active) return;
+        menu.scrollTo({
+            left:
+                active.offsetLeft - (menu.clientWidth - active.offsetWidth) / 2,
+            behavior: "smooth"
+        });
+    }, [value]);
     return (
         <div
-            className={`${styles.menu} ${flush ? styles.flush : ""} ${
-                compact ? styles.compact : ""
-            }`}
+            ref={row}
+            className={`${styles.menu} ${flush ? styles.flush : ""}`}
             role={toggle ? "group" : "tablist"}
             aria-label={ariaLabel}
         >

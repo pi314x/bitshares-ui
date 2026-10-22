@@ -7,7 +7,11 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--raised);
+    // wider than the screen: it slides sideways, and a button stops in the middle
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
     scrollbar-width: none;
 }
 
@@ -16,24 +20,13 @@
     margin: 0;
 }
 
-// four or more buttons on a phone: closer, a little smaller, and a row that is too long
-// goes on a second line instead of scrolling out of sight
-.compact {
-    flex-wrap: wrap;
-    overflow-x: visible;
-}
-
-.compact .item {
-    padding: 0 9px;
-    font-size: 12.5px;
-}
-
 .menu::-webkit-scrollbar {
     display: none;
 }
 
 .item {
     flex: none;
+    scroll-snap-align: center;
     min-height: 30px;
     padding: 0 14px;
     border: 0;
