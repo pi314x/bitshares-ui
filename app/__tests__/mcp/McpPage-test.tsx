@@ -62,7 +62,7 @@ describe("the MCP page", () => {
         expect(container.textContent).toContain("Off in this build");
     });
 
-    it("shows how to connect, in three ways, with a copy button", async () => {
+    it("shows how to connect opencode, locally and over HTTP, with a copy button", async () => {
         const writeText = jest.fn().mockResolvedValue(undefined);
         Object.defineProperty(navigator, "clipboard", {
             value: {writeText},
@@ -73,26 +73,49 @@ describe("the MCP page", () => {
             configurable: true
         });
         const {container, getByText} = render(<McpPage />);
-        expect(container.querySelector("pre")!.textContent).toContain(
-            "claude mcp add bitshares --env MCP_ENABLED=true -- node"
-        );
-        fireEvent.click(getByText("Claude Desktop"));
-        const json = JSON.parse(
+        // local: a server opencode starts itself
+        const local = JSON.parse(
             container.querySelector("pre")!.textContent || ""
         );
-        expect(json.mcpServers.bitshares.command).toBe("node");
-        expect(json.mcpServers.bitshares.env).toEqual({MCP_ENABLED: "true"});
-        fireEvent.click(getByText("HTTP"));
-        const http = container.querySelector("pre")!.textContent || "";
-        expect(http).toContain("--new-token");
-        expect(http).toContain("MCP_TRANSPORT=http");
-        expect(http).toContain("Authorization: Bearer <the token>");
-        // no real token on the page
-        expect(http).not.toMatch(/[A-Za-z0-9_-]{32,}/);
-        await act(async () => {
-            fireEvent.click(getByText("Copy"));
+        expect(local.$schema).toBe("https://opencode.ai/config.json");
+        expect(local.mcp.desk).toEqual({
+            type: "local",
+            command: ["node", "/path/to/bitshares-ui/mcp/server.js"],
+            enabled: true,
+            environment: {MCP_ENABLED: "true"}
         });
-        expect(writeText).toHaveBeenCalledWith(http);
+        expect(container.textContent).toContain("opencode mcp list");
+        // http: a token, the start, and a remote server entry
+        fireEvent.click(getByText("HTTP"));
+        const blocks = Array.from(container.querySelectorAll("pre")).map(
+            p => p.textContent || ""
+        );
+        expect(blocks).toHaveLength(3);
+        expect(blocks[0]).toContain("--new-token");
+        expect(blocks[1]).toContain("MCP_TRANSPORT=http");
+        expect(blocks[1]).toContain("MCP_AUTH_TOKEN=<the token>");
+        const remote = JSON.parse(blocks[2]);
+        expect(remote.mcp.desk).toEqual({
+            type: "remote",
+            url: "http://127.0.0.1:8765/mcp",
+            enabled: true,
+            headers: {Authorization: "Bearer <the token>"}
+        });
+        // no real token on the page
+        expect(blocks.join("\n")).not.toMatch(/[A-Za-z0-9_-]{32,}/);
+        const buttons = container.querySelectorAll("button");
+        await act(async () => {
+            fireEvent.click(buttons[buttons.length - 1]);
+        });
+        expect(writeText).toHaveBeenCalled();
+    });
+
+    it("is about opencode only: no other client is named", () => {
+        const {container, getByText} = render(<McpPage />);
+        expect(container.textContent).not.toMatch(/claude/i);
+        fireEvent.click(getByText("HTTP"));
+        expect(container.textContent).not.toMatch(/claude/i);
+        expect(container.textContent).toContain("Connect opencode");
     });
 
     it("sets out how trading is kept safe, and what is not offered", () => {

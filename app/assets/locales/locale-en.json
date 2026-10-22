@@ -3525,7 +3525,7 @@
     },
     "mcp": {
         "title": "AI assistants (MCP)",
-        "intro": "BitShares Desk has a small server that lets an AI assistant - Claude, or any program that speaks the Model Context Protocol (MCP) - read the BitShares chain through a fixed set of tools. It runs on your computer, apart from this page, and it never holds a key.",
+        "intro": "BitShares Desk has a small server that lets an AI assistant - opencode, or any program that speaks the Model Context Protocol (MCP) - read the BitShares chain through a fixed set of tools. It runs on your computer, apart from this page, and it never holds a key.",
         "status": {
             "title": "This build",
             "page": "The MCP page is part of this build (MCP_ENABLED=true).",
@@ -3534,14 +3534,17 @@
             "note": "The server is a separate program: this page cannot tell whether it is running. Its settings are in the example file and in docs/MCP.md."
         },
         "connect": {
-            "title": "Connect an assistant",
-            "intro": "Start the server from the folder of this application (Node.js 18 or later). Replace /path/to/bitshares-ui with where it is.",
-            "tab_code": "Claude Code",
-            "tab_desktop": "Claude Desktop",
+            "title": "Connect opencode",
+            "intro": "Start from the folder of this application (Node.js 18 or later) and replace /path/to/bitshares-ui with where it is. opencode reads its servers from `opencode.json`, in the project you start it in or in your global opencode config.",
+            "tab_local": "Local",
             "tab_http": "HTTP",
-            "text_code": "Adds the server to Claude Code. The assistant starts it when it needs it; nothing listens on a port.",
-            "text_desktop": "Add this to the claude_desktop_config.json of Claude Desktop (Settings, Developer, Edit config), then restart it.",
-            "text_http": "For a client that connects to a web address. Make a token, put it in MCP_AUTH_TOKEN, start the server with MCP_TRANSPORT=http. The address answers only on this computer."
+            "text_local": "opencode starts the server itself when it needs it, and nothing listens on a port. Add this to `opencode.json`. The server is called `desk`, so its tools appear as `desk_bitshares_...`.",
+            "text_http": "For a server that is already running. Make a token, start the server with it, and point opencode at the address; the address answers only on this computer.",
+            "step_config_local": "opencode.json",
+            "step_token_http": "1. Make a token",
+            "step_start_http": "2. Start the server",
+            "step_config_http": "3. opencode.json",
+            "check": "Check it with `opencode mcp list`: `desk` shows as connected. Then ask, for example, for the balances of an account."
         },
         "copy": "Copy",
         "copied": "Copied",

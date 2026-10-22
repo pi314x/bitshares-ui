@@ -43,37 +43,80 @@ function rich(text: string): React.ReactNode[] {
 
 const SERVER = "/path/to/bitshares-ui/mcp/server.js";
 
-type Client = "code" | "desktop" | "http";
+type Client = "local" | "http";
 
-function snippet(client: Client, trading: boolean): string {
-    const extra = trading
-        ? `\n  MCP_TRADING_ENABLED=true MCP_TRADING_ACCOUNTS=alice \\\n  MCP_TRADE_LIMITS=BTS:1000:5000,XBTSX.USDT:100:500 \\`
-        : "";
-    if (client === "code") {
-        return trading
-            ? `claude mcp add bitshares \\\n  --env MCP_ENABLED=true --env MCP_TRADING_ENABLED=true \\\n  --env MCP_TRADING_ACCOUNTS=alice \\\n  --env MCP_TRADE_LIMITS=BTS:1000:5000,XBTSX.USDT:100:500 \\\n  -- node ${SERVER}`
-            : `claude mcp add bitshares --env MCP_ENABLED=true -- node ${SERVER}`;
+/** The settings the trading tools need, when the build has them (the same names as the
+ * example file; the accounts and limits are examples to change). */
+function environment(trading: boolean): Record<string, string> {
+    return trading
+        ? {
+              MCP_ENABLED: "true",
+              MCP_TRADING_ENABLED: "true",
+              MCP_TRADING_ACCOUNTS: "alice",
+              MCP_TRADE_LIMITS: "BTS:1000:5000,XBTSX.USDT:100:500"
+          }
+        : {MCP_ENABLED: "true"};
+}
+
+const SCHEMA = "https://opencode.ai/config.json";
+const TOKEN = "<the token>";
+
+/** What to show for connecting opencode: one or more blocks of text, each with a caption
+ * key. `local` is a server opencode starts itself; `http` is one that is already running. */
+function snippets(
+    client: Client,
+    trading: boolean
+): Array<{key: string; text: string}> {
+    if (client === "local") {
+        return [
+            {
+                key: "config",
+                text: JSON.stringify(
+                    {
+                        $schema: SCHEMA,
+                        mcp: {
+                            desk: {
+                                type: "local",
+                                command: ["node", SERVER],
+                                enabled: true,
+                                environment: environment(trading)
+                            }
+                        }
+                    },
+                    null,
+                    2
+                )
+            }
+        ];
     }
-    if (client === "desktop") {
-        const env = trading
-            ? {
-                  MCP_ENABLED: "true",
-                  MCP_TRADING_ENABLED: "true",
-                  MCP_TRADING_ACCOUNTS: "alice",
-                  MCP_TRADE_LIMITS: "BTS:1000:5000,XBTSX.USDT:100:500"
-              }
-            : {MCP_ENABLED: "true"};
-        return JSON.stringify(
-            {mcpServers: {bitshares: {command: "node", args: [SERVER], env}}},
-            null,
-            2
-        );
-    }
-    return (
-        `# 1. a token\nnode ${SERVER} --new-token\n\n` +
-        `# 2. start the server (the token goes in MCP_AUTH_TOKEN)\nMCP_ENABLED=true MCP_TRANSPORT=http \\${extra}\n  MCP_AUTH_TOKEN=<the token> node ${SERVER}\n\n` +
-        `# 3. add it to the client; the address is http://127.0.0.1:8765/mcp\nclaude mcp add --transport http bitshares http://127.0.0.1:8765/mcp \\\n  --header "Authorization: Bearer <the token>"`
-    );
+    const env = environment(trading);
+    const start =
+        Object.keys(env)
+            .map(name => `${name}=${env[name]}`)
+            .join(" \\\n  ") +
+        ` \\\n  MCP_TRANSPORT=http MCP_AUTH_TOKEN=${TOKEN} \\\n  node ${SERVER}`;
+    return [
+        {key: "token", text: `node ${SERVER} --new-token`},
+        {key: "start", text: start},
+        {
+            key: "config",
+            text: JSON.stringify(
+                {
+                    $schema: SCHEMA,
+                    mcp: {
+                        desk: {
+                            type: "remote",
+                            url: "http://127.0.0.1:8765/mcp",
+                            enabled: true,
+                            headers: {Authorization: `Bearer ${TOKEN}`}
+                        }
+                    }
+                },
+                null,
+                2
+            )
+        }
+    ];
 }
 
 function CodeBlock({text}: {text: string}) {
@@ -215,7 +258,7 @@ const LAYERS = [
 
 export default function McpPage() {
     const trading = mcpTrading();
-    const [client, setClient] = React.useState<Client>("code");
+    const [client, setClient] = React.useState<Client>("local");
     const tools = (TOOLS as unknown) as Tool[];
     const groups = [
         {id: "read", tools: tools.filter(tool => tool.group === "read")},
@@ -256,15 +299,24 @@ export default function McpPage() {
                     flush
                     aria-label={t("connect.title")}
                     items={[
-                        {key: "code", label: t("connect.tab_code")},
-                        {key: "desktop", label: t("connect.tab_desktop")},
+                        {key: "local", label: t("connect.tab_local")},
                         {key: "http", label: t("connect.tab_http")}
                     ]}
                     value={client}
                     onChange={key => setClient(key as Client)}
                 />
-                <p className={styles.muted}>{t(`connect.text_${client}`)}</p>
-                <CodeBlock text={snippet(client, trading)} />
+                <p className={styles.muted}>
+                    {rich(t(`connect.text_${client}`))}
+                </p>
+                {snippets(client, trading).map(block => (
+                    <div key={block.key} className={styles.block}>
+                        <span className={styles.blockLabel}>
+                            {t(`connect.step_${block.key}_${client}`)}
+                        </span>
+                        <CodeBlock text={block.text} />
+                    </div>
+                ))}
+                <p className={styles.muted}>{rich(t("connect.check"))}</p>
             </section>
 
             <section className={styles.card} aria-label={t("tools.title")}>
