@@ -3545,6 +3545,7 @@
             "tab_opencode": "opencode",
             "tab_code": "Claude Code",
             "tab_desktop": "Desktop",
+            "tab_codex": "Codex",
             "tab_http": "HTTP",
             "text_opencode": "opencode reads its servers from `opencode.json`, in the project you start it in or in your global opencode config. It starts this one itself when it needs it, and nothing listens on a port. The tools appear as `desk_bitshares_...`.",
             "text_code": "Adds the server to Claude Code. The assistant starts it when it needs it; nothing listens on a port.",
@@ -3552,6 +3553,11 @@
             "text_http": "For a server that is already running, in any client. Make a token, start the server with it, and point the client at the address; the address answers only on this computer.",
             "step_config_opencode": "opencode.json",
             "step_command_code": "Command",
+            "text_codex": "OpenAI's Codex CLI. Run the command, or add the same server to `~/.codex/config.toml` yourself. Nothing listens on a port: Codex starts the server when it needs it.",
+            "step_command_codex": "Command",
+            "step_config_codex": "~/.codex/config.toml",
+            "step_codex_http": "3. Or add it to Codex (~/.codex/config.toml)",
+            "check_codex": "Check it with `codex mcp list`: `desk` shows as enabled. Then ask, for example, for the balances of an account.",
             "step_config_desktop": "claude_desktop_config.json",
             "step_token_http": "1. Make a token",
             "step_start_http": "2. Start the server",
@@ -3560,7 +3566,7 @@
             "check_opencode": "Check it with `opencode mcp list`: `desk` shows as connected. Then ask, for example, for the balances of an account.",
             "check_code": "Check it with `claude mcp list`: `desk` shows as connected. Then ask, for example, for the balances of an account.",
             "check_desktop": "After the restart the tools of `desk` are available in a conversation. Ask, for example, for the balances of an account.",
-            "check_http": "Check it with `opencode mcp list` or `claude mcp list`."
+            "check_http": "Check it with `opencode mcp list`, `claude mcp list` or `codex mcp list`."
         },
         "copy": "Copy",
         "copied": "Copied",

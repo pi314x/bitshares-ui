@@ -1,7 +1,7 @@
 # MCP: an AI assistant that reads BitShares, and prepares trades you sign
 
 BitShares Desk ships a small **MCP server** (`mcp/`). MCP, the Model Context Protocol, is the
-way an AI assistant (Claude, opencode, or any client that speaks it) calls tools. The
+way an AI assistant (Claude, opencode, Codex, or any client that speaks it) calls tools. The
 server gives the assistant tools to **read the BitShares chain** and, if you switch it on, to
 **prepare an order that you review and sign yourself**. It is off by default, and it has no key.
 
@@ -69,6 +69,22 @@ claude mcp add desk --env MCP_ENABLED=true -- node /path/to/bitshares-ui/mcp/ser
 {"mcpServers": {"desk": {"command": "node", "args": ["/path/to/bitshares-ui/mcp/server.js"], "env": {"MCP_ENABLED": "true"}}}}
 ```
 
+**Codex** (OpenAI's Codex CLI): a command, or the same server in `~/.codex/config.toml`; check with
+`codex mcp list`:
+
+```
+codex mcp add desk --env MCP_ENABLED=true -- node /path/to/bitshares-ui/mcp/server.js
+```
+
+```toml
+[mcp_servers.desk]
+command = "node"
+args = ["/path/to/bitshares-ui/mcp/server.js"]
+
+[mcp_servers.desk.env]
+MCP_ENABLED = "true"
+```
+
 **HTTP**, for a server that is already running (a token on every call):
 
 ```
@@ -96,6 +112,14 @@ Claude Code:
 
 ```
 claude mcp add --transport http desk http://127.0.0.1:8765/mcp --header "Authorization: Bearer <the token>"
+```
+
+Codex (the token is read from an environment variable: `export DESK_MCP_TOKEN=<the token>` first):
+
+```toml
+[mcp_servers.desk]
+url = "http://127.0.0.1:8765/mcp"
+bearer_token_env_var = "DESK_MCP_TOKEN"
 ```
 
 Any other client that speaks MCP over stdio or streamable HTTP connects the same way.

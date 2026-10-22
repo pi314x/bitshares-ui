@@ -43,7 +43,7 @@ function rich(text: string): React.ReactNode[] {
 
 const SERVER = "/path/to/bitshares-ui/mcp/server.js";
 
-type Client = "opencode" | "code" | "desktop" | "http";
+type Client = "opencode" | "code" | "desktop" | "codex" | "http";
 type PageTab = "connect" | "tools" | "safety";
 
 /** The settings the trading tools need, when the build has them (the same names as the
@@ -92,16 +92,32 @@ const opencodeRemote = () =>
         }
     });
 
-/** The `claude mcp add` command for a server Claude Code starts itself. */
-function claudeCommand(trading: boolean): string {
+/** The `<cli> mcp add` command (Claude Code and Codex take the same form) for a server the
+ * client starts itself. */
+function addCommand(cli: "claude" | "codex", trading: boolean): string {
     const env = environment(trading);
     const flags = Object.keys(env).map(name => `--env ${name}=${env[name]}`);
     return flags.length > 1
-        ? `claude mcp add desk \\\n  ${flags.join(
+        ? `${cli} mcp add desk \\\n  ${flags.join(
               " \\\n  "
           )} \\\n  -- node ${SERVER}`
-        : `claude mcp add desk ${flags[0]} -- node ${SERVER}`;
+        : `${cli} mcp add desk ${flags[0]} -- node ${SERVER}`;
 }
+
+/** Codex's config.toml: the same server, as TOML. */
+function codexToml(trading: boolean): string {
+    const env = environment(trading);
+    return (
+        `[mcp_servers.desk]\ncommand = "node"\nargs = ["${SERVER}"]\n\n[mcp_servers.desk.env]\n` +
+        Object.keys(env)
+            .map(name => `${name} = "${env[name]}"`)
+            .join("\n")
+    );
+}
+
+/** Codex, for a server that is already running: the token comes from an environment variable. */
+const codexRemote = () =>
+    `# first: export DESK_MCP_TOKEN=${TOKEN}\n[mcp_servers.desk]\nurl = "${ADDRESS}"\nbearer_token_env_var = "DESK_MCP_TOKEN"`;
 
 /** What to show for a client: one or more blocks of text, each with a caption key. */
 function snippets(
@@ -112,7 +128,7 @@ function snippets(
         return [{key: "config", text: opencodeLocal(trading)}];
     }
     if (client === "code") {
-        return [{key: "command", text: claudeCommand(trading)}];
+        return [{key: "command", text: addCommand("claude", trading)}];
     }
     if (client === "desktop") {
         return [
@@ -130,6 +146,12 @@ function snippets(
             }
         ];
     }
+    if (client === "codex") {
+        return [
+            {key: "command", text: addCommand("codex", trading)},
+            {key: "config", text: codexToml(trading)}
+        ];
+    }
     const env = environment(trading);
     const start =
         Object.keys(env)
@@ -143,7 +165,8 @@ function snippets(
         {
             key: "code",
             text: `claude mcp add --transport http desk ${ADDRESS} \\\n  --header "Authorization: Bearer ${TOKEN}"`
-        }
+        },
+        {key: "codex", text: codexRemote()}
     ];
 }
 
@@ -348,6 +371,7 @@ export default function McpPage() {
                             {key: "opencode", label: t("connect.tab_opencode")},
                             {key: "code", label: t("connect.tab_code")},
                             {key: "desktop", label: t("connect.tab_desktop")},
+                            {key: "codex", label: t("connect.tab_codex")},
                             {key: "http", label: t("connect.tab_http")}
                         ]}
                         value={client}

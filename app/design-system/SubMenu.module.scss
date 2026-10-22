@@ -16,9 +16,16 @@
     margin: 0;
 }
 
-// four or more buttons on a phone
+// four or more buttons on a phone: closer, a little smaller, and a row that is too long
+// goes on a second line instead of scrolling out of sight
+.compact {
+    flex-wrap: wrap;
+    overflow-x: visible;
+}
+
 .compact .item {
     padding: 0 9px;
+    font-size: 12.5px;
 }
 
 .menu::-webkit-scrollbar {

@@ -102,7 +102,13 @@ describe("the MCP page", () => {
         const tabs = Array.from(
             container.querySelectorAll("button[aria-pressed]")
         ).map(b => b.textContent);
-        expect(tabs).toEqual(["opencode", "Claude Code", "Desktop", "HTTP"]);
+        expect(tabs).toEqual([
+            "opencode",
+            "Claude Code",
+            "Desktop",
+            "Codex",
+            "HTTP"
+        ]);
         expect(
             container.querySelector("button[aria-pressed=true]")!.textContent
         ).toBe("opencode");
@@ -150,10 +156,29 @@ describe("the MCP page", () => {
             env: {MCP_ENABLED: "true"}
         });
 
+        // Codex: the command, and the same as TOML
+        fireEvent.click(getByText("Codex"));
+        const codex = blocks();
+        expect(codex).toHaveLength(2);
+        expect(codex[0]).toBe(
+            "codex mcp add desk --env MCP_ENABLED=true -- node /path/to/bitshares-ui/mcp/server.js"
+        );
+        expect(codex[1]).toBe(
+            [
+                "[mcp_servers.desk]",
+                'command = "node"',
+                'args = ["/path/to/bitshares-ui/mcp/server.js"]',
+                "",
+                "[mcp_servers.desk.env]",
+                'MCP_ENABLED = "true"'
+            ].join("\n")
+        );
+        expect(container.textContent).toContain("codex mcp list");
+
         // HTTP: a token, the start, and an entry for each client
         fireEvent.click(getByText("HTTP"));
         const http = blocks();
-        expect(http).toHaveLength(4);
+        expect(http).toHaveLength(5);
         expect(http[0]).toContain("--new-token");
         expect(http[1]).toContain("MCP_TRANSPORT=http");
         expect(http[1]).toContain("MCP_AUTH_TOKEN=<the token>");
@@ -166,6 +191,9 @@ describe("the MCP page", () => {
         expect(http[3]).toContain(
             "claude mcp add --transport http desk http://127.0.0.1:8765/mcp"
         );
+        expect(http[4]).toContain("[mcp_servers.desk]");
+        expect(http[4]).toContain('url = "http://127.0.0.1:8765/mcp"');
+        expect(http[4]).toContain('bearer_token_env_var = "DESK_MCP_TOKEN"');
         // no real token on the page
         expect(http.join("\n")).not.toMatch(/[A-Za-z0-9_-]{32,}/);
 
@@ -226,12 +254,16 @@ describe("the MCP page", () => {
             ["Connect", "Tools", "Safety"].forEach(tab => {
                 fireEvent.click(getByText(tab));
                 if (tab === "Connect") {
-                    ["opencode", "Claude Code", "Desktop", "HTTP"].forEach(
-                        client => {
-                            fireEvent.click(getByText(client));
-                            expect(missing()).toBeNull();
-                        }
-                    );
+                    [
+                        "opencode",
+                        "Claude Code",
+                        "Desktop",
+                        "Codex",
+                        "HTTP"
+                    ].forEach(client => {
+                        fireEvent.click(getByText(client));
+                        expect(missing()).toBeNull();
+                    });
                 }
                 expect(missing()).toBeNull();
             });
