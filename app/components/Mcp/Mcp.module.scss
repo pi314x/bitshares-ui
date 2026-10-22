@@ -29,7 +29,8 @@
     line-height: 1.6;
 }
 
-.card {
+// `.page .card`: `body.darkTheme section` makes every section a block, which loses the gaps
+.page .card {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -229,6 +230,10 @@
 }
 
 .page .toolName {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
     grid-area: name;
     min-width: 0;
     color: var(--accent);
@@ -288,6 +293,7 @@
 .page .muted code,
 .page .toolText code,
 .page .argText code {
+    margin: 0;
     padding: 0;
     border: 0;
     background: none;
@@ -319,6 +325,10 @@
 }
 
 .page .argHead code {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 12.5px;
@@ -446,7 +456,7 @@
         gap: 12px;
     }
 
-    .card {
+    .page .card {
         padding: 16px;
         gap: 12px;
     }

@@ -12,7 +12,8 @@ beforeAll(() => {
 
 describe("the MCP page", () => {
     it("lists every tool of the server's catalog, with its name, description and arguments", () => {
-        const {container} = render(<McpPage />);
+        const {container, getByText} = render(<McpPage />);
+        fireEvent.click(getByText("Tools"));
         const cards = Array.from(container.querySelectorAll("[data-tool]"));
         expect(cards.map(c => c.getAttribute("data-tool")).sort()).toEqual(
             TOOLS.map((t: any) => t.name).sort()
@@ -32,7 +33,8 @@ describe("the MCP page", () => {
     });
 
     it("shows the annotations as chips: read-only for what reads, not read-only for what prepares", () => {
-        const {container} = render(<McpPage />);
+        const {container, getByText} = render(<McpPage />);
+        fireEvent.click(getByText("Tools"));
         const chips = (name: string) =>
             container.querySelector(`[data-tool="${name}"]`)!.textContent || "";
         expect(chips("bitshares_get_ticker")).toContain("Read-only");
@@ -55,11 +57,44 @@ describe("the MCP page", () => {
     });
 
     it("says that the trading tools are off in a build made without them", () => {
-        const {container} = render(<McpPage />);
+        const {container, getByText} = render(<McpPage />);
+        fireEvent.click(getByText("Tools"));
         expect(container.textContent).toContain(
             "Trading tools: off in this build. An assistant can only read."
         );
         expect(container.textContent).toContain("Off in this build");
+    });
+
+    it("starts on Connect and shows one section at a time", () => {
+        const {container, getByText, queryByText} = render(<McpPage />);
+        const sections = () =>
+            Array.from(container.querySelectorAll("section")).map(s =>
+                s.getAttribute("aria-label")
+            );
+        const tabs = Array.from(container.querySelectorAll('[role="tab"]')).map(
+            b => b.textContent
+        );
+        expect(tabs).toEqual(["Connect", "Tools", "Safety"]);
+        expect(
+            container.querySelector('[role="tab"][aria-selected="true"]')!
+                .textContent
+        ).toBe("Connect");
+        // the status is above the tabs and stays; one section under them
+        expect(sections()).toEqual(["This build", "Connect an assistant"]);
+        expect(container.querySelector("[data-tool]")).toBeNull();
+        fireEvent.click(getByText("Tools"));
+        expect(sections()).toEqual(["This build", "Tools"]);
+        expect(
+            container.querySelectorAll("[data-tool]").length
+        ).toBeGreaterThan(10);
+        fireEvent.click(getByText("Safety"));
+        expect(sections()).toEqual(["This build", "Trading safely"]);
+        expect(container.querySelector("[data-tool]")).toBeNull();
+        expect(queryByText("Connect an assistant")).toBeNull();
+        // the line about the docs is on every tab
+        expect(container.textContent).toContain("docs/MCP.md");
+        fireEvent.click(getByText("Connect"));
+        expect(sections()).toEqual(["This build", "Connect an assistant"]);
     });
 
     it("has a tab for each client, opencode first", () => {
@@ -142,7 +177,8 @@ describe("the MCP page", () => {
     });
 
     it("sets out how trading is kept safe, and what is not offered", () => {
-        const {container} = render(<McpPage />);
+        const {container, getByText} = render(<McpPage />);
+        fireEvent.click(getByText("Safety"));
         const text = container.textContent || "";
         [
             "No keys, no signing",
@@ -167,11 +203,40 @@ describe("the MCP page", () => {
     });
 
     it("writes `code` in a description as code", () => {
-        const {container} = render(<McpPage />);
+        const {container, getByText} = render(<McpPage />);
+        fireEvent.click(getByText("Tools"));
         const text = container.querySelector(
             '[data-tool="bitshares_prepare_limit_order"] p'
         )!;
         expect(text.querySelector("code")!.textContent).toBe("sell_amount");
         expect(text.textContent).not.toContain("`");
+    });
+
+    it("has every string on every tab, also in a language that has none of its own", () => {
+        const c: any = counterpart;
+        c.registerTranslations("de", {});
+        c.setFallbackLocale("en");
+        c.setLocale("de");
+        try {
+            const {container, getByText} = render(<McpPage />);
+            const missing = () =>
+                (container.textContent || "").match(
+                    /missing translation[^ ]*/g
+                );
+            ["Connect", "Tools", "Safety"].forEach(tab => {
+                fireEvent.click(getByText(tab));
+                if (tab === "Connect") {
+                    ["opencode", "Claude Code", "Desktop", "HTTP"].forEach(
+                        client => {
+                            fireEvent.click(getByText(client));
+                            expect(missing()).toBeNull();
+                        }
+                    );
+                }
+                expect(missing()).toBeNull();
+            });
+        } finally {
+            c.setLocale("en");
+        }
     });
 });

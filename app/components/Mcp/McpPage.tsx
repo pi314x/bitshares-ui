@@ -44,6 +44,7 @@ function rich(text: string): React.ReactNode[] {
 const SERVER = "/path/to/bitshares-ui/mcp/server.js";
 
 type Client = "opencode" | "code" | "desktop" | "http";
+type PageTab = "connect" | "tools" | "safety";
 
 /** The settings the trading tools need, when the build has them (the same names as the
  * example file; the accounts and limits are examples to change). */
@@ -286,6 +287,7 @@ const LAYERS = [
 export default function McpPage() {
     const trading = mcpTrading();
     const [client, setClient] = React.useState<Client>("opencode");
+    const [tab, setTab] = React.useState<PageTab>("connect");
     const tools = (TOOLS as unknown) as Tool[];
     const groups = [
         {id: "read", tools: tools.filter(tool => tool.group === "read")},
@@ -318,114 +320,138 @@ export default function McpPage() {
                 <p className={styles.muted}>{t("status.note")}</p>
             </section>
 
-            <section className={styles.card} aria-label={t("connect.title")}>
-                <h3 className={styles.heading}>{t("connect.title")}</h3>
-                <p className={styles.muted}>{rich(t("connect.intro"))}</p>
-                <SubMenu
-                    toggle
-                    flush
-                    compact
+            <SubMenu
+                flush
+                aria-label={t("tabs.label")}
+                items={[
+                    {key: "connect", label: t("tabs.connect")},
+                    {key: "tools", label: t("tabs.tools")},
+                    {key: "safety", label: t("tabs.safety")}
+                ]}
+                value={tab}
+                onChange={key => setTab(key as PageTab)}
+            />
+
+            {tab === "connect" ? (
+                <section
+                    className={styles.card}
                     aria-label={t("connect.title")}
-                    items={[
-                        {key: "opencode", label: t("connect.tab_opencode")},
-                        {key: "code", label: t("connect.tab_code")},
-                        {key: "desktop", label: t("connect.tab_desktop")},
-                        {key: "http", label: t("connect.tab_http")}
-                    ]}
-                    value={client}
-                    onChange={key => setClient(key as Client)}
-                />
-                <p className={styles.muted}>
-                    {rich(t(`connect.text_${client}`))}
-                </p>
-                {snippets(client, trading).map(block => (
-                    <div key={block.key} className={styles.block}>
-                        <span className={styles.blockLabel}>
-                            {t(`connect.step_${block.key}_${client}`)}
-                        </span>
-                        <CodeBlock text={block.text} />
-                    </div>
-                ))}
-                <p className={styles.muted}>
-                    {rich(t(`connect.check_${client}`))}
-                </p>
-            </section>
-
-            <section className={styles.card} aria-label={t("tools.title")}>
-                <h3 className={styles.heading}>{t("tools.title")}</h3>
-                <p className={styles.muted}>{t("tools.intro")}</p>
-                <details className={styles.legend}>
-                    <summary>{t("annotations.title")}</summary>
-                    <ul>
-                        {[
-                            "read_only",
-                            "not_read_only",
-                            "destructive",
-                            "idempotent",
-                            "open_world",
-                            "local"
-                        ].map(key => (
-                            <li key={key}>{t(`annotations.${key}`)}</li>
-                        ))}
-                    </ul>
-                </details>
-                {groups.map(group => (
-                    <div key={group.id} className={styles.group}>
-                        <h4 className={styles.groupTitle}>
-                            {t(`tools.group_${group.id}`)}
-                            <span className={styles.count}>
-                                {group.tools.length}
+                >
+                    <h3 className={styles.heading}>{t("connect.title")}</h3>
+                    <p className={styles.muted}>{rich(t("connect.intro"))}</p>
+                    <SubMenu
+                        toggle
+                        flush
+                        compact
+                        aria-label={t("connect.title")}
+                        items={[
+                            {key: "opencode", label: t("connect.tab_opencode")},
+                            {key: "code", label: t("connect.tab_code")},
+                            {key: "desktop", label: t("connect.tab_desktop")},
+                            {key: "http", label: t("connect.tab_http")}
+                        ]}
+                        value={client}
+                        onChange={key => setClient(key as Client)}
+                    />
+                    <p className={styles.muted}>
+                        {rich(t(`connect.text_${client}`))}
+                    </p>
+                    {snippets(client, trading).map(block => (
+                        <div key={block.key} className={styles.block}>
+                            <span className={styles.blockLabel}>
+                                {t(`connect.step_${block.key}_${client}`)}
                             </span>
-                        </h4>
-                        {group.id === "trade" ? (
-                            <Alert
-                                type={trading ? "warning" : "info"}
-                                showIcon
-                                message={t(
-                                    trading
-                                        ? "tools.trade_on_title"
-                                        : "tools.trade_off_title"
-                                )}
-                                description={t(
-                                    trading
-                                        ? "tools.trade_on"
-                                        : "tools.trade_off"
-                                )}
-                            />
-                        ) : null}
-                        <div className={styles.toolList}>
-                            {group.tools.map(tool => (
-                                <ToolCard key={tool.name} tool={tool} />
-                            ))}
+                            <CodeBlock text={block.text} />
                         </div>
-                    </div>
-                ))}
-            </section>
-
-            <section className={styles.card} aria-label={t("security.title")}>
-                <h3 className={styles.heading}>{t("security.title")}</h3>
-                <p className={styles.muted}>{t("security.intro")}</p>
-                <ol className={styles.layers}>
-                    {LAYERS.map(id => (
-                        <li key={id}>
-                            <strong>{t(`security.${id}_title`)}</strong>
-                            <span>{t(`security.${id}_text`)}</span>
-                        </li>
                     ))}
-                </ol>
-                <Alert
-                    type="info"
-                    showIcon
-                    message={t("security.not_done_title")}
-                    description={t("security.not_done_text")}
-                />
-                <Alert
-                    type="warning"
-                    showIcon
-                    message={t("security.residual_title")}
-                    description={t("security.residual_text")}
-                />
-            </section>
+                    <p className={styles.muted}>
+                        {rich(t(`connect.check_${client}`))}
+                    </p>
+                </section>
+            ) : null}
+
+            {tab === "tools" ? (
+                <section className={styles.card} aria-label={t("tools.title")}>
+                    <h3 className={styles.heading}>{t("tools.title")}</h3>
+                    <p className={styles.muted}>{t("tools.intro")}</p>
+                    <details className={styles.legend}>
+                        <summary>{t("annotations.title")}</summary>
+                        <ul>
+                            {[
+                                "read_only",
+                                "not_read_only",
+                                "destructive",
+                                "idempotent",
+                                "open_world",
+                                "local"
+                            ].map(key => (
+                                <li key={key}>{t(`annotations.${key}`)}</li>
+                            ))}
+                        </ul>
+                    </details>
+                    {groups.map(group => (
+                        <div key={group.id} className={styles.group}>
+                            <h4 className={styles.groupTitle}>
+                                {t(`tools.group_${group.id}`)}
+                                <span className={styles.count}>
+                                    {group.tools.length}
+                                </span>
+                            </h4>
+                            {group.id === "trade" ? (
+                                <Alert
+                                    type={trading ? "warning" : "info"}
+                                    showIcon
+                                    message={t(
+                                        trading
+                                            ? "tools.trade_on_title"
+                                            : "tools.trade_off_title"
+                                    )}
+                                    description={t(
+                                        trading
+                                            ? "tools.trade_on"
+                                            : "tools.trade_off"
+                                    )}
+                                />
+                            ) : null}
+                            <div className={styles.toolList}>
+                                {group.tools.map(tool => (
+                                    <ToolCard key={tool.name} tool={tool} />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </section>
+            ) : null}
+
+            {tab === "safety" ? (
+                <section
+                    className={styles.card}
+                    aria-label={t("security.title")}
+                >
+                    <h3 className={styles.heading}>{t("security.title")}</h3>
+                    <p className={styles.muted}>{t("security.intro")}</p>
+                    <ol className={styles.layers}>
+                        {LAYERS.map(id => (
+                            <li key={id}>
+                                <strong>{t(`security.${id}_title`)}</strong>
+                                <span>{t(`security.${id}_text`)}</span>
+                            </li>
+                        ))}
+                    </ol>
+                    <Alert
+                        type="info"
+                        showIcon
+                        message={t("security.not_done_title")}
+                        description={t("security.not_done_text")}
+                    />
+                    <Alert
+                        type="warning"
+                        showIcon
+                        message={t("security.residual_title")}
+                        description={t("security.residual_text")}
+                    />
+                </section>
+            ) : null}
 
             <p className={styles.muted}>{t("docs")}</p>
         </div>

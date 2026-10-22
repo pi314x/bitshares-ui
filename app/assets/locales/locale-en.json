@@ -3533,6 +3533,12 @@
             "trading_off": "Trading tools: off in this build. An assistant can only read.",
             "note": "The server is a separate program: this page cannot tell whether it is running. Its settings are in the example file and in docs/MCP.md."
         },
+        "tabs": {
+            "label": "Sections",
+            "connect": "Connect",
+            "tools": "Tools",
+            "safety": "Safety"
+        },
         "connect": {
             "title": "Connect an assistant",
             "intro": "Start from the folder of this application (Node.js 18 or later) and replace /path/to/bitshares-ui with where it is. In each client the server is called `desk`.",
