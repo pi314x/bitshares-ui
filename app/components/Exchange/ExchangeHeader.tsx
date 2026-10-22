@@ -37,7 +37,6 @@
 // seed already covers that case.
 import * as React from "react";
 import {Link, LinkProps} from "react-router-dom";
-import Icon from "../Icon/Icon";
 import AssetName from "../Utility/AssetName";
 import MarketsActions from "actions/MarketsActions";
 import SettingsActions from "actions/SettingsActions";
@@ -46,7 +45,7 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import ExchangeHeaderCollateral from "./ExchangeHeaderCollateral";
-import {Icon as AntIcon} from "../../design-system/Icon";
+import {RailIcon} from "../../design-system/RailIcon";
 import {Asset, Price} from "common/MarketClasses";
 import AssetLogo from "../Utility/AssetLogo";
 import styles from "./ExchangeHeader.module.scss";
@@ -139,7 +138,7 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
 
     // Favorite star
     const marketID = `${quoteSymbol}_${baseSymbol}`;
-    const starClass = starredMarkets.has(marketID) ? "gold-star" : "grey-star";
+    const starred = starredMarkets.has(marketID);
 
     // Market stats
     const dayChange = marketStats.get("change");
@@ -305,46 +304,66 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                                 </span>
                             </div>
                             <div className={styles.actions}>
-                                <AntIcon
+                                <button
+                                    type="button"
                                     onClick={showPriceAlertModal}
-                                    type={"bell"}
-                                    className={`exchange--price-alert--show-modal ${PriceAlertBellClassName}`}
+                                    title={counterpart.translate(
+                                        "exchange.price_alert.title"
+                                    )}
+                                    aria-label={counterpart.translate(
+                                        "exchange.price_alert.title"
+                                    )}
+                                    className={`exchange--price-alert--show-modal ${PriceAlertBellClassName} ${
+                                        hasAnyPriceAlert ? styles.on : ""
+                                    }`}
                                     data-intro={(translator as any).translate(
                                         "walkthrough.price_alerts"
                                     )}
-                                />
+                                >
+                                    <RailIcon name="bell" size={18} />
+                                </button>
                                 <TypedLink
                                     onClick={() => {
                                         (MarketsActions as any).switchMarket();
                                     }}
                                     to={`/market/${baseSymbol}_${quoteSymbol}`}
+                                    title={counterpart.translate(
+                                        "icons.shuffle"
+                                    )}
+                                    aria-label={counterpart.translate(
+                                        "icons.shuffle"
+                                    )}
                                     data-intro={(translator as any).translate(
                                         "walkthrough.switch_button"
                                     )}
                                 >
-                                    <Icon
-                                        className="shuffle"
-                                        name="shuffle"
-                                        title="icons.shuffle"
-                                    />
+                                    <RailIcon name="swap" size={18} />
                                 </TypedLink>
-                                <a
+                                <button
+                                    type="button"
                                     onClick={() => {
                                         addMarket(
                                             quoteAsset.get("symbol"),
                                             baseAsset.get("symbol")
                                         );
                                     }}
+                                    title={counterpart.translate(
+                                        "icons.fi_star.market"
+                                    )}
+                                    aria-label={counterpart.translate(
+                                        "icons.fi_star.market"
+                                    )}
+                                    aria-pressed={starred}
+                                    className={starred ? styles.starOn : ""}
                                     data-intro={(translator as any).translate(
                                         "walkthrough.favourite_button"
                                     )}
                                 >
-                                    <Icon
-                                        className={starClass}
-                                        name="fi-star"
-                                        title="icons.fi_star.market"
+                                    <RailIcon
+                                        name={starred ? "star-filled" : "star"}
+                                        size={18}
                                     />
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </>
@@ -468,7 +487,7 @@ function ExchangeHeaderInner(props: ExchangeHeaderProps) {
                     "walkthrough.personalize"
                 )}
             >
-                <AntIcon type="setting" />
+                <RailIcon name="settings" size={18} />
                 <Translate
                     className={styles.settingsLabel}
                     content="exchange.settings.header.title"

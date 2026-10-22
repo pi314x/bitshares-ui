@@ -79,35 +79,59 @@
     font-weight: 400;
 }
 
-// bell, swap sides, favourite: three quiet icon buttons
+// bell, swap sides, favourite: three quiet icon buttons, the line icons of the rail and the
+// top bar. A touch screen gets a larger target.
 .actions {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.actions > * {
+// `body[class][class]`: the legacy sheet colours every link (the swap button is one)
+body[class][class] .actions > * {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
     margin: 0;
     padding: 0;
-    border-radius: var(--radius-sm);
+    border: 0;
+    border-radius: var(--radius);
+    background: none;
     color: var(--muted);
-    font-size: 15px;
+    font: inherit;
+    line-height: 1;
+    text-decoration: none;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.actions svg {
-    width: 16px;
-    height: 16px;
-}
-
-.actions > *:hover {
+body[class][class] .actions > *:hover {
     background: var(--hover);
     color: var(--ink);
+}
+
+body[class][class] .actions > *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+// a price alert is set: the bell is in the accent colour; the pair is a favourite: gold
+body[class][class] .actions > .on {
+    color: var(--accent);
+}
+
+body[class][class] .actions > .starOn {
+    color: var(--warn);
+}
+
+@media (pointer: coarse) {
+    body[class][class] .actions > * {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 // ----- the figures

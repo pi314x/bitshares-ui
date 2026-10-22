@@ -116,6 +116,32 @@ const PATHS: {[name: string]: React.ReactNode} = {
             <path d="m13.5 5.5-3 13" />
         </>
     ),
+    // the bell of the top bar (NotificationBell draws the same), for a price alert
+    bell: (
+        <>
+            <path d="M6 17h12l-1.4-2.2V10.5a4.6 4.6 0 0 0-9.2 0v4.3L6 17Z" />
+            <path d="M10 19.5a2.1 2.1 0 0 0 4 0" />
+        </>
+    ),
+    // two arrows the other way: switch the sides of a pair
+    swap: (
+        <>
+            <path d="M4.5 8h14" />
+            <path d="m15.5 5 3 3-3 3" />
+            <path d="M19.5 16h-14" />
+            <path d="m8.5 13-3 3 3 3" />
+        </>
+    ),
+    // a favourite: the outline, and filled when it is one
+    star: (
+        <path d="m12 3.8 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.7-5 2.7 1-5.6-4.1-4 5.6-.8L12 3.8Z" />
+    ),
+    "star-filled": (
+        <path
+            d="m12 3.8 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.7-5 2.7 1-5.6-4.1-4 5.6-.8L12 3.8Z"
+            fill="currentColor"
+        />
+    ),
     // an assistant: a large and a small spark
     assistant: (
         <>
@@ -134,18 +160,21 @@ const PATHS: {[name: string]: React.ReactNode} = {
 
 export function RailIcon({
     name,
-    className
+    className,
+    size = 18
 }: {
     name: string;
     className?: string;
+    /** the width and height in px (18 in the rail) */
+    size?: number;
 }): JSX.Element | null {
     const shape = PATHS[name];
     if (!shape) return null;
     return (
         <svg
             className={className}
-            width="18"
-            height="18"
+            width={size}
+            height={size}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
