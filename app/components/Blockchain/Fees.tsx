@@ -320,7 +320,9 @@ export default function Fees({settings}: FeesProps) {
                 className="grid-block small-12 shrink"
                 style={{overflow: "visible"}}
             >
-                <HelpContent path={"components/Fees"} />
+                <div className={styles.intro}>
+                    <HelpContent path={"components/Fees"} />
+                </div>
             </div>
             <div className="grid-block small-12 " style={{overflow: "visible"}}>
                 <div className="grid-content">{feeGroups}</div>

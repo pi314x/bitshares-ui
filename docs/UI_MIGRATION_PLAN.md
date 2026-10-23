@@ -13673,3 +13673,15 @@ buttons), one card with the block's facts and its transactions under it (it was 
 a centred column, with the buttons floated to its edges). Not done: the Login page (two legacy
 plates; it signs people in, so it is not restyled in passing), the Fees page (its text is a help
 page), and the operations of a block, which are the legacy transaction view.
+
+The three pages the third round left: **Login** is a head, the switch between the two ways to sign
+in (`SubMenu`), and one card with the form of the chosen way. Only the wrapper changed:
+`WalletLogin`, `DecryptBackup` and `AccountLogin` are the same components with the same props; both
+stay mounted and the one that is not chosen is hidden, as before. Checked by running both ways in
+the built bundle (a wrong password: "Incorrect password", still on /login; a broken .bin file: the
+invalid state) and by the same attempt against the previous commit's build: identical result, down
+to the uncaught "Invalid sequence tag" that decoding a garbage file throws in both (that is in the
+unchanged decrypt code). **Fees**: the help text above the tables is set like the head of every other
+page (CSS only, the help page itself is the same). **Block**: each operation is a card, a row is a
+label and its value (side by side from 560px, the label over the value on a phone), the type row
+with the raw json link on top; scoped to the block page, other views of `op-table` are untouched.

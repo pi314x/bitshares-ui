@@ -1,0 +1,103 @@
+// The login page: a head, the switch between the two ways to sign in, one card with the form
+// of the chosen way. The two forms are the legacy markup of the plates (`wallet-block`,
+// `account-block`), restyled here without the plates' dimming, pictures and 10% side padding.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 560px;
+    min-width: 0;
+}
+
+.plate {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+// the way that is not chosen stays mounted (what was typed in it is kept), only hidden
+.off {
+    display: none;
+}
+
+body[class][class] .plate .kind {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body[class][class] .plate :global(.wallet-block),
+body[class][class] .plate :global(.account-block) {
+    padding: 0;
+    text-align: left;
+}
+
+// the gradient that dimmed a plate behind the next one on a phone
+body[class][class] .plate :global(.overflow-bg-block) {
+    display: none;
+}
+
+body[class][class] .plate :global(.button-group) {
+    margin: 16px 0 0;
+    text-align: left;
+}
+
+body[class][class] .plate :global(.without-bin) {
+    margin: 8px 0 16px;
+    text-align: left;
+}
+
+// the drop area of the backup file (the large one; the small one is the phone's) and its states,
+// in the design's colours (the legacy theme sheet coloured them inside `.registration-layout`)
+body[class][class] .plate :global(.file-input-container),
+body[class][class] .plate :global(.small-container) {
+    border-color: var(--line);
+    border-radius: var(--radius);
+    background: var(--raised);
+    color: var(--ink);
+}
+
+body[class][class] .plate :global(.file-input-container.dropHover) {
+    border-color: var(--accent);
+}
+
+body[class][class] .plate :global(.file-input-container.downloaded) {
+    border-color: var(--up);
+}
+
+body[class][class] .plate :global(.file-input-container.invalid) {
+    border-color: var(--down);
+}
+
+// the Login button of both ways on the left edge of the form (the account form centred it with an
+// inline `text-align`; a flex row ignores that), and no extra space between the password and it
+body[class][class] .plate :global(.account-block) form > :last-child,
+body[class][class] .plate :global(.account-block) form > :last-child > * {
+    text-align: left;
+}
+
+body[class][class] .plate :global(.account-block) form > :last-child {
+    margin-top: 16px;
+}
+
+// the show / hide password toggle sat in the flow under the field (a line of its own, ~20px of
+// space above the Login button); it is on the field's right edge
+body[class][class] .plate :global(.password-block) {
+    position: relative;
+    margin-bottom: 0;
+}
+
+body[class][class] .plate :global(.password-block) :global(.eye-block) {
+    position: absolute;
+    top: 39px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}

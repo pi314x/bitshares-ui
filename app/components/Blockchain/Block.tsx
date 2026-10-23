@@ -337,7 +337,11 @@ function BlockCore({
                     )}
                 </dl>
             </Card>
-            {block ? <TransactionList block={block} /> : null}
+            {block ? (
+                <div className={styles.ops}>
+                    <TransactionList block={block} />
+                </div>
+            ) : null}
             <div className={styles.top}>
                 <a onClick={scrollToTop}>
                     <Translate content="global.return_to_top" />

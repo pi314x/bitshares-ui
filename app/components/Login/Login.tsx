@@ -46,16 +46,29 @@
 // Grepped app-wide for `Login/Login` and for any ref into this
 // component: only `app/App.jsx` renders it (`component={Login}`), with
 // no ref - no `forwardRef`/`useImperativeHandle` needed.
+//
+// The page's layout (a head, a switch between the two ways to sign in, one card with the form of
+// the chosen way) is new; nothing the two forms do changed. Both forms stay mounted, the one that
+// is not chosen is only hidden (as it was: `display-none`), so what was typed in it is kept when
+// the switch is used. `WalletHeaderSelection`/`AccountHeaderSelection` (the two big pictures that
+// were also the switch) are no longer used here; the Registration page still has them. The class
+// `login-page-selector` stays on the page: the legacy sheet scopes the file drop area (the large
+// one on a desktop, the small one on a phone) and the password block to it.
 import * as React from "react";
-import Translate from "react-translate-component";
+import counterpart from "counterpart";
 import AccountLogin from "./AccountLogin";
 import WalletLogin from "./WalletLogin";
-import WalletHeaderSelection from "../Registration/WalletHeaderSelection";
-import AccountHeaderSelection from "../Registration/AccountHeaderSelection";
+import {PageHead} from "../../design-system/PageHead";
+import {SubMenu} from "../../design-system/SubMenu";
+import styles from "./Login.module.scss";
 
 interface LoginProps {
     history: any;
 }
+
+// a title that carries markup for the old selector (`<span class="hide-text-for-small">`)
+const plain = (key: string) =>
+    (counterpart.translate(key) as string).replace(/<[^>]*>/g, "");
 
 export default function Login({history}: LoginProps) {
     const [activeWalletModel, setActiveWalletModel] = React.useState(true);
@@ -65,81 +78,57 @@ export default function Login({history}: LoginProps) {
     };
 
     return (
-        <div className="grid-block align-center registration-layout">
-            <div className="grid-block shrink vertical text-center registration-selector">
-                <Translate
-                    content="login.title"
-                    component="p"
-                    className="registration-title"
+        <div className={`${styles.page} login-page-selector`}>
+            <PageHead flush title={counterpart.translate("login.title")} />
+            <SubMenu
+                toggle
+                aria-label={counterpart.translate("login.title")}
+                items={[
+                    {
+                        key: "wallet",
+                        label: plain("registration.walletModelTitle")
+                    },
+                    {
+                        key: "account",
+                        label: plain("registration.accountModelTitle")
+                    }
+                ]}
+                value={activeWalletModel ? "wallet" : "account"}
+                onChange={key => changeActiveModel(key === "wallet")}
+            />
+            <div
+                className={`${styles.plate} ${
+                    activeWalletModel ? "" : styles.off
+                }`}
+            >
+                <p className={styles.kind}>
+                    {counterpart.translate("wallet.wallet_model")}
+                </p>
+                <WalletLogin
+                    active={activeWalletModel}
+                    onChangeActive={() =>
+                        !activeWalletModel ? changeActiveModel(true) : null
+                    }
+                    goToAccountModel={() => changeActiveModel(false)}
+                    history={history}
                 />
-                <div>
-                    <div className="v-align login-page-selector">
-                        <div
-                            className={`${
-                                !activeWalletModel ? "inactive-model-block" : ""
-                            } selection-block align-center plate`}
-                        >
-                            <div className="small-horizontal small-only-block">
-                                <WalletHeaderSelection
-                                    active={activeWalletModel}
-                                    onChangeActive={() =>
-                                        changeActiveModel(true)
-                                    }
-                                />
-                                <AccountHeaderSelection
-                                    active={!activeWalletModel}
-                                    onChangeActive={() =>
-                                        changeActiveModel(false)
-                                    }
-                                    forSmall
-                                />
-                            </div>
-                            <WalletLogin
-                                active={activeWalletModel}
-                                onChangeActive={() =>
-                                    !activeWalletModel
-                                        ? changeActiveModel(true)
-                                        : null
-                                }
-                                goToAccountModel={() =>
-                                    changeActiveModel(false)
-                                }
-                                history={history}
-                            />
-                        </div>
-                        <div
-                            className={`${
-                                activeWalletModel ? "inactive-model-block" : ""
-                            } selection-block align-center plate`}
-                        >
-                            <div className="small-horizontal small-only-block">
-                                <WalletHeaderSelection
-                                    active={activeWalletModel}
-                                    onChangeActive={() =>
-                                        changeActiveModel(true)
-                                    }
-                                    forSmall
-                                />
-                                <AccountHeaderSelection
-                                    active={!activeWalletModel}
-                                    onChangeActive={() =>
-                                        changeActiveModel(false)
-                                    }
-                                />
-                            </div>
-                            <AccountLogin
-                                active={!activeWalletModel}
-                                history={history}
-                                onChangeActive={() =>
-                                    activeWalletModel
-                                        ? changeActiveModel(false)
-                                        : null
-                                }
-                                goToWalletModel={() => changeActiveModel(true)}
-                            />
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div
+                className={`${styles.plate} ${
+                    activeWalletModel ? styles.off : ""
+                }`}
+            >
+                <p className={styles.kind}>
+                    {counterpart.translate("wallet.password_model")}
+                </p>
+                <AccountLogin
+                    active={!activeWalletModel}
+                    history={history}
+                    onChangeActive={() =>
+                        activeWalletModel ? changeActiveModel(false) : null
+                    }
+                    goToWalletModel={() => changeActiveModel(true)}
+                />
             </div>
         </div>
     );
