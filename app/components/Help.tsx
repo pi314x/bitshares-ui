@@ -1,6 +1,7 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
+import {PageHead} from "../design-system/PageHead";
 import {toPairs} from "lodash-es";
 import HelpContent, {getHelpTitles} from "./Utility/HelpContent";
 import {Input} from "../design-system/Input";
@@ -89,7 +90,7 @@ export default function Help({match}: HelpProps) {
 
     return (
         <div className={styles.page}>
-            <h1 className={styles.title}>{t("title")}</h1>
+            <PageHead flush title={t("title")} />
             <div className={styles.layout}>
                 {phone ? (
                     <details

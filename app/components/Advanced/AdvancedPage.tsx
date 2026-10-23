@@ -5,7 +5,9 @@
 // what the operation does, who can use it and what the chain calls it; the dialogs check
 // the chain's rules before a wallet prompt.
 import * as React from "react";
+import counterpart from "counterpart";
 import {Button} from "../../design-system/Button";
+import {PageHead} from "../../design-system/PageHead";
 import AccountTransferDialog from "./AccountTransferDialog";
 import AssertDialog from "./AssertDialog";
 import BlindTransferDialog from "./BlindTransferDialog";
@@ -119,11 +121,15 @@ export default function AdvancedPage() {
 
     return (
         <div className={styles.page}>
-            <p className={styles.intro}>
-                {me.name
-                    ? t("page.intro", {name: me.name})
-                    : t("page.intro_no_account")}
-            </p>
+            <PageHead
+                flush
+                title={counterpart.translate("header.advanced")}
+                lead={
+                    me.name
+                        ? t("page.intro", {name: me.name})
+                        : t("page.intro_no_account")
+                }
+            />
             {SECTIONS.map(section => (
                 <div className={styles.section} key={section.id}>
                     <h3 className={styles.sectionTitle}>

@@ -8,6 +8,7 @@ import counterpart from "counterpart";
 import {Alert} from "../../design-system/Alert";
 import {Button} from "../../design-system/Button";
 import {SubMenu} from "../../design-system/SubMenu";
+import {PageHead} from "../../design-system/PageHead";
 import {copyText} from "../../lib/common/clipboard";
 import {mcpTrading} from "../../lib/common/mcpFlags";
 import {TOOLS} from "../../../mcp/src/catalog";
@@ -319,8 +320,7 @@ export default function McpPage() {
 
     return (
         <div className={styles.page}>
-            <h2 className={styles.title}>{t("title")}</h2>
-            <p className={styles.lead}>{t("intro")}</p>
+            <PageHead flush title={t("title")} lead={t("intro")} />
 
             <section className={styles.card} aria-label={t("status.title")}>
                 <h3 className={styles.heading}>{t("status.title")}</h3>

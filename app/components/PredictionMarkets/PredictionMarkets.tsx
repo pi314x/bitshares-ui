@@ -117,6 +117,7 @@ import {Switch} from "../../design-system/Switch";
 import {Button} from "../../design-system/Button";
 import {SubMenu} from "../../design-system/SubMenu";
 import {Toolbar} from "../../design-system/Toolbar";
+import {PageHead} from "../../design-system/PageHead";
 import {Collapse} from "../../design-system/Collapse";
 import styles from "./PredictionMarkets.module.scss";
 import {Icon} from "../../design-system/Icon";
@@ -736,16 +737,11 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
     );
     return (
         <div className={`prediction-markets ${styles.page}`}>
-            <div className={styles.head}>
-                <div className={styles.headText}>
-                    <h1 className={styles.title}>
-                        {counterpart.translate("prediction.overview.title")}
-                    </h1>
-                    <p className={styles.lead}>
-                        {counterpart.translate("prediction.overview.lead")}
-                    </p>
-                </div>
-                <div className={styles.headAction}>
+            <PageHead
+                flush
+                title={counterpart.translate("prediction.overview.title")}
+                lead={counterpart.translate("prediction.overview.lead")}
+                action={
                     <Tooltip
                         title={counterpart.translate(
                             "prediction.tooltips.create_prediction_market_asset"
@@ -760,8 +756,8 @@ function PredictionMarketsCore(props: PredictionMarketsProps) {
                             )}
                         </Button>
                     </Tooltip>
-                </div>
-            </div>
+                }
+            />
             <Collapse>
                 <Collapse.Panel
                     header={counterpart.translate(

@@ -207,6 +207,10 @@ gate at all.
   toolbar). A panel's own tabs that carry a figure beside the name (the portfolio's
   Balances / Open orders / Margin positions) are the same pill row. A strip with one tab
   shows no menu. See `docs/UI_MIGRATION_PLAN.md` §7.31.
+- A page's head (its title, a lead of a sentence or two, a muted note, the page's one main
+  action) is `design-system/PageHead`: 24px title, 14px lead, the action at the end of the row
+  (under the text on a phone). Do not size an h1 and an intro of your own per page. A page that
+  lays out its own blocks with a gap passes `flush`. See `docs/UI_MIGRATION_PLAN.md` §7.34.
 - The buttons of a form or card (Save / Reset / Remove, Submit / Cancel) go in
   `design-system/ButtonRow`: one wrapping row with one gap. Never `marginLeft` on the second
   button: when the row runs out of room the button wraps onto its own line with the margin and

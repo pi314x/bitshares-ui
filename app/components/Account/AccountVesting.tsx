@@ -27,6 +27,7 @@ import {Button} from "../../design-system/Button";
 import PaginatedList from "components/Utility/PaginatedList";
 import SearchInput from "../Utility/SearchInput";
 import counterpart from "counterpart";
+import {PageHead} from "../../design-system/PageHead";
 import TimedTransferModal from "./TimedTransferModal";
 
 interface AccountVestingState {
@@ -406,8 +407,10 @@ function AccountVesting({account}: AccountVestingProps) {
 
     return (
         <div className="grid-content vertical">
-            <Translate component="h1" content="account.vesting.title" />
-            <Translate content="account.vesting.explain" component="p" />
+            <PageHead
+                title={counterpart.translate("account.vesting.title")}
+                lead={counterpart.translate("account.vesting.explain")}
+            />
             <div
                 className="header-selector padding"
                 style={{

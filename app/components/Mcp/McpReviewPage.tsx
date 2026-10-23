@@ -8,6 +8,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import {useNavigate} from "react-router-dom";
+import {PageHead} from "../../design-system/PageHead";
 import {Alert} from "../../design-system/Alert";
 import {Button} from "../../design-system/Button";
 import {ButtonRow} from "../../design-system/ButtonRow";
@@ -166,7 +167,7 @@ export default function McpReviewPage() {
     if (!payload) {
         return (
             <div className={styles.page}>
-                <h2 className={styles.title}>{t("title")}</h2>
+                <PageHead flush title={t("title")} />
                 <Alert
                     type="info"
                     showIcon
@@ -180,7 +181,7 @@ export default function McpReviewPage() {
         const code = decoded.ok ? "fields" : decoded.error;
         return (
             <div className={styles.page}>
-                <h2 className={styles.title}>{t("title")}</h2>
+                <PageHead flush title={t("title")} />
                 <Alert
                     type="error"
                     showIcon
@@ -273,7 +274,7 @@ export default function McpReviewPage() {
 
     return (
         <div className={styles.page}>
-            <h2 className={styles.title}>{t("title")}</h2>
+            <PageHead flush title={t("title")} />
             <Alert
                 type="warning"
                 showIcon

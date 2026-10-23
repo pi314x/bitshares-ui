@@ -48,7 +48,9 @@ import AssetName from "../Utility/AssetName";
 import {ChainStore} from "bitsharesjs";
 import ls from "common/localStorage";
 import {Apis} from "bitsharesjs-ws";
-import {Radio} from "../../design-system/Radio";
+import counterpart from "counterpart";
+import {SubMenu} from "../../design-system/SubMenu";
+import styles from "./Assets.module.scss";
 import {Table} from "../../design-system/Table";
 import {Icon} from "../../design-system/Icon";
 import {List} from "../../design-system/List";
@@ -158,10 +160,6 @@ export default function Assets() {
         setFilterSearch((e.target.value || "").toUpperCase());
     }
 
-    function toggleFilter(e: any) {
-        setActiveFilter(e.target.value);
-    }
-
     const coreAsset = ChainStore.getAsset("1.3.0");
 
     const listColumns = [
@@ -219,9 +217,15 @@ export default function Assets() {
             title: "",
             dataIndex: "marketId",
             render: (item: string) => (
-                <TypedLink to={`/market/${item}`}>
+                <TypedLink
+                    className={styles.link}
+                    to={`/market/${item}`}
+                    aria-label={counterpart.translate("header.exchange")}
+                >
                     <Icon type={"line-chart"} />{" "}
-                    <Translate content="header.exchange" />
+                    <span className={styles.label}>
+                        <Translate content="header.exchange" />
+                    </span>
                 </TypedLink>
             )
         }
@@ -295,20 +299,37 @@ export default function Assets() {
                                     onChange={handleFilterChange}
                                 />
                             </Toolbar.Grow>
-                            <Radio.Group
+                            <SubMenu
+                                toggle
+                                flush
+                                aria-label={counterpart.translate(
+                                    "explorer.assets.title"
+                                )}
+                                items={[
+                                    {
+                                        key: "market",
+                                        label: counterpart.translate(
+                                            "explorer.assets.market"
+                                        )
+                                    },
+                                    {
+                                        key: "user",
+                                        label: counterpart.translate(
+                                            "explorer.assets.user"
+                                        )
+                                    },
+                                    {
+                                        key: "prediction",
+                                        label: counterpart.translate(
+                                            "explorer.assets.prediction"
+                                        )
+                                    }
+                                ]}
                                 value={activeFilter}
-                                onChange={toggleFilter}
-                            >
-                                <Radio value={"market"}>
-                                    <Translate content="explorer.assets.market" />
-                                </Radio>
-                                <Radio value={"user"}>
-                                    <Translate content="explorer.assets.user" />
-                                </Radio>
-                                <Radio value={"prediction"}>
-                                    <Translate content="explorer.assets.prediction" />
-                                </Radio>
-                            </Radio.Group>
+                                onChange={key =>
+                                    setActiveFilter(key as FilterMode)
+                                }
+                            />
                             <Toolbar.End>
                                 {isLoading ? <Icon type="loading" /> : null}
                                 <RowsSelect

@@ -10,6 +10,7 @@ import counterpart from "counterpart";
 import {useReduxState} from "../../../next/hooks/useReduxState";
 import {selectAccountState} from "../../../store/slices/accountSlice";
 import {Button} from "../../../design-system/Button";
+import {PageHead} from "../../../design-system/PageHead";
 import {Table, TableColumn} from "../../../design-system/Table";
 import {Tabs} from "../../../design-system/Tabs";
 import {Alert} from "../../../design-system/Alert";
@@ -377,16 +378,21 @@ export default function SametFundsPage() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.head}>
-                <h2 className={styles.title}>{t("title")}</h2>
-                {owner ? (
-                    <Button variant="accent" onClick={() => setCreating(true)}>
-                        {t("create")}
-                    </Button>
-                ) : null}
-            </div>
-            <p className={styles.intro}>{t("intro")}</p>
-            <p className={styles.note}>{t("no_borrow")}</p>
+            <PageHead
+                title={t("title")}
+                lead={t("intro")}
+                note={t("no_borrow")}
+                action={
+                    owner ? (
+                        <Button
+                            variant="accent"
+                            onClick={() => setCreating(true)}
+                        >
+                            {t("create")}
+                        </Button>
+                    ) : null
+                }
+            />
 
             <SametOverview funds={all.funds} partial={!!all.next} />
 

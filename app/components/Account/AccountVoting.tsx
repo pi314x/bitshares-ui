@@ -142,6 +142,7 @@ import ApplicationApi from "api/ApplicationApi";
 import AccountSelector from "./AccountSelector";
 import Icon from "../Icon/Icon";
 import counterpart from "counterpart";
+import {PageHead} from "../../design-system/PageHead";
 import SettingsStore from "stores/SettingsStore";
 import {Switch} from "../../design-system/Switch";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -866,10 +867,11 @@ function AccountVoting({
         <div className={`main-content grid-content ${styles.page}`}>
             <div className="voting">
                 <div className={`padding ${styles.head}`}>
-                    <div className={styles.title}>
-                        <Translate content="voting.title" component="h1" />
-                        <Translate content="voting.description" component="p" />
-                    </div>
+                    <PageHead
+                        flush
+                        title={counterpart.translate("voting.title")}
+                        lead={counterpart.translate("voting.description")}
+                    />
                     {state.isCreateLockModalVisible ? (
                         // The lock form opens in place of the card that
                         // offers it, not as a popup over the page.

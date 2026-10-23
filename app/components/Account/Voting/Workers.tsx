@@ -27,7 +27,7 @@ import AssetName from "../../Utility/AssetName";
 import counterpart from "counterpart";
 import {EquivalentValueComponent} from "../../Utility/EquivalentValueComponent";
 import FormattedAsset from "../../Utility/FormattedAsset";
-import {Radio} from "../../../design-system/Radio";
+import {SubMenu} from "../../../design-system/SubMenu";
 import {Button} from "../../../design-system/Button";
 import SearchInput from "../../Utility/SearchInput";
 import {Toolbar} from "../../../design-system/Toolbar";
@@ -82,10 +82,6 @@ export default function Workers({
     );
     const [voteThreshold, setVoteThreshold] = React.useState<any>(null);
 
-    function handleWorkerTableIndexChange(e: any) {
-        setWorkerTableIndex(e.target.value);
-    }
-
     // fixme the way WorkersList is injected with workerslist is a complete design fail. use proper controlled component
 
     return (
@@ -133,36 +129,49 @@ export default function Workers({
                         onChange={onFilterChange}
                     />
                 </Toolbar.Grow>
-                <Radio.Group
-                    defaultValue={1}
-                    onChange={handleWorkerTableIndexChange}
-                >
-                    <Radio value={0}>
-                        {counterpart.translate("account.votes.new", {
-                            count: newWorkersLength
-                        })}
-                    </Radio>
-
-                    <Radio value={1}>
-                        {counterpart.translate("account.votes.active", {
-                            count: activeWorkersLength
-                        })}
-                    </Radio>
-
-                    {pollsLength ? (
-                        <Radio value={3}>
-                            {counterpart.translate("account.votes.polls", {
-                                count: pollsLength
-                            })}
-                        </Radio>
-                    ) : null}
-
-                    {expiredWorkersLength ? (
-                        <Radio value={2}>
-                            <Translate content="account.votes.expired" />
-                        </Radio>
-                    ) : null}
-                </Radio.Group>
+                <SubMenu
+                    toggle
+                    flush
+                    aria-label={counterpart.translate("account.votes.workers")}
+                    items={[
+                        {
+                            key: "0",
+                            label: counterpart.translate("account.votes.new", {
+                                count: newWorkersLength
+                            })
+                        },
+                        {
+                            key: "1",
+                            label: counterpart.translate(
+                                "account.votes.active",
+                                {count: activeWorkersLength}
+                            )
+                        },
+                        ...(pollsLength
+                            ? [
+                                  {
+                                      key: "3",
+                                      label: counterpart.translate(
+                                          "account.votes.polls",
+                                          {count: pollsLength}
+                                      )
+                                  }
+                              ]
+                            : []),
+                        ...(expiredWorkersLength
+                            ? [
+                                  {
+                                      key: "2",
+                                      label: counterpart.translate(
+                                          "account.votes.expired"
+                                      )
+                                  }
+                              ]
+                            : [])
+                    ]}
+                    value={String(workerTableIndex)}
+                    onChange={key => setWorkerTableIndex(Number(key))}
+                />
                 <Toolbar.End>
                     {hideLegacy}
                     <TypedLink to="/create-worker">

@@ -13630,3 +13630,24 @@ is a muted line under the likelihood (a red/green pair placed absolutely over th
 next row), "Details" is translated, the select-all checkbox is not drawn in the
 overview (`hideDefaultSelections`), and the pagination's total and pager do not
 break in the middle on a phone (the pager is one group that wraps as one).
+
+### 7.34 One page head, and no hand-rolled segmented switches left
+
+A sweep of 31 routes at 1400 and 390px showed that every page with a heading sized its own:
+a 24px title with a 16px lead on one page, 22px with 14.5px on the next, weight 500 on
+two and 600 on the others, a second h1 inside a card on a third. `design-system/PageHead`
+(title, lead, muted note, the page's one action) is the one head now: 24px / 600 title,
+14px lead in the secondary ink at 68ch, the action at the end of the row and under the text
+when there is no room. Used by Prediction markets, the MCP page and its review page, SameT
+funds, Spotlight, Help, Advanced (which had a lead and no title), Vesting balances and
+Voting; their own title / intro styles are gone. Pages that open with figures instead of
+text (Dashboard, Portfolio, Credit offers, Pools, Explorer) have no head: the top bar names
+them.
+
+The two groups of radio buttons that were segmented switches in disguise (the Explorer's
+SmartCoins / User issued assets / Prediction markets, and the Voting page's Proposed /
+Active / Polls / Expired budget items) are `SubMenu` toggles, like every other small
+switch (rule in AGENTS.md).
+
+The Explorer's assets table keeps the Exchange link on one line (the chart icon only on a
+phone, with the name as its accessible label): the word wrapped to "Excha" at the edge.

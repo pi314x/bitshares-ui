@@ -24,6 +24,7 @@ import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import {createPaperWalletAsPDF} from "common/paperWallet";
 import Icon from "../Icon/Icon";
+import {PageHead} from "../../design-system/PageHead";
 import {Alert} from "../../design-system/Alert";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../next/hooks/useReduxState";
@@ -162,10 +163,10 @@ export default function ShowcaseGrid() {
 
     return (
         <div className={styles.page}>
-            <header className={styles.head}>
-                <h1 className={styles.heading}>{t("header.showcases")}</h1>
-                <p className={styles.intro}>{t("showcases.intro")}</p>
-            </header>
+            <PageHead
+                title={t("header.showcases")}
+                lead={t("showcases.intro")}
+            />
 
             {!account && (
                 <div className={styles.notice} role="status">

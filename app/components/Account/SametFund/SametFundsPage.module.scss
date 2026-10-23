@@ -8,35 +8,6 @@
     padding: 0;
 }
 
-.head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-
-.title {
-    margin: 0;
-    font-size: 24px;
-}
-
-.intro {
-    margin: 0 0 8px;
-    max-width: 78ch;
-    color: var(--ink-2);
-    line-height: 1.55;
-}
-
-.note {
-    margin: 0 0 20px;
-    max-width: 78ch;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
-}
-
 .summary {
     margin: 0 0 12px;
     color: var(--muted);

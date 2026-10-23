@@ -14,21 +14,6 @@
     margin: 0;
 }
 
-// `.page .title`: the legacy sheet gives every h2 its own margin and size
-.page .title {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-}
-
-.lead {
-    max-width: 68ch;
-    color: var(--muted);
-    font-size: 14.5px;
-    line-height: 1.6;
-}
-
 // `.page .card`: `body.darkTheme section` makes every section a block, which loses the gaps
 .page .card {
     display: flex;
@@ -459,10 +444,6 @@
     .page .card {
         padding: 16px;
         gap: 12px;
-    }
-
-    .page .title {
-        font-size: 22px;
     }
 
     // the button gets a line of its own above the command
