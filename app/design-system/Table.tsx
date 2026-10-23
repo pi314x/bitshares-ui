@@ -1,6 +1,7 @@
 import {Select} from "./Select";
 import * as React from "react";
 import styles from "./Table.module.scss";
+import {useElementWidth} from "../next/hooks/useElementWidth";
 
 // Eighth component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md), following `Modal`/`Tooltip`/
@@ -57,6 +58,16 @@ export interface TableColumn<T = any> {
     defaultSortOrder?: SortOrder;
     align?: "left" | "center" | "right";
     width?: number | string;
+    /** The column is left out while the table's own box is narrower than this
+     * many px (a phone, or a table in a narrow panel): the columns that carry
+     * the row come first, the ones that only add detail come with more room.
+     * Sorting by a column that is not shown still works. Where the width is not
+     * known (tests) every column is shown. */
+    hideBelow?: number;
+    /** The opposite: the column is left out while the table's own box is wider than
+     * this many px. A narrow table gets one column for what a wide one spreads over
+     * several (three action icons, one under another header each). */
+    hideAbove?: number;
     /** Typed for real column defs that set it; a no-op here, see the
      * file header comment. */
     fixed?: "left" | "right";
@@ -180,6 +191,27 @@ export function withColumnKeys<T>(columns: TableColumn<T>[]): TableColumn<T>[] {
     );
 }
 
+/**
+ * Gives the columns named in `map` a `hideBelow` (by `key`, or `dataIndex` for a column without
+ * one): "the columns that carry the row are always shown, the others come with more room". One
+ * place to say it for a page whose columns are built elsewhere.
+ */
+export function hideColumnsBelow<T = any>(
+    columns: TableColumn<T>[],
+    map: {[key: string]: number}
+): TableColumn<T>[] {
+    return columns.map(column => {
+        const name = String(
+            column.key !== undefined && column.key !== null
+                ? column.key
+                : column.dataIndex
+        );
+        return map[name] !== undefined
+            ? {...column, hideBelow: map[name]}
+            : column;
+    });
+}
+
 export function Table<T = any>({
     columns: columnsProp,
     dataSource: dataSourceProp,
@@ -196,14 +228,22 @@ export function Table<T = any>({
     onHeaderRow,
     onChange
 }: TableProps<T>): JSX.Element {
-    const columns = withColumnKeys(columnsProp);
+    const allColumns = withColumnKeys(columnsProp);
+    const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+    const columns = allColumns.filter(
+        column =>
+            boxWidth === null ||
+            ((column.hideBelow === undefined || boxWidth >= column.hideBelow) &&
+                (column.hideAbove === undefined ||
+                    boxWidth <= column.hideAbove))
+    );
     const dataSource: T[] = dataSourceProp ?? [];
     const initialSort = React.useRef<{
         columnKey: string;
         order: SortOrder;
     } | null>(null);
     if (initialSort.current === null) {
-        const withDefault = columns.find(c => c.defaultSortOrder);
+        const withDefault = allColumns.find(c => c.defaultSortOrder);
         if (withDefault) {
             initialSort.current = {
                 columnKey: withDefault.key,
@@ -222,7 +262,7 @@ export function Table<T = any>({
         Array<string | number>
     >([]);
 
-    const activeSort = columns.reduce<{
+    const activeSort = allColumns.reduce<{
         column: TableColumn<T>;
         order: SortOrder;
     } | null>((found, column) => {
@@ -371,6 +411,7 @@ export function Table<T = any>({
 
     return (
         <div
+            ref={boxRef}
             className={[styles.wrap, className].filter(Boolean).join(" ")}
             style={style}
         >

@@ -20,3 +20,10 @@
 .actions {
     margin-top: 16px;
 }
+
+// the three action icons of a row, side by side
+.rowActions {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+}

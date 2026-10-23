@@ -54,7 +54,7 @@ import counterpart from "counterpart";
 import utils from "../../../lib/common/utils";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Button} from "../../../design-system/Button";
-import {Table} from "../../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../../design-system/Table";
 import {Icon as AntIcon} from "../../../design-system/Icon";
 import Translate from "react-translate-component";
 import CreateModal, {CreateModalHandle} from "./CreateModal";
@@ -328,7 +328,14 @@ function CreditOfferListCore({
                 <div className="grid-wrapper">
                     <Table
                         rowKey="id"
-                        columns={_getColumns()}
+                        columns={hideColumnsBelow(_getColumns(), {
+                            id: 640,
+                            total_balance: 640,
+                            acceptable_collateral: 700,
+                            max_duration_seconds: 800,
+                            min_deal_amount: 880,
+                            auto_disable_time: 960
+                        })}
                         dataSource={listByOwner}
                         pagination={{
                             hideOnSinglePage: true,

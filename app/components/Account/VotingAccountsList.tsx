@@ -48,6 +48,7 @@ import LinkToAccountById from "../Utility/LinkToAccountById";
 import PaginatedList from "components/Utility/PaginatedList";
 import utils from "common/utils";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {hideColumnsBelow} from "../../design-system/Table";
 
 function getWitnessOrCommittee(type: string, acct: any) {
     let url = "",
@@ -303,7 +304,12 @@ export default function VotingAccountsList({
 
     if (!items) return null;
 
-    const header = getHeader();
+    // the name, the votes and the vote toggle carry a row; the rest comes with room
+    const header = hideColumnsBelow(getHeader() as any, {
+        about: 500,
+        title: 580,
+        supported: 660
+    });
 
     // `items` is an Immutable.List of account ids (the caller keeps it that
     // way); the rows below need an array: `item_rows.length` is undefined on a

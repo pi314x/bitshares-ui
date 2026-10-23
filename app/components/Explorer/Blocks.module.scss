@@ -76,7 +76,6 @@
         :global(span.txtlabel),
         :global(div.txtlabel) {
             display: block;
-            min-height: 2.6em;
             font-size: 11px;
             line-height: 1.3;
             letter-spacing: 0.04em;
@@ -88,4 +87,33 @@
             line-height: 1.25;
         }
     }
+}
+
+// A tile is as tall as its row needs, not as tall as a two-line caption would: the caption on top,
+// the figure at the bottom, so the figures of a row sit on one line whatever the captions'
+// length (a reserved two-line caption made every tile ~125px, half of it empty). The legacy
+// heading margin (10px under the figure) is gone too.
+.blocks :global(.blocks-row) > :global(.grid-block) {
+    display: flex;
+}
+
+.blocks :global(.blocks-row) :global(.grid-content) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+body[class][class] .blocks :global(.blocks-row) h2,
+body[class][class] .blocks :global(.blocks-row) h3 {
+    margin: 0;
+}
+
+body[class][class] .blocks :global(.blocks-row) :global(span.txtlabel),
+body[class][class]
+    .blocks
+    :global(.blocks-row)
+    :global(div.txtlabel:first-child) {
+    margin-bottom: 0;
 }

@@ -91,7 +91,7 @@ import counterpart from "counterpart";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Modal} from "../../../design-system/Modal";
 import {Button} from "../../../design-system/Button";
-import {Table} from "../../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../../design-system/Table";
 import {Form} from "../../../design-system/Form";
 import {Icon as AntIcon} from "../../../design-system/Icon";
 import {Alert} from "../../../design-system/Alert";
@@ -883,7 +883,15 @@ function CreditOfferPage() {
                     <div className="grid-wrapper">
                         <Table
                             rowKey="id"
-                            columns={getColumns() as any}
+                            columns={hideColumnsBelow(getColumns() as any, {
+                                id: 640,
+                                total_balance: 640,
+                                acceptable_collateral: 700,
+                                owner_account: 760,
+                                max_duration_seconds: 800,
+                                min_deal_amount: 880,
+                                auto_disable_time: 960
+                            })}
                             dataSource={allListSorted}
                             pagination={{
                                 hideOnSinglePage: true,

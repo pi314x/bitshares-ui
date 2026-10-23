@@ -232,6 +232,127 @@ describe("design-system/Table", () => {
         expect(checkboxes[3].disabled).toBe(false);
     });
 
+    describe("hideBelow", () => {
+        const original = Object.getOwnPropertyDescriptor(
+            HTMLElement.prototype,
+            "clientWidth"
+        );
+        const realObserver = (global as any).ResizeObserver;
+        const withWidth = (width: number) => {
+            Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+                configurable: true,
+                get: () => width
+            });
+            (global as any).ResizeObserver = class {
+                observe = jest.fn();
+                disconnect = jest.fn();
+            };
+        };
+        afterEach(() => {
+            if (original) {
+                Object.defineProperty(
+                    HTMLElement.prototype,
+                    "clientWidth",
+                    original
+                );
+            } else {
+                delete (HTMLElement.prototype as any).clientWidth;
+            }
+            (global as any).ResizeObserver = realObserver;
+        });
+        const cols: TableColumn<Row>[] = [
+            {key: "name", dataIndex: "name", title: "Name"},
+            {
+                key: "amount",
+                dataIndex: "amount",
+                title: "Amount",
+                hideBelow: 500
+            }
+        ];
+
+        it("leaves a column out while the table is narrower than it asks", () => {
+            withWidth(320);
+            const {queryByText} = render(
+                <Table columns={cols} dataSource={rows} pagination={false} />
+            );
+            expect(queryByText("Name")).not.toBeNull();
+            expect(queryByText("Amount")).toBeNull();
+        });
+
+        it("shows it when the table has the room", () => {
+            withWidth(800);
+            const {queryByText} = render(
+                <Table columns={cols} dataSource={rows} pagination={false} />
+            );
+            expect(queryByText("Amount")).not.toBeNull();
+        });
+
+        it("leaves a column out while the table is wider than hideAbove", () => {
+            const wide: TableColumn<Row>[] = [
+                {key: "name", dataIndex: "name", title: "Name"},
+                {
+                    key: "one",
+                    title: "One column",
+                    hideAbove: 600,
+                    render: () => "x"
+                },
+                {
+                    key: "many",
+                    title: "Many columns",
+                    hideBelow: 600,
+                    render: () => "y"
+                }
+            ];
+            withWidth(320);
+            const narrow = render(
+                <Table columns={wide} dataSource={rows} pagination={false} />
+            );
+            expect(narrow.queryByText("One column")).not.toBeNull();
+            expect(narrow.queryByText("Many columns")).toBeNull();
+            narrow.unmount();
+            withWidth(900);
+            const broad = render(
+                <Table columns={wide} dataSource={rows} pagination={false} />
+            );
+            expect(broad.queryByText("One column")).toBeNull();
+            expect(broad.queryByText("Many columns")).not.toBeNull();
+        });
+
+        it("shows every column where the width is not known", () => {
+            const {queryByText} = render(
+                <Table columns={cols} dataSource={rows} pagination={false} />
+            );
+            expect(queryByText("Amount")).not.toBeNull();
+        });
+
+        it("still sorts by a column that is not shown", () => {
+            withWidth(320);
+            const sortedCols: TableColumn<Row>[] = [
+                {key: "name", dataIndex: "name", title: "Name"},
+                {
+                    key: "amount",
+                    dataIndex: "amount",
+                    title: "Amount",
+                    hideBelow: 500,
+                    defaultSortOrder: "ascend",
+                    sorter: (a, b) => a.amount - b.amount
+                }
+            ];
+            const {container} = render(
+                <Table
+                    columns={sortedCols}
+                    dataSource={rows}
+                    pagination={false}
+                />
+            );
+            const names = Array.from(
+                container.querySelectorAll("tbody tr td")
+            ).map(td => td.textContent);
+            // USD (1), CNY (2), BTS (3)
+            expect(names).toEqual(["USD", "CNY", "BTS"]);
+        });
+    });
+
     it("draws no pagination for a table with nothing in it", () => {
         const {container, rerender} = render(
             <Table

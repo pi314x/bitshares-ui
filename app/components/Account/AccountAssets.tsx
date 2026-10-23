@@ -51,6 +51,7 @@ import {Tabs, Tab} from "../Utility/Tabs";
 import Icon from "../Icon/Icon";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
+import styles from "./AccountAssets.module.scss";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -305,7 +306,9 @@ function AccountAssets({
                     >
                         <Tab title="account.user_issued_assets.issued_assets">
                             <div className="content-block">
-                                <table className="table dashboard-table">
+                                <table
+                                    className={`table dashboard-table ${styles.table}`}
+                                >
                                     <thead>
                                         <tr>
                                             <th style={{textAlign: "left"}}>

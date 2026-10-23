@@ -46,6 +46,7 @@ import Translate from "react-translate-component";
 import AssetName from "../Utility/AssetName";
 import stringSimilarity from "string-similarity";
 import {hiddenProposals} from "../../lib/common/hideProposals";
+import {hideColumnsBelow} from "../../design-system/Table";
 
 interface WorkerListCoreProps {
     workerTableIndex: any;
@@ -217,7 +218,6 @@ function WorkerList(props: WorkerListCoreProps) {
                 }
             },
             {
-                className: "column-hide-small",
                 title: (
                     <Translate
                         content="account.votes.total_votes"
@@ -374,7 +374,6 @@ function WorkerList(props: WorkerListCoreProps) {
                       }
                   },
             {
-                className: "column-hide-small",
                 title: (
                     <span>
                         <Translate
@@ -422,7 +421,6 @@ function WorkerList(props: WorkerListCoreProps) {
                 }
             },
             {
-                className: "column-hide-small",
                 title: (
                     <Translate
                         content="account.votes.toggle"
@@ -615,7 +613,19 @@ function WorkerList(props: WorkerListCoreProps) {
         return row.toggle.approvalState ? "" : "unsupported";
     };
 
-    const workersHeader = getHeader(workerTableIndex, preferredUnit);
+    // the description, the votes and the vote toggle carry a row; the rest comes with room
+    const workersHeader = hideColumnsBelow(
+        getHeader(workerTableIndex, preferredUnit) as any,
+        {
+            line: 460,
+            assets_id: 560,
+            daily_pay: 620,
+            missing: 700,
+            period: 760,
+            funding: 820,
+            budget: 900
+        }
+    );
 
     const workerArray = getWorkerArray();
     const mappedWorkersResult = getMappedWorkers(

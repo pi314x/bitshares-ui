@@ -13685,3 +13685,19 @@ unchanged decrypt code). **Fees**: the help text above the tables is set like th
 page (CSS only, the help page itself is the same). **Block**: each operation is a card, a row is a
 label and its value (side by side from 560px, the label over the value on a phone), the type row
 with the raw json link on top; scoped to the block page, other views of `op-table` are untouched.
+
+The open parts of the sweep: **tables on a phone** show the columns that carry a row and leave the
+rest to wider tables. The design-system `Table` has `hideBelow` / `hideAbove` per column (by the
+table's own width, not the window's; sorting by a column that is not shown still works; where the
+width is unknown, as in tests, every column shows) and `hideColumnsBelow(columns, {key: px})` to
+say it for a table whose columns are built elsewhere. Used by the Voting lists (name, votes and the
+vote toggle first), the worker budget items (the legacy `column-hide-small` hid the votes and the
+vote toggle on a phone altogether: a phone could not vote for a worker; the class is gone from
+those columns), the credit offers (asset, available, rate, borrow), the account's pools (the share
+asset and one column of the three action icons) and the account's issued assets. The Explorer's
+statistics tiles are as tall as their content (a reserved two-line caption made each ~125px, half
+of it empty); the Permissions page uses design-system buttons (Reset / Save were legacy `.button`
+elements with a `disabled` class) and the explanation text is set like a lead. The operations of a
+block take the whole card width for a one-cell row and wrap long labels. Not restyled: the proposals
+view and the signing confirmation, which share the operation markup (no proposal to check on the
+node, and the signing review is not restyled in passing).

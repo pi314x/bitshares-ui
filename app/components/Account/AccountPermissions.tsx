@@ -72,6 +72,8 @@ import HelpContent from "../Utility/HelpContent";
 import {RecentTransactions} from "./RecentTransactions";
 import {Notification} from "../../design-system/Notification";
 import {ButtonRow} from "../../design-system/ButtonRow";
+import {Button} from "../../design-system/Button";
+import styles from "./AccountPermissions.module.scss";
 
 function permissionsFromImmutableObj(auths: any) {
     const threshold = auths.get("weight_threshold");
@@ -408,12 +410,9 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
             threshold
         });
 
-    const publish_buttons_class =
-        "button" +
-        (!(error1 || error2) && isChanged() && isValidPubKey(state.memo_key)
-            ? ""
-            : " disabled");
-    const reset_buttons_class = "button" + (isChanged() ? "" : " disabled");
+    const canPublish =
+        !(error1 || error2) && isChanged() && isValidPubKey(state.memo_key);
+    const canReset = isChanged();
 
     let accountsList = Immutable.Set();
     accountsList = accountsList.add(account.get("id"));
@@ -436,23 +435,23 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                         contentClass="padding"
                         actionButtons={
                             <ButtonRow className="action-buttons">
-                                <button
-                                    className={reset_buttons_class}
+                                <Button
+                                    disabled={!canReset}
                                     onClick={onReset}
                                     tabIndex={8}
                                 >
                                     <Translate content="account.perm.reset" />
-                                </button>
+                                </Button>
 
-                                <button
-                                    className={publish_buttons_class}
+                                <Button
+                                    variant="accent"
+                                    disabled={!canPublish}
                                     onClick={onPublish}
                                     tabIndex={9}
                                 >
                                     <Translate content="account.perm.publish" />
-                                </button>
-                                <button
-                                    className={"button"}
+                                </Button>
+                                <Button
                                     data-tip={counterpart.translate(
                                         "account.perm.create_paperwallet_private_hint"
                                     )}
@@ -462,12 +461,14 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                                     tabIndex={10}
                                 >
                                     <Translate content="account.perm.create_paperwallet" />
-                                </button>
+                                </Button>
                             </ButtonRow>
                         }
                     >
                         <Tab title="account.perm.active">
-                            <HelpContent path="components/AccountPermActive" />
+                            <div className={styles.help}>
+                                <HelpContent path="components/AccountPermActive" />
+                            </div>
                             <form className="threshold">
                                 <label className="horizontal">
                                     <Translate content="account.perm.threshold" />{" "}
@@ -524,7 +525,9 @@ export default function AccountPermissions({account}: AccountPermissionsProps) {
                         </Tab>
 
                         <Tab title="account.perm.owner">
-                            <HelpContent path="components/AccountPermOwner" />
+                            <div className={styles.help}>
+                                <HelpContent path="components/AccountPermOwner" />
+                            </div>
                             <form className="threshold">
                                 <label className="horizontal">
                                     <Translate content="account.perm.threshold" />{" "}

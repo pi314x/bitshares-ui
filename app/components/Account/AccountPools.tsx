@@ -61,7 +61,7 @@
 // change, but are never actually applied to `dataSource` in `render()` -
 // that's the original's own behavior, not a porting omission.
 import * as React from "react";
-import {Table} from "../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../design-system/Table";
 import {Select} from "../../design-system/Select";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
@@ -346,6 +346,40 @@ function AccountPools({
             )
         },
         {
+            // the three actions of a row in one column while the table is narrow
+            key: "actions",
+            hideAbove: 639,
+            title: counterpart.translate("prediction.overview.action"),
+            render: (item: any) => (
+                <span className={styles.rowActions}>
+                    <a
+                        title={counterpart.translate(
+                            "poolmart.liquidity_pools.exchange"
+                        )}
+                        onClick={() => showExchangeModal(item)}
+                    >
+                        <Icon name="poolmart" />
+                    </a>
+                    <a
+                        title={counterpart.translate(
+                            "poolmart.liquidity_pools.stake_unstake"
+                        )}
+                        onClick={() => showStakeModal(item)}
+                    >
+                        <Icon name="deposit" />
+                    </a>
+                    <a
+                        title={counterpart.translate(
+                            "poolmart.liquidity_pools.delete_pool"
+                        )}
+                        onClick={() => showDeleteModal(item)}
+                    >
+                        <Icon name="delete" />
+                    </a>
+                </span>
+            )
+        },
+        {
             key: "exchange",
             title: counterpart.translate("poolmart.liquidity_pools.exchange"),
             render: (item: any) => (
@@ -523,7 +557,18 @@ function AccountPools({
                         </div>
                         <div className="grid-content no-padding">
                             <Table
-                                columns={columns}
+                                columns={hideColumnsBelow(columns, {
+                                    id: 560,
+                                    exchange: 640,
+                                    stake_unstake: 640,
+                                    delete_pool: 640,
+                                    asset_a_str: 520,
+                                    asset_b_str: 520,
+                                    asset_a_qty: 700,
+                                    asset_b_qty: 700,
+                                    taker_fee_percent: 800,
+                                    withdrawal_fee_percent: 860
+                                })}
                                 rowKey="id"
                                 dataSource={shownRows}
                                 pagination={{

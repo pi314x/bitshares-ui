@@ -44,6 +44,13 @@ body[class][class] .fact dd {
     font-size: 13px;
 }
 
+// a row with one cell (or a cell that spans the row: the legacy `colSpan`), a nested table of an
+// operation's options: the whole width of the card, not the label column
+body[class][class] .ops :global(.op-table) > tbody > tr > td:only-child,
+body[class][class] .ops :global(.op-table) > tbody > tr > td[colspan] {
+    grid-column: 1 / -1;
+}
+
 @media (min-width: 560px) {
     .fact {
         grid-template-columns: 160px minmax(0, 1fr);
@@ -109,6 +116,7 @@ body[class][class] .ops :global(.op-table) > tbody > tr > td {
 
 // the label of a row
 body[class][class] .ops :global(.op-table) > tbody > tr > td:first-child {
+    white-space: normal;
     color: var(--muted);
     font-size: 12px;
     font-weight: 600;
@@ -142,7 +150,7 @@ body[class][class] .ops :global(.op-table) :global(.json-link) {
 
 @media (min-width: 560px) {
     body[class][class] .ops :global(.op-table) > tbody > tr:not(:first-child) {
-        grid-template-columns: 180px minmax(0, 1fr);
+        grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
         gap: 16px;
         align-items: baseline;
     }
