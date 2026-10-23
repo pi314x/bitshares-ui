@@ -1,0 +1,38 @@
+// The borrow wizard: the page head, the steps, one card for the step that is open, and the
+// buttons. It was a card (with a 28px title) around a second card (a 20px title, 16px text)
+// around the step, each with padding of its own.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 880px;
+}
+
+// the step that is open: one card
+.page .step {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+// `body[class][class]` and classes on the h2 and the paragraphs: the legacy sheet sizes every
+// h2 without a class (`#content h2:not([class])`) and caps every paragraph of the content
+body[class][class] .page .stepTitle {
+    margin: 0;
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+body[class][class] .page .stepText {
+    margin: 0;
+    max-width: 68ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+body[class][class] .page .stepText strong {
+    color: var(--ink);
+}

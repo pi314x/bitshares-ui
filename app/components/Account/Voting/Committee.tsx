@@ -16,7 +16,7 @@ import VotingAccountsList from "../VotingAccountsList";
 import cnames from "classnames";
 import SearchInput from "../../Utility/SearchInput";
 import {Toolbar} from "../../../design-system/Toolbar";
-import {SubMenu} from "../../../design-system/SubMenu";
+import {Button} from "../../../design-system/Button";
 import {JoinCommitteeTab} from "./RoleTabs";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
@@ -52,25 +52,6 @@ export default function Committee({
 
     return (
         <div>
-            <SubMenu
-                aria-label={counterpart.translate(
-                    "explorer.committee_members.title"
-                )}
-                value={view}
-                onChange={key => setView(key as "vote" | "join")}
-                items={[
-                    {
-                        key: "vote",
-                        label: counterpart.translate("account.votes.votes")
-                    },
-                    {
-                        key: "join",
-                        label: counterpart.translate(
-                            "account.votes.join_committee"
-                        )
-                    }
-                ]}
-            />
             {view === "join" ? (
                 <JoinCommitteeTab
                     account={account}
@@ -88,6 +69,11 @@ export default function Committee({
                                 onChange={onFilterChange}
                             />
                         </Toolbar.Grow>
+                        <Button onClick={() => setView("join")}>
+                            {counterpart.translate(
+                                "account.votes.join_committee"
+                            )}
+                        </Button>
                     </Toolbar>
                     <div className={cnames("content-block")}>
                         <VotingAccountsList

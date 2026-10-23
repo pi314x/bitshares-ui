@@ -55,6 +55,7 @@ import FormattedPrice from "../Utility/FormattedPrice";
 import AssetName from "../Utility/AssetName";
 import Translate from "react-translate-component";
 import Icon from "../Icon/Icon";
+import {Star} from "../../design-system/Star";
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -154,6 +155,10 @@ export default function TranslateWithLinks({
                             <Translate content={key.translation} />
                         </LinkComponent>
                     );
+                    break;
+
+                case "star":
+                    value = <Star on size={14} />;
                     break;
 
                 case "icon": {

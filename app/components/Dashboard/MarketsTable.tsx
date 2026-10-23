@@ -111,6 +111,8 @@ import PaginatedList from "../Utility/PaginatedList";
 import {Input} from "../../design-system/Input";
 import {Tooltip} from "../../design-system/Tooltip";
 import Icon from "../Icon/Icon";
+import counterpart from "counterpart";
+import {Star} from "../../design-system/Star";
 import AssetName from "../Utility/AssetName";
 import {Link} from "react-router-dom";
 import {Icon as AntIcon} from "../../design-system/Icon";
@@ -485,9 +487,7 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
 
         const marketID = `${quote}_${base}`;
 
-        const starClass = props.starredMarkets.has(marketID)
-            ? "gold-star"
-            : "grey-star";
+        const starred = props.starredMarkets.has(marketID);
 
         const imageSrc = imgError
             ? `${__BASE_URL__}asset-symbols/${imgName.toLowerCase()}.png`
@@ -496,12 +496,13 @@ function MarketsTableCore(props: MarketsTableCoreProps) {
         return {
             key: marketID,
             star: (
-                <div onClick={() => toggleFavoriteMarket(quote, base)}>
-                    <Icon
-                        style={{cursor: "pointer"}}
-                        className={starClass}
-                        name="fi-star"
-                        title="icons.fi_star.market"
+                <div
+                    style={{cursor: "pointer"}}
+                    onClick={() => toggleFavoriteMarket(quote, base)}
+                >
+                    <Star
+                        on={starred}
+                        title={counterpart.translate("icons.fi_star.market")}
                     />
                 </div>
             ),

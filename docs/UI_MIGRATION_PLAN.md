@@ -13651,3 +13651,13 @@ switch (rule in AGENTS.md).
 
 The Explorer's assets table keeps the Exchange link on one line (the chart icon only on a
 phone, with the name as its accessible label): the word wrapped to "Excha" at the edge.
+
+A second round on what the sweep left: Borrow is one page head and one card for the open step
+(it was a card with a 28px title around a card with a 20px title, and an icon that drew an empty
+line); Create worker is the design system's form in one card (the native form had a 16px
+paragraph under every field); the Voting page's second row of pills (Votes / Join witnesses /
+Update witness, a second row under the Witnesses / Committee / Workers row) is gone: the filter
+has "Join witnesses" and "Update witness" buttons beside it, the forms open in the page as
+before. The favourite star of the markets lists and the account lists (a hard-coded gold and
+grey glyph of the icon font, another size than the market header's star) is
+`design-system/Star`: the rail's line star, filled amber when on.

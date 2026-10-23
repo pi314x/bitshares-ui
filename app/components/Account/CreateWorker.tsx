@@ -19,9 +19,15 @@
 //   leftover debug log that fires on every render.
 import * as React from "react";
 import ApplicationApi from "api/ApplicationApi";
-import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {Notification} from "../../design-system/Notification";
+import {PageHead} from "../../design-system/PageHead";
+import {Card} from "../../design-system/Card";
+import {Form} from "../../design-system/Form";
+import {Input} from "../../design-system/Input";
+import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
+import styles from "./CreateWorker.module.scss";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 
@@ -71,127 +77,88 @@ function CreateWorker({currentAccount}: {currentAccount: any}) {
             });
     };
 
-    console.log("state:", state);
-    return (
-        <div className="grid-block">
-            <div className="grid-content large-9 small-12">
-                <Translate content="explorer.workers.create" component="h3" />
-                <form style={{maxWidth: 800}}>
-                    <Translate
-                        content="explorer.workers.create_text_1"
-                        component="p"
-                    />
-                    <Translate
-                        content="explorer.workers.create_text_2"
-                        component="p"
-                    />
+    const t = (key: string) =>
+        counterpart.translate(`explorer.workers.${key}`) as string;
 
-                    <label>
-                        <Translate content="explorer.workers.title" />
-                        <input
-                            onChange={e => {
-                                mergeState({title: e.target.value});
-                            }}
+    return (
+        <div className={styles.page}>
+            <PageHead
+                title={t("create")}
+                lead={t("create_text_1")}
+                note={t("create_text_2")}
+            />
+            <Card className={styles.card}>
+                <Form
+                    layout="vertical"
+                    onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                        e.preventDefault();
+                        onSubmit();
+                    }}
+                >
+                    <Form.Item label={t("title")} help={t("name_text")}>
+                        <Input
                             type="text"
+                            onChange={e => mergeState({title: e.target.value})}
                         />
-                    </label>
-                    <Translate
-                        content="explorer.workers.name_text"
-                        component="p"
-                    />
-                    <div
-                        style={{
-                            width: "50%",
-                            paddingRight: "2.5%",
-                            display: "inline-block"
-                        }}
-                    >
-                        <label>
-                            <Translate content="account.votes.start" />
-                            <input
-                                onChange={e => {
+                    </Form.Item>
+                    <div className={styles.dates}>
+                        <Form.Item
+                            label={counterpart.translate("account.votes.start")}
+                        >
+                            <Input
+                                type="date"
+                                onChange={e =>
                                     mergeState({
                                         start: new Date(e.target.value)
-                                    });
-                                }}
-                                type="date"
+                                    })
+                                }
                             />
-                        </label>
-                    </div>
-                    <div
-                        style={{
-                            width: "50%",
-                            paddingLeft: "2.5%",
-                            display: "inline-block"
-                        }}
-                    >
-                        <label>
-                            <Translate content="account.votes.end" />
-                            <input
-                                onChange={e => {
-                                    mergeState({end: new Date(e.target.value)});
-                                }}
+                        </Form.Item>
+                        <Form.Item
+                            label={counterpart.translate("account.votes.end")}
+                        >
+                            <Input
                                 type="date"
+                                onChange={e =>
+                                    mergeState({end: new Date(e.target.value)})
+                                }
                             />
-                        </label>
+                        </Form.Item>
                     </div>
-                    <Translate
-                        content="explorer.workers.date_text"
-                        component="p"
-                    />
-
-                    <label>
-                        <Translate content="explorer.workers.daily_pay" />
-                        <input
-                            onChange={e => {
-                                mergeState({pay: e.target.value});
-                            }}
+                    <p className={styles.help}>{t("date_text")}</p>
+                    <Form.Item label={t("daily_pay")} help={t("pay_text")}>
+                        <Input
                             type="number"
+                            onChange={e => mergeState({pay: e.target.value})}
                         />
-                    </label>
-                    <Translate
-                        content="explorer.workers.pay_text"
-                        component="p"
-                    />
-
-                    <label>
-                        <Translate content="explorer.workers.website" />
-                        <input
-                            onChange={e => {
-                                mergeState({url: e.target.value});
-                            }}
+                    </Form.Item>
+                    <Form.Item label={t("website")} help={t("url_text")}>
+                        <Input
                             type="text"
+                            onChange={e => mergeState({url: e.target.value})}
                         />
-                    </label>
-                    <Translate
-                        content="explorer.workers.url_text"
-                        component="p"
-                    />
-
-                    <label>
-                        <Translate content="explorer.workers.vesting_pay" />
-                        <input
-                            defaultValue={state.vesting}
-                            onChange={e => {
-                                mergeState({
-                                    vesting: parseInt(e.target.value)
-                                });
-                            }}
+                    </Form.Item>
+                    <Form.Item
+                        label={t("vesting_pay")}
+                        help={t("vesting_text")}
+                    >
+                        <Input
                             type="number"
+                            defaultValue={state.vesting}
+                            onChange={e =>
+                                mergeState({vesting: parseInt(e.target.value)})
+                            }
                         />
-                    </label>
-                    <Translate
-                        content="explorer.workers.vesting_text"
-                        component="p"
-                    />
-
-                    <div className="button-group" onClick={onSubmit}>
-                        <div className="button" {...({type: "submit"} as any)}>
-                            Publish
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    </Form.Item>
+                    <ButtonRow>
+                        <Button variant="accent" onClick={onSubmit}>
+                            {counterpart.translate(
+                                "account.perm.publish_prediction"
+                            )}
+                        </Button>
+                    </ButtonRow>
+                </Form>
+            </Card>
         </div>
     );
 }

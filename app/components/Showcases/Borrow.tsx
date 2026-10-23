@@ -39,10 +39,10 @@
 // appears only on its own `import` line, never referenced anywhere else
 // in the file.
 //
-// Preserved verbatim (not "fixed"), both pre-existing bugs:
-// - `<Icon name="steps[current].icon" />`: a literal string, not an
-//   interpolated `{steps[current].icon}` - almost certainly a typo, kept
-//   as-is.
+// The legacy `<Icon name="steps[current].icon" />` (a literal string, so it
+// drew nothing but an empty line above every step) is gone.
+//
+// Preserved verbatim (not "fixed"), a pre-existing bug:
 // - The legend `try`/`catch` in `render()`: on the `catch` branch,
 //   `legend` is reassigned to the raw (un-split) translated string
 //   instead of the `string[][]` the happy path produces, which the
@@ -67,6 +67,8 @@ import Translate from "react-translate-component";
 import {Button} from "../../design-system/Button";
 import {ButtonRow} from "../../design-system/ButtonRow";
 import {Card} from "../../design-system/Card";
+import {PageHead} from "../../design-system/PageHead";
+import styles from "./Borrow.module.scss";
 import {Steps} from "../../design-system/Steps";
 import {Tooltip} from "../../design-system/Tooltip";
 import debounceRender from "react-debounce-render";
@@ -74,7 +76,6 @@ import {ChainStore} from "bitsharesjs";
 import WalletUnlockActions from "actions/WalletUnlockActions";
 
 import BorrowModal from "../Modal/BorrowModal";
-import Icon from "../Icon/Icon";
 import AssetSelect from "../Utility/AssetSelect";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
@@ -323,169 +324,126 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
     }
 
     return (
-        <div
-            style={
-                {
-                    // `align` isn't a real CSS property (React silently
-                    // drops it at runtime, same as the original) - kept
-                    // verbatim, cast to satisfy `React.CSSProperties`.
-                    align: "center",
-                    display: "flex",
-                    justifyContent: "flex-start"
-                } as React.CSSProperties
-            }
-            onKeyDown={onKeyDown}
-        >
-            <Card
-                style={{
-                    // a card, not a pill: 50px corners and 70% of the width
-                    // left a phone a 250px column of text
-                    width: "100%",
-                    maxWidth: "70rem",
-                    paddingTop: "1rem",
-                    paddingBottom: "1rem"
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center"
-                    }}
-                >
+        <div className={styles.page} onKeyDown={onKeyDown}>
+            <PageHead
+                flush
+                title={counterpart.translate(
+                    finishedCard != null
+                        ? "showcases.borrow.now_ready"
+                        : "showcases.borrow.title_long"
+                )}
+            />
+            {started &&
+                (!tinyScreen ? (
+                    <Steps progressDot current={current - 1}>
+                        {steps.map((item, index) => {
+                            if (index == 0) return null;
+                            return (
+                                <Steps.Step
+                                    key={item.key}
+                                    title={counterpart.translate(
+                                        "showcases.borrow.steps_" +
+                                            item.key +
+                                            ".title"
+                                    )}
+                                />
+                            );
+                        })}
+                    </Steps>
+                ) : current < STEPS.length ? (
+                    <React.Fragment>
+                        {current + ". "}
+                        <Translate
+                            content={
+                                "showcases.borrow.steps_" +
+                                steps[current].key +
+                                ".title"
+                            }
+                        />
+                    </React.Fragment>
+                ) : null)}
+            {finishedCard != null && finishedCard}
+            {finishedCard == null && (
+                <Card className={styles.step} onKeyDown={onKeyDown}>
                     <Translate
-                        component="h1"
+                        component="h2"
+                        className={styles.stepTitle}
                         content={
-                            finishedCard != null
-                                ? "showcases.borrow.now_ready"
-                                : "showcases.borrow.title_long"
+                            "showcases.borrow.steps_" +
+                            steps[current].key +
+                            ".title_within"
                         }
                     />
-                </div>
-                {started &&
-                    (!tinyScreen ? (
-                        <Steps progressDot current={current - 1}>
-                            {steps.map((item, index) => {
-                                if (index == 0) return null;
+
+                    <Translate
+                        component="p"
+                        className={styles.stepText}
+                        content={
+                            "showcases.borrow.steps_" +
+                            steps[current].key +
+                            ".text"
+                        }
+                    />
+
+                    {!!steps[current].has_legend && (
+                        <React.Fragment>
+                            {legend.map((content: any, index: number) => {
                                 return (
-                                    <Steps.Step
-                                        key={item.key}
-                                        title={counterpart.translate(
-                                            "showcases.borrow.steps_" +
-                                                item.key +
-                                                ".title"
-                                        )}
-                                    />
+                                    <p
+                                        className={styles.stepText}
+                                        key={"borrow_subp_" + index}
+                                    >
+                                        <strong>{content[0]}</strong>:{" "}
+                                        {content[1]}
+                                    </p>
                                 );
                             })}
-                        </Steps>
-                    ) : current < STEPS.length ? (
-                        <React.Fragment>
-                            {current + ". "}
-                            <Translate
-                                content={
-                                    "showcases.borrow.steps_" +
-                                    steps[current].key +
-                                    ".title"
-                                }
-                            />
                         </React.Fragment>
-                    ) : null)}
-                <div
-                    style={{
-                        paddingTop: "1rem",
-                        paddingBottom: "1rem"
-                    }}
-                >
-                    {finishedCard != null && finishedCard}
-                    {finishedCard == null && (
-                        <Card onKeyDown={onKeyDown}>
-                            {!!steps[current].icon && (
-                                <Icon name="steps[current].icon" />
-                            )}
-                            <Translate
-                                component="h2"
-                                content={
-                                    "showcases.borrow.steps_" +
-                                    steps[current].key +
-                                    ".title_within"
-                                }
-                            />
-
-                            <Translate
-                                component="p"
-                                content={
-                                    "showcases.borrow.steps_" +
-                                    steps[current].key +
-                                    ".text"
-                                }
-                            />
-
-                            {!!steps[current].has_legend && (
-                                <React.Fragment>
-                                    {legend.map(
-                                        (content: any, index: number) => {
-                                            return (
-                                                <p key={"borrow_subp_" + index}>
-                                                    <strong>
-                                                        {content[0]}
-                                                    </strong>
-                                                    : {content[1]}
-                                                </p>
-                                            );
-                                        }
-                                    )}
-                                </React.Fragment>
-                            )}
-                        </Card>
                     )}
-                </div>
-                <ButtonRow className="steps-action">
-                    {current < steps.length && (
-                        <Tooltip
-                            title={
-                                current == 0
-                                    ? counterpart.translate(
-                                          "showcases.borrow.navigate_with_keys"
-                                      )
-                                    : null
-                            }
-                        >
-                            <Button
-                                variant="accent"
-                                onClick={() => next()}
-                                tabIndex={0}
-                                ref={nextRef}
-                                onKeyDown={onKeyDown}
-                            >
-                                {current == 0 && (
-                                    <Translate
-                                        content={"showcases.borrow.get_started"}
-                                    />
-                                )}
-                                {current > 0 && current < steps.length - 1 && (
-                                    <Translate
-                                        content={"showcases.borrow.next"}
-                                    />
-                                )}
-                                {current === steps.length - 1 && (
-                                    <Translate
-                                        content={"showcases.borrow.do_it"}
-                                    />
-                                )}
-                            </Button>
-                        </Tooltip>
-                    )}
-                    {current > 0 && (
+                </Card>
+            )}
+            <ButtonRow className="steps-action">
+                {current < steps.length && (
+                    <Tooltip
+                        title={
+                            current == 0
+                                ? counterpart.translate(
+                                      "showcases.borrow.navigate_with_keys"
+                                  )
+                                : null
+                        }
+                    >
                         <Button
-                            onClick={() => prev()}
-                            ref={previousRef}
+                            variant="accent"
+                            onClick={() => next()}
+                            tabIndex={0}
+                            ref={nextRef}
                             onKeyDown={onKeyDown}
                         >
-                            <Translate content={"showcases.borrow.previous"} />
+                            {current == 0 && (
+                                <Translate
+                                    content={"showcases.borrow.get_started"}
+                                />
+                            )}
+                            {current > 0 && current < steps.length - 1 && (
+                                <Translate content={"showcases.borrow.next"} />
+                            )}
+                            {current === steps.length - 1 && (
+                                <Translate content={"showcases.borrow.do_it"} />
+                            )}
                         </Button>
-                    )}
-                </ButtonRow>
-            </Card>
+                    </Tooltip>
+                )}
+                {current > 0 && (
+                    <Button
+                        onClick={() => prev()}
+                        ref={previousRef}
+                        onKeyDown={onKeyDown}
+                    >
+                        <Translate content={"showcases.borrow.previous"} />
+                    </Button>
+                )}
+            </ButtonRow>
             {accountLoaded && !!selectedAssetObject && (
                 <BorrowModal
                     visible={state.isBorrowBaseModalVisible}

@@ -8,7 +8,7 @@ import VotingAccountsList from "../VotingAccountsList";
 import cnames from "classnames";
 import SearchInput from "../../Utility/SearchInput";
 import {Toolbar} from "../../../design-system/Toolbar";
-import {SubMenu} from "../../../design-system/SubMenu";
+import {Button} from "../../../design-system/Button";
 import {JoinWitnessTab, UpdateWitnessTab} from "./RoleTabs";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
@@ -45,29 +45,6 @@ export default function Witnesses({
 
     return (
         <div>
-            <SubMenu
-                aria-label={counterpart.translate("explorer.witnesses.title")}
-                value={view}
-                onChange={key => setView(key as "vote" | "join" | "update")}
-                items={[
-                    {
-                        key: "vote",
-                        label: counterpart.translate("account.votes.votes")
-                    },
-                    {
-                        key: "join",
-                        label: counterpart.translate(
-                            "account.votes.join_witnesses"
-                        )
-                    },
-                    {
-                        key: "update",
-                        label: counterpart.translate(
-                            "account.votes.update_witness"
-                        )
-                    }
-                ]}
-            />
             {view === "join" ? (
                 <JoinWitnessTab account={account} onDone={back} />
             ) : view === "update" ? (
@@ -84,6 +61,16 @@ export default function Witnesses({
                                 onChange={onFilterChange}
                             />
                         </Toolbar.Grow>
+                        <Button onClick={() => setView("join")}>
+                            {counterpart.translate(
+                                "account.votes.join_witnesses"
+                            )}
+                        </Button>
+                        <Button onClick={() => setView("update")}>
+                            {counterpart.translate(
+                                "account.votes.update_witness"
+                            )}
+                        </Button>
                     </Toolbar>
                     <div className={cnames("content-block")}>
                         <VotingAccountsList

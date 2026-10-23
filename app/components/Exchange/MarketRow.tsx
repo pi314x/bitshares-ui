@@ -37,7 +37,8 @@ import {useNavigate, useLocation} from "react-router-dom";
 import FormattedAsset from "../Utility/FormattedAsset";
 import AccountName from "../Utility/AccountName";
 import utils from "common/utils";
-import Icon from "../Icon/Icon";
+import counterpart from "counterpart";
+import {Star} from "../../design-system/Star";
 import MarketsActions from "actions/MarketsActions";
 import SettingsActions from "actions/SettingsActions";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -148,7 +149,6 @@ function MarketRow({
         .map((column: any) => {
             switch (column.name) {
                 case "star": {
-                    const starClass = starred ? "gold-star" : "grey-star";
                     return (
                         <td
                             onClick={(e: any) =>
@@ -160,10 +160,11 @@ function MarketRow({
                             }
                             key={column.index}
                         >
-                            <Icon
-                                className={starClass}
-                                name="fi-star"
-                                title="icons.fi_star.symbol"
+                            <Star
+                                on={!!starred}
+                                title={counterpart.translate(
+                                    "icons.fi_star.symbol"
+                                )}
                             />
                         </td>
                     );

@@ -24,6 +24,7 @@ import SettingsActions from "actions/SettingsActions";
 import AccountActions from "actions/AccountActions";
 import WalletDb from "stores/WalletDb";
 import Icon from "../Icon/Icon";
+import {Star} from "../../design-system/Star";
 import TotalBalanceValue from "../Utility/TotalBalanceValue";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
@@ -198,7 +199,6 @@ export default function DashboardList(props: DashboardListProps) {
                     AccountStore.isMyAccount(account) ||
                     accountName === passwordAccount;
                 const isStarred = starredAccounts.has(accountName);
-                const starClass = isStarred ? "gold-star" : "grey-star";
 
                 return (
                     <tr key={accountName}>
@@ -206,10 +206,11 @@ export default function DashboardList(props: DashboardListProps) {
                             className="clickable"
                             onClick={e => onStar(accountName, isStarred, e)}
                         >
-                            <Icon
-                                className={starClass}
-                                name="fi-star"
-                                title="icons.fi_star.account"
+                            <Star
+                                on={isStarred}
+                                title={counterpart.translate(
+                                    "icons.fi_star.account"
+                                )}
                             />
                         </td>
                         {isContactsList ? (
@@ -371,10 +372,10 @@ export default function DashboardList(props: DashboardListProps) {
                                 onClick={() => setSort("star")}
                                 className="clickable"
                             >
-                                <Icon
-                                    className="grey-star"
-                                    name="fi-star"
-                                    title="icons.fi_star.sort_accounts"
+                                <Star
+                                    title={counterpart.translate(
+                                        "icons.fi_star.sort_accounts"
+                                    )}
                                 />
                             </th>
                             {isContactsList ? (

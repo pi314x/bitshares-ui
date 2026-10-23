@@ -668,25 +668,12 @@ table thead tr th.mymarkets-header {
     fill: var(--accent) !important;
 }
 
-.gold-star > svg path {
-    fill: #cc9f00 !important;
-}
-
-.grey-star > svg path,
 .grey-shuffle > svg path {
     fill: #878787 !important;
 }
 
-.gold-star:hover > svg path {
-    fill: lighten(#cc9f00, 10%) !important;
-}
-
 .shuffle:hover > svg path {
     fill: lighten(#878787, 20%) !important;
-}
-
-.grey-star:hover > svg path {
-    fill: #cc9f00 !important;
 }
 
 @media (max-width: 450px) {

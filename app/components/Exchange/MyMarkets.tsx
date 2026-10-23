@@ -1008,9 +1008,7 @@ function MyMarketsInner(props: MyMarketsProps) {
                                 string="exchange.show_only_star_formatter"
                                 keys={[
                                     {
-                                        type: "icon",
-                                        value: "fi-star",
-                                        className: "gold-star",
+                                        type: "star",
                                         arg: "star_icon"
                                     }
                                 ]}
