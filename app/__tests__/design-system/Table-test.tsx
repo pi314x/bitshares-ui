@@ -232,6 +232,25 @@ describe("design-system/Table", () => {
         expect(checkboxes[3].disabled).toBe(false);
     });
 
+    it("draws no pagination for a table with nothing in it", () => {
+        const {container, rerender} = render(
+            <Table
+                columns={columns}
+                dataSource={[]}
+                pagination={{pageSize: 2}}
+            />
+        );
+        expect(container.querySelector(".ds-table-pagination")).toBeNull();
+        rerender(
+            <Table
+                columns={columns}
+                dataSource={rows}
+                pagination={{pageSize: 2}}
+            />
+        );
+        expect(container.querySelector(".ds-table-pagination")).not.toBeNull();
+    });
+
     it("has no select-all checkbox in the header with hideDefaultSelections", () => {
         const {queryByLabelText, getAllByRole} = render(
             <Table

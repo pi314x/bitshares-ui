@@ -48,8 +48,7 @@ export default function ResetSettings() {
             </header>
 
             <Button
-                variant="accent"
-                style={{height: 60, width: "100%", marginTop: "30px"}}
+                style={{marginTop: "24px"}}
                 onClick={() => {
                     SettingsActions.clearSettings().then(() => {
                         setMessageWithTimeout(

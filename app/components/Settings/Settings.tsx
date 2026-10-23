@@ -46,6 +46,7 @@ import {getAllowedLogins, getFaucet} from "../../branding";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
 import {SubMenu} from "../../design-system/SubMenu";
+import {PageHead} from "../../design-system/PageHead";
 import styles from "./Settings.module.scss";
 
 function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
@@ -432,17 +433,23 @@ export default function Settings(props: SettingsProps) {
                     />
 
                     <div className={styles.content}>
-                        <Translate
-                            component="h3"
-                            content={"settings." + menuEntries[activeSetting]}
+                        <PageHead
+                            title={counterpart.translate(
+                                "settings." + menuEntries[activeSetting]
+                            )}
+                            lead={
+                                // the Signing page says it in its own words (a longer
+                                // text under the title would repeat it), Access has none
+                                activeEntry != "access" &&
+                                activeEntry != "signing" ? (
+                                    <Translate
+                                        unsafe
+                                        component="span"
+                                        content={`settings.${menuEntries[activeSetting]}_text`}
+                                    />
+                                ) : null
+                            }
                         />
-                        {activeEntry != "access" && (
-                            <Translate
-                                unsafe
-                                content={`settings.${menuEntries[activeSetting]}_text`}
-                                className={styles.lead}
-                            />
-                        )}
                         {entries}
                     </div>
                 </div>

@@ -36,6 +36,10 @@ interface RegistrationSelectorProps {
 
 const t = (key: string) => counterpart.translate(key) as string;
 
+// A few titles carry markup for the old selector (`<span class="hide-text-for-small">` around
+// the part that a phone dropped); this page draws text, so the tags go and the words stay.
+const plain = (key: string) => t(key).replace(/<[^>]*>/g, "");
+
 interface Model {
     route: string;
     title: string;
@@ -63,7 +67,7 @@ export default function RegistrationSelector({
     const models: Model[] = [
         {
             route: "local",
-            title: t("registration.walletModelTitle"),
+            title: plain("registration.walletModelTitle"),
             subtitle: t("wallet.wallet_model"),
             help: t("tooltip.registration.walletModel"),
             recommended: true,
@@ -86,7 +90,7 @@ export default function RegistrationSelector({
         },
         {
             route: "cloud",
-            title: t("registration.accountModelTitle"),
+            title: plain("registration.accountModelTitle"),
             subtitle: t("wallet.password_model"),
             help: t("tooltip.registration.accountModel"),
             recommended: false,

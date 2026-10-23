@@ -18,16 +18,6 @@
     min-width: 0;
 }
 
-.content h3 {
-    font-family: var(--font-display);
-}
-
-.lead {
-    margin: 0 0 24px;
-    color: var(--ink-2);
-    line-height: 1.6;
-}
-
 // Each setting is a block of its own: a label over its control, a rule and
 // space between blocks, and controls no wider than they need to be (a
 // full-width dropdown for "English" read as a layout bug). These sections are

@@ -82,6 +82,12 @@ import {FormattedDate} from "react-intl";
 import BlockchainActions from "actions/BlockchainActions";
 import Transaction from "./Transaction";
 import Translate from "react-translate-component";
+import counterpart from "counterpart";
+import {PageHead} from "../../design-system/PageHead";
+import {Card} from "../../design-system/Card";
+import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
+import styles from "./Block.module.scss";
 import LinkToWitnessById from "../Utility/LinkToWitnessById";
 import {Element, Events, animateScroll as scroll, scroller} from "react-scroll";
 import {ChainStore} from "bitsharesjs";
@@ -269,78 +275,73 @@ function BlockCore({
         </span>
     );
 
+    const fact = (label: string, value: React.ReactNode) => (
+        <div className={styles.fact}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+        </div>
+    );
+
     return (
-        <div className="grid-block page-layout">
-            <div className="grid-block main-content">
-                <div className="grid-content" id="blockContainer">
-                    <div className="grid-content no-overflow medium-offset-2 medium-8 large-offset-3 large-6 small-12">
-                        <h4 className="text-center">{blockHeight}</h4>
-                        <ul>
-                            <li>
-                                <Translate
-                                    component="span"
-                                    content="explorer.block.date"
-                                />
-                                :{" "}
-                                {block ? (
-                                    <FormattedDate
-                                        value={block.timestamp}
-                                        format="full"
-                                    />
-                                ) : null}
-                            </li>
-                            <li>
-                                <Translate
-                                    component="span"
-                                    content="explorer.block.witness"
-                                />
-                                :{" "}
-                                {block ? (
-                                    <LinkToWitnessById
-                                        witness={block.witness}
-                                    />
-                                ) : null}
-                            </li>
-                            <li>
-                                <Translate
-                                    component="span"
-                                    content="explorer.block.previous"
-                                />
-                                : {block ? block.previous : null}
-                            </li>
-                            <li>
-                                <Translate
-                                    component="span"
-                                    content="explorer.block.transactions"
-                                />
-                                : {block ? block.transactions.length : null}
-                            </li>
-                        </ul>
-                        <div
-                            className="clearfix"
-                            style={{marginBottom: "1rem"}}
+        <div className={styles.page} id="blockContainer">
+            <PageHead
+                flush
+                title={blockHeight}
+                action={
+                    <ButtonRow>
+                        <Button
+                            onClick={previousBlock}
+                            aria-label={counterpart.translate(
+                                "help_page.previous"
+                            )}
                         >
-                            <div
-                                className="button float-left outline"
-                                onClick={previousBlock}
-                            >
-                                &#8592;
-                            </div>
-                            <div
-                                className="button float-right outline"
-                                onClick={nextBlock}
-                            >
-                                &#8594;
-                            </div>
-                        </div>
-                        {block ? <TransactionList block={block} /> : null}
-                        <div style={{textAlign: "center", marginBottom: 20}}>
-                            <a onClick={scrollToTop}>
-                                <Translate content="global.return_to_top" />
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                            &#8592;
+                        </Button>
+                        <Button
+                            onClick={nextBlock}
+                            aria-label={counterpart.translate("help_page.next")}
+                        >
+                            &#8594;
+                        </Button>
+                    </ButtonRow>
+                }
+            />
+            <Card className={styles.facts}>
+                <dl>
+                    {fact(
+                        counterpart.translate("explorer.block.date"),
+                        block ? (
+                            <FormattedDate
+                                value={block.timestamp}
+                                format="full"
+                            />
+                        ) : null
+                    )}
+                    {fact(
+                        counterpart.translate("explorer.block.witness"),
+                        block ? (
+                            <LinkToWitnessById witness={block.witness} />
+                        ) : null
+                    )}
+                    {fact(
+                        counterpart.translate("explorer.block.previous"),
+                        block ? (
+                            <span className={styles.hash}>
+                                {block.previous}
+                            </span>
+                        ) : null
+                    )}
+                    {fact(
+                        counterpart.translate("explorer.block.transactions"),
+                        block ? block.transactions.length : null
+                    )}
+                </dl>
+            </Card>
+            {block ? <TransactionList block={block} /> : null}
+            <div className={styles.top}>
+                <a onClick={scrollToTop}>
+                    <Translate content="global.return_to_top" />
+                </a>
             </div>
         </div>
     );

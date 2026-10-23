@@ -363,8 +363,10 @@ export function Table<T = any>({
 
     const pageSizeOptions =
         (pagination && pagination.pageSizeOptions) || DEFAULT_PAGE_SIZE_OPTIONS;
+    // nothing to page through: no "Total of 0 items", no page-size select, no "1 / 1"
     const showPagination =
         paginationEnabled &&
+        total > 0 &&
         !(pagination && pagination.hideOnSinglePage && pageCount <= 1);
 
     return (

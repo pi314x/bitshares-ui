@@ -13661,3 +13661,15 @@ has "Join witnesses" and "Update witness" buttons beside it, the forms open in t
 before. The favourite star of the markets lists and the account lists (a hard-coded gold and
 grey glyph of the icon font, another size than the market header's star) is
 `design-system/Star`: the rail's line star, filled amber when on.
+
+A third round, over the account, settings, block and onboarding pages: the Registration
+selector showed the old markup of a title as text ("By Account Name<span class=...>"); the tags
+are stripped. The Settings pages use `PageHead` (the title and the short text of the entry; the
+Signing page no longer says the same thing twice, once above the panel and once in it, and the
+Reset settings button is an ordinary button, not a 60px accent bar). In Create asset, Reset is the
+quiet button and Create asset the accent one (both were accent, with no gap). A table with nothing
+in it draws no "Total of 0 items" pager. The Block page is a head (the height, the previous / next
+buttons), one card with the block's facts and its transactions under it (it was a bulleted list in
+a centred column, with the buttons floated to its edges). Not done: the Login page (two legacy
+plates; it signs people in, so it is not restyled in passing), the Fees page (its text is a help
+page), and the operations of a block, which are the legacy transaction view.

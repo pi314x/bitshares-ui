@@ -98,7 +98,6 @@
 // entirely rather than cast - an inert attribute either way.
 import * as React from "react";
 import Translate from "react-translate-component";
-import classnames from "classnames";
 import AssetActions from "actions/AssetActions";
 import HelpContent from "../Utility/HelpContent";
 import utils from "common/utils";
@@ -114,6 +113,8 @@ import AmountSelector from "../Utility/AmountSelector";
 import assetConstants from "chain/asset_constants";
 import {estimateFee} from "common/trxHelper";
 import {Switch} from "../../design-system/Switch";
+import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const GRAPHENE_MAX_SHARE_SUPPLY = new (big as any)(
@@ -875,22 +876,17 @@ function AccountAssetCreateInner({
         );
     }
 
+    // Reset is the quiet button, Create asset the one that does the work (both were the
+    // accent colour, side by side, with no gap that survived a narrow screen)
     const confirmButtons = (
-        <div>
-            <button
-                className="button"
-                onClick={reset}
-                value={counterpart.translate("account.perm.reset")}
-            >
-                <Translate content="account.perm.reset" />
-            </button>
-            <button
-                className={classnames("button", {disabled: !isValid})}
-                onClick={createAsset}
-            >
-                <Translate content="header.create_asset" />
-            </button>
-        </div>
+        <ButtonRow>
+            <Button onClick={reset}>
+                {counterpart.translate("account.perm.reset")}
+            </Button>
+            <Button variant="accent" disabled={!isValid} onClick={createAsset}>
+                {counterpart.translate("header.create_asset")}
+            </Button>
+        </ButtonRow>
     );
 
     return (
