@@ -1,7 +1,9 @@
 .direct-debit-table {
     overflow-x: auto;
+    // (it was a 1100px minimum, so a phone scrolled sideways; the table leaves out the columns
+    // it has no room for, see `hideColumnsBelow`)
     table {
-        min-width: 1100px;
+        min-width: 0;
     }
     .ant-table-placeholder {
         min-height: 140px;

@@ -91,6 +91,7 @@ import GatewayStore from "../../stores/GatewayStore";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import styles from "./Asset.module.scss";
 
 const {Panel} = Collapse;
 const TypedLink = Link as React.ComponentType<LinkProps>;
@@ -469,23 +470,25 @@ function Asset({
                     )}
                 {warning}
 
-                <HelpContent
-                    path={"assets/" + assetJS.symbol}
-                    alt_path="assets/Asset"
-                    section="summary"
-                    symbol={(prefix || "") + name}
-                    description={desc}
-                    issuer={issuerName}
-                    hide_issuer="true"
-                />
-                {short_name ? <p>{short_name}</p> : null}
+                <div className={styles.about}>
+                    <HelpContent
+                        path={"assets/" + assetJS.symbol}
+                        alt_path="assets/Asset"
+                        section="summary"
+                        symbol={(prefix || "") + name}
+                        description={desc}
+                        issuer={issuerName}
+                        hide_issuer="true"
+                    />
+                    {short_name ? <p>{short_name}</p> : null}
 
-                <TypedLink
-                    className="button market-button"
-                    to={`/market/${assetJS.symbol}_${preferredMarket}`}
-                >
-                    <Translate content="exchange.market" />
-                </TypedLink>
+                    <TypedLink
+                        className="button market-button"
+                        to={`/market/${assetJS.symbol}_${preferredMarket}`}
+                    >
+                        <Translate content="exchange.market" />
+                    </TypedLink>
+                </div>
             </div>
         );
     }

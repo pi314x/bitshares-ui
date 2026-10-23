@@ -13701,3 +13701,10 @@ elements with a `disabled` class) and the explanation text is set like a lead. T
 block take the whole card width for a one-cell row and wrap long labels. Not restyled: the proposals
 view and the signing confirmation, which share the operation markup (no proposal to check on the
 node, and the signing review is not restyled in passing).
+
+The last open parts: the HTLC, Direct debit and Open orders tables show their columns by room (the
+HTLC and Direct debit tables had a 1100px minimum in the legacy sheet, so a phone scrolled sideways
+and never saw the actions); the barter page is the head plus the panel cards (it was a card around
+cards under a centred heading in a card of its own); the top of the asset page and the settings'
+fee-asset row (which broke without a gap) are set like the rest. `docs/DEPLOYMENT.md` says what the
+container image does for TLS, including the post-quantum hybrid key exchange.

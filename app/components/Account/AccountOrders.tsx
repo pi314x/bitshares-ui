@@ -20,7 +20,7 @@ import marketUtils from "common/market_utils";
 import Translate from "react-translate-component";
 import {Input} from "../../design-system/Input";
 import {Icon} from "../../design-system/Icon";
-import {Table} from "../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../design-system/Table";
 import {Switch} from "../../design-system/Switch";
 import {Button} from "../../design-system/Button";
 import AccountOrderRowDescription from "./AccountOrderRowDescription";
@@ -373,223 +373,254 @@ function AccountOrders(props: AccountOrdersCoreProps) {
         }
 
         // Conditional array items: https://stackoverflow.com/a/47771259
-        return [
-            {
-                key: "trade",
-                title: counterpart.translate("account.trade"),
-                align: "center",
-                render: (dataItem: any) => {
-                    return (
-                        <LinkComponent
-                            to={`/market/${dataItem.quote.get(
-                                "symbol"
-                            )}_${dataItem.base.get("symbol")}`}
-                            onClick={() =>
-                                (MarketsActions as any).switchMarket()
-                            }
-                        >
-                            <Icon type="bar-chart" />
-                        </LinkComponent>
-                    );
-                }
-            },
-            {
-                key: "orderID",
-                title: counterpart.translate("transaction.order_id"),
-                render: (dataItem: any) => "#" + dataItem.order.id.substring(4)
-            },
-            ...(areAssetsGrouped
-                ? [
-                      {
-                          key: "operation",
-                          title: operation,
-                          render: () => operation,
-                          onCell: onCell,
-                          className: "clickable groupColumn"
-                      },
-                      ...(!isSettle
-                          ? [
-                                {
-                                    key: "baseAsset",
-                                    title: baseAsset,
-                                    render: (dataItem: any) =>
-                                        formatBaseAsset(getBaseAsset(dataItem)),
-                                    onCell: onCell,
-                                    className: "clickable groupColumn"
-                                },
-                                {
-                                    key: "baseName",
-                                    title: baseName,
-                                    render: () => baseName,
-                                    onCell: onCell,
-                                    className: "clickable groupColumn"
-                                },
-                                {
-                                    key: "for",
-                                    title: forText,
-                                    render: () => forText,
-                                    onCell: onCell,
-                                    className: "clickable groupColumn"
-                                },
-                                {
-                                    key: "quoteAsset",
-                                    title: quoteAsset,
-                                    render: (dataItem: any) =>
-                                        formatQuoteAsset(
-                                            getQuoteAsset(dataItem)
-                                        ),
-                                    onCell: onCell,
-                                    className: "clickable groupColumn"
-                                },
-                                {
-                                    key: "quoteName",
-                                    title: quoteName,
-                                    render: () => quoteName,
-                                    onCell: onCell,
-                                    className: "clickable groupColumn"
+        // A phone shows what the order is, its price and its value; the order id, the market
+        // price and the settlement date come with room (the trade link is the description's).
+        return hideColumnsBelow(
+            [
+                {
+                    key: "trade",
+                    title: counterpart.translate("account.trade"),
+                    align: "center",
+                    render: (dataItem: any) => {
+                        return (
+                            <LinkComponent
+                                to={`/market/${dataItem.quote.get(
+                                    "symbol"
+                                )}_${dataItem.base.get("symbol")}`}
+                                onClick={() =>
+                                    (MarketsActions as any).switchMarket()
                                 }
-                            ]
-                          : [
-                                {
-                                    key: "quoteAsset",
-                                    title: quoteAsset,
-                                    render: (dataItem: any) =>
-                                        formatQuoteAsset(
-                                            getQuoteAsset(dataItem)
-                                        ),
-                                    className: "clickable groupColumn"
-                                },
-                                {
-                                    key: "baseName",
-                                    title: baseName,
-                                    render: () => baseName,
-                                    className: "clickable groupColumn"
-                                }
-                            ])
-                  ]
-                : [
-                      {
-                          key: "description",
-                          title: counterpart.translate("exchange.description"),
-                          render: (dataItem: any) =>
-                              !isSettle ? (
-                                  <AccountOrderRowDescription {...dataItem} />
-                              ) : (
-                                  <Translate
-                                      content={
-                                          "exchange.settlement_description"
-                                      }
-                                      quoteAsset={(utils as any).format_number(
-                                          dataItem.order.for_sale.getAmount({
-                                              real: true
-                                          }),
-                                          dataItem.quote.get("precision"),
-                                          false
-                                      )}
-                                      quoteName={
-                                          <AssetName
-                                              noTip
-                                              customClass={dataItem.quoteColor}
-                                              name={dataItem.quote.get(
-                                                  "symbol"
-                                              )}
-                                          />
-                                      }
-                                  />
+                            >
+                                <Icon type="bar-chart" />
+                            </LinkComponent>
+                        );
+                    }
+                },
+                {
+                    key: "orderID",
+                    title: counterpart.translate("transaction.order_id"),
+                    render: (dataItem: any) =>
+                        "#" + dataItem.order.id.substring(4)
+                },
+                ...(areAssetsGrouped
+                    ? [
+                          {
+                              key: "operation",
+                              title: operation,
+                              render: () => operation,
+                              onCell: onCell,
+                              className: "clickable groupColumn"
+                          },
+                          ...(!isSettle
+                              ? [
+                                    {
+                                        key: "baseAsset",
+                                        title: baseAsset,
+                                        render: (dataItem: any) =>
+                                            formatBaseAsset(
+                                                getBaseAsset(dataItem)
+                                            ),
+                                        onCell: onCell,
+                                        className: "clickable groupColumn"
+                                    },
+                                    {
+                                        key: "baseName",
+                                        title: baseName,
+                                        render: () => baseName,
+                                        onCell: onCell,
+                                        className: "clickable groupColumn"
+                                    },
+                                    {
+                                        key: "for",
+                                        title: forText,
+                                        render: () => forText,
+                                        onCell: onCell,
+                                        className: "clickable groupColumn"
+                                    },
+                                    {
+                                        key: "quoteAsset",
+                                        title: quoteAsset,
+                                        render: (dataItem: any) =>
+                                            formatQuoteAsset(
+                                                getQuoteAsset(dataItem)
+                                            ),
+                                        onCell: onCell,
+                                        className: "clickable groupColumn"
+                                    },
+                                    {
+                                        key: "quoteName",
+                                        title: quoteName,
+                                        render: () => quoteName,
+                                        onCell: onCell,
+                                        className: "clickable groupColumn"
+                                    }
+                                ]
+                              : [
+                                    {
+                                        key: "quoteAsset",
+                                        title: quoteAsset,
+                                        render: (dataItem: any) =>
+                                            formatQuoteAsset(
+                                                getQuoteAsset(dataItem)
+                                            ),
+                                        className: "clickable groupColumn"
+                                    },
+                                    {
+                                        key: "baseName",
+                                        title: baseName,
+                                        render: () => baseName,
+                                        className: "clickable groupColumn"
+                                    }
+                                ])
+                      ]
+                    : [
+                          {
+                              key: "description",
+                              title: counterpart.translate(
+                                  "exchange.description"
                               ),
+                              render: (dataItem: any) =>
+                                  !isSettle ? (
+                                      <AccountOrderRowDescription
+                                          {...dataItem}
+                                      />
+                                  ) : (
+                                      <Translate
+                                          content={
+                                              "exchange.settlement_description"
+                                          }
+                                          quoteAsset={(utils as any).format_number(
+                                              dataItem.order.for_sale.getAmount(
+                                                  {
+                                                      real: true
+                                                  }
+                                              ),
+                                              dataItem.quote.get("precision"),
+                                              false
+                                          )}
+                                          quoteName={
+                                              <AssetName
+                                                  noTip
+                                                  customClass={
+                                                      dataItem.quoteColor
+                                                  }
+                                                  name={dataItem.quote.get(
+                                                      "symbol"
+                                                  )}
+                                              />
+                                          }
+                                      />
+                                  ),
+                              onCell: onCell,
+                              className: "clickable"
+                          }
+                      ]),
+                {
+                    key: "price",
+                    title: areAssetsGrouped ? (
+                        <div>
+                            <Translate content="account.average_price" />
+                            <br />
+                            {averagePrice}
+                        </div>
+                    ) : (
+                        counterpart.translate("exchange.price")
+                    ),
+                    align: areAssetsGrouped ? "right" : "left",
+                    render: (dataItem: any) => (
+                        <FormattedPrice
+                            base_amount={dataItem.order.sellPrice().base.amount}
+                            base_asset={
+                                dataItem.order.sellPrice().base.asset_id
+                            }
+                            quote_amount={
+                                dataItem.order.sellPrice().quote.amount
+                            }
+                            quote_asset={
+                                dataItem.order.sellPrice().quote.asset_id
+                            }
+                            force_direction={dataItem.base.get("symbol")}
+                            hide_symbols
+                        />
+                    ),
+                    onCell: onCell,
+                    className: "clickable"
+                },
+                {
+                    key: "marketPrice",
+                    title: areAssetsGrouped ? (
+                        <div>
+                            <Translate content="exchange.price_market" />
+                            <br />
+                            {marketPrice}
+                        </div>
+                    ) : (
+                        counterpart.translate("exchange.price_market")
+                    ),
+                    align: areAssetsGrouped ? "right" : "left",
+                    render: formatMarketPrice,
+                    onCell: onCell,
+                    className: "clickable"
+                },
+                isSettle && !areAssetsGrouped
+                    ? {
+                          key: "settlement_date",
+                          title: areAssetsGrouped ? (
+                              <div>
+                                  <Translate content="exchange.settlement_date" />
+                                  <br />
+                                  {marketPrice}
+                              </div>
+                          ) : (
+                              counterpart.translate("exchange.settlement_date")
+                          ),
+                          align: areAssetsGrouped ? "right" : "left",
+                          render: (dataItem: any) => (
+                              <span>{dataItem.settlement_date}</span>
+                          ),
                           onCell: onCell,
                           className: "clickable"
                       }
-                  ]),
+                    : {},
+                {
+                    key: "value",
+                    title: areAssetsGrouped ? (
+                        <div>
+                            <Translate content="exchange.value" />
+                            <br />
+                            {value}
+                        </div>
+                    ) : (
+                        counterpart.translate("exchange.value")
+                    ),
+                    align: "right",
+                    render: (dataItem: any) => (
+                        <div>
+                            <EquivalentValueComponent
+                                hide_asset
+                                amount={dataItem.order
+                                    .amountForSale()
+                                    .getAmount()}
+                                fromAsset={
+                                    dataItem.order.amountForSale().asset_id
+                                }
+                                noDecimals={true}
+                                toAsset={dataItem.preferredUnit}
+                            />{" "}
+                            <AssetName name={dataItem.preferredUnit} />
+                        </div>
+                    ),
+                    onCell: onCell,
+                    className: "clickable"
+                }
+            ] as any[],
             {
-                key: "price",
-                title: areAssetsGrouped ? (
-                    <div>
-                        <Translate content="account.average_price" />
-                        <br />
-                        {averagePrice}
-                    </div>
-                ) : (
-                    counterpart.translate("exchange.price")
-                ),
-                align: areAssetsGrouped ? "right" : "left",
-                render: (dataItem: any) => (
-                    <FormattedPrice
-                        base_amount={dataItem.order.sellPrice().base.amount}
-                        base_asset={dataItem.order.sellPrice().base.asset_id}
-                        quote_amount={dataItem.order.sellPrice().quote.amount}
-                        quote_asset={dataItem.order.sellPrice().quote.asset_id}
-                        force_direction={dataItem.base.get("symbol")}
-                        hide_symbols
-                    />
-                ),
-                onCell: onCell,
-                className: "clickable"
-            },
-            {
-                key: "marketPrice",
-                title: areAssetsGrouped ? (
-                    <div>
-                        <Translate content="exchange.price_market" />
-                        <br />
-                        {marketPrice}
-                    </div>
-                ) : (
-                    counterpart.translate("exchange.price_market")
-                ),
-                align: areAssetsGrouped ? "right" : "left",
-                render: formatMarketPrice,
-                onCell: onCell,
-                className: "clickable"
-            },
-            isSettle && !areAssetsGrouped
-                ? {
-                      key: "settlement_date",
-                      title: areAssetsGrouped ? (
-                          <div>
-                              <Translate content="exchange.settlement_date" />
-                              <br />
-                              {marketPrice}
-                          </div>
-                      ) : (
-                          counterpart.translate("exchange.settlement_date")
-                      ),
-                      align: areAssetsGrouped ? "right" : "left",
-                      render: (dataItem: any) => (
-                          <span>{dataItem.settlement_date}</span>
-                      ),
-                      onCell: onCell,
-                      className: "clickable"
-                  }
-                : {},
-            {
-                key: "value",
-                title: areAssetsGrouped ? (
-                    <div>
-                        <Translate content="exchange.value" />
-                        <br />
-                        {value}
-                    </div>
-                ) : (
-                    counterpart.translate("exchange.value")
-                ),
-                align: "right",
-                render: (dataItem: any) => (
-                    <div>
-                        <EquivalentValueComponent
-                            hide_asset
-                            amount={dataItem.order.amountForSale().getAmount()}
-                            fromAsset={dataItem.order.amountForSale().asset_id}
-                            noDecimals={true}
-                            toAsset={dataItem.preferredUnit}
-                        />{" "}
-                        <AssetName name={dataItem.preferredUnit} />
-                    </div>
-                ),
-                onCell: onCell,
-                className: "clickable"
+                trade: 480,
+                orderID: 520,
+                marketPrice: 640,
+                settlement_date: 700
             }
-        ];
+        );
     };
 
     const renderSettleOrdersTable = () => {

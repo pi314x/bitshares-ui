@@ -236,6 +236,8 @@ import {checkBalance} from "common/trxHelper";
 import BalanceComponent from "../Utility/BalanceComponent";
 import ApplicationApi from "../../api/ApplicationApi";
 import {map} from "lodash-es";
+import {PageHead} from "../../design-system/PageHead";
+import styles from "./Barter.module.scss";
 
 function moveDecimal(num: number, decimals: number): number | undefined {
     if (!num) return;
@@ -256,8 +258,8 @@ function referenceErrorLikeOriginal(name: string): never {
 // hold a card each, which should take the row (the cards of Peer 1 and Peer 2
 // were two different widths on a phone).
 const FULL_ROW_COL: React.CSSProperties = {
-    // vertical room only: the card around it already pads the sides
-    padding: "10px 0",
+    // vertical room only (the page's cards fill the width)
+    padding: "6px 0",
     flex: "1 1 100%",
     minWidth: 0
 };
@@ -1337,7 +1339,7 @@ export default function Barter(props: BarterProps) {
     });
 
     const account_from = (
-        <Card style={{borderRadius: "10px"}}>
+        <Card>
             <Translate
                 component="h4"
                 style={{margin: "0 0 0.5rem"}}
@@ -1380,7 +1382,7 @@ export default function Barter(props: BarterProps) {
     );
 
     const account_to = (
-        <Card style={{borderRadius: "10px"}}>
+        <Card>
             <Translate
                 component="h4"
                 style={{margin: "0 0 0.5rem"}}
@@ -1445,7 +1447,7 @@ export default function Barter(props: BarterProps) {
     }
 
     const offers = (
-        <Card style={{borderRadius: "10px"}}>
+        <Card>
             {!isSubmitNotValid && (
                 <div className="left-label" style={{fontSize: "1rem"}}>
                     {counterpart.translate("showcases.barter.action", {
@@ -1532,7 +1534,7 @@ export default function Barter(props: BarterProps) {
     );
 
     const totalFeeFrom = (
-        <Card style={{borderRadius: "10px"}}>
+        <Card>
             <Translate
                 component="h4"
                 style={{margin: "0 0 0.5rem"}}
@@ -1607,7 +1609,7 @@ export default function Barter(props: BarterProps) {
     );
 
     const totalFeeTo = (
-        <Card style={{borderRadius: "10px"}}>
+        <Card>
             <Translate
                 component="h4"
                 style={{margin: "0 0 0.5rem"}}
@@ -1641,7 +1643,7 @@ export default function Barter(props: BarterProps) {
     let feeForEscrow = null;
     if (state.showEscrow) {
         feeForEscrow = (
-            <Card style={{borderRadius: "10px"}}>
+            <Card>
                 <Translate content={"showcases.barter.escrow_account"} />
                 <Tooltip
                     title={counterpart.translate(
@@ -1670,23 +1672,22 @@ export default function Barter(props: BarterProps) {
     }
 
     const intro = (
-        <Card
-            style={{
-                borderRadius: "10px"
-            }}
-        >
-            <Tooltip
-                title={counterpart.translate(
-                    "showcases.barter.new_barter_tooltip"
-                )}
-                placement="bottom"
-            >
-                <h2 style={{textAlign: "center"}}>
-                    <Translate content={"showcases.barter.new_barter"} />{" "}
-                    <Icon type="question-circle" theme="filled" />
-                </h2>
-            </Tooltip>
-        </Card>
+        <PageHead
+            flush
+            title={
+                <Tooltip
+                    title={counterpart.translate(
+                        "showcases.barter.new_barter_tooltip"
+                    )}
+                    placement="bottom"
+                >
+                    <span>
+                        <Translate content={"showcases.barter.new_barter"} />{" "}
+                        <Icon type="question-circle" theme="filled" />
+                    </span>
+                </Tooltip>
+            }
+        />
     );
 
     let escrow = null;
@@ -1697,7 +1698,7 @@ export default function Barter(props: BarterProps) {
         : fee(true);
     if (state.showEscrow) {
         escrow = (
-            <Card style={{borderRadius: "10px"}}>
+            <Card>
                 <AccountSelector
                     label="showcases.barter.escrow_account"
                     placeholder="placeholder"
@@ -1788,7 +1789,7 @@ export default function Barter(props: BarterProps) {
                 margin: 0
             }}
         >
-            <Card>
+            <div className={styles.page}>
                 {smallScreen ? (
                     <div>
                         <Row>
@@ -1881,7 +1882,7 @@ export default function Barter(props: BarterProps) {
                     </Tooltip>
                     {!isSubmitNotValid && renderBalanceWarnings()}
                 </div>
-            </Card>
+            </div>
         </div>
     );
 }

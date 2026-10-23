@@ -56,18 +56,15 @@ export default function FeeAssetSettings() {
             style={{
                 display: "flex",
                 flexDirection: "row",
-                alignItems: "center"
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: "8px 12px"
             }}
         >
-            <Translate
-                component="span"
-                content="settings.current_fee_asset"
-                style={{marginRight: "10px"}}
-            />
+            <Translate component="span" content="settings.current_fee_asset" />
             {asset ? <AssetName name={asset.get("symbol")} /> : null}
 
             <Button
-                style={{margin: "15px"}}
                 key="open_change_fee_asset"
                 onClick={() => setShowModal(true)}
             >

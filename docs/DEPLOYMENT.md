@@ -61,6 +61,32 @@ docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build   # ht
   TLS variant). The same check runs on a machine with Docker:
   `docker build -t bitshares-desk:ci . && scripts/check-container.sh bitshares-desk:ci`.
 
+## Post-quantum key exchange (TLS)
+
+What an attacker can do today is record encrypted traffic and decrypt it later, when a quantum
+computer exists ("harvest now, decrypt later"). TLS 1.3 with a hybrid key exchange
+(`X25519MLKEM768`: X25519 and ML-KEM-768 together) protects against that, and it needs OpenSSL 3.5
+or newer (it is in OpenSSL 3.5's default group list, first).
+
+- The container image uses `nginxinc/nginx-unprivileged:stable-alpine`; at the time of writing that
+  is nginx 1.30 on Alpine 3.24 with OpenSSL 3.5.9. Checked against it with an OpenSSL 3.5 client:
+  a client that offers `X25519MLKEM768` negotiates it, a client that offers only `X25519` gets
+  X25519 (TLS 1.3 both ways), and a default client negotiates the hybrid. The configuration does not
+  set `ssl_ecdh_curve`, so the library's default is used. A Debian based nginx image (OpenSSL 3.0)
+  does not have it: keep the Alpine one, or check `openssl version` in the image you use.
+- Browsers that offer it: Chrome and Edge (131 and later), Firefox (132 and later), Safari (26 and
+  later); the others fall back to X25519 without an error. A CDN or proxy in front (Cloudflare and
+  others) terminates TLS itself: whether the browser's connection is hybrid then depends on it.
+- The certificate stays an ordinary one (ECDSA P-256 or RSA, from Let's Encrypt): browsers do not
+  accept post-quantum certificates yet, and a signature only has to hold while the connection is
+  open (it cannot be broken afterwards), so this is not where the risk is.
+- What it does not cover: the app's own cryptography. The wallet's keys and the chain's signatures
+  (secp256k1) are a separate question (the chain itself would have to change); TLS only protects
+  the files and the connection to a node on their way.
+- To pin it (not needed): `ssl_ecdh_curve X25519MLKEM768:X25519:prime256v1;` in the `server` block.
+  Check with `openssl s_client -connect host:443 -groups X25519MLKEM768 -brief` (OpenSSL 3.5 client;
+  it prints `Negotiated TLS1.3 group: X25519MLKEM768`).
+
 ## The headers
 
 | Header | Why |

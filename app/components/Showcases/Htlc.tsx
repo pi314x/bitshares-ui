@@ -80,7 +80,7 @@ import {Col} from "../../design-system/Col";
 import {Row} from "../../design-system/Row";
 import {Button} from "../../design-system/Button";
 import {Icon} from "../../design-system/Icon";
-import {Table} from "../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../design-system/Table";
 import {Tooltip} from "../../design-system/Tooltip";
 import counterpart from "counterpart";
 import {ChainStore, FetchChainObjects} from "bitsharesjs";
@@ -389,7 +389,11 @@ function Htlc({currentAccount}: HtlcProps) {
                         </div>
 
                         <Table
-                            columns={columns}
+                            columns={hideColumnsBelow(columns as any, {
+                                id: 640,
+                                expires: 680,
+                                hash: 760
+                            })}
                             dataSource={dataSource}
                             pagination={false}
                             className="direct-debit-table"

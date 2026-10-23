@@ -108,7 +108,7 @@ import {Col} from "../../design-system/Col";
 import {Row} from "../../design-system/Row";
 import {Button} from "../../design-system/Button";
 import {Icon} from "../../design-system/Icon";
-import {Table} from "../../design-system/Table";
+import {Table, hideColumnsBelow} from "../../design-system/Table";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
 import utils from "common/utils";
@@ -513,7 +513,12 @@ function DirectDebitCore({currentAccount}: DirectDebitCoreProps) {
                         </div>
 
                         <Table
-                            columns={columns}
+                            columns={hideColumnsBelow(columns as any, {
+                                id: 640,
+                                claimed: 700,
+                                until: 760,
+                                expires: 820
+                            })}
                             dataSource={dataSource || []}
                             pagination={false}
                             className="direct-debit-table"
