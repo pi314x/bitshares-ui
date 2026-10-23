@@ -72,7 +72,7 @@ nothing (no push, no tag, no registry):
    and `bitshares-desk:latest`, with the branch and the revision in the build;
 4. `scripts/check-container.sh` against it (headers, policy, user, read-only file system, caching,
    no source maps, the TLS variant, `nginx -t`);
-5. a look into what the image ships: no source maps, no private key block, and **no MCP pages**
+5. a look into what the image ships: no script source maps, no private key block, and **no MCP pages**
    (the MCP flags are compile-time and a build that sets none has none; a public site must not);
 6. `build/release/bitshares-desk-<tag>.tar.gz` and its `.sha256`, for the server.
 

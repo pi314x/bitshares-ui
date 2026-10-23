@@ -55,13 +55,15 @@ CID="$(docker create "$IMAGE")"
 docker cp "$CID:/usr/share/nginx/html/." "$TMP/html"
 docker rm "$CID" >/dev/null
 [ -f "$TMP/html/index.html" ] || fail "no index.html in the image"
-if find "$TMP/html" -name '*.map' | grep -q .; then fail "source maps are in the image"; fi
+# the app's own source maps must not exist (the four .css.map of the charting library are its own
+# files, and nginx answers 404 for any .map: scripts/check-container.sh tests that)
+if find "$TMP/html" -name '*.js.map' | grep -q .; then fail "script source maps are in the image"; fi
 if grep -rIl 'BEGIN [A-Z ]*PRIVATE KEY' "$TMP/html" >/dev/null 2>&1; then fail "a private key block is in the image"; fi
 # the MCP pages are compile-time flags, off in a build that sets none: the review route must not exist
 if grep -rIl '/mcp/review' "$TMP/html" --include='*.js' >/dev/null 2>&1; then
     fail "the MCP pages are in this build (MCP_ENABLED was set when it was built)"
 fi
-echo "ok: $(find "$TMP/html" -type f | wc -l) files, no source maps, no keys, no MCP pages"
+echo "ok: $(find "$TMP/html" -type f | wc -l) files, no script source maps, no keys, no MCP pages"
 
 step "image file"
 mkdir -p "$OUT"
