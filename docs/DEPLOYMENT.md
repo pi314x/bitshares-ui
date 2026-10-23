@@ -61,6 +61,70 @@ docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build   # ht
   TLS variant). The same check runs on a machine with Docker:
   `docker build -t bitshares-desk:ci . && scripts/check-container.sh bitshares-desk:ci`.
 
+## Releasing
+
+`scripts/prepare-release.sh` does the work on the machine where the code is, and publishes
+nothing (no push, no tag, no registry):
+
+1. it refuses to run with uncommitted changes (the image is built from the commit);
+2. types, lint (errors only) and the tests;
+3. the image from a clean `git archive` of the commit, tagged `bitshares-desk:<version>-<commit>`
+   and `bitshares-desk:latest`, with the branch and the revision in the build;
+4. `scripts/check-container.sh` against it (headers, policy, user, read-only file system, caching,
+   no source maps, the TLS variant, `nginx -t`);
+5. a look into what the image ships: no source maps, no private key block, and **no MCP pages**
+   (the MCP flags are compile-time and a build that sets none has none; a public site must not);
+6. `build/release/bitshares-desk-<tag>.tar.gz` and its `.sha256`, for the server.
+
+On the server (Docker, the repository's `docker-compose.yml` and, for TLS of its own,
+`docker-compose.tls.yml` next to it):
+
+```
+sha256sum -c bitshares-desk-<tag>.tar.gz.sha256
+gunzip -c bitshares-desk-<tag>.tar.gz | docker load
+docker tag bitshares-desk:<tag> bitshares-desk:local
+docker compose up -d --no-build
+# TLS of its own: certificate chain and key in ./certs (fullchain.pem, privkey.pem; the key readable
+# by user 101), then
+docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --no-build
+```
+
+Before it is public:
+
+- A domain of its own, DNS pointing at the server, ports 80 and 443 open, the certificate issued.
+  A renewed certificate is read when nginx reloads: `docker compose kill -s HUP desk` in the
+  renewal hook.
+- Open it on a phone and on a desktop with a test account: login (a `.bin` file and a password),
+  a transfer of a small amount, the extension if it is used, the trade page. Then the developer
+  tools: the response headers, no "Refused to ..." in the Console.
+- `curl -I https://<domain>/` shows the headers of the table below; `/healthz` answers.
+- Put the `/healthz` address into whatever watches the server. A static site has no data to back
+  up; the thing to keep is the last two image tags.
+
+Known advisories (`yarn audit --groups dependencies`, checked before this release): no critical
+one. `handlebars` (a critical one, build time only: it renders `index.hbs` while webpack runs) and
+`dompurify` (through `jspdf`, the paper wallet's PDF) were raised to their fixed versions. Eight
+high ones remain; `cross-spawn`, `node-fetch` and `ws` are Node-side code that the browser build
+does not run (the browser uses the native WebSocket). `highcharts` 6/7 (through `react-highcharts`)
+is in the bundle: its advisories need chart options an attacker controls, and the app passes only
+market data to it; the policy does not stop that kind of injection (it allows inline script), so
+moving to a current Highcharts is the next dependency step. Run the audit again before each release.
+The charting library (TradingView) tries to load Google Analytics from inside its own bundle; the
+policy blocks the request (a message in the Console on the trade page), so nothing is sent.
+
+Updating and going back:
+
+- A new release is the same steps with a new tag; `docker compose up -d --no-build` replaces the
+  container in seconds. To go back, `docker tag bitshares-desk:<old tag> bitshares-desk:local` and
+  `docker compose up -d --no-build` again.
+- The base image (`nginxinc/nginx-unprivileged:stable-alpine`) carries nginx and OpenSSL: build a new
+  release about once a month to pick up their fixes, and when a security advisory names nginx,
+  OpenSSL or one of the app's dependencies.
+- Do not merge the branch into `develop`, `staging` or `master` of the upstream repository to
+  publish this: a push to those branches runs `.github/workflows/npm-build-and-deploy.yml`, which
+  publishes to the deployment repository with that repository's secrets. The branch does not have to
+  be merged to run it on your own server.
+
 ## Post-quantum key exchange (TLS)
 
 What an attacker can do today is record encrypted traffic and decrypt it later, when a quantum
