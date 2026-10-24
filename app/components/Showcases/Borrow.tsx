@@ -351,8 +351,10 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                         })}
                     </Steps>
                 ) : current < STEPS.length ? (
-                    <React.Fragment>
-                        {current + ". "}
+                    // the step's number in a small badge, its name next to it, and
+                    // how far it is (it was plain "4." and a heading line under the title)
+                    <div className={styles.stepCaption}>
+                        <span className={styles.stepNumber}>{current}</span>
                         <Translate
                             content={
                                 "showcases.borrow.steps_" +
@@ -360,7 +362,10 @@ function BorrowCore({currentAccount: currentAccountProp}: BorrowCoreProps) {
                                 ".title"
                             }
                         />
-                    </React.Fragment>
+                        <span className={styles.stepCount}>
+                            {current} / {STEPS.length - 1}
+                        </span>
+                    </div>
                 ) : null)}
             {finishedCard != null && finishedCard}
             {finishedCard == null && (

@@ -199,12 +199,18 @@ function CreateLockModal({
                 >
                     <Tooltip
                         placement="top"
+                        // (the tooltip's wrapper is an inline box: the select was as wide as
+                        // its arrow, a 40px square)
+                        style={{display: "block", width: "100%"}}
                         title={counterpart.translate(
                             "tooltip.create_lock_periods"
                         )}
                     >
                         <Select
                             value={state.targetType}
+                            placeholder={counterpart.translate(
+                                "modal.create_lock.targetType"
+                            )}
                             onChange={onTargetTypeChanged}
                         >
                             {Object.keys((ChainTypes as any).ticket_type).map(

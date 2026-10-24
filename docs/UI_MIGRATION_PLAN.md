@@ -13708,3 +13708,15 @@ and never saw the actions); the barter page is the head plus the panel cards (it
 cards under a centred heading in a card of its own); the top of the asset page and the settings'
 fee-asset row (which broke without a gap) are set like the rest. `docs/DEPLOYMENT.md` says what the
 container image does for TLS, including the post-quantum hybrid key exchange.
+
+A round over dialogs and overlays (the account menu, the wallet lock, the bell, Personalize, the
+language list, the payment dialogs, the pool and lock dialogs, the borrow wizard), on a phone and a
+desktop. Found and fixed: the Change default button of the fee field sat inside a ~150px input and
+covered its text ("Unknown"), it is under the field now; the unlock dialog's green status line and the
+Password label touched (the two were in a plain div, no form gap); the Create Lock dialog's Lock Type
+select was a 40px square (the tooltip's wrapper is an inline box) and had no placeholder; the
+Personalize dialog cut "Orderform above Orderbook" to "Orderform a..."; the service-provider text
+ran sentences together ("on-chain.You can"); the borrow wizard on a phone showed "4." and "Risks" as
+plain lines (a numbered badge, the name and "4 / 4" now) and in a dialog its Previous / Next buttons
+were half below the fold (they stay at the bottom of the dialog). Not touched: the text of the
+dialogs, what any button does.

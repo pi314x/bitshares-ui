@@ -617,7 +617,15 @@ function WalletUnlockModal({
             <Form className="full-width" layout="vertical">
                 <LoginTypeSelector />
                 {passwordLogin ? (
-                    <div>
+                    // a column with the form's own gap: the green status line of the account
+                    // ("Lifetime member #...") and the Password label above it were touching
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 16
+                        }}
+                    >
                         <DisableChromeAutocomplete />
                         <AccountSelector
                             label="account.name"

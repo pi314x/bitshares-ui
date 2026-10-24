@@ -52,11 +52,11 @@ export default function ServiceProviderExplanation({
                 />
             )}
             <p>
-                <Translate content="external_service_provider.welcome.explanation_dex" />
+                <Translate content="external_service_provider.welcome.explanation_dex" />{" "}
                 <Translate content="external_service_provider.welcome.explanation_service_providers" />
             </p>
             <p>
-                <Translate content="external_service_provider.welcome.explanation_what_to_do" />
+                <Translate content="external_service_provider.welcome.explanation_what_to_do" />{" "}
                 <Translate content="external_service_provider.welcome.explanation_later" />
             </p>
         </React.Fragment>

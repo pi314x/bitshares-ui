@@ -36,3 +36,44 @@ body[class][class] .page .stepText {
 body[class][class] .page .stepText strong {
     color: var(--ink);
 }
+
+// the current step on a phone (the dots of the wide layout do not fit): number, name, progress
+.stepCaption {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.stepNumber {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 12px;
+}
+
+.stepCount {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+// in a dialog (a wide screen) the buttons stay at the bottom while a long step scrolls
+@media (min-width: 861px) {
+    .page :global(.steps-action) {
+        position: sticky;
+        bottom: 0;
+        padding: 12px 0 4px;
+        background: var(--surface);
+    }
+}

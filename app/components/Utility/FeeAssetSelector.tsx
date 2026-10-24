@@ -351,7 +351,7 @@ function FeeAssetSelector({
             mouseEnterDelay={0.5}
         >
             <Button
-                style={{right: "-12px"}}
+                size="small"
                 onClick={openSetDefaultAssetModal}
                 disabled={!canChangeFeeParams}
             >
@@ -377,7 +377,6 @@ function FeeAssetSelector({
                         disabled={true}
                         value={feeInputString || ""}
                         tabIndex={tabIndex}
-                        suffix={state.error ? changeDefaultButton : undefined}
                     />
 
                     <AssetSelect
@@ -394,6 +393,11 @@ function FeeAssetSelector({
                         onChange={onAssetChange}
                     />
                 </Input.Group>
+                {/* Under the field, not inside it: the reason ("Unknown") and the button did not fit
+                    in the ~150px that is left of the row, and the button covered the text */}
+                {state.error ? (
+                    <div style={{marginTop: 8}}>{changeDefaultButton}</div>
+                ) : null}
             </Form.Item>
 
             {state.isModalVisible && (

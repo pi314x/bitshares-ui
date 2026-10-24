@@ -54,7 +54,7 @@ body[class][class] .settings :global(.small-6):first-child {
 
 body[class][class] .settings :global(.small-6):last-child {
     display: flex;
-    flex: 0 0 200px;
+    flex: 0 0 240px;
     justify-content: flex-end;
 }
 
@@ -81,8 +81,10 @@ body[class][class] .settings h6 svg {
     font-size: 13px;
 }
 
+// on a phone the label wraps to two lines and the control keeps what it needs for
+// "Orderform above Orderbook" (it was cut to "Orderform a...")
 @media (max-width: 560px) {
     body[class][class] .settings :global(.small-6):last-child {
-        flex-basis: 150px;
+        flex-basis: 190px;
     }
 }
