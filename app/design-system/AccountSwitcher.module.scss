@@ -1,0 +1,123 @@
+.wrap {
+    position: relative;
+    min-width: 0;
+}
+
+.trigger {
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    cursor: pointer;
+}
+
+.trigger:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.name {
+    // a long account name gives way on a phone instead of pushing the title
+    min-width: 0;
+    max-width: 11em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.caret {
+    flex: none;
+    color: var(--faint);
+    font-size: 10px;
+}
+
+.menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 180px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    padding: 4px;
+    z-index: 20;
+}
+
+.item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.item:hover {
+    background: var(--line-soft);
+    color: var(--ink);
+}
+
+.itemActive {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.empty {
+    padding: 8px 10px;
+    color: var(--faint);
+    font-size: 12.5px;
+}
+
+.badge {
+    margin-left: 8px;
+    padding: 1px 7px;
+    border-radius: 99px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.logout {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    color: var(--down);
+}
+
+// the second list of the menu: accounts the user follows
+.group {
+    margin-top: 4px;
+    padding: 8px 10px 4px;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.follow {
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    color: var(--accent);
+}

@@ -1,0 +1,168 @@
+// `.topbar.topbar` (specificity 0,2,0) on purpose: the legacy global base
+// stylesheet carries an old HTML5-normalize rule, `body.<theme> header {
+// display: block }` (0,1,2), which beats a single class and collapsed this
+// flex row into a vertical stack in the real app (the standalone preview
+// never loads that sheet, so it could not show it).
+.topbar.topbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    // stays in view while the page scrolls, the page showing faintly through
+    position: sticky;
+    top: 0;
+    z-index: 30;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .topbar.topbar {
+        background: color-mix(in srgb, var(--surface) 84%, transparent);
+        -webkit-backdrop-filter: saturate(1.3) blur(12px);
+        backdrop-filter: saturate(1.3) blur(12px);
+    }
+}
+
+// The wrappers only exist so the phone layout can move the buttons and the
+// status chips onto rows of their own; on a wide screen they disappear and the
+// topbar is the same single flex row as before.
+.actions,
+.status {
+    display: contents;
+}
+
+.menuBtn {
+    display: none;
+}
+
+.menuBars,
+.menuBars::before,
+.menuBars::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--ink);
+}
+
+.menuBars {
+    position: relative;
+}
+
+.menuBars::before,
+.menuBars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+}
+
+.menuBars::before {
+    top: -6px;
+}
+
+.menuBars::after {
+    top: 6px;
+}
+
+// Phone and small tablet. `.topbar.topbar` and friends again match the base
+// rule's specificity so these actually apply.
+@media (max-width: 860px) {
+    .topbar.topbar {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    .menuBtn {
+        display: inline-grid;
+        place-items: center;
+        flex: none;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--raised);
+        cursor: pointer;
+    }
+
+    .topbar .crumb {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .spacer {
+        display: none;
+    }
+
+    // row 2: Send / Deposit / Withdraw, equal width
+    .topbar .actions {
+        display: flex;
+        flex: 1 1 100%;
+        order: 3;
+        gap: 8px;
+    }
+
+    .topbar .actions > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    // the wallet chips (account, lock) sit at the top right of row 1, beside
+    // the title; the title gives way (ellipsis), they do not wrap below it
+    .topbar .status {
+        position: relative;
+        display: flex;
+        flex: 0 1 auto;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        min-width: 0;
+        order: 2;
+        gap: 8px;
+    }
+}
+
+.crumb {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+}
+
+.spacer {
+    margin-left: auto;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.dotOk {
+    background: var(--up);
+    box-shadow: 0 0 0 3px var(--up-wash);
+}
+
+.dotWarn {
+    background: var(--warn);
+}

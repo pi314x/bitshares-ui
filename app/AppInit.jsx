@@ -1,22 +1,54 @@
-import {hot} from "react-hot-loader";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): the real `alt`/`alt-react`
+// packages are being removed now that every Alt store has a Redux-
+// backed facade (`getState()`/`listen()`/`unlisten()`). This file used
+// to be wrapped with alt-react's `connect(AppInit, {listenTo, getProps})`
+// (subscribing to `[IntlStore, WalletManagerStore, SettingsStore]` and
+// injecting `locale`/`walletMode`/`theme`/`apiServer` as props) plus
+// `supplyFluxContext(alt)(AppInit)` (providing Alt's React context) -
+// grep-confirmed nothing downstream ever read `this.context.flux`/
+// `props.flux`, so `supplyFluxContext` was dropped outright. `connect`'s
+// subscribe/derive-props behavior is reproduced directly in this class
+// (componentDidMount/componentWillUnmount `listen`/`unlisten` the same
+// 3 stores, `forceUpdate` on change; `render()` computes the same 4
+// derived values inline instead of receiving them as injected props) -
+// `<AppInit />` is rendered with no explicit props (see `index.js`), so
+// there is no caller-prop-precedence case to preserve.
+//
+// Also drops `react-hot-loader`'s `hot(module)(...)` wrapper (Phase 9
+// dependency cleanup) - that package patches React's reconciler purely
+// to preserve component state across dev-mode hot reloads; it's a no-op
+// in production (`hot()` only activates when `process.env.NODE_ENV !==
+// "production"`) and was never load-bearing for correctness. Removing
+// it means a dev-mode edit now triggers webpack's plain
+// `HotModuleReplacementPlugin` module-replacement + full remount
+// instead of a state-preserving swap - an accepted dev-experience
+// tradeoff, not a behavior change for any shipped build.
 import React from "react";
+import {Provider} from "react-redux";
+import {reduxStore} from "./store/reduxStore";
 import App from "./App";
 import IntlActions from "actions/IntlActions";
 import WalletManagerStore from "stores/WalletManagerStore";
 import SettingsStore from "stores/SettingsStore";
 import IntlStore from "stores/IntlStore";
 import intlData from "./components/Utility/intlData";
-import alt from "alt-instance";
-import {connect, supplyFluxContext} from "alt-react";
 import {IntlProvider} from "react-intl";
 import willTransitionTo from "./routerTransition";
-import {BodyClassName} from "bitshares-ui-style-guide";
-import LoadingIndicator from "./components/LoadingIndicator";
+import {BodyClassName} from "./design-system/BodyClassName";
+import LoadingScreen from "./components/LoadingScreen";
 import InitError from "./components/InitError";
 import SyncError from "./components/SyncError";
-import counterpart from "counterpart";
 import LogsActions from "actions/LogsActions";
+import ExternalSignerActions from "actions/ExternalSignerActions";
+import {startExternalAccountSync} from "stores/ExternalAccountSync";
 import NodeSelector from "./components/Utility/NodeSelector";
+import {selectAccountState} from "./store/slices/accountSlice";
+import {
+    COVER_FADE_MS,
+    READY_MAX_MS,
+    accountsReady,
+    coverVisible
+} from "./lib/common/startup";
 /*
  * Electron does not support browserHistory, so we need to use hashHistory.
  * The same is true for servers without configuration options, such as Github Pages
@@ -60,7 +92,11 @@ class AppInit extends React.Component {
             status: "",
             extendeLogText: [], // used to cache logs when not mounted
             nodeFilterHasChanged: false,
-            showNodeFilter: false
+            showNodeFilter: false,
+            // the account lists have been read: the app can show something
+            appReady: false,
+            // the start-up screen has faded out and is removed
+            coverGone: false
         };
         this.mounted = true;
         this.persistentLogEnabled = false;
@@ -180,6 +216,11 @@ class AppInit extends React.Component {
                     apiError: false,
                     syncError: null
                 });
+                this._watchReady();
+                // Optional extension-based signing (off unless the user chose it):
+                // look for the extension now that the chain id is known.
+                startExternalAccountSync();
+                ExternalSignerActions.init();
             })
             .catch(err => {
                 console.log("willTransitionTo err:", err);
@@ -208,10 +249,50 @@ class AppInit extends React.Component {
                     windowsClass;
             }
         }
+
+        this._onStoreChange = () => this.forceUpdate();
+        IntlStore.listen(this._onStoreChange);
+        WalletManagerStore.listen(this._onStoreChange);
+        SettingsStore.listen(this._onStoreChange);
+    }
+
+    // The start-up screen stays until the account state has been read (or
+    // READY_MAX_MS), so the app does not appear with a second spinner of its
+    // own. See lib/common/startup.ts.
+    _watchReady() {
+        const done = () => {
+            this._stopWatchingReady();
+            if (!this.mounted) return;
+            this.setState({appReady: true});
+            // the screen fades for a moment before it is taken away
+            this._coverTimer = setTimeout(() => {
+                if (this.mounted) this.setState({coverGone: true});
+            }, COVER_FADE_MS);
+        };
+        const check = () => {
+            if (accountsReady(selectAccountState(reduxStore.getState()))) {
+                done();
+            }
+        };
+        this._unsubscribeReady = reduxStore.subscribe(check);
+        this._readyTimer = setTimeout(done, READY_MAX_MS);
+        check();
+    }
+
+    _stopWatchingReady() {
+        if (this._unsubscribeReady) this._unsubscribeReady();
+        if (this._readyTimer) clearTimeout(this._readyTimer);
+        this._unsubscribeReady = null;
+        this._readyTimer = null;
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        this._stopWatchingReady();
+        if (this._coverTimer) clearTimeout(this._coverTimer);
+        IntlStore.unlisten(this._onStoreChange);
+        WalletManagerStore.unlisten(this._onStoreChange);
+        SettingsStore.unlisten(this._onStoreChange);
     }
 
     _statusCallback(status) {
@@ -224,88 +305,106 @@ class AppInit extends React.Component {
         });
     }
 
-    _renderLoadingScreen() {
-        let server = this.props.apiServer;
-        if (!!!server) {
-            server = "";
-        }
+    _renderLoadingScreen(server, theme) {
         return (
-            <React.Fragment>
-                <LoadingIndicator
-                    loadingText={
-                        this.state.status ||
-                        counterpart.translate("app_init.connecting", {
-                            server: server
-                        })
-                    }
-                >
-                    {this.state.showNodeFilter && (
-                        <div className="padding">
-                            <NodeSelector
-                                onChange={this._onNodeFilterChange.bind(this)}
-                            />
-                            {this.state.nodeFilterHasChanged && (
-                                <div style={{marginTop: "1rem"}}>
-                                    Please reload for the changes to take effect
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </LoadingIndicator>
-            </React.Fragment>
+            <LoadingScreen
+                status={this.state.status}
+                server={server || ""}
+                theme={theme}
+                leaving={this.state.appReady}
+            >
+                {this.state.showNodeFilter && (
+                    <div className="padding">
+                        <NodeSelector
+                            onChange={this._onNodeFilterChange.bind(this)}
+                        />
+                        {this.state.nodeFilterHasChanged && (
+                            <div style={{marginTop: "1rem"}}>
+                                Please reload for the changes to take effect
+                            </div>
+                        )}
+                    </div>
+                )}
+            </LoadingScreen>
         );
     }
 
     render() {
-        const {theme} = this.props;
         const {apiConnected, apiError, syncError} = this.state;
+        const locale = IntlStore.getState().currentLocale;
+        const walletMode =
+            !SettingsStore.getState().settings.get("passwordLogin") ||
+            !!WalletManagerStore.getState().current_wallet;
+        const theme = SettingsStore.getState().settings.get("themes");
+        const apiServer = SettingsStore.getState().settings.get(
+            "activeNode",
+            ""
+        );
 
-        if (!apiConnected) {
-            return (
-                <div
-                    style={{backgroundColor: !theme ? "#2a2a2a" : null}}
-                    className={theme}
-                >
-                    <div id="content-wrapper">
-                        <div className="grid-frame vertical">
-                            <BodyClassName className={theme}>
-                                {!apiError ? (
-                                    this._renderLoadingScreen()
-                                ) : syncError ? (
-                                    <SyncError />
-                                ) : (
-                                    <InitError />
-                                )}
-                            </BodyClassName>
+        // One stable tree: the app, the start-up screen and the error screens
+        // are siblings in fixed places, so the start-up screen is the same
+        // element before and after the connection opens (no remount, no second
+        // spinner).
+        const cover = coverVisible({
+            apiConnected,
+            apiError,
+            appReady: this.state.coverGone
+        });
+        return (
+            <React.Fragment>
+                {apiConnected ? (
+                    <RootIntl
+                        {...this.props}
+                        {...this.state}
+                        locale={locale}
+                        walletMode={walletMode}
+                        theme={theme}
+                        apiServer={apiServer}
+                    />
+                ) : null}
+                {cover || (!apiConnected && apiError) ? (
+                    <div
+                        style={{backgroundColor: !theme ? "#2a2a2a" : null}}
+                        className={theme}
+                    >
+                        <div id="content-wrapper">
+                            <div className="grid-frame vertical">
+                                {/* once the app is mounted it sets the body's
+                                    theme class itself; a second owner would
+                                    take it off the body when this screen
+                                    goes (the buttons turned upper case) */}
+                                <BodyClassName
+                                    className={apiConnected ? undefined : theme}
+                                >
+                                    {!apiError ? (
+                                        this._renderLoadingScreen(
+                                            apiServer,
+                                            theme
+                                        )
+                                    ) : syncError ? (
+                                        <SyncError />
+                                    ) : (
+                                        <InitError />
+                                    )}
+                                </BodyClassName>
+                            </div>
                         </div>
                     </div>
-                </div>
-            );
-        }
-        return <RootIntl {...this.props} {...this.state} />;
+                ) : null}
+            </React.Fragment>
+        );
     }
 }
 
-AppInit = connect(
-    AppInit,
-    {
-        listenTo() {
-            return [IntlStore, WalletManagerStore, SettingsStore];
-        },
-        getProps() {
-            return {
-                locale: IntlStore.getState().currentLocale,
-                walletMode:
-                    !SettingsStore.getState().settings.get("passwordLogin") ||
-                    !!WalletManagerStore.getState().current_wallet,
-                theme: SettingsStore.getState().settings.get("themes"),
-                apiServer: SettingsStore.getState().settings.get(
-                    "activeNode",
-                    ""
-                )
-            };
-        }
-    }
-);
-AppInit = supplyFluxContext(alt)(AppInit);
-export default hot(module)(AppInit);
+// Makes the Redux store available to any component using react-redux's
+// `useSelector`/`useDispatch` - see this file's own header above for why
+// the Alt.js flux context this used to run alongside is gone.
+function AppInitWithReduxProvider(props) {
+    return (
+        <Provider store={reduxStore}>
+            <AppInit {...props} />
+        </Provider>
+    );
+}
+
+export default AppInitWithReduxProvider;

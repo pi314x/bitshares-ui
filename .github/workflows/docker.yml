@@ -1,0 +1,63 @@
+# Builds the container image from the source and checks what it serves (Dockerfile,
+# docs/DEPLOYMENT.md): the nginx files pass `nginx -t`, the container is healthy and runs
+# unprivileged, the page carries the security headers and policy, hashed files are cached, source
+# maps and hidden files are not served, and the TLS variant redirects and sends HSTS. The checks are
+# scripts/check-container.sh, which can be run the same way on a machine with Docker.
+#
+# Nothing is pushed anywhere: the image is built into the runner and thrown away with it.
+name: Container image
+
+on:
+    pull_request:
+        paths:
+            - Dockerfile
+            - .dockerignore
+            - conf/**
+            - docker-compose*.yml
+            - package.json
+            - yarn.lock
+            - webpack.config.js
+            - app/**
+            - scripts/check-container.sh
+            - .github/workflows/docker.yml
+    push:
+        branches: [develop]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+# a newer run of the same branch makes the older one pointless
+concurrency:
+    group: container-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    image:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 40
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: docker/setup-buildx-action@v3
+
+            - name: Build the image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: false
+                  load: true
+                  tags: bitshares-desk:ci
+                  build-args: |
+                      BRANCH=${{ github.head_ref || github.ref_name }}
+                      GIT_REV=${{ github.sha }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Check what the image serves
+              run: scripts/check-container.sh bitshares-desk:ci
+
+            - name: Size of the image
+              if: always()
+              run: docker images bitshares-desk:ci --format '{{.Repository}}:{{.Tag}} {{.Size}}'

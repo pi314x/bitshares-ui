@@ -1,0 +1,127 @@
+// The copy buttons and the QR image of a deposit screen.
+.copyWrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feedback {
+    min-height: 1.2em;
+    color: var(--up);
+    font-size: 13px;
+}
+
+.qr {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+// the deposit screen's code: all of it in the middle of its line
+.qrCentered {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+
+    .qrActions {
+        justify-content: center;
+    }
+
+    .hint {
+        max-width: 22em;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .feedback {
+        text-align: center;
+    }
+}
+
+// the canvas the code is drawn on, never shown
+.hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+// white around the code (a code needs a quiet zone to be read)
+.qrImage {
+    display: block;
+    padding: 8px;
+    border-radius: var(--radius);
+    background: white;
+    box-sizing: content-box;
+}
+
+.qrActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hint {
+    max-width: 22em;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+// text or an image that copies itself when it is clicked or touched
+.tapWrap {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+}
+
+// the text in the middle, its feedback under it (the space is kept, so the text does not move)
+.tapWrap.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+
+    .feedback {
+        text-align: center;
+    }
+}
+
+.tap {
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    -webkit-tap-highlight-color: transparent;
+}
+
+span.tap:hover,
+span.tap:focus-visible {
+    background: var(--hover);
+    outline: none;
+}
+
+span.tap:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+img.tap:active {
+    opacity: 0.85;
+}
+
+// the explanation under the account name: a paragraph, in the middle like what is above it
+// (doubled class: the legacy sheet sizes and tightens every heading and paragraph)
+.note.note {
+    max-width: 32em;
+    margin: 16px auto 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-transform: none;
+    letter-spacing: 0;
+}

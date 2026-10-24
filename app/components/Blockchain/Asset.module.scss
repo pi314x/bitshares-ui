@@ -1,0 +1,31 @@
+// The top of the asset page: a help page's summary (a heading, the asset's description) and the
+// button to its market. Set like the head of every other page (24px title, 14px lead); the page
+// itself (the text, the links in it) is the same.
+.about {
+    margin-bottom: 8px;
+}
+
+body[class][class] .about h1,
+body[class][class] .about h2,
+body[class][class] .about h3 {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+body[class][class] .about p {
+    max-width: 68ch;
+    margin: 0 0 8px;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+// the button to the market under the text, with room above it
+.about :global(.market-button) {
+    margin: 8px 0 0;
+}

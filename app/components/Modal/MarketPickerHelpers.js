@@ -31,6 +31,8 @@ function lookupAccountAssets(
 }
 
 function assetFilter(
+    // marketPickerAsset stays: callers pass it and TypeScript checks them against this shape
+    // eslint-disable-next-line no-unused-vars
     {searchAssets, marketPickerAsset /*, baseAsset, quoteAsset*/},
     {inputValue, lookupQuote},
     setState,

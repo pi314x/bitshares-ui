@@ -1,0 +1,92 @@
+// Phase 2 (docs/UI_MIGRATION_PLAN.md): visual pass on the accounts/
+// contacts table (DashboardList.jsx, reached via /accounts) using the new
+// design system's tokens. Deliberately additive: every class here is
+// added *alongside* the component's existing classes/inline styles, never
+// replacing them, and nothing in DashboardList.jsx's calculation logic
+// (balance/collateral/debt aggregation, sort/filter) was touched — only
+// className attributes. Tokens come from app/design-system/theme.scss,
+// already loaded globally by the app shell (NextShellContainer) that now
+// wraps every route, so no import is needed here.
+
+.dash-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dash-toolbar {
+    padding-top: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dash-filter-input {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+    padding: 7px 10px;
+    font-family: var(--font-sans);
+}
+
+.dash-filter-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.dash-btn {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+.dash-btn:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+table.dash-table {
+    background: var(--surface);
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.dash-table thead th {
+    font-family: var(--font-sans);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--surface);
+}
+
+table.dash-table tbody td {
+    font-family: var(--font-sans);
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--line-soft);
+}
+
+table.dash-table tbody tr:hover td {
+    background: var(--raised);
+    color: var(--ink);
+}
+
+table.dash-table tbody tr td:last-child,
+table.dash-table tbody tr td:nth-last-child(2),
+table.dash-table tbody tr td:nth-last-child(3) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}

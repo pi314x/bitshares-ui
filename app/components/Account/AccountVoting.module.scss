@@ -1,0 +1,89 @@
+.page.page {
+    // The shell already insets the page (24px, as Explorer and Pools have it).
+    // Foundation's `.grid-content` and the legacy `.padding` of the header added
+    // their own on top: the title sat at 40px and the tab strip at 24px.
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.page.page .head {
+    padding: 0;
+}
+
+// Voting page header: the title and what voting is, then two cards - the lock
+// (more voting power) and the proxy with the publish/reset actions. These were
+// floated buttons next to paragraphs, so text ran under them.
+.head {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 960px;
+    margin-bottom: 24px;
+}
+
+.card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.card p {
+    flex: 1 1 260px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.proxy {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+// Save and Reset in one group, "Remove proxy" beside it; the row sits at the right
+// of the card where there is room and fills it on a phone, every button the same height
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.group {
+    display: block;
+}
+
+.groupInner {
+    display: flex;
+    gap: 8px;
+}
+
+@media (max-width: 640px) {
+    .actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    // Save and Reset share the first row, equal; Remove proxy has the next one
+    .group {
+        flex: 1 1 100%;
+    }
+
+    .groupInner > button {
+        flex: 1 1 0;
+    }
+
+    .removeProxy {
+        flex: 1 1 100%;
+    }
+}

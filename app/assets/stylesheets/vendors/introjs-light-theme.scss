@@ -1,3 +1,5 @@
+@import "../../../design-system/palette";
+
 .lightTheme.introjs-tooltip {
 
 	.introjs-tooltiptext {
@@ -10,8 +12,8 @@
 	    border: none;
 	    text-decoration: none;
 	    text-shadow: none;
-	    font: 11px/normal sans-serif;
-	    color: #049cce;
+	    font: 600 12px/normal var(--font-sans);
+	    color: $palette-light-accent;
 	    background-color: transparent;
 	    background-image: none;
 	}
@@ -22,7 +24,7 @@
 	}
 
 	.introjs-disabled, .introjs-disabled:hover, .introjs-disabled:focus {
-	    color: #ccc;
+	    color: $palette-light-faint;
 	    border: none;
 	    box-shadow: none;
 	    cursor: default;
@@ -49,7 +51,7 @@
 	    font-size: 13px;
 	    font-weight: normal;
 	    text-shadow: none;
-	    background: #049cce;
+	    background: $palette-light-accent;
 	    border: none;
 	    border-radius: 0;
 	    box-shadow: 0 2px 5px rgba(0,0,0,.4);

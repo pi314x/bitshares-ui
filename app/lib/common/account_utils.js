@@ -136,6 +136,25 @@ export default class AccountUtils {
         }
     }
 
+    /**
+     * The fee asset for an operation the user picked a fee asset for (the fee drop-down
+     * of a dialog): the one chosen when the account can pay the fee in it, otherwise what
+     * `getFinalFeeAsset` makes of it. `getFinalFeeAsset` alone puts the default of the
+     * settings first, so a fee asset chosen in the Send dialog was silently replaced by it.
+     */
+    static chooseFeeAsset(account, operation, chosenFeeAssetId = null) {
+        if (chosenFeeAssetId) {
+            const {assets} = this.getPossibleFees(account, operation);
+            if (assets.indexOf(chosenFeeAssetId) !== -1)
+                return chosenFeeAssetId;
+        }
+        return this.getFinalFeeAsset(
+            account,
+            operation,
+            chosenFeeAssetId || undefined
+        );
+    }
+
     static getAccountBalances(account) {
         account =
             !account || account.toJS ? account : ChainStore.getAccount(account);

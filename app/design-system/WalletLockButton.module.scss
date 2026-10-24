@@ -1,0 +1,60 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    cursor: pointer;
+}
+
+.btn:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.padlock {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.padlock rect {
+    fill: currentColor;
+    fill-opacity: 0.15;
+}
+
+.locked {
+    color: var(--warn);
+}
+
+.unlocked {
+    color: var(--up);
+}
+
+// Narrow phone: the padlock (amber locked, green unlocked) says it, the text
+// goes, so the title and the account chip keep their room in the top row. The
+// button keeps its accessible name and a title.
+@media (max-width: 480px) {
+    .label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .btn {
+        position: relative;
+        padding: 5px 7px;
+    }
+}

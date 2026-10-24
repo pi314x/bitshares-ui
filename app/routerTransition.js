@@ -9,6 +9,8 @@ import WalletManagerStore from "stores/WalletManagerStore";
 import WalletDb from "stores/WalletDb";
 import SettingsStore from "stores/SettingsStore";
 import AccountStore from "stores/AccountStore";
+import PrivateKeyStore from "stores/PrivateKeyStore";
+import {reportLocalStep, resetLocalSteps} from "./lib/common/startupProgress";
 
 import ls from "common/localStorage";
 
@@ -20,9 +22,42 @@ import counterpart from "counterpart";
 // Actions
 import PrivateKeyActions from "actions/PrivateKeyActions";
 import SettingsActions from "actions/SettingsActions";
-import {Notification} from "bitshares-ui-style-guide";
+import {Notification} from "./design-system/Notification";
 
 ChainStore.setDispatchFrequency(60);
+
+// What the start-up has read from this device, for the loading screen: counts and
+// names only, never a key (see lib/common/startupProgress.ts).
+function reportKeysRead() {
+    const keys = PrivateKeyStore.getState().keys;
+    const count = keys && typeof keys.size === "number" ? keys.size : 0;
+    reportLocalStep("keys", count ? "done" : "none", {count});
+}
+
+function reportWalletRead() {
+    const {wallet_names, current_wallet} = WalletManagerStore.getState();
+    const count = wallet_names && wallet_names.size ? wallet_names.size : 0;
+    if (!count) {
+        reportLocalStep("wallet", "none", {
+            password: !!SettingsStore.getState().settings.get("passwordLogin")
+        });
+    } else {
+        reportLocalStep("wallet", "done", {
+            count,
+            name: current_wallet || ""
+        });
+    }
+}
+
+function reportAccountsRead() {
+    const {linkedAccounts, currentAccount} = AccountStore.getState();
+    const count =
+        linkedAccounts && linkedAccounts.size ? linkedAccounts.size : 0;
+    reportLocalStep("accounts", count ? "done" : "none", {
+        count,
+        name: count && currentAccount ? currentAccount : ""
+    });
+}
 
 /** RouterTransitioner is a helper class that facilitates connecting, switching and reconnecting
  *  to nodes.
@@ -61,7 +96,7 @@ class RouterTransitioner {
      */
     willTransitionTo(appInit = true, statusCallback = () => {}) {
         if (this.isTransitionInProgress())
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
                 resolve();
             });
         this._statusCallback = statusCallback;
@@ -157,7 +192,7 @@ class RouterTransitioner {
      * @returns {Promise}
      */
     doQuickLatencyUpdate(nodeUrls) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             let url = this._connectionManager.url;
             let urls = this._connectionManager.urls;
 
@@ -172,7 +207,10 @@ class RouterTransitioner {
                 .then(res => {
                     console.log("Following nodes have been pinged:", res);
                     // update the latencies object
-                    const apiLatencies = SettingsStore.getState().apiLatencies;
+                    // copy: the state object is frozen (Redux-backed store)
+                    const apiLatencies = {
+                        ...SettingsStore.getState().apiLatencies
+                    };
                     for (var nodeUrl in res) {
                         apiLatencies[nodeUrl] = res[nodeUrl];
                     }
@@ -208,7 +246,7 @@ class RouterTransitioner {
 
         let thiz = this;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             // if for some reason this method is called before connections are setup via willTransitionTo,
             // initialize the manager
             if (thiz._connectionManager == null) {
@@ -316,7 +354,8 @@ class RouterTransitioner {
     }
 
     _updateLatencies(mapOfPings, force = true, container = null) {
-        let apiLatencies = SettingsStore.getState().apiLatencies;
+        // copy: the state object is frozen (Redux-backed store)
+        let apiLatencies = {...SettingsStore.getState().apiLatencies};
 
         for (let node in mapOfPings) {
             if (!force && node in apiLatencies) {
@@ -473,8 +512,12 @@ class RouterTransitioner {
             // only keep the ones we were able to connect to
             return !!latenciesMap[a.url];
         });
-        // create more info in the entries
-        filtered = filtered.map(a => {
+        // create more info in the entries. Work on copies: the entries come
+        // from SettingsStore's Redux-backed state (frozen by immer), so the
+        // in-place assignments this used to do throw a TypeError in strict
+        // mode and abort the whole connection step (willTransitionTo).
+        filtered = filtered.map(entry => {
+            const a = {...entry};
             a.hidden = !!a.hidden;
             a.name = a.location || "Unknown";
             if (latenciesMap != null && a.url in latenciesMap) {
@@ -671,7 +714,8 @@ class RouterTransitioner {
                 error: err
             })
         });
-        let apiLatencies = SettingsStore.getState().apiLatencies;
+        // copy: the state object is frozen (Redux-backed store)
+        let apiLatencies = {...SettingsStore.getState().apiLatencies};
         delete apiLatencies[failingNodeUrl];
         SettingsActions.updateLatencies(apiLatencies);
         return Apis.close().then(() => {
@@ -709,6 +753,9 @@ class RouterTransitioner {
             return;
         }
         this.updateTransitionTarget(counterpart.translate("app_init.database"));
+        resetLocalSteps();
+        reportLocalStep("database", "active");
+        reportLocalStep("settings", "active");
         this._connectInProgress = true;
         if (Apis.instance()) {
             if (!Apis.instance().orders_api())
@@ -741,8 +788,28 @@ class RouterTransitioner {
             return this._transitionDone(reject);
         }
 
-        return Promise.all([dbPromise, SettingsStore.init()])
+        const databaseRead = dbPromise.then(
+            () => reportLocalStep("database", "done"),
+            err => {
+                reportLocalStep("database", "failed");
+                throw err;
+            }
+        );
+        const settingsRead = Promise.resolve(SettingsStore.init()).then(
+            result => {
+                reportLocalStep("settings", "done");
+                return result;
+            },
+            err => {
+                reportLocalStep("settings", "failed");
+                throw err;
+            }
+        );
+        return Promise.all([databaseRead, settingsRead])
             .then(() => {
+                reportLocalStep("keys", "active");
+                reportLocalStep("wallet", "active");
+                reportLocalStep("accounts", "active");
                 let chainStoreResetPromise = chainChanged
                     ? ChainStore.resetCache(false)
                     : Promise.resolve();
@@ -750,6 +817,7 @@ class RouterTransitioner {
                     .then(() => {
                         return Promise.all([
                             PrivateKeyActions.loadDbData().then(() => {
+                                reportKeysRead();
                                 return AccountRefsStore.loadDbData();
                             }),
                             WalletDb.loadDbData()
@@ -768,10 +836,14 @@ class RouterTransitioner {
                                         "----- WalletDb.willTransitionTo error ----->",
                                         error
                                     );
+                                    reportLocalStep("wallet", "failed");
                                     this._transitionDone(reject);
                                 }),
-                            WalletManagerStore.init()
+                            Promise.resolve(WalletManagerStore.init()).then(
+                                reportWalletRead
+                            )
                         ]).then(() => {
+                            reportAccountsRead();
                             this._connectInProgress = false;
                             SettingsActions.changeSetting({
                                 setting: "activeNode",
@@ -1053,10 +1125,10 @@ class DirectPinger {
             try {
                 let connection = new WebSocket(url);
                 connection.openTime = hirestime();
-                connection.onerror = event => {
+                connection.onerror = () => {
                     resolve(null);
                 };
-                connection.onopen = event => {
+                connection.onopen = () => {
                     connection.onmessage = function() {
                         this.closeTime = connection.openTime(hirestime.MS);
                         connection.close();

@@ -1,0 +1,181 @@
+.card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    padding: 16px 18px 12px;
+    margin-bottom: 20px;
+}
+
+// the title and the range switch on one row ...
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 20px;
+    margin-bottom: 12px;
+}
+
+// ... the figures (what is drawn) and the change under them
+.headFigures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+// `.card .title`: the legacy global sheet sizes every h3
+.card .title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.change {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.up {
+    color: var(--up);
+}
+
+.down {
+    color: var(--down);
+}
+
+// The three figures are also the choice of what the chart draws: the wallet,
+// what is in open orders, and both together.
+.figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.figure {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 150px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.figure:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.figureOn {
+    border-color: var(--line-strong, var(--faint));
+    background: var(--raised);
+    color: var(--ink);
+    opacity: 1;
+}
+
+.figureLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+}
+
+.figureValue {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+// what a figure is worth in the chosen currency: quieter, under it
+.figureWorth {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+    .figure {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+    }
+}
+
+// The controls at the right of the head: the currency the chart is drawn for and the
+// range, side by side and the same height. On a phone they take the row under the title
+// (the currency takes what the range leaves).
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.card .select {
+    width: 132px;
+    min-width: 112px;
+    height: var(--control-h);
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .controls {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .card .select {
+        flex: 1 1 112px;
+        width: auto;
+    }
+}
+
+// "Try again" in the footer, the size of a control
+.card .older {
+    height: var(--control-h);
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+.chart {
+    width: 100%;
+    height: 240px;
+}
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+}
+
+.empty {
+    padding: 36px 0;
+    text-align: center;
+    color: var(--muted);
+}

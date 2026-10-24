@@ -1,0 +1,157 @@
+// A block: the head (the height, which turns into a field to type another one in, and the
+// previous / next buttons), the facts of the block in one card, then its transactions. It was
+// a bulleted list in a narrow centred column with two outline buttons floated to its edges.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 880px;
+    min-width: 0;
+}
+
+.facts dl {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+// a fact: its name over its value on a phone, side by side from 560px
+.fact {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+body[class][class] .fact dt {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body[class][class] .fact dd {
+    margin: 0;
+    min-width: 0;
+    color: var(--ink);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.hash {
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+// a row with one cell (or a cell that spans the row: the legacy `colSpan`), a nested table of an
+// operation's options: the whole width of the card, not the label column
+body[class][class] .ops :global(.op-table) > tbody > tr > td:only-child,
+body[class][class] .ops :global(.op-table) > tbody > tr > td[colspan] {
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 560px) {
+    .fact {
+        grid-template-columns: 160px minmax(0, 1fr);
+        gap: 16px;
+        align-items: baseline;
+    }
+}
+
+.top {
+    text-align: center;
+}
+
+// The operations of the block (the legacy `op-table`: a type row with the "Show raw json" link,
+// then a label cell and a value cell per row, as a table that squeezed the values into a third of
+// a phone). Each operation is a card; a row is the label and its value, side by side from 560px,
+// the label over the value under that. Only the rows of the operation's own table: a table inside
+// a value (an asset's options) stays a table.
+.ops {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+body[class][class] .ops :global(.op-table) {
+    display: block;
+    width: 100%;
+    margin: 0 0 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    overflow: hidden;
+}
+
+body[class][class] .ops :global(.op-table) > caption {
+    display: none;
+}
+
+body[class][class] .ops :global(.op-table) > tbody {
+    display: block;
+}
+
+body[class][class] .ops :global(.op-table) > tbody > tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    background: none;
+}
+
+body[class][class] .ops :global(.op-table) > tbody > tr:last-child {
+    border-bottom: 0;
+}
+
+body[class][class] .ops :global(.op-table) > tbody > tr > td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+// the label of a row
+body[class][class] .ops :global(.op-table) > tbody > tr > td:first-child {
+    white-space: normal;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+// the first row: the operation's type and the raw json link, on one line
+body[class][class] .ops :global(.op-table) > tbody > tr:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 16px;
+    background: var(--raised);
+}
+
+body[class][class]
+    .ops
+    :global(.op-table)
+    > tbody
+    > tr:first-child
+    > td:first-child {
+    color: inherit;
+    font-size: 14px;
+    letter-spacing: 0;
+}
+
+body[class][class] .ops :global(.op-table) :global(.json-link) {
+    white-space: nowrap;
+}
+
+@media (min-width: 560px) {
+    body[class][class] .ops :global(.op-table) > tbody > tr:not(:first-child) {
+        grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+        gap: 16px;
+        align-items: baseline;
+    }
+}

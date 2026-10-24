@@ -1,0 +1,39 @@
+// Same size and shape as the lock pill next to it (WalletLockButton), in the
+// accent so it reads as an offer, not as part of the status.
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid var(--accent);
+    border-radius: 99px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.chip:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--ground);
+}
+
+.chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.chip:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.plug {
+    flex: none;
+    width: 12px;
+    height: 12px;
+}
