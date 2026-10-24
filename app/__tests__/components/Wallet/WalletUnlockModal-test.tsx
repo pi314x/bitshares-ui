@@ -6,7 +6,7 @@
 jest.mock("../../../components/Utility/HelpContent", () => () => null);
 
 import * as React from "react";
-import {render, act, screen} from "@testing-library/react";
+import {render, act, screen, fireEvent} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
 import {IntlProvider} from "react-intl";
 import WalletUnlockModal from "../../../components/Wallet/WalletUnlockModal";
@@ -74,6 +74,42 @@ describe("WalletUnlockModal", () => {
             expect(screen).toBeDefined();
             expect((WalletUnlockStore.getState() as any).resolve).toBeTruthy();
         });
+    });
+});
+
+describe("WalletUnlockModal: a wrong password", () => {
+    // `passwordError` is the boolean `true`; the password-login branch passed it as the help text,
+    // which renders nothing: a wrong password got no answer at all (found on the testnet, by
+    // signing a transfer with the wrong password).
+    afterEach(() => {
+        act(() => {
+            (WalletUnlockActions as any).cancel();
+        });
+    });
+
+    it("says that the password is incorrect (password login)", async () => {
+        open(true, "committee-account");
+        mount();
+        await act(async () => {
+            (WalletUnlockActions as any).unlock().catch(() => {});
+        });
+        await act(async () => {
+            await new Promise(r => setTimeout(r, 50));
+        });
+        const input = document.body.querySelector(
+            "input[type=password]"
+        ) as HTMLInputElement;
+        await act(async () => {
+            fireEvent.change(input, {target: {value: "not-the-password"}});
+        });
+        const login = Array.from(document.body.querySelectorAll("button")).find(
+            b => b.textContent === "Login"
+        ) as HTMLButtonElement;
+        await act(async () => {
+            fireEvent.click(login);
+            await new Promise(r => setTimeout(r, 50));
+        });
+        expect(document.body.textContent).toContain("Incorrect password");
     });
 });
 

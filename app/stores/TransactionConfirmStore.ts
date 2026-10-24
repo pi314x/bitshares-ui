@@ -17,25 +17,31 @@ import {
 } from "../store/slices/transactionConfirmSlice";
 
 class TransactionConfirmStoreFacade {
-    private unsubscribers = new Map<() => void, () => void>();
+    private unsubscribers = new Map<(state?: any) => void, () => void>();
 
     getState() {
         return selectTransactionConfirm(reduxStore.getState());
     }
 
-    listen(callback: () => void) {
+    // A store listener gets the store's state, as the Alt store's did: `onTrxIncluded(state)` in
+    // the Send dialog, `onFinishConfirm(state)` when an account is created, ... They read
+    // `state.included` and `state.closed`. The facade called them without it, so every one of
+    // them threw on the next change of the store, inside Redux's dispatch: the next transaction of
+    // the session was stopped half way (the confirmation shown, nothing broadcast, no message)
+    // after any Send (found on the testnet: fund an account, then send from it).
+    listen(callback: (state?: any) => void) {
         let previous = selectTransactionConfirm(reduxStore.getState());
         const unsubscribe = reduxStore.subscribe(() => {
             const next = selectTransactionConfirm(reduxStore.getState());
             if (next !== previous) {
                 previous = next;
-                callback();
+                callback(next);
             }
         });
         this.unsubscribers.set(callback, unsubscribe);
     }
 
-    unlisten(callback: () => void) {
+    unlisten(callback: (state?: any) => void) {
         const unsubscribe = this.unsubscribers.get(callback);
         if (unsubscribe) {
             unsubscribe();

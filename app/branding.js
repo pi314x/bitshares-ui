@@ -19,6 +19,11 @@ function _isTestnet() {
     return Apis.instance().chain_id !== mainnet;
 }
 
+/** Whether the connected chain is a test chain (every chain but the main one). */
+export function isTestnet() {
+    return _isTestnet();
+}
+
 /**
  * Wallet name that is used throughout the UI and also in translations
  * @returns {string}
@@ -51,7 +56,7 @@ export function getFaucet() {
 export function getTestFaucet() {
     // fixme should be solved by introducing _isTestnet into getFaucet and fixing the mess in the Settings when fetching faucet address
     return {
-        url: "https://faucet.testnet.bitshares.eu", // operated as a contribution by BitShares EU
+        url: "https://testnet-faucet.xbts.io", // the XBTS test chain faucet (the BitShares EU one is gone)
         show: true,
         editable: false
     };

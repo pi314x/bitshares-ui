@@ -192,6 +192,13 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
             !prevIncludedRef.current &&
             !props.error
         ) {
+            // The Send dialog (and others) reset the store when the confirmation is closed, a few
+            // seconds before the chain says "included": the transaction can be gone by then, and
+            // `null.serialize()` here unmounted the whole app. The notification then says only that
+            // it is confirmed.
+            const operation = props.transaction
+                ? props.transaction.serialize().operations[0]
+                : null;
             (notify as any).addNotification.defer({
                 children: (
                     <div>
@@ -207,17 +214,19 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                                 />
                             </span>
                         </p>
-                        <table>
-                            <Operation
-                                op={props.transaction.serialize().operations[0]}
-                                block={1}
-                                current={"1.2.0"}
-                                hideFee
-                                inverted={false}
-                                hideOpLabel={true}
-                                hideDate={true}
-                            />
-                        </table>
+                        {operation ? (
+                            <table>
+                                <Operation
+                                    op={operation}
+                                    block={1}
+                                    current={"1.2.0"}
+                                    hideFee
+                                    inverted={false}
+                                    hideOpLabel={true}
+                                    hideDate={true}
+                                />
+                            </table>
+                        ) : null}
                     </div>
                 ),
                 level: "success",
@@ -380,19 +389,18 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
             <div
                 style={{
                     float: "left",
-                    cursor: "pointer",
-                    marginTop: "4px"
+                    display: "inline-flex",
+                    alignItems: "center",
+                    // the label and the icon had no space between them: the icon sat on the
+                    // label's last letter
+                    gap: 8,
+                    height: 38,
+                    cursor: "pointer"
                 }}
                 key="scan-qr"
                 onClick={_showQrCode}
             >
-                <Translate
-                    style={{
-                        marginTop: "3px",
-                        marginLeft: "5px"
-                    }}
-                    content="transaction.view_qr"
-                />
+                <Translate content="transaction.view_qr" />
                 <Icon name="qr-scan" size={"1_5x" as any} />
             </div>,
             <Button key={"confirm"} variant="accent" onClick={onConfirmClick}>

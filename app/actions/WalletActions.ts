@@ -28,8 +28,19 @@ import CachedPropertyActions from "actions/CachedPropertyActions";
 import ApplicationApi from "api/ApplicationApi";
 import {TransactionBuilder, FetchChain} from "bitsharesjs";
 import SettingsStore from "stores/SettingsStore";
+import {isTestnet} from "../branding";
+import {registrationFaucet} from "../lib/common/faucet";
 import walletManagerStore from "../stores/WalletManagerStore";
 import accountStore from "../stores/AccountStore";
+
+// The faucet of the chain this app is connected to: a test chain has its own, the one in the
+// settings is the main chain's (a registration for a test chain's keys must not go there).
+function faucetOfThisChain(): string {
+    return registrationFaucet(isTestnet(), {
+        faucet_address: (SettingsStore as any).getSetting("faucet_address"),
+        testnet_faucet: (SettingsStore as any).getState().testnet_faucet
+    });
+}
 
 class WalletActionsFacade {
     /** Restore and make active a new wallet_object. */
@@ -143,9 +154,7 @@ class WalletActionsFacade {
             } else {
                 // using faucet
 
-                let faucetAddress = (SettingsStore as any).getSetting(
-                    "faucet_address"
-                );
+                let faucetAddress = faucetOfThisChain();
                 if (
                     window &&
                     window.location &&
@@ -257,9 +266,7 @@ class WalletActionsFacade {
         } else {
             // using faucet
 
-            let faucetAddress = (SettingsStore as any).getSetting(
-                "faucet_address"
-            );
+            let faucetAddress = faucetOfThisChain();
             if (
                 window &&
                 window.location &&

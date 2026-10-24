@@ -645,7 +645,10 @@ function WalletUnlockModal({
                         <Form.Item
                             label={counterpart.translate("settings.password")}
                             validateStatus={passwordError ? "error" : ""}
-                            help={passwordError || ""}
+                            // `passwordError` is `true` (not a text): the message is the translated
+                            // one; rendering the boolean showed nothing, a wrong password gave no
+                            // answer at all
+                            help={passwordError ? errorMessage : ""}
                         >
                             <Input
                                 type="password"

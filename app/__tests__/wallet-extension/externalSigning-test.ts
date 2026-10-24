@@ -14,7 +14,7 @@ jest.mock("idb-instance", () => ({
 import counterpart from "counterpart";
 import Immutable from "immutable";
 import {Apis} from "bitsharesjs-ws";
-import {PrivateKey, TransactionBuilder} from "bitsharesjs";
+import {ChainStore, PrivateKey, TransactionBuilder} from "bitsharesjs";
 import {EXTENSION_MEMO_NONCE} from "../../wallet-extension/transaction";
 import localeEn from "../../assets/locales/locale-en.json";
 import {patchState} from "../../store/slices/accountSlice";
@@ -433,6 +433,38 @@ describe("the connected account in the UI", () => {
 
         await ExternalSignerActions.disconnect();
         reduxStore.dispatch(patchState({passwordAccount: null} as any));
+    });
+
+    it("is one of the user's own accounts next to the cloud-wallet account", async () => {
+        // `getMyAccounts` in cloud-wallet mode was only the password account: choosing the
+        // extension's account from the menu then opened "View Only Mode" (found on the testnet)
+        reduxStore.dispatch(
+            patchState({
+                subbed: true,
+                passwordLogin: true,
+                passwordAccount: "cloudwallet"
+            } as any)
+        );
+        // (no chain here: the list is the cloud-mode answer, not the chain store's)
+        const lookup = jest
+            .spyOn(ChainStore as any, "getAccount")
+            .mockReturnValue(undefined);
+        expect((AccountStore as any).getMyAccounts()).toEqual(["cloudwallet"]);
+        await useExtension();
+        expect((AccountStore as any).getMyAccounts()).toEqual([
+            "cloudwallet",
+            "alice"
+        ]);
+        await ExternalSignerActions.disconnect();
+        expect((AccountStore as any).getMyAccounts()).toEqual(["cloudwallet"]);
+        lookup.mockRestore();
+        reduxStore.dispatch(
+            patchState({
+                subbed: false,
+                passwordLogin: false,
+                passwordAccount: null
+            } as any)
+        );
     });
 
     it("does not take the choice away from the user", async () => {

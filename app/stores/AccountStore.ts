@@ -547,8 +547,19 @@ class AccountStoreFacade {
          * If we're in cloud wallet mode, simply return the current
          * cloud wallet account
          */
-        if (state.passwordLogin)
-            return !!state.passwordAccount ? [state.passwordAccount] : [];
+        if (state.passwordLogin) {
+            const own = !!state.passwordAccount ? [state.passwordAccount] : [];
+            // The wallet extension's account is the user's own next to the cloud-wallet account
+            // (it is one of the choices of the account menu): without it here, choosing it from
+            // the menu opened "View Only Mode" for an account that can sign.
+            const linked = (ExternalSignerActions as any).isActive()
+                ? (ExternalSignerActions as any).getState().account
+                : null;
+            if (linked && own.indexOf(linked.accountName) === -1) {
+                own.push(linked.accountName);
+            }
+            return own;
+        }
 
         /* In wallet mode, return a sorted list of all the active accounts */
         return accounts.sort();

@@ -481,7 +481,11 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                         ? e.message.split("\n")[1] || e.message
                         : null;
                     console.log("error: ", e, msg);
-                    mergeState({error: msg});
+                    // The dialog was hidden on submit (the confirmation takes over). When the
+                    // signing fails (the extension's user said no, a locked wallet, the unlock
+                    // dialog closed) it is shown again with what was typed, so that the person
+                    // can try again; before, it stayed hidden and the form was gone.
+                    mergeState({error: msg, hidden: false});
                 });
         };
 

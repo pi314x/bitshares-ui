@@ -674,7 +674,9 @@ function CreateAccountPassword() {
     // let firstAccount = my_accounts.length === 0;
     return (
         <div
-            className="sub-content"
+            // `account-created`: once the account exists the chooser above (create / log in / other
+            // ways) is out of place, only what comes next is shown (LoginSelector.module.scss)
+            className={"sub-content" + (step !== 1 ? " account-created" : "")}
             id="scrollToInput"
             {...({name: "scrollToInput"} as any)}
         >
