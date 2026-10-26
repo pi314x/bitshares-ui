@@ -81,8 +81,7 @@ import utils from "common/utils";
 import {requestDepositAddress} from "common/gatewayMethods";
 import {ChainStore} from "bitsharesjs";
 import BlockTradesDepositAddressCache from "common/BlockTradesDepositAddressCache";
-import CopyButton from "../Utility/CopyButton";
-import {CopyOnTap} from "../DepositWithdraw/DepositCopy";
+import {CopyOnTap, DepositField} from "../DepositWithdraw/DepositCopy";
 import Icon from "../Icon/Icon";
 import LoadingIndicator from "../LoadingIndicator";
 import DepositWithdrawAssetSelector from "../DepositWithdraw/DepositWithdrawAssetSelector";
@@ -466,7 +465,7 @@ function DepositModalContent({
 
     return (
         <div className="grid-block vertical no-overflow">
-            <div className="modal__body" style={{paddingTop: "0"}}>
+            <div className={`modal__body ${styles.depositBody}`}>
                 <div className="container-row">
                     <div className="no-margin no-padding">
                         <div className="inline-label input-wrapper">
@@ -514,112 +513,51 @@ function DepositModalContent({
                 {selectedGateway &&
                 gatewayStatus[selectedGateway].options.enabled &&
                 isAddressValid ? (
-                    <div className="container-row">
+                    <div className={`container-row ${styles.details}`}>
                         <Translate
-                            className="grid-block container-row maxDeposit"
-                            style={{fontSize: "1rem"}}
+                            component="p"
+                            className={styles.minimum}
                             content="gateway.min_deposit_warning_amount"
                             minDeposit={minDeposit || 0}
                             coin={selectedAsset}
                         />
 
-                        <div className="grid-block container-row">
-                            <div style={{paddingRight: "1rem"}}>
-                                <CopyButton
-                                    text={depositAddress.address}
-                                    className={"copyIcon"}
-                                />
-                            </div>
-                            <div style={{wordBreak: "break-word"}}>
+                        <DepositField
+                            value={depositAddress.address}
+                            label={
                                 <Translate
-                                    component="div"
-                                    style={{
-                                        fontSize: "0.8rem",
-                                        fontWeight: "bold",
-                                        paddingBottom: "0.3rem"
-                                    }}
                                     content="gateway.purchase_notice"
                                     inputAsset={selectedAsset}
                                     outputAsset={
                                         selectedGateway + "." + selectedAsset
                                     }
                                 />
-                                <div
-                                    className="modal__highlight"
-                                    style={{
-                                        fontSize: "0.9rem",
-                                        wordBreak: "break-all"
-                                    }}
-                                >
-                                    {depositAddress.address}
-                                </div>
-                            </div>
-                        </div>
+                            }
+                        />
                         {depositAddress.memo ? (
-                            <div className="grid-block container-row">
-                                <div style={{paddingRight: "1rem"}}>
-                                    <CopyButton
-                                        text={depositAddress.memo}
-                                        className={"copyIcon"}
-                                    />
-                                </div>
-                                <div>
+                            <DepositField
+                                value={depositAddress.memo}
+                                label={
                                     <Translate
-                                        component="div"
-                                        style={{
-                                            fontSize: "0.8rem",
-                                            fontWeight: "bold",
-                                            paddingBottom: "0.3rem"
-                                        }}
                                         unsafe
                                         content="gateway.purchase_notice_memo"
                                     />
-                                    <div
-                                        className="modal__highlight"
-                                        style={{wordBreak: "break-all"}}
-                                    >
-                                        {depositAddress.memo}
-                                    </div>
-                                </div>
-                            </div>
+                                }
+                            />
                         ) : null}
                         {depositAddress.tag ? (
-                            <div className="grid-block container-row">
-                                <div style={{paddingRight: "1rem"}}>
-                                    <CopyButton
-                                        text={depositAddress.tag}
-                                        className={"copyIcon"}
-                                    />
-                                </div>
-                                <div>
+                            <DepositField
+                                value={depositAddress.tag}
+                                label={
                                     <Translate
-                                        component="div"
-                                        style={{
-                                            fontSize: "0.8rem",
-                                            fontWeight: "bold",
-                                            paddingBottom: "0.3rem"
-                                        }}
                                         unsafe
                                         content="gateway.purchase_notice_tag"
                                     />
-                                    <div
-                                        className="modal__highlight"
-                                        style={{wordBreak: "break-all"}}
-                                    >
-                                        {depositAddress.tag}
-                                    </div>
-                                </div>
-                            </div>
+                                }
+                            />
                         ) : null}
                         {depositConfirmation ? (
-                            <div
-                                style={{
-                                    fontSize: "0.8rem",
-                                    fontWeight: "bold",
-                                    fontStyle: "italic",
-                                    paddingBottom: "0.3rem"
-                                }}
-                            >
+                            <p className={styles.confirmation}>
                                 {depositConfirmation.type === "irreversible" ? (
                                     <Translate content="gateway.gateway_deposit.confirmations.last_irreversible" />
                                 ) : depositConfirmation.type === "blocks" ? (
@@ -628,12 +566,12 @@ function DepositModalContent({
                                         blocks={depositConfirmation.value}
                                     />
                                 ) : null}
-                            </div>
+                            </p>
                         ) : null}
 
                         <Translate
-                            component="span"
-                            style={{fontSize: "0.8rem"}}
+                            component="p"
+                            className={styles.warning}
                             content="gateway.min_deposit_warning_asset"
                             minDeposit={minDeposit || 0}
                             coin={selectedAsset}

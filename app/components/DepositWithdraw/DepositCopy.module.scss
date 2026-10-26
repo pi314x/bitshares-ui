@@ -125,3 +125,98 @@ img.tap:active {
     text-transform: none;
     letter-spacing: 0;
 }
+
+// The deposit dialog: the choices (asset, gateway), the code, then what to send where, one block
+// after another 16px apart (12px inside the block of the details). The legacy sheet gives labels,
+// rows and paragraphs margins and sizes of their own: the doubled class beats it.
+.depositBody.depositBody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 0;
+}
+
+.depositBody.depositBody > *,
+.depositBody.depositBody :global(.container-row) {
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+// a label above its field, as in the Send dialog
+.depositBody.depositBody :global(.left-label) {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.details.details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.details.details > p {
+    margin: 0;
+}
+
+.minimum.minimum {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.confirmation.confirmation {
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+}
+
+// the warning: a box of its own, in the warning colour's wash
+.warning.warning {
+    padding: 10px 12px;
+    border: 1px solid var(--warn);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+// an address, a memo, a tag
+.field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--raised);
+}
+
+.fieldText {
+    flex: 1;
+    min-width: 0;
+}
+
+.fieldLabel {
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.fieldValue {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.field > button {
+    flex: none;
+}

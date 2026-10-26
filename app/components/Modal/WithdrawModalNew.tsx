@@ -77,6 +77,7 @@ import {selectAsset} from "../../store/slices/assetSlice";
 import {selectGateway} from "../../store/slices/gatewaySlice";
 import {selectMarkets} from "../../store/slices/marketsSlice";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
+import styles from "../DepositWithdraw/DepositCopy.module.scss";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
 const gatewayBoolCheck = "withdrawalAllowed";
@@ -1110,7 +1111,7 @@ function WithdrawModalCore({
             ]}
         >
             <div className="grid-block vertical no-overflow">
-                <div className="modal__body" style={{paddingTop: 0}}>
+                <div className={`modal__body ${styles.depositBody}`}>
                     <div style={{marginBottom: "1em"}}>
                         {/*ASSET SELECTION*/}
                         <DepositWithdrawAssetSelector

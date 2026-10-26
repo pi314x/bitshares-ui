@@ -11,6 +11,7 @@ import {
     copyText,
     saveImage
 } from "../../lib/common/clipboard";
+import CopyIconButton from "../Utility/CopyIconButton";
 import styles from "./DepositCopy.module.scss";
 
 const t = (key: string) => counterpart.translate(`gateway.${key}`) as string;
@@ -214,6 +215,30 @@ export function CopyableQr({value, size = 160, centered}: CopyableQrProps) {
                     {canCopyImage() ? "" : ` ${t("qr_hold_hint")}`}
                 </span>
             ) : null}
+        </div>
+    );
+}
+
+export interface DepositFieldProps {
+    /** what it is (the notice above the value) */
+    label: React.ReactNode;
+    /** an address, a memo, a tag: what goes on the clipboard */
+    value: string;
+}
+
+/**
+ * One thing to hand over on a deposit screen - the address, the memo, the tag - as a box of its
+ * own: what it is above the value, the value in mono type (it breaks anywhere, an address has
+ * no spaces), and the button that copies it at the right.
+ */
+export function DepositField({label, value}: DepositFieldProps) {
+    return (
+        <div className={styles.field}>
+            <div className={styles.fieldText}>
+                <div className={styles.fieldLabel}>{label}</div>
+                <div className={styles.fieldValue}>{value}</div>
+            </div>
+            <CopyIconButton text={value} />
         </div>
     );
 }

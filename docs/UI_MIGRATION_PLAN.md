@@ -13827,3 +13827,14 @@ options showed their first letter.
 The market page's chart frame has a 6px radius instead of the cards' 12px: the frame clips the chart,
 and the larger radius cut the gridlines and the first bars off at its corners.
 
+**Wide screens, dialogs, deposit.** The overview pages use the whole width of the page, as many cards
+or tiles to a row as fit: SameT funds (it was a 1180px column in the middle, Credit offers fill the page),
+Spotlight, Advanced, the block page, MCP and the settings' node list lose their fixed maximum widths (a
+setting's own control keeps its width, and a help text its readable measure). Send is a dialog over
+the page it was opened from on a desktop, as Deposit and Withdraw are (it was a page of its own, and
+behind Deposit's dialog it showed as a second one). The Deposit dialog's blocks are 16px apart with the
+label over its field, as in Send: the asset and the gateway, the minimum, then the address and the memo
+as boxes with their own copy button (`DepositField`) and the warning as a box of its own; the Withdraw
+dialog has the same rhythm. The balance chart draws steps, not curves: a balance is what it was after
+the last operation until the next one.
+

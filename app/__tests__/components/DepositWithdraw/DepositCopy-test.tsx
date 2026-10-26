@@ -22,7 +22,8 @@ jest.mock("qrcode.react", () => {
 import {
     CopyOnTap,
     CopyTextButton,
-    CopyableQr
+    CopyableQr,
+    DepositField
 } from "../../../components/DepositWithdraw/DepositCopy";
 
 beforeAll(() => {
@@ -146,5 +147,31 @@ describe("the QR code, tapped", () => {
         expect(mockCopyImage).not.toHaveBeenCalled();
         expect(document.body.textContent).toContain("Copied");
         expect(document.body.textContent).toContain("copy the address");
+    });
+});
+
+describe("DepositField", () => {
+    beforeEach(() => mockCopyText.mockReset());
+
+    it("shows what it is above the value, with a button that copies the value", async () => {
+        mockCopyText.mockResolvedValue(true);
+        render(
+            <DepositField
+                label="A sent to this address will show up as XBTSX.A"
+                value="xbtsiowallet"
+            />
+        );
+        expect(
+            screen.getByText("A sent to this address will show up as XBTSX.A")
+        ).toBeTruthy();
+        expect(screen.getByText("xbtsiowallet")).toBeTruthy();
+        await act(async () => {
+            fireEvent.click(
+                screen.getByRole("button", {
+                    name: "Copy to clipboard: xbtsiowallet"
+                })
+            );
+        });
+        expect(mockCopyText).toHaveBeenCalledWith("xbtsiowallet");
     });
 });
