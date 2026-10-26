@@ -211,11 +211,13 @@ describe("BalanceHistoryChart", () => {
         }
     });
 
-    it("draws nothing for an account without balances", async () => {
+    it("draws no line for an account without balances, and does not load its history", async () => {
         mockGetBalances.mockResolvedValue([]);
         const {container} = render(<BalanceHistoryChart accountId={ME} />);
         await flush();
-        expect(container.textContent).toBe("");
+        expect(container.textContent).toBe(
+            "Balance over timeNo balances to chart yet."
+        );
         expect(mockGetHistory).not.toHaveBeenCalled();
     });
 });
@@ -256,5 +258,48 @@ describe("BalanceHistoryChart currency drop-down", () => {
         );
         await flush();
         expect(container.textContent).toContain("0.5000 USD");
+    });
+
+    it("is on the page while the balances load, and says so for an account with none", async () => {
+        let answer: (rows: any[]) => void = () => {};
+        mockGetBalances.mockReturnValue(
+            new Promise<any[]>(resolve => {
+                answer = resolve;
+            })
+        );
+        const {container} = render(<BalanceHistoryChart accountId={ME} />);
+        // not an empty place where the chart belongs
+        expect(container.textContent).toContain("Balance over time");
+        expect(container.textContent).toContain("Loading...");
+        await act(async () => {
+            answer([]);
+        });
+        await flush();
+        expect(container.textContent).toContain("Balance over time");
+        expect(container.textContent).toContain("No balances to chart yet.");
+    });
+
+    it("asks for the balances again when the first ask fails", async () => {
+        jest.useFakeTimers();
+        try {
+            mockGetBalances.mockRejectedValueOnce(new Error("connection lost"));
+            const {container} = render(<BalanceHistoryChart accountId={ME} />);
+            await act(async () => {
+                await Promise.resolve();
+            });
+            // no error shown yet: it is tried again first
+            expect(container.textContent).not.toContain("connection lost");
+            expect(mockGetBalances).toHaveBeenCalledTimes(1);
+            await act(async () => {
+                jest.advanceTimersByTime(3100);
+                await Promise.resolve();
+            });
+            jest.useRealTimers();
+            await flush();
+            expect(mockGetBalances).toHaveBeenCalledTimes(2);
+            expect(container.textContent).toContain("1.50000 BTS");
+        } finally {
+            jest.useRealTimers();
+        }
     });
 });

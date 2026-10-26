@@ -118,6 +118,10 @@ function token(name: string, fallback: string): string {
 const toNumber = (units: bigint, precision: number) =>
     Number(units) / Math.pow(10, precision);
 
+// how often, and how soon after a failed ask for the balances, it is tried again
+const RETRIES = 3;
+const RETRY_AFTER_MS = 3000;
+
 export interface BalanceHistoryChartProps {
     accountId: string;
     /** Called nowhere else; here so the card can say whose history it is. */
@@ -145,22 +149,29 @@ export default function BalanceHistoryChart({
         [assetId: string]: string;
     }>({});
     const [error, setError] = React.useState<string | null>(null);
+    // the balances have been asked for (answered or failed): an account with none is said so
+    const [loaded, setLoaded] = React.useState(false);
     const [shown, setShown] = React.useState<Record<SeriesKey, boolean>>(
         readShown
     );
     const [range, setRange] = React.useState<RangeKey>(readRange);
 
-    // the balances
+    // the balances; a failed ask is made again a few times (the connection may just have been
+    // re-made) before the error is left on the card
     React.useEffect(() => {
         let cancelled = false;
+        let retry: ReturnType<typeof setTimeout> | undefined;
+        setLoaded(false);
         setError(null);
         BalanceHistoryActions.getLockedInOrders(accountId).then(locked => {
             if (!cancelled) setLockedNow(locked || {});
         });
-        BalanceHistoryActions.getBalances(accountId)
-            .then(rows =>
-                BalanceHistoryActions.getAssets(rows.map(r => r.asset_id)).then(
-                    infos => {
+        const load = (attempt: number) =>
+            BalanceHistoryActions.getBalances(accountId)
+                .then(rows =>
+                    BalanceHistoryActions.getAssets(
+                        rows.map(r => r.asset_id)
+                    ).then(infos => {
                         if (cancelled) return;
                         const usable = rows.filter(r => infos[r.asset_id]);
                         setBalances(usable);
@@ -174,14 +185,25 @@ export default function BalanceHistoryChart({
                                 ? usable[0].asset_id
                                 : ""
                         );
-                    }
+                        setLoaded(true);
+                    })
                 )
-            )
-            .catch(err => {
-                if (!cancelled) setError(String((err && err.message) || err));
-            });
+                .catch(err => {
+                    if (cancelled) return;
+                    if (attempt < RETRIES) {
+                        retry = setTimeout(
+                            () => load(attempt + 1),
+                            RETRY_AFTER_MS
+                        );
+                    } else {
+                        setError(String((err && err.message) || err));
+                        setLoaded(true);
+                    }
+                });
+        load(0);
         return () => {
             cancelled = true;
+            if (retry) clearTimeout(retry);
         };
     }, [accountId]);
 
@@ -399,7 +421,20 @@ export default function BalanceHistoryChart({
         });
     };
 
-    if (!balances.length && !error) return null;
+    // The card is always there: nothing on a page where the chart belongs reads as a chart
+    // that is missing. While the balances load it says so, and an account with none says that.
+    if (!balances.length && !error) {
+        return (
+            <section className={styles.card} aria-label={t("title")}>
+                <div className={styles.head}>
+                    <h3 className={styles.title}>{t("title")}</h3>
+                </div>
+                <div className={styles.empty}>
+                    {loaded ? t("no_balances") : t("loading")}
+                </div>
+            </section>
+        );
+    }
 
     const lockedUnits = BigInt(lockedNow[assetId] || "0");
     const walletUnits = current ? BigInt(current.amount) : BigInt(0);

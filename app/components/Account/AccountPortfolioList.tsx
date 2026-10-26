@@ -1019,8 +1019,11 @@ function AccountPortfolioListCore({
             hour24: 620,
             inOrders: 760,
             percent: 820,
-            inVesting: 960,
-            inCollateral: 1040
+            // nine columns need about 1130px: these two give way before the table is wider
+            // than its card (the right-hand columns were then out of reach, the scrollbar is
+            // at the bottom of the whole list)
+            inVesting: 1240,
+            inCollateral: 1200
         };
         const stacked = room < 420;
         const fitted: any[] = [];

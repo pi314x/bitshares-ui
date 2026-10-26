@@ -3717,7 +3717,8 @@
         "loading_history": "Tüm geçmiş yükleniyor: şimdilik %(count)s işlem, bu cihazda saklanıyor.",
         "capped": "Son %(count)s işlemden oluşturuldu; daha eskiler yüklenmedi.",
         "retry": "Tekrar dene",
-        "no_asset": "Hiçbir varlık eşleşmiyor."
+        "no_asset": "Hiçbir varlık eşleşmiyor.",
+        "no_balances": "Henüz grafiğe dökülecek bakiye yok."
     },
     "toolbar": {
         "rows": "%(count)s satır",

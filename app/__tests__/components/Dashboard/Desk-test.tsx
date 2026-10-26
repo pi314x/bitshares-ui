@@ -172,6 +172,27 @@ describe("Desk", () => {
         });
     });
 
+    describe("the layout", () => {
+        it("puts holdings and positions in one column and the allocation in the other, so neither leaves a hole", () => {
+            const {getByText} = renderDesk(["alice", "bob"]);
+            const column = (title: string) =>
+                (getByText(title) as HTMLElement).closest('[class*="stack"]');
+            expect(column("Holdings")).not.toBeNull();
+            expect(column("Positions")).toBe(column("Holdings"));
+            expect(column("Allocation")).not.toBeNull();
+            expect(column("Allocation")).not.toBe(column("Holdings"));
+            expect(column("Accounts")).toBe(column("Allocation"));
+        });
+
+        it("lets a holdings table wider than its card scroll sideways", () => {
+            const {container} = renderDesk();
+            const table = container.querySelector("table") as HTMLElement;
+            expect((table.parentElement as HTMLElement).className).toContain(
+                "tableScroll"
+            );
+        });
+    });
+
     it("keeps the attention list to four and expands it", () => {
         mockData = data({
             attention: Array.from({length: 6}, (_, i) => ({

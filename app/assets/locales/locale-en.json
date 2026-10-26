@@ -3717,7 +3717,8 @@
         "range_1m": "1M",
         "range_1w": "1W",
         "range_all": "All",
-        "no_asset": "No asset matches."
+        "no_asset": "No asset matches.",
+        "no_balances": "No balances to chart yet."
     },
     "toolbar": {
         "rows": "%(count)s rows",

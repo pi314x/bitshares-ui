@@ -3717,7 +3717,8 @@
         "loading_history": "Cargando todo el historial: %(count)s operaciones hasta ahora, guardadas en este dispositivo.",
         "capped": "Construido con las últimas %(count)s operaciones; las más antiguas no se cargan.",
         "retry": "Reintentar",
-        "no_asset": "Ningún activo coincide."
+        "no_asset": "Ningún activo coincide.",
+        "no_balances": "Aún no hay saldos para graficar."
     },
     "toolbar": {
         "rows": "%(count)s filas",

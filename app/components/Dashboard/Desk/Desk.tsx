@@ -377,75 +377,82 @@ function Holdings({
                     />
                 </div>
             ) : null}
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>{t("asset")}</th>
-                        <th>{t("amount")}</th>
-                        <th>
-                            {t("value")}
-                            {data.unit ? ` (${data.unit.symbol})` : ""}
-                        </th>
-                        <th className={styles.hideSmall}>{t("share")}</th>
-                        <th className={styles.hideSmall} />
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map(row => (
-                        <tr key={row.assetId}>
-                            <td className={styles.asset}>
-                                <span className={styles.assetCell}>
-                                    <AssetLogo symbol={row.symbol} size={20} />
-                                    <TypedLink to={`/asset/${row.symbol}`}>
-                                        {row.symbol}
-                                    </TypedLink>
-                                </span>
-                            </td>
-                            <td className={styles.num}>
-                                {fmt(row.amount, amountDigits(row.amount))}
-                            </td>
-                            <td className={styles.num}>
-                                {row.value === null ? (
-                                    <span className={styles.muted}>
-                                        {t("no_price")}
-                                    </span>
-                                ) : (
-                                    fmt(row.value, digits)
-                                )}
-                            </td>
-                            <td className={`${styles.num} ${styles.hideSmall}`}>
-                                {row.share === null ? (
-                                    "-"
-                                ) : (
-                                    <>
-                                        <span className={styles.shareBar}>
-                                            <span
-                                                className={styles.shareFill}
-                                                style={{
-                                                    width: `${Math.max(
-                                                        2,
-                                                        row.share * 100
-                                                    )}%`
-                                                }}
-                                            />
-                                        </span>
-                                        {percent(row.share)}
-                                    </>
-                                )}
-                            </td>
-                            <td className={styles.hideSmall}>
-                                {row.symbol !== coreSymbol ? (
-                                    <TypedLink
-                                        to={`/market/${row.symbol}_${coreSymbol}`}
-                                    >
-                                        {t("trade")}
-                                    </TypedLink>
-                                ) : null}
-                            </td>
+            <div className={styles.tableScroll}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>{t("asset")}</th>
+                            <th>{t("amount")}</th>
+                            <th>
+                                {t("value")}
+                                {data.unit ? ` (${data.unit.symbol})` : ""}
+                            </th>
+                            <th className={styles.hideSmall}>{t("share")}</th>
+                            <th className={styles.hideSmall} />
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {rows.map(row => (
+                            <tr key={row.assetId}>
+                                <td className={styles.asset}>
+                                    <span className={styles.assetCell}>
+                                        <AssetLogo
+                                            symbol={row.symbol}
+                                            size={20}
+                                        />
+                                        <TypedLink to={`/asset/${row.symbol}`}>
+                                            {row.symbol}
+                                        </TypedLink>
+                                    </span>
+                                </td>
+                                <td className={styles.num}>
+                                    {fmt(row.amount, amountDigits(row.amount))}
+                                </td>
+                                <td className={styles.num}>
+                                    {row.value === null ? (
+                                        <span className={styles.muted}>
+                                            {t("no_price")}
+                                        </span>
+                                    ) : (
+                                        fmt(row.value, digits)
+                                    )}
+                                </td>
+                                <td
+                                    className={`${styles.num} ${styles.hideSmall}`}
+                                >
+                                    {row.share === null ? (
+                                        "-"
+                                    ) : (
+                                        <>
+                                            <span className={styles.shareBar}>
+                                                <span
+                                                    className={styles.shareFill}
+                                                    style={{
+                                                        width: `${Math.max(
+                                                            2,
+                                                            row.share * 100
+                                                        )}%`
+                                                    }}
+                                                />
+                                            </span>
+                                            {percent(row.share)}
+                                        </>
+                                    )}
+                                </td>
+                                <td className={styles.hideSmall}>
+                                    {row.symbol !== coreSymbol ? (
+                                        <TypedLink
+                                            to={`/market/${row.symbol}_${coreSymbol}`}
+                                        >
+                                            {t("trade")}
+                                        </TypedLink>
+                                    ) : null}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
             {query && !matching.length ? (
                 <div className={styles.empty}>
                     {t("no_match", {filter: filter.trim()})}
@@ -837,23 +844,31 @@ export default function Desk({
             {cards.chart ? <CurrentAccountBalanceChart /> : null}
 
             <div className={styles.grid}>
-                {cards.holdings ? (
-                    <Card title={t("holdings")} flush>
-                        <Holdings data={data} coreSymbol={coreSymbol} />
-                    </Card>
-                ) : null}
-                {cards.allocation ||
-                cards.positions ||
-                (cards.accounts && accountNames.length > 1) ? (
+                {/* two columns of about the same height: what the account
+                    holds and what it has at work on the left, what it is made
+                    of and where it sits on the right. A column of its own
+                    cards, not one grid row, so a long list of holdings does not
+                    leave a hole under the short card beside it. */}
+                {cards.holdings || cards.positions ? (
                     <div className={styles.stack}>
-                        {cards.allocation ? (
-                            <Card title={t("allocation")} flush>
-                                <Allocation data={data} />
+                        {cards.holdings ? (
+                            <Card title={t("holdings")} flush>
+                                <Holdings data={data} coreSymbol={coreSymbol} />
                             </Card>
                         ) : null}
                         {cards.positions ? (
                             <Card title={t("positions")} flush>
                                 <Positions data={data} accountName={name} />
+                            </Card>
+                        ) : null}
+                    </div>
+                ) : null}
+                {cards.allocation ||
+                (cards.accounts && accountNames.length > 1) ? (
+                    <div className={styles.stack}>
+                        {cards.allocation ? (
+                            <Card title={t("allocation")} flush>
+                                <Allocation data={data} />
                             </Card>
                         ) : null}
                         {cards.accounts && accountNames.length > 1 ? (

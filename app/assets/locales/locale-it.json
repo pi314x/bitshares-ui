@@ -3717,7 +3717,8 @@
         "loading_history": "Caricamento dell'intera cronologia: finora %(count)s operazioni, conservate su questo dispositivo.",
         "capped": "Costruito dalle ultime %(count)s operazioni; quelle più vecchie non sono caricate.",
         "retry": "Riprova",
-        "no_asset": "Nessun asset corrisponde."
+        "no_asset": "Nessun asset corrisponde.",
+        "no_balances": "Ancora nessun saldo da mostrare nel grafico."
     },
     "toolbar": {
         "rows": "%(count)s righe",

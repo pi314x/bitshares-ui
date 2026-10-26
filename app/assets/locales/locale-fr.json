@@ -3717,7 +3717,8 @@
         "loading_history": "Chargement de tout l'historique : %(count)s opérations pour l'instant, conservées sur cet appareil.",
         "capped": "Construit à partir des %(count)s dernières opérations ; les plus anciennes ne sont pas chargées.",
         "retry": "Réessayer",
-        "no_asset": "Aucun actif ne correspond."
+        "no_asset": "Aucun actif ne correspond.",
+        "no_balances": "Pas encore de solde à tracer."
     },
     "toolbar": {
         "rows": "%(count)s lignes",

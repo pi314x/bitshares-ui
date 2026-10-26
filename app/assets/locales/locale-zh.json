@@ -3717,7 +3717,8 @@
         "loading_history": "正在加载完整历史：目前已有 %(count)s 笔操作，保存在此设备上。",
         "capped": "根据最近 %(count)s 笔操作构建；更早的操作未加载。",
         "retry": "重试",
-        "no_asset": "没有匹配的资产。"
+        "no_asset": "没有匹配的资产。",
+        "no_balances": "暂无可绘制图表的余额。"
     },
     "toolbar": {
         "rows": "%(count)s 行",

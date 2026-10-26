@@ -190,6 +190,13 @@
 
 // ---------------------------------------------------------------- holdings
 
+// A table wider than its card scrolls sideways inside it (the card clips what
+// sticks out; with no scroll the right columns were out of reach).
+.tableScroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -205,6 +212,7 @@
     background: transparent;
     color: var(--ink);
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .table.table th {

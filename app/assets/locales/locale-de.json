@@ -3717,7 +3717,8 @@
         "loading_history": "Der gesamte Verlauf wird geladen: bisher %(count)s Operationen, auf diesem Gerät gespeichert.",
         "capped": "Aus den letzten %(count)s Operationen aufgebaut; ältere werden nicht geladen.",
         "retry": "Erneut versuchen",
-        "no_asset": "Kein Asset passt."
+        "no_asset": "Kein Asset passt.",
+        "no_balances": "Noch keine Guthaben für ein Diagramm."
     },
     "toolbar": {
         "rows": "%(count)s Zeilen",
