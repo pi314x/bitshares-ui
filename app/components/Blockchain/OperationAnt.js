@@ -24,6 +24,16 @@ const ShortObjectId = ({objectId}) => {
     return objectId;
 };
 
+// The result of a liquidity pool operation names what was paid and received.
+function hasPoolResult(result) {
+    return !!(
+        result &&
+        result[1] &&
+        Array.isArray(result[1].paid) &&
+        Array.isArray(result[1].received)
+    );
+}
+
 class Operation {
     linkToAccount(name_or_id) {
         if (!name_or_id) return <span>-</span>;
@@ -1792,17 +1802,23 @@ class Operation {
                             },
                             {
                                 type: "amount",
-                                value: result[1].paid[0],
+                                value: hasPoolResult(result)
+                                    ? result[1].paid[0]
+                                    : op[1].amount_a,
                                 arg: "amount_a"
                             },
                             {
                                 type: "amount",
-                                value: result[1].paid[1],
+                                value: hasPoolResult(result)
+                                    ? result[1].paid[1]
+                                    : op[1].amount_b,
                                 arg: "amount_b"
                             },
                             {
                                 type: "amount",
-                                value: result[1].received[0],
+                                value: hasPoolResult(result)
+                                    ? result[1].received[0]
+                                    : op[1].amount_a,
                                 arg: "received"
                             }
                         ]}
@@ -1811,7 +1827,7 @@ class Operation {
                 break;
             case "liquidity_pool_withdraw":
                 color = "warning";
-                column = (
+                column = hasPoolResult(result) ? (
                     <TranslateWithLinks
                         string="operation.liquidity_pool_withdraw"
                         keys={[
@@ -1841,11 +1857,34 @@ class Operation {
                             }
                         ]}
                     />
+                ) : (
+                    <TranslateWithLinks
+                        string="operation.liquidity_pool_withdraw_shares"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].pool,
+                                arg: "id"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].share_amount,
+                                arg: "shares"
+                            }
+                        ]}
+                    />
                 );
                 break;
             case "liquidity_pool_exchange":
                 color = "success";
-                column = (
+                // The result (what was paid and received) is in an account's history
+                // but not in the transactions of a block: without it the operation
+                // says what was offered.
+                column = hasPoolResult(result) ? (
                     <TranslateWithLinks
                         string="operation.liquidity_pool_exchange"
                         keys={[
@@ -1866,6 +1905,31 @@ class Operation {
                             {
                                 type: "amount",
                                 value: result[1].received[0],
+                                arg: "amount_b"
+                            }
+                        ]}
+                    />
+                ) : (
+                    <TranslateWithLinks
+                        string="operation.liquidity_pool_exchange_offer"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].pool,
+                                arg: "id"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].amount_to_sell,
+                                arg: "amount_a"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].min_to_receive,
                                 arg: "amount_b"
                             }
                         ]}

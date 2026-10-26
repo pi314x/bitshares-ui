@@ -42,7 +42,9 @@ import ResetSettings from "./ResetSettings";
 import BackupSettings from "./BackupSettings";
 import AccessSettings from "./AccessSettings";
 import {set} from "lodash-es";
-import {getAllowedLogins, getFaucet} from "../../branding";
+import {getAllowedLogins, getFaucet, isTestnet} from "../../branding";
+import {registrationFaucet} from "../../lib/common/faucet";
+import SettingsStore from "../../stores/SettingsStore";
 import {Input} from "../../design-system/Input";
 import {Form} from "../../design-system/Form";
 import {SubMenu} from "../../design-system/SubMenu";
@@ -379,7 +381,13 @@ export default function Settings(props: SettingsProps) {
                 <Input
                     disabled={!getFaucet().editable}
                     type="text"
-                    defaultValue={settings.get("faucet_address")}
+                    // the faucet that registers accounts on the chain this app is on
+                    // (a test chain has its own; the setting is the main chain's)
+                    defaultValue={registrationFaucet(isTestnet(), {
+                        faucet_address: settings.get("faucet_address"),
+                        testnet_faucet: (SettingsStore as any).getState()
+                            .testnet_faucet
+                    })}
                     onChange={
                         getFaucet().editable
                             ? (e: any) => onChangeSetting("faucet_address", e)

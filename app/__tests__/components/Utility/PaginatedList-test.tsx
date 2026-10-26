@@ -9,7 +9,10 @@ const header = [{title: "Name", dataIndex: "name"}];
 
 beforeAll(() => {
     (counterpart as any).registerTranslations("en", {
-        utility: {total_x_operations: "%(count)s operations"}
+        utility: {
+            total_x_operations: "%(count)s operations",
+            per_page: "%(count)s / page"
+        }
     });
     (counterpart as any).setLocale("en");
 });
@@ -53,5 +56,20 @@ describe("PaginatedList", () => {
             "50 / page",
             "100 / page"
         ]);
+    });
+
+    it("names the page size in the language of the page", () => {
+        (counterpart as any).registerTranslations("de", {
+            utility: {per_page: "%(count)s / Seite"}
+        });
+        (counterpart as any).setLocale("de");
+        try {
+            render(
+                <PaginatedList rows={rows(100)} header={header} pageSize={25} />
+            );
+            expect(screen.getByText("25 / Seite")).toBeTruthy();
+        } finally {
+            (counterpart as any).setLocale("en");
+        }
     });
 });

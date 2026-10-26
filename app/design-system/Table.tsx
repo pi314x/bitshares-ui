@@ -1,5 +1,6 @@
 import {Select} from "./Select";
 import * as React from "react";
+import counterpart from "counterpart";
 import styles from "./Table.module.scss";
 import {useElementWidth} from "../next/hooks/useElementWidth";
 
@@ -624,7 +625,9 @@ export function Table<T = any>({
                         >
                             {pageSizeOptions.map(size => (
                                 <Select.Option key={size} value={String(size)}>
-                                    {size} / page
+                                    {counterpart.translate("utility.per_page", {
+                                        count: size
+                                    })}
                                 </Select.Option>
                             ))}
                         </Select>

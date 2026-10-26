@@ -96,6 +96,58 @@ describe("Desk", () => {
         expect(getByText("1 without a price are not counted")).toBeTruthy();
     });
 
+    describe("the holdings filter", () => {
+        const many = (n: number) =>
+            Array.from({length: n}, (_, i) => ({
+                assetId: `1.3.${i + 10}`,
+                symbol: i === 11 ? "XBTSX.USDT" : `COIN${i}`,
+                precision: 4,
+                units: 1000,
+                value: 10,
+                amount: 1,
+                share: 0.01
+            }));
+
+        it("is there for a long list, not for a short one", () => {
+            const short = renderDesk();
+            expect(short.queryByPlaceholderText("Filter assets")).toBeNull();
+            short.unmount();
+            mockData = data({holdings: many(12)});
+            const long = renderDesk();
+            expect(long.getByPlaceholderText("Filter assets")).toBeTruthy();
+        });
+
+        it("looks through all of the holdings, not only the rows shown, ignoring case", () => {
+            mockData = data({holdings: many(12)});
+            const {
+                getByPlaceholderText,
+                queryByText,
+                getAllByRole
+            } = renderDesk();
+            // the 12th holding is not among the first eight rows
+            expect(queryByText("XBTSX.USDT")).toBeNull();
+            fireEvent.change(getByPlaceholderText("Filter assets"), {
+                target: {value: "usdt"}
+            });
+            expect(queryByText("XBTSX.USDT")).not.toBeNull();
+            // the header row and the one holding that matches
+            expect(
+                getAllByRole("row").filter(row => row.querySelector("td"))
+            ).toHaveLength(1);
+        });
+
+        it("says when nothing matches, and gives the list back when it is cleared", () => {
+            mockData = data({holdings: many(12)});
+            const {getByPlaceholderText, queryByText, getByText} = renderDesk();
+            const field = getByPlaceholderText("Filter assets");
+            fireEvent.change(field, {target: {value: "zzz"}});
+            expect(getByText('No asset matches "zzz"')).toBeTruthy();
+            fireEvent.change(field, {target: {value: ""}});
+            expect(queryByText(/No asset matches/)).toBeNull();
+            expect(queryByText("COIN0")).not.toBeNull();
+        });
+    });
+
     it("keeps the attention list to four and expands it", () => {
         mockData = data({
             attention: Array.from({length: 6}, (_, i) => ({

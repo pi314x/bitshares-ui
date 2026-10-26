@@ -7,6 +7,7 @@ import counterpart from "counterpart";
 import Immutable from "immutable";
 import {Link, LinkProps, useNavigate} from "react-router-dom";
 import {Select} from "../../../design-system/Select";
+import {Input} from "../../../design-system/Input";
 import SettingsActions from "../../../actions/SettingsActions";
 import AccountActions from "../../../actions/AccountActions";
 import {useReduxState} from "../../../next/hooks/useReduxState";
@@ -326,6 +327,8 @@ function Attention({
 
 const SHOWN_ROWS = 8;
 const POOLS_SHOWN = 5;
+// a filter is for a list that is long enough to look through
+const FILTER_FROM = 5;
 
 function Holdings({
     data,
@@ -335,9 +338,14 @@ function Holdings({
     coreSymbol: string;
 }): JSX.Element {
     const [all, setAll] = React.useState(false);
-    const rows: HoldingRow[] = all
-        ? data.holdings
-        : data.holdings.slice(0, SHOWN_ROWS);
+    const [filter, setFilter] = React.useState("");
+    const query = filter.trim().toLowerCase();
+    // a filter looks through all of them, not just the first rows
+    const matching: HoldingRow[] = query
+        ? data.holdings.filter(row => row.symbol.toLowerCase().includes(query))
+        : data.holdings;
+    const rows: HoldingRow[] =
+        all || query ? matching : data.holdings.slice(0, SHOWN_ROWS);
     const digits = valueDigits(data.unit && data.unit.symbol);
 
     if (!data.holdings.length) {
@@ -354,6 +362,18 @@ function Holdings({
     }
     return (
         <>
+            {data.holdings.length > FILTER_FROM ? (
+                <div className={styles.filter}>
+                    <Input
+                        type="search"
+                        value={filter}
+                        placeholder={t("filter_holdings")}
+                        aria-label={t("filter_holdings")}
+                        autoComplete="off"
+                        onChange={event => setFilter(event.target.value)}
+                    />
+                </div>
+            ) : null}
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -423,7 +443,12 @@ function Holdings({
                     ))}
                 </tbody>
             </table>
-            {data.holdings.length > SHOWN_ROWS ? (
+            {query && !matching.length ? (
+                <div className={styles.empty}>
+                    {t("no_match", {filter: filter.trim()})}
+                </div>
+            ) : null}
+            {data.holdings.length > SHOWN_ROWS && !query ? (
                 <div className={styles.more}>
                     <button
                         type="button"

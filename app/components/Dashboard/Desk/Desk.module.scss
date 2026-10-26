@@ -267,6 +267,17 @@
     }
 }
 
+// The filter above a long list of holdings, in the card's own inset.
+.filter {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.filter > * {
+    width: 100%;
+    max-width: 320px;
+}
+
 .more {
     padding: 10px 16px;
     border-top: 1px solid var(--line-soft);
