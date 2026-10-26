@@ -34,7 +34,11 @@ function load(): HistoryItem[] {
                     x &&
                     typeof x.id === "number" &&
                     typeof x.at === "number" &&
-                    typeof x.title === "string"
+                    typeof x.title === "string" &&
+                    // an entry with nothing in it (kept by an earlier version) says nothing
+                    (x.title.trim() !== "" ||
+                        (typeof x.description === "string" &&
+                            x.description.trim() !== ""))
             )
             .slice(0, MAX_ITEMS);
     } catch (e) {
@@ -70,6 +74,8 @@ export function recordNotification(
         description: description.slice(0, 600),
         seen: false
     };
+    // nothing to say: not an entry (the bell listed a check mark and a time)
+    if (!item.title.trim() && !item.description.trim()) return item;
     items = [item, ...items].slice(0, MAX_ITEMS);
     save();
     emit();

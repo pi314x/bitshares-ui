@@ -75,4 +75,35 @@ describe("text of a message", () => {
         );
         expect(htmlToText("plain")).toBe("plain");
     });
+
+    // The confirmation of a transaction sent only `children`; the entry under the bell was a check
+    // mark and a time with nothing between.
+    it("does not keep an entry that says nothing", () => {
+        recordNotification("success", "", "");
+        recordNotification("success", "   ", "  ");
+        expect(getNotifications()).toHaveLength(0);
+        recordNotification("success", "", "only a description");
+        expect(getNotifications()).toHaveLength(1);
+    });
+
+    it("drops the empty entries an earlier version kept", () => {
+        const entry = (id: number, title: string, description = "") => ({
+            id,
+            at: id,
+            kind: "success",
+            title,
+            description,
+            seen: false
+        });
+        window.localStorage.setItem(
+            "__graphene__notificationHistory",
+            JSON.stringify([
+                entry(3, "Trade done", "Sold 1 BTS"),
+                entry(2, ""),
+                entry(1, " ")
+            ])
+        );
+        reloadNotifications();
+        expect(getNotifications().map(i => i.title)).toEqual(["Trade done"]);
+    });
 });

@@ -27,6 +27,7 @@ import titleUtils from "common/titleUtils";
 import {BodyClassName} from "./design-system/BodyClassName";
 import {Notification} from "./design-system/Notification";
 import {htmlToText} from "./lib/common/notificationHistory";
+import {toastFromNotification} from "./lib/common/toastFromNotification";
 import {DEFAULT_NOTIFICATION_DURATION} from "services/Notification";
 import Loadable from "react-loadable";
 import NewsHeadline from "components/Layout/NewsHeadline";
@@ -610,23 +611,11 @@ class App extends React.Component {
         if (!notification) return;
         // the same toasts (and the same history) as the rest of the app; the
         // legacy ones allowed HTML in the message: it is shown as text
-        const text = value =>
-            typeof value === "string" ? htmlToText(value) : value;
-        const level = ["success", "error", "warning", "info"].includes(
-            notification.level
-        )
-            ? notification.level
-            : "info";
-        const hasTitle = !!notification.title;
-        Notification[level]({
-            message: hasTitle
-                ? text(notification.title)
-                : text(notification.message),
-            description: hasTitle ? text(notification.message) : undefined,
-            duration:
-                notification.autoDismiss === void 0
-                    ? 10
-                    : notification.autoDismiss
+        const toast = toastFromNotification(notification, htmlToText);
+        Notification[toast.level]({
+            message: toast.message,
+            description: toast.description,
+            duration: toast.duration
         });
     }
 
