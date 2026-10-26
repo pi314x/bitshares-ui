@@ -1,8 +1,24 @@
 // The top of the asset page: a help page's summary (a heading, the asset's description) and the
 // button to its market. Set like the head of every other page (24px title, 14px lead); the page
 // itself (the text, the links in it) is the same.
+// The blocks of the top, 16px apart like the blocks of every page: the owner notice, the
+// description with the market button, and the tabs under them (the notices had a `1em` of their own
+// above and none below, so the heading touched the notice).
+.aboutBox {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
 .about {
-    margin-bottom: 8px;
+    margin-bottom: 0;
+}
+
+// The info tab: the summary and the collapsible cards, 16px apart on a phone (stacked) and beside each
+// other on a wide screen. The menu above it already leaves 16px.
+.infoBody {
+    gap: 16px;
 }
 
 body[class][class] .about h1,
@@ -28,4 +44,9 @@ body[class][class] .about p {
 // the button to the market under the text, with room above it
 .about :global(.market-button) {
     margin: 8px 0 0;
+}
+
+// the legacy card brought 32px of its own under it: the gap is the one above
+body[class][class] .infoBody :global(.asset-card) {
+    margin-bottom: 0;
 }

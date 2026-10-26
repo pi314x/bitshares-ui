@@ -224,6 +224,8 @@ function Asset({
     }
 
     function getMarginCollateral() {
+        // the backing asset is `undefined` until the chain store has read it
+        if (!backingAsset || !backingAsset.get) return;
         if (asset.has("bitasset")) {
             const assets: any = {
                 [asset.get("id")]: asset.toJS(),
@@ -288,10 +290,14 @@ function Asset({
         }
     }
 
+    // (again when the backing asset has been read: it was asked for once, on mount, and
+    // an asset page opened before it was in the store never got the margin collateral)
+    const backingAssetId =
+        backingAsset && backingAsset.get ? backingAsset.get("id") : null;
     React.useEffect(() => {
         getMarginCollateral();
         // eslint-disable-next-line
-    }, []);
+    }, [backingAssetId]);
 
     function updateOnCollateralBid() {
         getMarginCollateral();
@@ -449,12 +455,11 @@ function Asset({
                     )}
                     type="error"
                     showIcon
-                    style={{marginTop: "1em"}}
                 />
             );
         }
         return (
-            <div style={{overflow: "visible"}}>
+            <div className={styles.aboutBox}>
                 {assetJS &&
                     issuer &&
                     assetJS.id != "1.3.0" &&
@@ -465,7 +470,6 @@ function Asset({
                             )}
                             type="info"
                             showIcon
-                            style={{marginTop: "1em"}}
                         />
                     )}
                 {warning}
@@ -2343,7 +2347,9 @@ function Asset({
     if (backingAsset === null) {
         return <Page404 subtitle="asset_not_found_subtitle" />;
     }
-    if (!backingAsset.get || !coreAsset.get) {
+    // `undefined` while the chain store has not read the backing asset (or the core
+    // asset) yet: nothing to show, not a page that throws
+    if (!backingAsset || !backingAsset.get || !coreAsset || !coreAsset.get) {
         return null;
     }
 
@@ -2373,8 +2379,7 @@ function Asset({
                             key="info"
                         >
                             <div
-                                className="grid-block vertical large-horizontal medium-up-1 large-up-2"
-                                style={{paddingTop: "1rem"}}
+                                className={`grid-block vertical large-horizontal medium-up-1 large-up-2 ${styles.infoBody}`}
                             >
                                 <div className="grid-content small-no-padding">
                                     {renderSummary(assetJS)}
