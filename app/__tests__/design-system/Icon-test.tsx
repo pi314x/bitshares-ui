@@ -56,6 +56,15 @@ describe("design-system/Icon", () => {
         );
     });
 
+    it("renders the copy and check glyphs of the copy button", () => {
+        (["copy", "check"] as const).forEach(type => {
+            const {container} = render(<Icon type={type} />);
+            expect(
+                container.querySelector("svg")?.children.length
+            ).toBeGreaterThan(0);
+        });
+    });
+
     it("renders the lock/unlock glyphs added during the call-site migration pass", () => {
         (["lock", "unlock"] as const).forEach(type => {
             const {container} = render(<Icon type={type} />);

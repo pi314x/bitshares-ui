@@ -300,11 +300,26 @@ LAYOUT_JS = """() => {
     if (!r.width || !r.height || cs.visibility === 'hidden' || cs.display === 'none' || cs.position === 'fixed') continue;
     if ((r.right > vw + 1 || r.left < -1) && !inScroller(el)) wide.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' [' + Math.round(r.left) + ',' + Math.round(r.right) + ']');
   }
+  // A second vertical scrollbar next to the window's: a box inside the page that scrolls by itself and
+  // shows a bar for it (a rail, a side list, a legacy grid block whose height has a fraction). Boxes that
+  // hide their bar (scrollbar-width: none / ::-webkit-scrollbar) are fine, and so are fixed layers
+  // (a drawer, a dialog) and a page that is locked behind one.
+  const winScrolls = document.documentElement.scrollHeight > document.documentElement.clientHeight + 1 && getComputedStyle(document.body).overflowY !== 'hidden';
+  const bars = [];
+  if (winScrolls) for (const el of document.querySelectorAll('body *')) {
+    const cs = getComputedStyle(el);
+    if (!/(auto|scroll)/.test(cs.overflowY) || cs.position === 'fixed' || cs.visibility === 'hidden' || cs.display === 'none') continue;
+    const r = el.getBoundingClientRect();
+    if (!r.width || r.height < 30 || el.scrollHeight <= el.clientHeight) continue;
+    if (cs.scrollbarWidth === 'none' || getComputedStyle(el, '::-webkit-scrollbar').display === 'none') continue;
+    if (el.closest('[role=dialog], [role=menu], [role=listbox], [aria-modal]') || cs.position === 'absolute') continue;
+    bars.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' (' + el.clientHeight + 'px, scrolls ' + (el.scrollHeight - el.clientHeight) + 'px)');
+  }
   const nav = document.querySelector('nav[aria-label=Main]');
   const navRect = nav ? nav.getBoundingClientRect() : null;
   const navVisible = !!navRect && getComputedStyle(nav).visibility !== 'hidden' && navRect.right > 1 && navRect.left < vw - 1;
   const bar = document.querySelector('header');
-  return {vw, scrollW: document.documentElement.scrollWidth, wide: wide.slice(0, 5), navVisible, navWidth: navRect ? Math.round(navRect.width) : 0,
+  return {vw, scrollW: document.documentElement.scrollWidth, wide: wide.slice(0, 5), bars: bars.slice(0, 5), navVisible, navWidth: navRect ? Math.round(navRect.width) : 0,
           barWidth: bar ? Math.round(bar.getBoundingClientRect().width) : 0};
 }"""
 
@@ -432,7 +447,7 @@ def main():
     ap.add_argument("--colors", action="store_true", help="also fail when more than 2%% of the painted background area is a neutral gray, i.e. a colour that bypasses the palette (see the module docstring)")
     ap.add_argument("--locale", choices=sorted(LOCALE_NAMES), help="switch the app to this UI locale after boot, through the language menu (for example de), to check translated screens and help pages")
     ap.add_argument("--viewport", default="1400x900", help="browser size WIDTHxHEIGHT; at 860px or less the page is loaded as a touch phone (for example 390x844)")
-    ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
+    ap.add_argument("--layout", action="store_true", help="also fail on horizontal page overflow, on a second vertical scrollbar beside the window's and, at phone width (<= 860px), on a navigation rail that is not collapsed or a top bar narrower than the screen (see docs/UI_MIGRATION_PLAN.md 7.15)")
     ap.add_argument("--probe", default="", help="JavaScript (an arrow function) evaluated on each route after any #button press; its result is printed (for finding what covers an element)")
     ap.add_argument("--pinch", default="", help="CSS selector: on each route, do a two-finger pinch-out on that element (touch events through the devtools protocol) and print its viewBox before and after")
     ap.add_argument("--insets", action="store_true", help="also print how far the page's content sits from the left, top and right edge of the content region (the convention is 24/24/24, and 12/16/12 on a phone)")
@@ -548,6 +563,8 @@ def main():
                     problems.append("page scrolls sideways by %dpx" % (lay["scrollW"] - lay["vw"]))
                 if lay["wide"]:
                     problems.append("outside the screen: " + "; ".join(lay["wide"]))
+                if lay["bars"]:
+                    problems.append("second vertical scrollbar: " + "; ".join(lay["bars"]))
                 if lay["vw"] <= 860:
                     if lay["navVisible"]:
                         problems.append("navigation rail is open on a phone (%dpx of %dpx)" % (lay["navWidth"], lay["vw"]))

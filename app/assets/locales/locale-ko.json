@@ -1605,7 +1605,9 @@
             "transactions": "Show more transactions"
         },
         "clippy": {
+            "copied": "복사됨",
             "copy": "Copy to clipboard",
+            "copy_failed": "복사하지 못했습니다. 다시 시도하세요",
             "withdraw_full": "Withdraw the full balance"
         },
         "clock": "Please check your computer's clock",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} placed an order to buy {amount} at {price}",
         "limit_order_cancel": "{account} cancelled order #%(order)s",
         "limit_order_sell": "{account} placed an order to sell {amount} at {price}",
+        "limit_order_total": "총 {amount}",
         "liquidity_pool_create": "{account} create a liquidity pool: {asset_a}-{asset_b}.",
         "liquidity_pool_delete": "{account} deleted a liquidity pool #{id}.",
         "liquidity_pool_deposit": "{account} add liquidity #{id}. paid {amount_a} and {amount_b}. received {received}.",

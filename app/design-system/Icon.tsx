@@ -141,7 +141,9 @@ export type IconType =
     | "deployment-unit"
     | "close-circle"
     | "plus-circle-o"
-    | "minus-circle-o";
+    | "minus-circle-o"
+    | "copy"
+    | "check";
 
 export type IconTheme = "outlined" | "filled";
 
@@ -307,7 +309,14 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
         <path d="M4 20V10M10 20V4M16 20v-7M22 20H2M4 10l6-6 6 7 6-6" />
     ),
     "caret-left": <path d="M15 6l-6 6 6 6" fill="currentColor" />,
-    "caret-right": <path d="M9 6l6 6-6 6" fill="currentColor" />
+    "caret-right": <path d="M9 6l6 6-6 6" fill="currentColor" />,
+    copy: (
+        <>
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15V6a2 2 0 0 1 2-2h8" />
+        </>
+    ),
+    check: <path d="M5 12.5l4.5 4.5L19 7.5" />
 };
 
 const FILLED_PATHS: Partial<Record<IconType, React.ReactNode>> = {

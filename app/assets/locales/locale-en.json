@@ -1605,7 +1605,9 @@
             "transactions": "Show more transactions"
         },
         "clippy": {
+            "copied": "Copied",
             "copy": "Copy to clipboard",
+            "copy_failed": "Could not copy - try again",
             "withdraw_full": "Withdraw the full balance"
         },
         "clock": "Please check your computer's clock",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} placed order %(order)s to buy {amount} at {price}",
         "limit_order_cancel": "{account} cancelled order #%(order)s",
         "limit_order_sell": "{account} placed order %(order)s to sell {amount} at {price}",
+        "limit_order_total": "for {amount}",
         "liquidity_pool_create": "{account} created liquidity pool {id} with {asset_a} and {asset_b}",
         "liquidity_pool_delete": "{account} deleted liquidity pool {id}",
         "liquidity_pool_deposit": "{account} added liquidity {amount_a} and {amount_b} to liquidity pool {id}",

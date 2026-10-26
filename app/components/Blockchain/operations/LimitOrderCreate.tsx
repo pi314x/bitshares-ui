@@ -102,37 +102,58 @@ export const LimitOrderCreate = ({
                                 : ""
                             : "";
 
+                        // what the other side of the price comes to: the BTS a
+                        // buy order puts up, what a sell order asks
+                        const total = isBid
+                            ? op[1].amount_to_sell
+                            : op[1].min_to_receive;
+
                         return (
-                            <TranslateWithLinks
-                                string={
-                                    isBid
-                                        ? "operation.limit_order_buy"
-                                        : "operation.limit_order_sell"
-                                }
-                                keys={[
-                                    {
-                                        type: "account",
-                                        value: op[1].seller,
-                                        arg: "account"
-                                    },
-                                    {
-                                        type: "amount",
-                                        value: amount,
-                                        arg: "amount"
-                                    },
-                                    {
-                                        type: "price",
-                                        value: {
-                                            base: priceBase,
-                                            quote: priceQuote
-                                        },
-                                        arg: "price"
+                            <span>
+                                <TranslateWithLinks
+                                    string={
+                                        isBid
+                                            ? "operation.limit_order_buy"
+                                            : "operation.limit_order_sell"
                                     }
-                                ]}
-                                params={{
-                                    order: orderId
-                                }}
-                            />
+                                    keys={[
+                                        {
+                                            type: "account",
+                                            value: op[1].seller,
+                                            arg: "account"
+                                        },
+                                        {
+                                            type: "amount",
+                                            value: amount,
+                                            arg: "amount"
+                                        },
+                                        {
+                                            type: "price",
+                                            value: {
+                                                base: priceBase,
+                                                quote: priceQuote
+                                            },
+                                            arg: "price"
+                                        }
+                                    ]}
+                                    params={{
+                                        order: orderId
+                                    }}
+                                />{" "}
+                                {/* "for" stays with the amount when the line wraps */}
+                                <span style={{whiteSpace: "nowrap"}}>
+                                    <TranslateWithLinks
+                                        string="operation.limit_order_total"
+                                        keys={[
+                                            {
+                                                type: "amount",
+                                                value: total,
+                                                arg: "amount"
+                                            }
+                                        ]}
+                                    />
+                                </span>
+                            </span>
                         );
                     }}
                 </BindToChainStateWrapper>

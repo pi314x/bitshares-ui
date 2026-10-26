@@ -1605,7 +1605,9 @@
             "transactions": "显示更多交易"
         },
         "clippy": {
+            "copied": "已复制",
             "copy": "复制到剪切板",
+            "copy_failed": "复制失败，请重试",
             "withdraw_full": "提现全部余额"
         },
         "clock": "请检查你的计算机时间",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} 提交买单%(order)s, 以 {price} 的价格买入 {amount} ",
         "limit_order_cancel": "{account} 已取消限价单 #%(order)s",
         "limit_order_sell": "{account} 提交卖单%(order)s, 以 {price} 的价格卖出 {amount} ",
+        "limit_order_total": "共 {amount}",
         "liquidity_pool_create": "{account} 创建流动池：{asset_a}-{asset_b}。",
         "liquidity_pool_delete": "{account} 删除流动池 #{id}。",
         "liquidity_pool_deposit": "{account} 增加流动性 #{id}。实际支出 {amount_a}和 {amount_b}。获得 {received}流动性代币。",

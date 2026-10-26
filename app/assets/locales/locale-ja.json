@@ -1605,7 +1605,9 @@
             "transactions": "Show more transactions"
         },
         "clippy": {
+            "copied": "コピーしました",
             "copy": "Copy to clipboard",
+            "copy_failed": "コピーできませんでした。もう一度お試しください",
             "withdraw_full": "Withdraw the full balance"
         },
         "clock": "Please check your computer's clock",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account}は{price}で{amount}の買い注文を出しました",
         "limit_order_cancel": "{account}は注文#%(order)sをキャンセルしました",
         "limit_order_sell": "{account}は{price}で{amount}の売り注文を出しました",
+        "limit_order_total": "合計 {amount}",
         "liquidity_pool_create": "{account} create a liquidity pool: {asset_a}-{asset_b}.",
         "liquidity_pool_delete": "{account} deleted a liquidity pool #{id}.",
         "liquidity_pool_deposit": "{account} add liquidity #{id}. paid {amount_a} and {amount_b}. received {received}.",

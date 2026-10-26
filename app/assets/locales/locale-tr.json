@@ -1605,7 +1605,9 @@
             "transactions": "Daha fazla işlem göster"
         },
         "clippy": {
+            "copied": "Kopyalandı",
             "copy": "Panoya kopyala",
+            "copy_failed": "Kopyalanamadı - tekrar deneyin",
             "withdraw_full": "Tam bakiyeyi geri çekin"
         },
         "clock": "Lütfen bilgisayarınızın saatini kontrol edin",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} {amount} alış emri verdi - Fiyat: {price} ",
         "limit_order_cancel": "{account} emir iptal etti: #%(order)s",
         "limit_order_sell": "{account} {amount} satış emri verdi - Fiyat: {price} ",
+        "limit_order_total": "toplam {amount}",
         "liquidity_pool_create": "{account} create a liquidity pool: {asset_a}-{asset_b}.",
         "liquidity_pool_delete": "{account} deleted a liquidity pool #{id}.",
         "liquidity_pool_deposit": "{account} add liquidity #{id}. paid {amount_a} and {amount_b}. received {received}.",

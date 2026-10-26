@@ -48,9 +48,12 @@ export default function PaginatedList({
 }: PaginatedListProps) {
     const [pageSize] = React.useState(pageSizeProp);
 
-    const pageSizeOptions = [10, 20, 30, 40, 50, 100].filter(
-        item => item < Math.max(pageSizeProp, rows.length)
-    );
+    // the page size asked for is one of the choices (25 is not in the usual list)
+    const pageSizeOptions = Array.from(
+        new Set([10, 20, 30, 40, 50, 100, pageSizeProp])
+    )
+        .sort((a, b) => a - b)
+        .filter(item => item < Math.max(pageSizeProp, rows.length));
     pageSizeOptions.push(Math.max(pageSizeProp, rows.length));
 
     let totalColumnsLabel: ((total: number) => string) | null = null;

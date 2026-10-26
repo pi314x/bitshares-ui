@@ -141,6 +141,25 @@
     padding-right: 0;
 }
 
+// A page's root blocks (the legacy grid blocks and content blocks) are as tall
+// as their content, and the window is what scrolls. Left at the legacy
+// `overflow-y: auto`, a root whose height has a fraction (2789.16px, which reads
+// as 2789 against a scroll height of 2790) got a scrollbar of its own for that
+// one pixel: a second bar beside the window's, its thumb as long as the page.
+// Sideways they still scroll as before. `.grid-block.grid-block` and the longer
+// chains outrank the legacy `.grid-block.vertical`.
+.content.content > :global(.grid-content),
+.content.content > :global(.grid-block),
+.content.content > :global(.grid-block) > :global(.grid-content),
+.content.content > :global(.grid-block) > :global(.grid-block),
+.content.content
+    > :global(.grid-block)
+    > :global(.grid-block)
+    > :global(.grid-content),
+.content.content > :global(.grid-container) > :global(.grid-content) {
+    overflow-y: hidden;
+}
+
 // Behind the open navigation drawer on a phone.
 .scrim {
     position: fixed;

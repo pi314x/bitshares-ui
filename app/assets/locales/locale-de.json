@@ -1605,7 +1605,9 @@
             "transactions": "Mehr Transaktionen anzeigen."
         },
         "clippy": {
+            "copied": "Kopiert",
             "copy": "In die Zwischenablage kopieren.",
+            "copy_failed": "Kopieren fehlgeschlagen - noch einmal versuchen",
             "withdraw_full": "Das volle Guthaben auszahlen."
         },
         "clock": "Bitte überprüfen Sie Ihre Uhrzeit am Computer!",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} hat einen Kaufauftrag von {amount} für {price} eingestellt.",
         "limit_order_cancel": "{account} hat Auftrag #%(order)s zurückgezogen.",
         "limit_order_sell": "{account} hat einen Verkaufsauftrag von {amount} für {price} eingestellt.",
+        "limit_order_total": "für {amount}",
         "liquidity_pool_create": "{account} create a liquidity pool: {asset_a}-{asset_b}.",
         "liquidity_pool_delete": "{account} deleted a liquidity pool #{id}.",
         "liquidity_pool_deposit": "{account} add liquidity #{id}. paid {amount_a} and {amount_b}. received {received}.",

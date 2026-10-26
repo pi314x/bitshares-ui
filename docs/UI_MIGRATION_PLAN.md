@@ -13720,3 +13720,46 @@ ran sentences together ("on-chain.You can"); the borrow wizard on a phone showed
 plain lines (a numbered badge, the name and "4 / 4" now) and in a dialog its Previous / Next buttons
 were half below the fold (they stay at the bottom of the dialog). Not touched: the text of the
 dialogs, what any button does.
+
+### 7.35 A run on the testnet, the activity list, one scrollbar
+
+**The testnet run.** The built app was driven through Playwright on the BitShares testnet (chain id
+`39f5e2ed…`, node `wss://testnet.xbts.io/ws`) with new accounts made by the app itself: with the wallet
+extension (connect, balance, send with an encrypted memo, reject, locked extension, place and cancel an
+order, switching the account in the extension, signing for both accounts, and the mixed mode where a
+cloud-wallet account signs locally and the extension account through the extension), and without it
+(cloud wallet and local `.bin` wallet: faucet registration, send, order, lifetime upgrade, a second
+account made by the registrar, account switch, backup download, wrong password, restore in a fresh
+profile). Found and fixed, each with a test that fails without the fix: registration on the testnet
+went to the mainnet faucet (`registrationFaucet`); a wrong password in the login dialog gave no
+message (the boolean `true` was the help text); after any Send in a session the next transaction
+silently did nothing (`TransactionConfirmStore.listen` called its listeners without the state), and
+when the store was reset before the transaction was "included" the confirmation notification threw on
+`null.serialize()` and unmounted the app; the extension's account was "View Only" in the cloud mode;
+the Send dialog stayed hidden after a rejected signing; the account chooser's tiles stayed after an
+account was created; and a wallet restored or created in the running app was not the wallet the
+unlock dialog unlocked (it asked to "select a key file" until a reload). Not bugs: the extension
+refuses `account_upgrade` and `account_update` for a site (outside its capability list) and says so;
+the app's testnet session also pings mainnet nodes.
+
+**The activity list** (the dashboard's Recent activity, also the account's activity page). The
+operation id has a copy button next to it (`CopyIconButton`: the clipboard icon turns into a check, or a
+warning when the browser refuses; `copyText` also works over plain http). The dashboard shows what the
+history holds - up to 100 operations - 25 to a page with a page-size choice (`PaginatedList` now lists
+the page size it was given among the sizes, 25 was not in its fixed list), and "Load older" sits under
+the list, where older operations come, not above it. A place-order line says what the order comes to:
+"placed order #575989026 to buy 1,722.397243 xbtsx.HIVE at 50.19070 BTS/xbtsx.HIVE **for 86,431.77
+BTS**" (the BTS a buy order puts up, what a sell order asks for; `operation.limit_order_total` in all
+ten locales, in the activity list and the transaction view). In the dashboard card the info column wraps
+(it pushed the time column out of the card), and on a phone the fee goes too. The empty column
+definitions the compact list passed are dropped.
+
+**One vertical scrollbar.** Two were visible on a desktop: the navigation rail's own (the rail is as tall
+as the window and scrolled inside itself where its entries are taller than a laptop window) and, when
+the page's height had a fraction, a legacy `.grid-content` root's (2789.16px reads as 2789 against a
+scroll height of 2790, and `overflow-y: auto` drew a bar with a thumb as long as the page for that one
+pixel). The rail and the help page's side list still scroll, without drawing a bar (`scrollbar-width:
+none`; a short fade above the rail's footer is the sign that more follows), and a page's root blocks
+no longer scroll vertically (`NextShell.module.scss`); sideways they do as before. The smoke harness's
+`--layout` now fails on a second vertical scrollbar beside the window's (fixed layers, dialogs and boxes
+that hide their bar are exempt); with the rail's bar put back by hand it reports it.

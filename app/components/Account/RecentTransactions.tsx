@@ -64,6 +64,7 @@ import counterpart from "counterpart";
 import Icon from "../Icon/Icon";
 import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
+import CopyIconButton from "../Utility/CopyIconButton";
 const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -132,6 +133,8 @@ interface RecentTransactionsCoreProps {
     accountsList: any[];
     compactView?: boolean;
     limit?: number;
+    /** Rows per page (the table's own default when not given). */
+    pageSize?: number;
     maxHeight?: number;
     fullHeight?: boolean;
     showFilters?: boolean;
@@ -148,6 +151,7 @@ function RecentTransactionsCore({
     accountsList,
     compactView,
     limit: limitProp = 25,
+    pageSize,
     fullHeight = false,
     showFilters = false,
     filter,
@@ -351,6 +355,7 @@ function RecentTransactionsCore({
                     >
                         {o.id} <AntIcon type="file-search" />
                     </span>
+                    <CopyIconButton text={o.id} />
                     <JSONModal
                         visible={state.visibleId === o.id}
                         operation={o.op}
@@ -470,9 +475,24 @@ function RecentTransactionsCore({
               return getDataSource(o, current_account_id);
           })
         : [];
+    // Older operations come after the ones listed, so the way to ask for them is
+    // under the list, not above it.
+    const canLoadOlder =
+        historyCount > 0 &&
+        historyCount <= state.limit &&
+        !state.historyExhausted;
     const action = (
         <div className="total-value" key="total_value">
-            <span style={{textAlign: "center"}}>&nbsp;</span>
+            {canLoadOlder ? (
+                <Button
+                    disabled={state.fetchingAccountHistory}
+                    onClick={onLoadOlder}
+                >
+                    {counterpart.translate("balance_history.older")}
+                </Button>
+            ) : (
+                <span style={{textAlign: "center"}}>&nbsp;</span>
+            )}
         </div>
     );
 
@@ -585,18 +605,6 @@ function RecentTransactionsCore({
                             </Tooltip>
                         ) : null}
                     </div>
-                    {historyCount > 0 &&
-                    historyCount <= state.limit &&
-                    !state.historyExhausted ? (
-                        <Button
-                            className="inline-block"
-                            style={{marginLeft: "1rem"}}
-                            disabled={state.fetchingAccountHistory}
-                            onClick={onLoadOlder}
-                        >
-                            {counterpart.translate("balance_history.older")}
-                        </Button>
-                    ) : null}
                     {state.accountHistoryError && (
                         <div
                             className="has-error"
@@ -647,7 +655,12 @@ function RecentTransactionsCore({
                                 return (
                                     <span
                                         style={{
-                                            whiteSpace: "nowrap"
+                                            // the compact list (the dashboard card) fits
+                                            // its card: a long line wraps instead of
+                                            // pushing the time column out of it
+                                            whiteSpace: compactView
+                                                ? "normal"
+                                                : "nowrap"
                                         }}
                                     >
                                         {item}
@@ -691,8 +704,9 @@ function RecentTransactionsCore({
                                 );
                             }
                         }
-                    ]}
+                    ].filter(column => Object.keys(column).length > 0)}
                     rows={display_history}
+                    pageSize={pageSize}
                     label="utility.total_x_operations"
                     extraRow={action}
                 />

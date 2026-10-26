@@ -1605,7 +1605,9 @@
             "transactions": "Показать больше транзакций"
         },
         "clippy": {
+            "copied": "Скопировано",
             "copy": "Скопировать в буфер обмена",
+            "copy_failed": "Не удалось скопировать - попробуйте ещё раз",
             "withdraw_full": "Вывести баланс целиком"
         },
         "clock": "Пожалуйста, сверьтесь с часами на вашем компьютере",
@@ -2010,6 +2012,7 @@
         "limit_order_buy": "{account} разместил ордер %(order)s на покупку {amount} по {price}",
         "limit_order_cancel": "{account} отменил ордер #%(order)s",
         "limit_order_sell": "{account} разместил ордер %(order)s на продажу {amount} по {price}",
+        "limit_order_total": "на сумму {amount}",
         "liquidity_pool_create": "{account} create a liquidity pool: {asset_a}-{asset_b}.",
         "liquidity_pool_delete": "{account} deleted a liquidity pool #{id}.",
         "liquidity_pool_deposit": "{account} add liquidity #{id}. paid {amount_a} and {amount_b}. received {received}.",

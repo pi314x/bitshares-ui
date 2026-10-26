@@ -198,6 +198,12 @@ function WalletUnlockModal({
         // Updating the accountname through the listener breaks UX (#2335)
         if (walletSelected && !restoringBackup && !currentWallet)
             setWalletSelected(false);
+        // A wallet became the current one while the dialog was mounted (a backup
+        // restored or a wallet created in this session): it is the one to unlock.
+        // `walletSelected` was worked out when there was none, and stayed false:
+        // "Please select a key file" for a wallet that is right there.
+        else if (!walletSelected && !restoringBackup && currentWallet)
+            setWalletSelected(true);
         prevCurrentWalletRef.current = currentWallet;
     }
     if (prevPasswordLoginRef.current !== passwordLogin) {

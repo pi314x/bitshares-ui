@@ -131,7 +131,8 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   HTTPS for real accounts/markets - this is what finds first-render bugs
   that unit tests with hand-built props cannot).
   Add `--viewport 390x844 --layout` to load it as a phone and fail on sideways
-  overflow or an open navigation rail (plan §7.15). `--locale de` switches the
+  overflow or an open navigation rail (plan §7.15); at any size it also fails on
+  a second vertical scrollbar beside the window's (plan §7.35). `--locale de` switches the
   UI language through the language menu first (translated screens, help pages).
   Add `--fonts` to also fail on any visible text that is not IBM Plex and
   `--colors` to fail on neutral-gray leftovers (see Conventions). A custom `--output-path` build lacks the CopyPlugin

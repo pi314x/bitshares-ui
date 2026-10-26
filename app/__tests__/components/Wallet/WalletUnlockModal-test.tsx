@@ -15,6 +15,9 @@ import WalletUnlockActions from "../../../actions/WalletUnlockActions";
 import WalletUnlockStore from "../../../stores/WalletUnlockStore";
 import {reduxStore} from "../../../store/reduxStore";
 import {patchState} from "../../../store/slices/accountSlice";
+import {patchState as patchWalletManager} from "../../../store/slices/walletManagerSlice";
+import Immutable from "immutable";
+import localeEn from "../../../assets/locales/locale-en.json";
 
 function mount() {
     return render(
@@ -110,6 +113,58 @@ describe("WalletUnlockModal: a wrong password", () => {
             await new Promise(r => setTimeout(r, 50));
         });
         expect(document.body.textContent).toContain("Incorrect password");
+    });
+});
+
+describe("WalletUnlockModal: a wallet that becomes the current one", () => {
+    // Restoring a backup or creating a wallet in the running app makes it the current wallet while the
+    // dialog is mounted. `walletSelected` was worked out when there was none and stayed false, so the
+    // dialog asked to "select a key file" for a wallet that was right there (found on the testnet, by
+    // restoring a backup in the settings and then signing without reloading the page).
+    afterEach(() => {
+        act(() => {
+            (WalletUnlockActions as any).cancel();
+            reduxStore.dispatch(
+                patchWalletManager({
+                    current_wallet: undefined,
+                    wallet_names: Immutable.Set()
+                })
+            );
+        });
+    });
+
+    it("is the wallet the dialog unlocks, not a key file to select", async () => {
+        open(false);
+        reduxStore.dispatch(
+            patchWalletManager({
+                current_wallet: undefined,
+                wallet_names: Immutable.Set()
+            })
+        );
+        mount();
+        await act(async () => {
+            (WalletUnlockActions as any).unlock().catch(() => {});
+        });
+        await act(async () => {
+            await new Promise(r => setTimeout(r, 50));
+        });
+        expect(document.body.textContent).toContain(localeEn.wallet.no_wallet);
+        expect(document.body.textContent).not.toContain(localeEn.wallet.using);
+
+        await act(async () => {
+            reduxStore.dispatch(
+                patchWalletManager({
+                    current_wallet: "restored-wallet",
+                    wallet_names: Immutable.Set(["restored-wallet"])
+                })
+            );
+        });
+
+        expect(document.body.textContent).toContain(localeEn.wallet.using);
+        expect(document.body.textContent).toContain("restored-wallet");
+        expect(document.body.textContent).not.toContain(
+            localeEn.wallet.no_wallet
+        );
     });
 });
 

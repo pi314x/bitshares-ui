@@ -21,6 +21,12 @@ import styles from "./Desk.module.scss";
 const TypedLink = Link as React.ComponentType<LinkProps>;
 const TypedRecent = RecentTransactions as React.ComponentType<any>;
 
+// The activity card shows everything the account's history holds (the node
+// sends the last 100 operations), a page of 25 at a time, and can ask the node
+// for older ones.
+const ACTIVITY_LIMIT = 1000;
+const ACTIVITY_PAGE_SIZE = 25;
+
 /** The open orders are the portfolio's second tab: select it and go there. */
 function useOpenOrders(accountName: string): () => void {
     const navigate = useNavigate();
@@ -745,7 +751,8 @@ export default function Desk({
                             compactView={true}
                             showMore={true}
                             fullHeight={true}
-                            limit={10}
+                            limit={ACTIVITY_LIMIT}
+                            pageSize={ACTIVITY_PAGE_SIZE}
                             showFilters={false}
                             dashboard
                         />
