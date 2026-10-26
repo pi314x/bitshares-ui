@@ -13783,3 +13783,22 @@ under the operation id, shortened to its first 8 and last 6 characters with a bu
 of it (a page of rows asks each block once); in the details it follows the operation id, the block
 after it. On a phone, where the compact list drops its id column, both ids and their buttons sit
 under the line of text.
+
+**Smaller things, and Highcharts.** The Settings' faucet tab shows the faucet of the chain the app is on
+(it showed the main chain's on the testnet); the table's "25 / page" is translated (`utility.per_page`);
+the Dashboard's Holdings card has a filter for a list of more than five (it looks through all of the
+holdings, not only the first eight rows, and says when nothing matches). The explorer's recent activity
+said "Unknown operation 63" beside EXCHANGE LIQUIDITY: the transactions of a block carry no operation
+results (the node answers `[]`; an account's history has them), and the wordings of the pool operations
+read what was paid and received; without a result they say what the operation offered (an exchange for
+at least, a withdrawal of shares, a deposit of the amounts it names). `react-highcharts` is gone: it
+pinned Highcharts 6, which had two cross-site scripting advisories (the audit's high ones go from 8 to
+6, the rest are Node-only: cross-spawn, node-fetch, ws). `Utility/HighChart` is the 50-line wrapper
+it was, on Highcharts 12.6.2 as a dependency of its own; 12 keeps a series' data in columns
+(`series.xData` is gone, `seriesXValues` reads it) and registers its modules by import; the treemap
+keeps the old tile colours and the column charts square columns and a light axis. Checked against
+the old build side by side on the live chain: the block times, transactions per block, the market
+depth and the treemap. Not fixed: the TradingView chart logs "time order violation" hundreds of
+times for a market with a few bars far apart (BTS/USD: seven in 15 days) when the last bar is
+updated: the library fills the gap with hourly bars itself and trips over its own order; the data we
+give it is ascending and one bar per time.

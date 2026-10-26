@@ -38,7 +38,7 @@
 // prop itself is now unread by this component (the caller,
 // `Blocks.tsx`, still passes it - not this file's call site to change).
 import * as React from "react";
-import ReactHighchart from "react-highcharts";
+import ReactHighchart, {seriesXValues} from "../Utility/HighChart";
 import {takeRight} from "lodash-es";
 import counterpart from "counterpart";
 
@@ -65,16 +65,13 @@ export default class BlocktimeChart extends React.Component<
         if (chart) {
             const {blockTimes, colors} = this._getData(nextProps);
             const series = chart.series[0];
-            const finalValue = series.xData[series.xData.length - 1];
+            const xValues = seriesXValues(series);
+            const finalValue = xValues[xValues.length - 1];
 
-            if (series.xData.length) {
+            if (xValues.length) {
                 blockTimes.forEach((point: any) => {
                     if (point[0] > finalValue) {
-                        series.addPoint(
-                            point,
-                            false,
-                            series.xData.length >= 30
-                        );
+                        series.addPoint(point, false, xValues.length >= 30);
                     }
                 });
 
@@ -171,7 +168,10 @@ export default class BlocktimeChart extends React.Component<
                 },
                 title: {
                     text: null
-                }
+                },
+                // the axis in the light colour Highcharts 6 gave it
+                lineColor: "#ccd6eb",
+                tickColor: "#ccd6eb"
             },
             yAxis: {
                 min: 0,
@@ -192,7 +192,9 @@ export default class BlocktimeChart extends React.Component<
                     minPointLength: 3,
                     colorByPoint: true,
                     colors: colors,
-                    borderWidth: 0
+                    borderWidth: 0,
+                    // square columns, as Highcharts 6 drew them (12 rounds them)
+                    borderRadius: 0
                 }
             }
         };

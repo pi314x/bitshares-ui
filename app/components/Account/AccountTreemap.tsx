@@ -24,9 +24,10 @@
 // The commented-out `shouldComponentUpdate` was already dead (commented
 // out in the original) - dropped along with the comment itself.
 import * as React from "react";
-import ReactHighcharts from "react-highcharts";
-import Treemap from "highcharts/modules/treemap";
-import Heatmap from "highcharts/modules/heatmap";
+import ReactHighcharts from "../Utility/HighChart";
+// the modules add themselves to the Highcharts they find
+import "highcharts/modules/treemap";
+import "highcharts/modules/heatmap";
 import utils from "common/utils";
 import {ChainStore} from "bitsharesjs";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -36,8 +37,19 @@ import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectMarkets} from "../../store/slices/marketsSlice";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
 
-Treemap(ReactHighcharts.Highcharts);
-Heatmap(ReactHighcharts.Highcharts);
+// The tiles' colours, in order: the palette Highcharts 6 drew with (12 has another).
+const TILE_COLORS = [
+    "#7cb5ec",
+    "#434348",
+    "#90ed7d",
+    "#f7a35c",
+    "#8085e9",
+    "#f15c80",
+    "#e4d354",
+    "#2b908f",
+    "#f45b5b",
+    "#91e8e1"
+];
 
 const LinkComponent = Link as React.ComponentType<any>;
 
@@ -142,8 +154,7 @@ function AccountTreemap({
                         totalValue === 0 ? 0 : percent.toFixed(2)
                     }%)`,
                     value: finalValue,
-                    color: (ReactHighcharts as any).Highcharts.getOptions()
-                        .colors[index]
+                    color: TILE_COLORS[index % TILE_COLORS.length]
                 };
             })
             .filter((n: any) => !!n);

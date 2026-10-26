@@ -55,7 +55,7 @@
 // omitted as informationally inert, same category of drop as
 // `AccountAssetCreate.tsx`'s equivalent.
 import * as React from "react";
-import ReactHighchart from "react-highcharts";
+import ReactHighchart from "../Utility/HighChart";
 import utils from "common/utils";
 import counterpart from "counterpart";
 import {cloneDeep} from "lodash-es";
