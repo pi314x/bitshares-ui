@@ -93,6 +93,7 @@
 // - never applied to any element's `className` or read anywhere else.
 import * as React from "react";
 import Transaction from "./Transaction";
+import cards from "./OperationCards.module.scss";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import TransactionConfirmActions from "actions/TransactionConfirmActions";
@@ -453,12 +454,15 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                             overflowX: "hidden"
                         }}
                     >
-                        <Transaction
-                            key={Date.now()}
-                            trx={props.transaction.serialize()}
-                            index={0}
-                            no_links={true}
-                        />
+                        {/* the operations as cards, label over value on a phone */}
+                        <div className={cards.ops}>
+                            <Transaction
+                                key={Date.now()}
+                                trx={props.transaction.serialize()}
+                                index={0}
+                                no_links={true}
+                            />
+                        </div>
                         {trStr ? (
                             <Modal
                                 visible={showQrCode}

@@ -88,6 +88,7 @@ import {Card} from "../../design-system/Card";
 import {Button} from "../../design-system/Button";
 import {ButtonRow} from "../../design-system/ButtonRow";
 import styles from "./Block.module.scss";
+import cards from "./OperationCards.module.scss";
 import LinkToWitnessById from "../Utility/LinkToWitnessById";
 import {Element, Events, animateScroll as scroll, scroller} from "react-scroll";
 import {ChainStore} from "bitsharesjs";
@@ -339,7 +340,7 @@ function BlockCore({
                 </dl>
             </Card>
             {block ? (
-                <div className={styles.ops}>
+                <div className={cards.ops}>
                     <TransactionList block={block} />
                 </div>
             ) : null}

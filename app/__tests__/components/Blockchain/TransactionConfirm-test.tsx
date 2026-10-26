@@ -85,4 +85,37 @@ describe("TransactionConfirm", () => {
         // still mounted (an error in an effect unmounts the tree)
         expect(view.container.isConnected).toBe(true);
     });
+
+    // The operation of the transaction to confirm is a card (label over value on a phone): the
+    // legacy table squeezed the values into half a phone and wrapped a date over five lines.
+    it("shows the operations in the card layout", async () => {
+        const fakeTransaction = {
+            serialize: () => ({
+                operations: [
+                    [
+                        0,
+                        {
+                            fee: {amount: 0, asset_id: "1.3.0"},
+                            from: "1.2.1",
+                            to: "1.2.2",
+                            amount: {amount: 1, asset_id: "1.3.0"}
+                        }
+                    ]
+                ]
+            }),
+            has_proposed_operation: () => false,
+            update_head_block: () => Promise.resolve(),
+            finalize: () => Promise.resolve()
+        };
+        const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+        render(<TransactionConfirm />);
+        await act(async () => {
+            reduxStore.dispatch(confirm({transaction: fakeTransaction}));
+        });
+        spy.mockRestore();
+        expect(document.body.querySelector(".ops")).not.toBeNull();
+        await act(async () => {
+            TransactionConfirmStore.reset();
+        });
+    });
 });

@@ -13802,3 +13802,12 @@ depth and the treemap. Not fixed: the TradingView chart logs "time order violati
 times for a market with a few bars far apart (BTS/USD: seven in 15 days) when the last bar is
 updated: the library fills the gap with hourly bars itself and trips over its own order; the data we
 give it is ascending and one bar per time.
+
+**The confirmation of a transaction** (the dialog that asks you to confirm an order or a transfer) showed
+the operation as the legacy two-column table: on a phone the labels took half the width, the values
+wrapped ("October 26, 2027 at 11:40:25 AM GMT+2" over five lines, a price over three) and the rows
+were loose lines. The operation is a card now, label over value on a phone and side by side from
+560px, the same as the operations on the block page: those rules moved to
+`Blockchain/OperationCards.module.scss`, which the block page and the confirmation share. Nothing it
+says changed; the order of the rows and their texts are the same.
+
