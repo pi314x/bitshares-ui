@@ -34,3 +34,4 @@ declare module "react-qr-reader";
 declare module "zxcvbn";
 declare module "humanize-duration";
 declare module "react-loadable";
+declare module "bitsharesjs-ws/lib/GrapheneApi";

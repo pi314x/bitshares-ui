@@ -9,6 +9,7 @@ import React from "react";
 import {createRoot} from "react-dom/client";
 import {ChainStore} from "bitsharesjs";
 import {dedupeAssetLookups} from "./lib/chain/dedupeAssetLookups";
+import {installCompleteBalances} from "./lib/chain/completeBalances";
 import {installResizeGuard} from "./lib/common/resizeGuard";
 import {
     installFatalErrorScreen,
@@ -19,6 +20,7 @@ import AppInit from "./AppInit";
 
 // Before anything renders: one symbol lookup in flight, not one per render.
 dedupeAssetLookups(ChainStore);
+installCompleteBalances();
 installResizeGuard();
 installFatalErrorScreen();
 

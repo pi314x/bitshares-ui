@@ -13838,3 +13838,13 @@ as boxes with their own copy button (`DepositField`) and the warning as a box of
 dialog has the same rhythm. The balance chart draws steps, not curves: a balance is what it was after
 the last operation until the next one.
 
+**A balance the node did not send.** thmsfnd02 bought XBTSX.A and it was not among its balances. The node
+answers `get_full_accounts` with at most 500 balances (`more_data_available.balances` says so) and
+ChainStore took that for all of them; the account has 502 balance objects, most of them empty, and
+the last two were not sent - one of them held 1,380.65 XBTSX.A, 55% of the portfolio. The answer is
+completed on its way into ChainStore (`lib/chain/completeBalances.ts`): when it says there are more
+balances, `get_account_balances` is asked for them and the missing ones are added with ids no real
+object has. They are not subscribed to, so such a balance is as fresh as the account's last load.
+bitsharesjs's own helper for this (`requestAllDataForAccount`) sets a field on an Immutable object and
+does nothing.
+
