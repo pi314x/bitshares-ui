@@ -141,11 +141,13 @@ body[class][class] .top-bar {
 }
 
 // The chart's frame: on a wide screen it is the chart's only border, so it is
-// drawn like the cards' (rounded, the theme's line colour); on a phone the
-// chart sits inside a card that already frames it, and a box in a box is gone.
+// drawn like the cards' (the theme's line colour) but with a small radius: the
+// frame clips the chart, and a card's 12px cut the gridlines and the first bars
+// off at the corners. On a phone the chart sits inside a card that already
+// frames it, and a box in a box is gone.
 body[class][class] .market-layout .exchange-bordered {
     border-color: var(--line);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 

@@ -13824,3 +13824,6 @@ and stays inside the window: the 100px fee-asset field of the order form opened 
 field, from the field's left edge, so on a phone in landscape the list ran out of the window and its
 options showed their first letter.
 
+The market page's chart frame has a 6px radius instead of the cards' 12px: the frame clips the chart,
+and the larger radius cut the gridlines and the first bars off at its corners.
+
