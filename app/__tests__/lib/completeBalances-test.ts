@@ -25,8 +25,10 @@ const balanceObject = (n: number, asset: string, amount: number) => ({
 function makeApi(answers: Record<string, any>, calls: string[] = []) {
     class FakeApi {
         api_name = "database";
-        exec(method: string) {
+        exec(method: string, params: any[] = []) {
             calls.push(method);
+            // (the answers do not depend on the parameters)
+            void params;
             const answer = answers[method];
             return answer instanceof Error
                 ? Promise.reject(answer)
