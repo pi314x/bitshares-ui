@@ -13871,3 +13871,37 @@ decision here was "part-to-whole = a stacked bar, never a donut"; the Dashboard 
 the user asked for one. Timed transfer opens as a dialog over the page on a desktop, like Send, Deposit
 and Withdraw.
 
+
+**The bell tells what happened to the account.** The notification history used to hold only the
+toasts the app itself showed, plus one entry per trade fill (`TradeNotifications`): a settlement, a
+transfer received, a margin call or an order cancelled never reached it. `AccountActivityNotifications`
+now reads the connected account's operation history from the chain store and makes an entry for every
+operation newer than the last one the user was told about (`lib/common/accountActivity.ts` is the logic:
+which operations are new, which assets and accounts they name, and the sentence for each kind - a
+transfer in or out, an order placed or cancelled, a change of a borrow position, a fill told apart by the
+object it belongs to (1.7 an order, 1.4 a forced settlement, 1.8 a margin call), a settlement requested,
+settled at once or cancelled; any other operation gets its name). The names are asked for in one
+request each, not through the chain store (which would subscribe to every account the user ever paid).
+What the account started itself is recorded in the history without a second toast (the app has already
+confirmed it); the newest three that happened to it - or that the chain did on its own - are also
+toasts. The first look only sets the baseline, so nothing is announced for old history; what happened
+while the page was closed is announced once, at most the newest thirty. The baseline is stored per
+account under a new key (`__graphene__lastActivityNotified_<name>`; the old fills-only key is not reused,
+it would have announced every old operation).
+
+**Tooltips and popovers stay on the screen.** The design system's `Tooltip` and `Popover` were placed with
+CSS inside the trigger's parent, so any `overflow: hidden` ancestor cut them: on an iPhone the warning
+of a market row was half outside the panel. They are now drawn in the body at a fixed position worked out
+from where the trigger is (`design-system/floating.ts`): on the preferred side when it fits, else the
+other, always inside the screen, placed again when the page scrolls or resizes. A click-triggered
+popover keeps closing on a click outside, where "outside" now means outside the trigger and the bubble.
+
+**Dashboard and Portfolio.** The Dashboard's two columns hold about the same height (holdings and
+positions on the left, allocation and accounts on the right; one grid row left a hole under the shorter
+card). The holdings table scrolls sideways inside its card when it is wider (the card clips what sticks
+out, so on a phone the value column was out of reach). On the Portfolio the vesting and collateral
+columns give way below 1240 and 1200 pixels of room, so nine columns no longer overflow the card by a few
+pixels (the scrollbar of that table is at the bottom of the whole list). The balance chart is always
+there: while the balances load it says "Loading...", an account with none says so, and a failed request is
+made again three times before the error is shown; it used to be absent, which on a page where it belongs
+reads as a missing chart.
