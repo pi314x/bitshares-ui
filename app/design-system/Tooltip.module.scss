@@ -7,10 +7,11 @@
     display: inline-block;
 }
 
+// placed by `floating.ts` (position, left, top are set on the element)
 .bubble {
-    position: absolute;
+    position: fixed;
     z-index: 1100;
-    max-width: 260px;
+    max-width: min(260px, calc(100vw - 16px));
     width: max-content;
     padding: 6px 10px;
     border-radius: 6px;
@@ -21,38 +22,4 @@
     line-height: 1.4;
     box-shadow: var(--shadow-md);
     pointer-events: none;
-}
-
-.top {
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.bottom {
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.topLeft {
-    bottom: calc(100% + 8px);
-    left: 0;
-}
-
-.topRight {
-    bottom: calc(100% + 8px);
-    right: 0;
-}
-
-.left {
-    right: calc(100% + 8px);
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.right {
-    left: calc(100% + 8px);
-    top: 50%;
-    transform: translateY(-50%);
 }

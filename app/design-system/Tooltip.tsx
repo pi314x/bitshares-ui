@@ -1,13 +1,9 @@
 import * as React from "react";
+import {createPortal} from "react-dom";
 import styles from "./Tooltip.module.scss";
+import {FloatingPlacement, useFloating} from "./floating";
 
-export type TooltipPlacement =
-    | "top"
-    | "bottom"
-    | "left"
-    | "right"
-    | "topLeft"
-    | "topRight";
+export type TooltipPlacement = FloatingPlacement;
 
 export interface TooltipProps {
     title: React.ReactNode;
@@ -39,14 +35,11 @@ export interface TooltipProps {
 // element to the DOM, same tradeoff this design system already made
 // for `AccountSwitcher`'s trigger wrapper.
 //
-// Positioned with plain CSS (`position: absolute` relative to the
-// wrapper), not a portal - this project has no viewport-aware
-// positioning library (Floating UI / Popper) as a dependency, and
-// adding one for a tooltip wasn't judged worth it. Known limitation,
-// same caveat any plain-CSS tooltip has: it can clip or mis-position
-// near the edge of a scrollable/`overflow: hidden` ancestor. Flagged
-// here rather than solved speculatively, same as `Modal.tsx`'s
-// focus-trap gap - revisit if a migrated screen's real layout hits it.
+// Drawn in the page's body at a fixed position worked out from where the trigger is on the
+// screen (`floating.ts`): on the preferred side when it fits, else the other, always inside
+// the screen. It used to be placed with CSS inside the trigger's parent, and an
+// `overflow: hidden` ancestor (a card, a list panel) cut it - on a phone the warning of a
+// market row was half out of the screen.
 export function Tooltip({
     title,
     placement = "top",
@@ -75,12 +68,15 @@ export function Tooltip({
     React.useEffect(() => () => clearTimeout(showTimeoutRef.current), []);
 
     const wrapClasses = [styles.wrap, className].filter(Boolean).join(" ");
-    const bubbleClasses = [styles.bubble, styles[placement]]
-        .filter(Boolean)
-        .join(" ");
+    const shown = visible && !!title;
+    const {triggerRef, bubbleRef, style: bubbleStyle} = useFloating(
+        shown,
+        placement
+    );
 
     return (
         <span
+            ref={triggerRef}
             className={wrapClasses}
             style={style}
             onClick={onClick}
@@ -90,11 +86,19 @@ export function Tooltip({
             onBlur={hide}
         >
             {children}
-            {visible && title ? (
-                <span className={bubbleClasses} role="tooltip">
-                    {title}
-                </span>
-            ) : null}
+            {shown
+                ? createPortal(
+                      <span
+                          ref={bubbleRef}
+                          className={styles.bubble}
+                          style={bubbleStyle}
+                          role="tooltip"
+                      >
+                          {title}
+                      </span>,
+                      document.body
+                  )
+                : null}
         </span>
     );
 }

@@ -122,4 +122,33 @@ describe("design-system/Popover", () => {
         fireEvent.mouseDown(getByText("Outside"));
         expect(queryByText("Details")).toBeNull();
     });
+
+    it("stays open on a click inside its own content, which is drawn in the page body", () => {
+        const {getByText, queryByText, container} = render(
+            <div style={{overflow: "hidden"}}>
+                <Popover content={<a href="#x">Link</a>} trigger="click">
+                    <span>Trigger</span>
+                </Popover>
+            </div>
+        );
+        fireEvent.click(getByText("Trigger"));
+        const link = getByText("Link");
+        // not inside the box that could clip it
+        expect(container.contains(link)).toBe(false);
+
+        fireEvent.mouseDown(link);
+        expect(queryByText("Link")).toBeTruthy();
+    });
+
+    it("closes a click-triggered popover on Escape", () => {
+        const {getByText, queryByText} = render(
+            <Popover content="Details" trigger="click">
+                <span>Trigger</span>
+            </Popover>
+        );
+        fireEvent.click(getByText("Trigger"));
+        expect(getByText("Details")).toBeTruthy();
+        fireEvent.keyDown(document, {key: "Escape"});
+        expect(queryByText("Details")).toBeNull();
+    });
 });

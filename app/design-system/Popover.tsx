@@ -1,6 +1,7 @@
 import * as React from "react";
+import {createPortal} from "react-dom";
 import styles from "./Popover.module.scss";
-import {useClickOutside} from "../next/hooks/useClickOutside";
+import {useFloating} from "./floating";
 
 export type PopoverPlacement = "top" | "bottom" | "left" | "right";
 
@@ -76,10 +77,37 @@ export function Popover({
         if (onVisibleChange) onVisibleChange(next);
     }
 
-    const ref = useClickOutside<HTMLSpanElement>(
-        () => setVisible(false),
-        trigger === "click" && visible
+    // drawn in the page's body at a fixed place inside the screen (see floating.ts)
+    const {triggerRef: ref, bubbleRef, style: bubbleStyle} = useFloating(
+        visible,
+        placement
     );
+
+    // a click-triggered popover closes on a click outside it - outside the trigger AND the
+    // bubble (which is in the body, not inside the trigger) - or on Escape
+    React.useEffect(() => {
+        if (!(trigger === "click" && visible)) return;
+        function handlePointer(event: MouseEvent) {
+            const target = event.target as Node;
+            if (
+                ref.current &&
+                !ref.current.contains(target) &&
+                !(bubbleRef.current && bubbleRef.current.contains(target))
+            ) {
+                setVisible(false);
+            }
+        }
+        function handleKey(event: KeyboardEvent) {
+            if (event.key === "Escape") setVisible(false);
+        }
+        document.addEventListener("mousedown", handlePointer);
+        document.addEventListener("keydown", handleKey);
+        return () => {
+            document.removeEventListener("mousedown", handlePointer);
+            document.removeEventListener("keydown", handleKey);
+        };
+        // setVisible is re-made each render and only reads props
+    }, [trigger, visible]);
 
     function show() {
         if (trigger !== "hover") return;
@@ -104,9 +132,6 @@ export function Popover({
     React.useEffect(() => () => clearTimeout(showTimeoutRef.current), []);
 
     const wrapClasses = [styles.wrap, className].filter(Boolean).join(" ");
-    const bubbleClasses = [styles.bubble, styles[placement]]
-        .filter(Boolean)
-        .join(" ");
 
     return (
         <span
@@ -117,14 +142,22 @@ export function Popover({
             onClick={toggleOnClick}
         >
             {children}
-            {visible ? (
-                <span className={bubbleClasses} role="tooltip">
-                    {title !== undefined ? (
-                        <span className={styles.titleRow}>{title}</span>
-                    ) : null}
-                    <span className={styles.content}>{content}</span>
-                </span>
-            ) : null}
+            {visible
+                ? createPortal(
+                      <span
+                          ref={bubbleRef}
+                          className={styles.bubble}
+                          style={bubbleStyle}
+                          role="tooltip"
+                      >
+                          {title !== undefined ? (
+                              <span className={styles.titleRow}>{title}</span>
+                          ) : null}
+                          <span className={styles.content}>{content}</span>
+                      </span>,
+                      document.body
+                  )
+                : null}
         </span>
     );
 }
