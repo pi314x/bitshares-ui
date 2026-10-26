@@ -25,7 +25,7 @@ const balanceObject = (n: number, asset: string, amount: number) => ({
 function makeApi(answers: Record<string, any>, calls: string[] = []) {
     class FakeApi {
         api_name = "database";
-        exec(method: string, _params: any[]) {
+        exec(method: string) {
             calls.push(method);
             const answer = answers[method];
             return answer instanceof Error
