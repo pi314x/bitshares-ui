@@ -15,6 +15,7 @@ import {Modal} from "../design-system/Modal";
 /** The routes shown as a dialog on a desktop screen. */
 export const DESKTOP_MODAL_PATHS = [
     "/send",
+    "/timed-transfer",
     "/deposit",
     "/withdraw",
     "/instant-trade",

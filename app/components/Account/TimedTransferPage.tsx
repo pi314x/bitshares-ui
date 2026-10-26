@@ -7,6 +7,7 @@ import {Alert} from "../../design-system/Alert";
 import SametFundActions, {AccountInfo} from "../../actions/SametFundActions";
 import {ModalAsPage} from "../../design-system/Modal";
 import TimedTransferModal from "./TimedTransferModal";
+import {ModalOrPage, useDesktopModal} from "../../next/desktopModal";
 import styles from "../../next/PaymentPages.module.scss";
 
 const TypedLink = Link as React.ComponentType<any>;
@@ -49,6 +50,27 @@ export default function TimedTransferPage() {
             navigate("/", {replace: true});
         }
     };
+
+    const asModal = useDesktopModal();
+    // on a desktop the dialog opens over the page the user came from, like Send and Deposit
+    if (asModal) {
+        if (!accountName) {
+            return (
+                <ModalOrPage title={t("title")} width={560}>
+                    <Alert type="info" message={t("no_account")} />
+                </ModalOrPage>
+            );
+        }
+        return creator ? (
+            <TimedTransferModal
+                key={round}
+                visible={true}
+                creator={creator}
+                onCancel={leave}
+                onDone={() => setRound(r => r + 1)}
+            />
+        ) : null;
+    }
 
     return (
         <div className={styles.page}>
