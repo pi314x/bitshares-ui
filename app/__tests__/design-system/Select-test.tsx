@@ -224,4 +224,58 @@ describe("design-system/Select option triggerLabel", () => {
         expect(getByRole("button").textContent).toContain("PirateCash");
         expect(getByRole("button").textContent).not.toContain("12.00");
     });
+
+    // A 100px fee asset field at the right edge of a phone opened a list as wide as the field,
+    // from the field's left edge: out of the window, the options cut off after their first letter.
+    describe("a list under a small field at the edge of the window", () => {
+        const original = Element.prototype.getBoundingClientRect;
+        const clientWidth = Object.getOwnPropertyDescriptor(
+            Element.prototype,
+            "clientWidth"
+        );
+
+        beforeEach(() => {
+            Object.defineProperty(document.documentElement, "clientWidth", {
+                configurable: true,
+                value: 400
+            });
+            Element.prototype.getBoundingClientRect = function(this: Element) {
+                // the field: 100px wide, its right edge 10px from the window's
+                if (this.tagName === "DIV" && !this.getAttribute("role")) {
+                    return {
+                        left: 290,
+                        right: 390,
+                        top: 100,
+                        bottom: 130,
+                        width: 100,
+                        height: 30,
+                        x: 290,
+                        y: 100
+                    } as DOMRect;
+                }
+                return original.call(this);
+            };
+        });
+
+        afterEach(() => {
+            Element.prototype.getBoundingClientRect = original;
+            delete (document.documentElement as any).clientWidth;
+            if (clientWidth) void clientWidth;
+        });
+
+        it("is as wide as an asset name needs and stays inside the window", () => {
+            const {getByText, getByRole} = render(
+                <Select placeholder="Fee asset" style={{width: 100}}>
+                    <Select.Option value="XBTSX.A">XBTSX.A</Select.Option>
+                </Select>
+            );
+            fireEvent.click(getByText("Fee asset"));
+            const list = getByRole("listbox") as HTMLElement;
+            const left = parseFloat(list.style.left);
+            const width = parseFloat(list.style.width);
+            expect(width).toBeGreaterThanOrEqual(160);
+            expect(left).toBeGreaterThanOrEqual(8);
+            expect(left + width).toBeLessThanOrEqual(400 - 8);
+        });
+    });
 });

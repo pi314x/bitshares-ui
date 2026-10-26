@@ -119,6 +119,10 @@ export interface SelectProps {
     children?: React.ReactNode;
 }
 
+// The narrowest a list is drawn, and the distance it keeps from the window's edge.
+const MIN_LIST_WIDTH = 160;
+const EDGE = 8;
+
 function SelectBase({
     value,
     defaultValue,
@@ -170,13 +174,41 @@ function SelectBase({
         const room = window.innerHeight - rect.bottom;
         // Open upwards when there is little room below and more above.
         const up = room < 240 && rect.top > room;
+        // A list is at least as wide as an asset name needs, even under a small
+        // trigger (a 100px fee asset field), and stays on the screen: under a field
+        // at the right edge it opens to the left of the field's right edge, not
+        // out of the window (where its text was cut off after the first letter).
+        const screenWidth =
+            document.documentElement.clientWidth || window.innerWidth;
+        const width = Math.min(
+            Math.max(rect.width, MIN_LIST_WIDTH),
+            screenWidth - 2 * EDGE
+        );
+        const left = Math.max(
+            EDGE,
+            Math.min(rect.left, screenWidth - width - EDGE)
+        );
         setBox({
             top: up ? rect.top : rect.bottom,
-            left: rect.left,
-            width: rect.width,
+            left,
+            width,
             up
         });
     }, []);
+
+    // A list that is as wide as its longest option (`dropdownMatchSelectWidth={false}`)
+    // is measured once it is drawn and moved in if it runs out of the window.
+    React.useLayoutEffect(() => {
+        if (!open || !box || !listRef.current) return;
+        const screenWidth =
+            document.documentElement.clientWidth || window.innerWidth;
+        const drawn = listRef.current.getBoundingClientRect();
+        const over = drawn.right - (screenWidth - EDGE);
+        if (over > 0.5) {
+            const left = Math.max(EDGE, box.left - over);
+            if (left !== box.left) setBox({...box, left});
+        }
+    }, [open, box]);
 
     React.useLayoutEffect(() => {
         if (!open) return;

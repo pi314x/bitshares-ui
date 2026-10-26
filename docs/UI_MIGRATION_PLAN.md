@@ -13811,3 +13811,16 @@ were loose lines. The operation is a card now, label over value on a phone and s
 `Blockchain/OperationCards.module.scss`, which the block page and the confirmation share. Nothing it
 says changed; the order of the rows and their texts are the same.
 
+**From the phone.** The asset page threw `backingAsset.get` of `undefined` (the chain store answers
+`undefined` for an asset it has not read yet, `null` for one that does not exist: the page guarded the
+second, and a mount effect read the backing asset before any guard, once; it runs again when the
+backing asset is there). The page's blocks are 16px apart (the owner notice had a `1em` above and
+none below, so the heading touched it; the card had 32px of its own under it). The transaction
+confirmation sent only a React element as `children`, which the conversion to a toast dropped: an
+empty toast, and an entry under the bell with a check mark and a time and nothing between
+(`toastFromNotification` shows the element; an entry that says nothing is not kept, and the ones an
+earlier version kept are dropped when the history is read). A select's list is at least 160px wide
+and stays inside the window: the 100px fee-asset field of the order form opened a list as wide as the
+field, from the field's left edge, so on a phone in landscape the list ran out of the window and its
+options showed their first letter.
+
