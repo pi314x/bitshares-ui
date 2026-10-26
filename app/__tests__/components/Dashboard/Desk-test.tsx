@@ -23,6 +23,14 @@ jest.mock("../../../actions/AccountActions", () => ({
 jest.mock("../../../components/Account/RecentTransactions", () => ({
     RecentTransactions: () => <div data-testid="recent" />
 }));
+jest.mock("../../../components/Dashboard/Desk/AllocationChart", () => ({
+    __esModule: true,
+    default: (props: any) => (
+        <div data-testid="allocation">
+            {props.parts.map((p: any) => `${p.label}=${p.value}`).join(",")}
+        </div>
+    )
+}));
 jest.mock("../../../components/Account/BalanceHistoryChart", () => ({
     CurrentAccountBalanceChart: () => <div data-testid="chart" />
 }));
@@ -145,6 +153,22 @@ describe("Desk", () => {
             fireEvent.change(field, {target: {value: ""}});
             expect(queryByText(/No asset matches/)).toBeNull();
             expect(queryByText("COIN0")).not.toBeNull();
+        });
+    });
+
+    describe("the allocation card", () => {
+        it("shows the holdings as parts of the whole, and where it sits when asked", () => {
+            const {getByTestId, getByText} = renderDesk();
+            expect(getByTestId("allocation").textContent).toBe(
+                "BTS=1000,JUNK=null"
+            );
+            fireEvent.click(getByText("Where it sits"));
+            expect(getByTestId("allocation").textContent).toContain(
+                "Wallet=1000"
+            );
+            expect(getByTestId("allocation").textContent).toContain(
+                "Open orders=34.5"
+            );
         });
     });
 

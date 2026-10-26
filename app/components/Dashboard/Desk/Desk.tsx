@@ -8,6 +8,7 @@ import Immutable from "immutable";
 import {Link, LinkProps, useNavigate} from "react-router-dom";
 import {Select} from "../../../design-system/Select";
 import {Input} from "../../../design-system/Input";
+import {SubMenu} from "../../../design-system/SubMenu";
 import SettingsActions from "../../../actions/SettingsActions";
 import AccountActions from "../../../actions/AccountActions";
 import {useReduxState} from "../../../next/hooks/useReduxState";
@@ -17,6 +18,7 @@ import {CurrentAccountBalanceChart} from "../../Account/BalanceHistoryChart";
 import {AttentionItem, HoldingRow} from "../../../lib/common/desk";
 import {DeskData, DeskPosition, useDeskData} from "./useDeskData";
 import AssetLogo from "../../Utility/AssetLogo";
+import AllocationChart from "./AllocationChart";
 import styles from "./Desk.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
@@ -81,6 +83,7 @@ function Skeleton({width = 96}: {width?: number}) {
 const CARDS = [
     "attention",
     "chart",
+    "allocation",
     "holdings",
     "positions",
     "activity",
@@ -465,6 +468,105 @@ function Holdings({
     );
 }
 
+// --------------------------------------------------------------- allocation
+
+type AllocationMode = "asset" | "place";
+
+function Allocation({data}: {data: DeskData}): JSX.Element {
+    const [mode, setMode] = React.useState<AllocationMode>("asset");
+    const digits = valueDigits(data.unit && data.unit.symbol);
+    const unitSymbol = data.unit ? data.unit.symbol : "";
+
+    const parts = React.useMemo(
+        () =>
+            mode === "asset"
+                ? data.holdings.map(row => ({
+                      key: row.assetId,
+                      label: row.symbol,
+                      value: row.value
+                  }))
+                : [
+                      {
+                          key: "wallet",
+                          label: t("wallet"),
+                          value: data.parts.wallet
+                      },
+                      {
+                          key: "orders",
+                          label: t("open_orders"),
+                          value: data.parts.orders
+                      },
+                      {
+                          key: "pools",
+                          label: t("pools"),
+                          value: data.parts.pools
+                      },
+                      {
+                          key: "collateral",
+                          label: t("collateral"),
+                          value: data.parts.collateral
+                      }
+                  ],
+        [mode, data.holdings, data.parts]
+    );
+    // the whole the shares are of: what has a price (the pie never says more than it knows)
+    const whole = parts.reduce(
+        (sum, p) =>
+            sum + (typeof p.value === "number" && p.value > 0 ? p.value : 0),
+        0
+    );
+
+    if (data.loading && !data.holdings.length) {
+        return (
+            <div className={styles.skeletonRows}>
+                <Skeleton width={260} />
+                <Skeleton width={200} />
+            </div>
+        );
+    }
+    return (
+        <>
+            <div className={styles.allocationMenu}>
+                <SubMenu
+                    toggle
+                    flush
+                    aria-label={t("allocation")}
+                    items={[
+                        {key: "asset", label: t("by_asset")},
+                        {key: "place", label: t("by_place")}
+                    ]}
+                    value={mode}
+                    onChange={key => setMode(key as AllocationMode)}
+                />
+            </div>
+            <AllocationChart
+                parts={parts}
+                otherLabel={count => t("other_n", {count})}
+                totalText={fmt(whole, digits)}
+                unitSymbol={unitSymbol}
+                format={value => fmt(value, digits)}
+                percent={share => percent(share)}
+                emptyText={t("allocation_none")}
+                ariaLabel={`${t("allocation")} (${
+                    mode === "asset" ? t("by_asset") : t("by_place")
+                })`}
+                renderLabel={slice =>
+                    mode === "asset" ? (
+                        <span className={styles.assetCell}>
+                            <AssetLogo symbol={slice.label} size={16} />
+                            <TypedLink to={`/asset/${slice.label}`}>
+                                {slice.label}
+                            </TypedLink>
+                        </span>
+                    ) : (
+                        slice.label
+                    )
+                }
+            />
+        </>
+    );
+}
+
 // ---------------------------------------------------------------- positions
 
 function riskBadge(position: DeskPosition): JSX.Element | null {
@@ -740,9 +842,15 @@ export default function Desk({
                         <Holdings data={data} coreSymbol={coreSymbol} />
                     </Card>
                 ) : null}
-                {cards.positions ||
+                {cards.allocation ||
+                cards.positions ||
                 (cards.accounts && accountNames.length > 1) ? (
                     <div className={styles.stack}>
+                        {cards.allocation ? (
+                            <Card title={t("allocation")} flush>
+                                <Allocation data={data} />
+                            </Card>
+                        ) : null}
                         {cards.positions ? (
                             <Card title={t("positions")} flush>
                                 <Positions data={data} accountName={name} />

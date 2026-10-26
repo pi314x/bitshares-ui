@@ -13861,3 +13861,13 @@ start-up, which tries the other nodes. It leaves the start-up's own connection a
 settings alone. Checked in the browser on the live chain: closing the socket from outside, and a network
 that goes away and comes back, both end in "Connected" with the block number moving, without a reload.
 
+**A Dashboard with a pie, and Timed transfer as a dialog.** The Dashboard has an Allocation card
+beside the holdings: a ring of what the account holds by value (the six biggest, the rest folded into
+"Other (n)", the palette's categorical colours), the total in the middle until a slice or a legend row
+is pointed at, and a switch to "Where it sits" (wallet, open orders, pools, collateral). The legend is the
+same data as a list, so the pie is not the only way to read it; what has no price is not part of the
+whole. It is drawn in SVG (`lib/common/allocation.ts` is the arithmetic), no new dependency. An earlier
+decision here was "part-to-whole = a stacked bar, never a donut"; the Dashboard has a pie because
+the user asked for one. Timed transfer opens as a dialog over the page on a desktop, like Send, Deposit
+and Withdraw.
+
