@@ -43,7 +43,30 @@ export function transactionId(trx: any): string | null {
  */
 export type TransactionIdResult = {id: string} | {virtual: true} | null;
 
-const found = new Map<string, Promise<TransactionIdResult>>();
+// The blocks asked for lately (a page of the activity list asks for the same block
+// from several rows), the oldest dropped first.
+const BLOCKS_KEPT = 60;
+const blocks = new Map<number, Promise<any>>();
+
+function readBlock(blockNum: number): Promise<any> {
+    let block = blocks.get(blockNum);
+    if (!block) {
+        block = (Apis as any)
+            .instance()
+            .db_api()
+            .exec("get_block", [blockNum])
+            .catch(() => {
+                // a block that could not be read is asked for again next time
+                blocks.delete(blockNum);
+                return undefined;
+            });
+        blocks.set(blockNum, block as Promise<any>);
+        if (blocks.size > BLOCKS_KEPT) {
+            blocks.delete(blocks.keys().next().value as number);
+        }
+    }
+    return block as Promise<any>;
+}
 
 /**
  * The transaction id of the operation at `opInTrx` of transaction `trxInBlock` of
@@ -56,35 +79,22 @@ export function fetchTransactionId(
     opInTrx?: number,
     opType?: number
 ): Promise<TransactionIdResult> {
-    const key = [blockNum, trxInBlock, opInTrx, opType].join(":");
-    let result = found.get(key);
-    if (!result) {
-        result = (Apis as any)
-            .instance()
-            .db_api()
-            .exec("get_block", [blockNum])
-            .then(
-                (block: any): TransactionIdResult => {
-                    const trx = block && block.transactions[trxInBlock];
-                    if (!trx) return {virtual: true};
-                    if (
-                        opInTrx !== undefined &&
-                        opType !== undefined &&
-                        (!trx.operations[opInTrx] ||
-                            trx.operations[opInTrx][0] !== opType)
-                    ) {
-                        return {virtual: true};
-                    }
-                    const id = transactionId(trx);
-                    return id ? {id} : null;
-                }
-            )
-            .catch(() => null);
-        found.set(key, result as Promise<TransactionIdResult>);
-        // a block that could not be read is asked for again next time
-        (result as Promise<TransactionIdResult>).then(r => {
-            if (r === null) found.delete(key);
-        });
-    }
-    return result as Promise<TransactionIdResult>;
+    return readBlock(blockNum).then(
+        (block: any): TransactionIdResult => {
+            // the block could not be read
+            if (block === undefined) return null;
+            const trx = block && block.transactions[trxInBlock];
+            if (!trx) return {virtual: true};
+            if (
+                opInTrx !== undefined &&
+                opType !== undefined &&
+                (!trx.operations[opInTrx] ||
+                    trx.operations[opInTrx][0] !== opType)
+            ) {
+                return {virtual: true};
+            }
+            const id = transactionId(trx);
+            return id ? {id} : null;
+        }
+    );
 }

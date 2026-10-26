@@ -65,7 +65,7 @@ import Icon from "../Icon/Icon";
 import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
 import CopyIconButton from "../Utility/CopyIconButton";
-import OperationFacts from "../Blockchain/OperationFacts";
+import OperationFacts, {TransactionIdShort} from "../Blockchain/OperationFacts";
 const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -346,16 +346,25 @@ function RecentTransactionsCore({
         const lastIrreversibleBlockNum = dynGlobalObject.get(
             "last_irreversible_block_num"
         );
-        // the id opens the operation's details; next to it, a button copies it
+        // the id opens the operation's details; next to it, a button copies it;
+        // under it the transaction's id (the hash), shortened, with its own button
         const idControls = (
             <Fragment>
-                <span
-                    className="cursor-pointer"
-                    onClick={() => openJSONModal(o.id)}
-                >
-                    {o.id} <AntIcon type="file-search" />
+                <span style={{display: "block"}}>
+                    <span
+                        className="cursor-pointer"
+                        onClick={() => openJSONModal(o.id)}
+                    >
+                        {o.id} <AntIcon type="file-search" />
+                    </span>
+                    <CopyIconButton text={o.id} />
                 </span>
-                <CopyIconButton text={o.id} />
+                <TransactionIdShort
+                    blockNum={o.block_num}
+                    trxInBlock={o.trx_in_block}
+                    opInTrx={o.op_in_trx}
+                    opType={o.op[0]}
+                />
             </Fragment>
         );
         return {

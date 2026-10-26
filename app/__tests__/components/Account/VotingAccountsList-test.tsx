@@ -27,7 +27,7 @@ jest.mock("components/Utility/PaginatedList", () => ({
     __esModule: true,
     default: function MockPaginatedList(props: any) {
         return (
-            <div data-testid="rows">
+            <div data-testid="rows" data-label={props.label}>
                 {props.rows.map((r: any) => r.name).join(",")}
             </div>
         );
@@ -77,6 +77,15 @@ describe("VotingAccountsList", () => {
         );
         // 1.2.12 is not loaded yet and is left out, not an error
         expect(getByTestId("rows").textContent).toBe("1.2.11,1.2.10");
+    });
+
+    it('counts items, not assets (it said "Total of 131 assets" under the witnesses)', () => {
+        const {getByTestId} = render(
+            <VotingAccountsList {...(props as any)} />
+        );
+        expect(getByTestId("rows").getAttribute("data-label")).toBe(
+            "utility.total_x_items"
+        );
     });
 
     it("does not throw while a witness object is still being looked up", () => {

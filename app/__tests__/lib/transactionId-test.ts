@@ -86,10 +86,13 @@ describe("fetchTransactionId", () => {
         expect(await fetchTransactionId(1000, 0, 0, 0)).toEqual({id: nodeId});
     });
 
-    it("asks a block once for the same place", async () => {
-        mockBlocks[1002] = {transactions: [transfer]};
-        await fetchTransactionId(1002, 0, 0, 0);
-        await fetchTransactionId(1002, 0, 0, 0);
+    it("asks a block once for all the places in it", async () => {
+        mockBlocks[1002] = {transactions: [transfer, transfer]};
+        await Promise.all([
+            fetchTransactionId(1002, 0, 0, 0),
+            fetchTransactionId(1002, 1, 0, 0),
+            fetchTransactionId(1002, 0, 0, 4)
+        ]);
         expect(mockCalls).toBe(1);
     });
 

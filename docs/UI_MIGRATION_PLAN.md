@@ -13738,7 +13738,12 @@ when the store was reset before the transaction was "included" the confirmation 
 `null.serialize()` and unmounted the app; the extension's account was "View Only" in the cloud mode;
 the Send dialog stayed hidden after a rejected signing; the account chooser's tiles stayed after an
 account was created; and a wallet restored or created in the running app was not the wallet the
-unlock dialog unlocked (it asked to "select a key file" until a reload). Not bugs: the extension
+unlock dialog unlocked (it asked to "select a key file" until a reload). A second pass covered the
+timed transfer (the recipient's vesting balance appears with the date chosen), voting (a new account's
+proxy removed, then a witness vote that is on the chain) and the extension's disconnect and reconnect
+(disconnected, the extension is not asked and the account menu falls back to the other account;
+after Connect it signs again); it found that the Witness, Committee and Workers lists counted
+"Total of 131 assets". Not bugs: the extension
 refuses `account_upgrade` and `account_update` for a site (outside its capability list) and says so;
 the app's testnet session also pings mainnet nodes.
 
@@ -13773,5 +13778,8 @@ the first 20 bytes of the SHA-256 of the serialisation without signatures; check
 which answers the same id for a transfer broadcast on the testnet, and kept as a test vector). A
 block is read when the details open, once per place. An operation the chain made itself (a fill, an
 expiry) has no transaction of its own and says so. The signing confirmation does not show an id: before
-signing, the builder may still change what it is made of. On a phone, where the compact list drops its
-id column, the id, its details and its copy button sit under the line of text.
+signing, the builder may still change what it is made of. In the activity list the transaction id sits
+under the operation id, shortened to its first 8 and last 6 characters with a button that copies all
+of it (a page of rows asks each block once); in the details it follows the operation id, the block
+after it. On a phone, where the compact list drops its id column, both ids and their buttons sit
+under the line of text.

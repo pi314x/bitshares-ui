@@ -52,3 +52,26 @@
     color: var(--muted);
     font-size: 13px;
 }
+
+// in a list: the shortened id on a line of its own under the operation id
+.short {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    color: var(--muted);
+}
+
+.short code {
+    background: transparent;
+    padding: 0;
+    border: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.shortNote {
+    display: block;
+    color: var(--faint);
+    font-size: 12px;
+}

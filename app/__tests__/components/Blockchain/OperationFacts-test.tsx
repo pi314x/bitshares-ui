@@ -1,7 +1,9 @@
 import * as React from "react";
 import {render, screen, act} from "@testing-library/react";
 import counterpart from "counterpart";
-import OperationFacts from "../../../components/Blockchain/OperationFacts";
+import OperationFacts, {
+    TransactionIdShort
+} from "../../../components/Blockchain/OperationFacts";
 import {fetchTransactionId} from "../../../lib/common/transactionId";
 import localeEn from "../../../assets/locales/locale-en.json";
 
@@ -115,5 +117,46 @@ describe("OperationFacts", () => {
         expect(screen.getByText("…")).toBeTruthy();
         await act(async () => resolve({id: ID}));
         expect(screen.getByText(ID)).toBeTruthy();
+    });
+
+    it("puts the transaction id right under the operation id, the block after it", async () => {
+        fetchId.mockResolvedValue({id: ID});
+        const {container} = render(
+            <OperationFacts
+                operationId="1.11.5"
+                blockNum={10}
+                trxInBlock={3}
+                opInTrx={0}
+                opType={1}
+            />
+        );
+        await settle();
+        const labels = Array.from(container.querySelectorAll("dt")).map(
+            n => n.textContent
+        );
+        expect(labels).toEqual(["Operation ID", "Transaction ID", "Block"]);
+    });
+});
+
+describe("TransactionIdShort", () => {
+    it("shows the first 8 and last 6 characters and copies all of the id", async () => {
+        fetchId.mockResolvedValue({id: ID});
+        render(<TransactionIdShort blockNum={10} trxInBlock={3} opType={1} />);
+        await settle();
+        expect(
+            screen.getByText(`${ID.slice(0, 8)}…${ID.slice(-6)}`)
+        ).toBeTruthy();
+        expect(
+            screen.getByRole("button", {name: `Copy to clipboard: ${ID}`})
+        ).toBeTruthy();
+    });
+
+    it("shows nothing for an operation the chain made", async () => {
+        fetchId.mockResolvedValue({virtual: true});
+        const {container} = render(
+            <TransactionIdShort blockNum={10} trxInBlock={3} opType={4} />
+        );
+        await settle();
+        expect(container.textContent).toBe("");
     });
 });

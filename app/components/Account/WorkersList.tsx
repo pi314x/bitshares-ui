@@ -758,7 +758,7 @@ function WorkerList(props: WorkerListCoreProps) {
             rows={getData(workers, voteThreshold)}
             header={workersHeader}
             pageSize={50}
-            label="utility.total_x_assets"
+            label="utility.total_x_items"
             leftPadding="1.5rem"
         />
     );

@@ -372,7 +372,7 @@ export default function VotingAccountsList({
                     rows={item_rows}
                     header={header}
                     pageSize={20}
-                    label="utility.total_x_assets"
+                    label="utility.total_x_items"
                     leftPadding="1.5rem"
                 />
             ) : null}

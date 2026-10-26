@@ -5,11 +5,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import CopyIconButton from "../Utility/CopyIconButton";
-import {
-    fetchTransactionId,
-    transactionId,
-    TransactionIdResult
-} from "../../lib/common/transactionId";
+import {useTransactionId} from "./useTransactionId";
 import styles from "./OperationFacts.module.scss";
 
 interface OperationFactsProps {
@@ -26,6 +22,31 @@ interface OperationFactsProps {
 
 const t = (key: string) => counterpart.translate(key) as string;
 
+/**
+ * The id of an operation's transaction, shortened (first 8 and last 6 characters:
+ * a column of an activity list is not 40 characters wide) with a button that copies
+ * all of it. Nothing for an operation that has none or when the block cannot be read.
+ */
+export function TransactionIdShort(where: {
+    blockNum: number;
+    trxInBlock: number;
+    opInTrx?: number;
+    opType?: number;
+}) {
+    const result = useTransactionId(where);
+    if (result === undefined) {
+        return <span className={styles.shortNote}>…</span>;
+    }
+    if (result === null || !("id" in result)) return null;
+    const id = result.id;
+    return (
+        <span className={styles.short} title={id}>
+            <code>{`${id.slice(0, 8)}…${id.slice(-6)}`}</code>
+            <CopyIconButton text={id} />
+        </span>
+    );
+}
+
 export default function OperationFacts({
     operationId,
     blockNum,
@@ -34,26 +55,13 @@ export default function OperationFacts({
     opType,
     trx
 }: OperationFactsProps) {
-    const [result, setResult] = React.useState<TransactionIdResult | undefined>(
-        () => {
-            if (!trx) return undefined;
-            const id = transactionId(trx);
-            return id ? {id} : null;
-        }
-    );
-
-    React.useEffect(() => {
-        if (trx || blockNum === undefined || trxInBlock === undefined) return;
-        let live = true;
-        fetchTransactionId(blockNum, trxInBlock, opInTrx, opType).then(
-            found => {
-                if (live) setResult(found);
-            }
-        );
-        return () => {
-            live = false;
-        };
-    }, [trx, blockNum, trxInBlock, opInTrx, opType]);
+    const result = useTransactionId({
+        trx,
+        blockNum,
+        trxInBlock,
+        opInTrx,
+        opType
+    });
 
     const wantsTrx =
         !!trx || (blockNum !== undefined && trxInBlock !== undefined);
@@ -66,14 +74,6 @@ export default function OperationFacts({
                     <dd>
                         <code>{operationId}</code>
                         <CopyIconButton text={operationId} />
-                    </dd>
-                </div>
-            ) : null}
-            {blockNum !== undefined ? (
-                <div className={styles.fact}>
-                    <dt>{t("explorer.block.title")}</dt>
-                    <dd>
-                        <code>{blockNum}</code>
                     </dd>
                 </div>
             ) : null}
@@ -97,6 +97,14 @@ export default function OperationFacts({
                                 {t("transaction.trx_id_none")}
                             </span>
                         )}
+                    </dd>
+                </div>
+            ) : null}
+            {blockNum !== undefined ? (
+                <div className={styles.fact}>
+                    <dt>{t("explorer.block.title")}</dt>
+                    <dd>
+                        <code>{blockNum}</code>
                     </dd>
                 </div>
             ) : null}
