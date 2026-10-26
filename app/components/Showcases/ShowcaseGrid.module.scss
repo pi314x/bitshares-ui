@@ -3,8 +3,7 @@
 // `a`, `button`, `h1` and `h2` with selectors that a single class does not beat.
 
 .page {
-    max-width: 1180px;
-    margin: 0 auto;
+    // the whole width of the page: as many tiles to a row as fit
     // the shell's content padding is the page's inset; no second one
     padding: 0;
 }
@@ -28,8 +27,8 @@
 
 .grid {
     display: grid;
-    // two columns at the page's max width (4 + 4 + 2 tiles fill them evenly), one on a phone
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    // as many columns as fit (a tile is at least 360px wide), one on a phone
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
     gap: 16px;
 }
 
