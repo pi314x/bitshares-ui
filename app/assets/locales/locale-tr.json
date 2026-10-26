@@ -3066,6 +3066,7 @@
         "min_receive": "Alınacak minimum miktar",
         "new_url": "Web sitesi",
         "obtain": "ödendi, ",
+        "operation_id": "Operasyon kimliği",
         "operations": "Operations",
         "order_id": "Talimat No.",
         "outputs": "Çıkanlar",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "İşlem kimliği",
+        "trx_id_none": "Yok: sanal bir operasyonun kendi işlemi yoktur",
+        "trx_id_unavailable": "Kullanılamıyor",
         "vesting_balance_create": "Bekletilen bakiyesi oluşturulan hesap:",
         "view_json": "ham json'u göster",
         "view_qr": "Show QR",

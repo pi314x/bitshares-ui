@@ -61,6 +61,7 @@ import Inspector from "react-json-inspector";
 import utils from "common/utils";
 import {Icon as AntIcon} from "../../design-system/Icon";
 import LinkToAccountById from "../Utility/LinkToAccountById";
+import OperationFacts from "./OperationFacts";
 import LinkToAssetById from "../Utility/LinkToAssetById";
 import FormattedPrice from "../Utility/FormattedPrice";
 import account_constants from "chain/account_constants";
@@ -221,13 +222,20 @@ interface TransactionProps {
     index: number;
     no_links?: boolean;
     block?: any;
+    /**
+     * Show the transaction's id with a copy button. Only for a transaction that is
+     * in a block: before signing (the confirmation) the builder is still free to
+     * change what the id is made of.
+     */
+    showId?: boolean;
 }
 
 export default function Transaction({
     trx,
     index,
     no_links = false,
-    block
+    block,
+    showId = false
 }: TransactionProps) {
     React.useEffect(() => {
         (ReactTooltip as any).rebuild();
@@ -2435,5 +2443,10 @@ export default function Transaction({
         );
     });
 
-    return <div>{info}</div>;
+    return (
+        <div>
+            {showId ? <OperationFacts trx={trx} /> : null}
+            {info}
+        </div>
+    );
 }

@@ -111,6 +111,7 @@ function TransactionList({block}: TransactionListProps) {
                         key={index}
                         trx={trx}
                         index={index}
+                        showId
                     />
                 </Element>
             );

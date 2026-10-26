@@ -65,6 +65,7 @@ import Icon from "../Icon/Icon";
 import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
 import CopyIconButton from "../Utility/CopyIconButton";
+import OperationFacts from "../Blockchain/OperationFacts";
 const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -345,23 +346,37 @@ function RecentTransactionsCore({
         const lastIrreversibleBlockNum = dynGlobalObject.get(
             "last_irreversible_block_num"
         );
+        // the id opens the operation's details; next to it, a button copies it
+        const idControls = (
+            <Fragment>
+                <span
+                    className="cursor-pointer"
+                    onClick={() => openJSONModal(o.id)}
+                >
+                    {o.id} <AntIcon type="file-search" />
+                </span>
+                <CopyIconButton text={o.id} />
+            </Fragment>
+        );
         return {
             key: o.id,
             id: (
                 <Fragment>
-                    <span
-                        className="cursor-pointer"
-                        onClick={() => openJSONModal(o.id)}
-                    >
-                        {o.id} <AntIcon type="file-search" />
-                    </span>
-                    <CopyIconButton text={o.id} />
+                    {idControls}
                     <JSONModal
                         visible={state.visibleId === o.id}
                         operation={o.op}
                         title={(trxTypes as any)[ops[o.op[0]] || ""]}
                         hideModal={closeJSONModal}
-                    />
+                    >
+                        <OperationFacts
+                            operationId={o.id}
+                            blockNum={o.block_num}
+                            trxInBlock={o.trx_in_block}
+                            opInTrx={o.op_in_trx}
+                            opType={o.op[0]}
+                        />
+                    </JSONModal>
                 </Fragment>
             ),
             type: (
@@ -388,6 +403,11 @@ function RecentTransactionsCore({
                             <PendingBlock blockNumber={o.block_num} />
                         ) : null}
                     </div>
+                    {compactView ? (
+                        // the compact list drops its id column on a phone (Desk.module.scss):
+                        // the id, its details and its copy button follow the text there
+                        <div className="recent-op-id">{idControls}</div>
+                    ) : null}
                 </div>
             ),
             fee: <FormattedAsset amount={fee.amount} asset={fee.asset_id} />,

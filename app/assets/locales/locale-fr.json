@@ -3066,6 +3066,7 @@
         "min_receive": "Montant minimum à recevoir",
         "new_url": "Website",
         "obtain": "pour obtenir",
+        "operation_id": "ID de l'opération",
         "operations": "Operations",
         "order_id": "ID de l'ordre",
         "outputs": "Outputs",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "ID de la transaction",
+        "trx_id_none": "Aucun : une opération virtuelle n'a pas de transaction propre",
+        "trx_id_unavailable": "Indisponible",
         "vesting_balance_create": "a créé un solde bloqué pour",
         "view_json": "Show raw json",
         "view_qr": "Show QR",

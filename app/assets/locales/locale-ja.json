@@ -3066,6 +3066,7 @@
         "min_receive": "受け取れる最小金額",
         "new_url": "ウェブサイト",
         "obtain": "取得",
+        "operation_id": "オペレーションID",
         "operations": "Operations",
         "order_id": "注文 ID",
         "outputs": "アウトプット",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "トランザクションID",
+        "trx_id_none": "なし（仮想オペレーションには独自のトランザクションがありません）",
+        "trx_id_unavailable": "利用できません",
         "vesting_balance_create": "作成済み権利確定残高:",
         "view_json": "Show raw json",
         "view_qr": "Show QR",

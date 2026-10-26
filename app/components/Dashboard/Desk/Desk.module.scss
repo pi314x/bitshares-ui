@@ -403,16 +403,32 @@
 }
 
 // The activity list is a wide table: it scrolls inside its card instead of
-// being cut off, and on a phone loses the operation id, which says little, and
-// the fee, so that what happened and when have the width.
+// being cut off, and on a phone loses the operation id column and the fee, so that
+// what happened and when have the width.
 .activity {
     overflow-x: auto;
+}
+
+// The id under the text is for the phone, where the id column is gone: it is the
+// way to the operation's details and to copying its id there.
+.activity :global(.recent-op-id) {
+    display: none;
 }
 
 @media (max-width: 560px) {
     .activity.activity :global(table) :global(tr) > :first-child,
     .activity.activity :global(table) :global(tr) > :nth-child(3) {
         display: none;
+    }
+
+    .activity.activity :global(.recent-op-id) {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 2px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 12px;
     }
 }
 

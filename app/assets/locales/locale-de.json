@@ -3066,6 +3066,7 @@
         "min_receive": "Mindestbetrag",
         "new_url": "Webseite",
         "obtain": "zu erhalten",
+        "operation_id": "Operations-ID",
         "operations": "Operations",
         "order_id": "Anweisungskennung (ID)",
         "outputs": "Ausgänge",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "Transaktions-ID",
+        "trx_id_none": "Keine: eine virtuelle Operation hat keine eigene Transaktion",
+        "trx_id_unavailable": "Nicht verfügbar",
         "vesting_balance_create": "Ein Sperrfristguthaben wurde erstellt.",
         "view_json": "Show raw json",
         "view_qr": "Show QR",

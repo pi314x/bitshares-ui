@@ -3066,6 +3066,7 @@
         "min_receive": "至少买入",
         "new_url": "网站",
         "obtain": "获得",
+        "operation_id": "操作 ID",
         "operations": "操作",
         "order_id": "挂单ID",
         "outputs": "输出",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "交易 ID",
+        "trx_id_none": "无：虚拟操作没有自己的交易",
+        "trx_id_unavailable": "不可用",
         "vesting_balance_create": "创建待解冻余额",
         "view_json": "显示原始 json",
         "view_qr": "显示二维码",

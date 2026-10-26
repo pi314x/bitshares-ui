@@ -14,13 +14,16 @@ interface JSONModalProps {
     hideModal: () => void;
     operation?: any;
     title?: string | null;
+    /** Shown above the JSON */
+    children?: React.ReactNode;
 }
 
 export default function JSONModal({
     operation = [],
     visible,
     hideModal,
-    title = null
+    title = null,
+    children
 }: JSONModalProps) {
     return (
         <Modal
@@ -33,6 +36,7 @@ export default function JSONModal({
             ]}
             visible={visible}
         >
+            {children}
             <Inspector data={operation} search={false} />
         </Modal>
     );

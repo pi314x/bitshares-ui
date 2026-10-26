@@ -3066,6 +3066,7 @@
         "min_receive": "Минимальное принимаемое количество",
         "new_url": "Веб-сайт",
         "obtain": "получить",
+        "operation_id": "ID операции",
         "operations": "Действия",
         "order_id": "ID ордера",
         "outputs": "Выходы",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "ID транзакции",
+        "trx_id_none": "Нет: у виртуальной операции нет собственной транзакции",
+        "trx_id_unavailable": "Недоступно",
         "vesting_balance_create": "создал вестинговый баланс",
         "view_json": "Показать необработанный json",
         "view_qr": "Show QR",

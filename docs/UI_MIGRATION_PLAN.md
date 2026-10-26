@@ -13763,3 +13763,15 @@ none`; a short fade above the rail's footer is the sign that more follows), and 
 no longer scroll vertically (`NextShell.module.scss`); sideways they do as before. The smoke harness's
 `--layout` now fails on a second vertical scrollbar beside the window's (fixed layers, dialogs and boxes
 that hide their bar are exempt); with the rail's bar put back by hand it reports it.
+
+**The transaction id ("the hash").** The history of an account carries only an operation's own id
+(`1.11.…`), the block and the place in it, not the hash an explorer searches by. The operation's
+details (the id in the activity list opens them) now show the operation id, the block and the
+transaction id, each id with a copy button (`OperationFacts`); the block page shows the id above each
+transaction. The id is worked out from the transaction in its block (`lib/common/transactionId.ts`:
+the first 20 bytes of the SHA-256 of the serialisation without signatures; checked against the node,
+which answers the same id for a transfer broadcast on the testnet, and kept as a test vector). A
+block is read when the details open, once per place. An operation the chain made itself (a fill, an
+expiry) has no transaction of its own and says so. The signing confirmation does not show an id: before
+signing, the builder may still change what it is made of. On a phone, where the compact list drops its
+id column, the id, its details and its copy button sit under the line of text.

@@ -3066,6 +3066,7 @@
         "min_receive": "Minimum amount to receive",
         "new_url": "Website",
         "obtain": "to obtain",
+        "operation_id": "Operation ID",
         "operations": "Operations",
         "order_id": "Order ID",
         "outputs": "Outputs",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "Transaction ID",
+        "trx_id_none": "None: a virtual operation has no transaction of its own",
+        "trx_id_unavailable": "Not available",
         "vesting_balance_create": "created vesting balance of",
         "view_json": "Show raw json",
         "view_qr": "Show QR",

@@ -3066,6 +3066,7 @@
         "min_receive": "수신 최소 금액",
         "new_url": "웹사이트",
         "obtain": "to obtain",
+        "operation_id": "작업 ID",
         "operations": "Operations",
         "order_id": "주문 ID",
         "outputs": "Outputs",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "트랜잭션 ID",
+        "trx_id_none": "없음: 가상 작업에는 자체 트랜잭션이 없습니다",
+        "trx_id_unavailable": "사용할 수 없음",
         "vesting_balance_create": "created vesting balance of",
         "view_json": "Show raw json",
         "view_qr": "Show QR",

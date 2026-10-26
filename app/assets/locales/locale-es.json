@@ -3066,6 +3066,7 @@
         "min_receive": "Monto mínimo a recibir",
         "new_url": "Pagina",
         "obtain": "para obtener",
+        "operation_id": "ID de la operación",
         "operations": "Operations",
         "order_id": "ID de la Orden",
         "outputs": "Salidas",
@@ -3163,6 +3164,9 @@
             "credit_deal_update": "Update credit deal",
             "limit_order_update": "Update order"
         },
+        "trx_id": "ID de la transacción",
+        "trx_id_none": "Ninguno: una operación virtual no tiene transacción propia",
+        "trx_id_unavailable": "No disponible",
         "vesting_balance_create": "ha creado el fondo de consolidación de",
         "view_json": "Show raw json",
         "view_qr": "Show QR",
