@@ -245,19 +245,22 @@ export default function BalanceHistoryChart({
             timeScale: {borderVisible: false, timeVisible: true},
             crosshair: {mode: 1}
         });
+        // A balance is what it was after the last operation until the next one: the
+        // lines are steps. A curve drew a smooth rise and fall (and overshoots) between
+        // two points that never existed.
         const wallet = chart.addSeries(AreaSeries, {
             lineColor: colors.wallet,
             topColor: colors.wallet + "55",
             bottomColor: colors.wallet + "00",
             lineWidth: 2,
-            lineType: LineType.Curved,
+            lineType: LineType.WithSteps,
             priceLineVisible: false
         });
         // what sits in open orders
         const orders = chart.addSeries(LineSeries, {
             color: colors.orders,
             lineWidth: 2,
-            lineType: LineType.Curved,
+            lineType: LineType.WithSteps,
             priceLineVisible: false,
             lastValueVisible: false
         });
@@ -266,7 +269,7 @@ export default function BalanceHistoryChart({
         const total = chart.addSeries(LineSeries, {
             color: colors.total,
             lineWidth: 2,
-            lineType: LineType.Curved,
+            lineType: LineType.WithSteps,
             priceLineVisible: false,
             lastValueVisible: false
         });
