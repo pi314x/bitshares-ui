@@ -28,18 +28,22 @@ export function SendPage(): JSX.Element {
         // the dialog opens itself on request, as it does from a button
         sendRef.current && sendRef.current.show();
     }, []);
+    const asModal = useDesktopModal();
+    const dialog = (
+        <SendModal
+            id="send_page"
+            refCallback={(e: {show: () => void} | null) => {
+                sendRef.current = e;
+            }}
+            from_name={accountName}
+            onHide={leave}
+        />
+    );
+    // on a desktop the dialog opens over the page the user came from, like Deposit
+    if (asModal) return dialog;
     return (
         <div className={`send-page ${styles.page}`}>
-            <ModalAsPage>
-                <SendModal
-                    id="send_page"
-                    refCallback={(e: {show: () => void} | null) => {
-                        sendRef.current = e;
-                    }}
-                    from_name={accountName}
-                    onHide={leave}
-                />
-            </ModalAsPage>
+            <ModalAsPage>{dialog}</ModalAsPage>
         </div>
     );
 }

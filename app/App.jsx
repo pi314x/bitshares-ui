@@ -304,6 +304,7 @@ const AccountRegistrationRoute = withLegacyRouterProps(AccountRegistration);
 // came from on a desktop screen, and are a page of their own on a phone: the same
 // elements serve both (`ModalOrPage` reads which one it is).
 const desktopModalRoutes = [
+    <Route key="send" path="/send" element={<SendPage />} />,
     <Route key="deposit" path="/deposit" element={<DepositPage />} />,
     <Route key="withdraw" path="/withdraw" element={<WithdrawPage />} />,
     <Route
@@ -693,10 +694,6 @@ class App extends React.Component {
                                     <Route
                                         path="/credit-offer"
                                         element={<CreditOfferPage />}
-                                    />
-                                    <Route
-                                        path="/send"
-                                        element={<SendPage />}
                                     />
                                     <Route
                                         path="/timed-transfer"

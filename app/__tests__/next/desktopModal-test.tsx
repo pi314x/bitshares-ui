@@ -16,10 +16,17 @@ describe("isDesktopModalPath", () => {
         expect(isDesktopModalPath("/instant-trade/BTS_USD")).toBe(true);
     });
 
+    // Send opened as a page of its own, and the page it was left from showed its dialog behind
+    // Deposit's: Send is a dialog over the page the user came from, like Deposit and Withdraw.
+    it("includes Send, Deposit and Withdraw", () => {
+        ["/send", "/deposit", "/withdraw"].forEach(path =>
+            expect(isDesktopModalPath(path)).toBe(true)
+        );
+    });
+
     it("is false for every other page, and for a path that only starts alike", () => {
         [
             "/",
-            "/send",
             "/portfolio",
             "/market/BTS_USD",
             "/deposit-withdraw"
