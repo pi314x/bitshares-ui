@@ -13848,3 +13848,16 @@ object has. They are not subscribed to, so such a balance is as fresh as the acc
 bitsharesjs's own helper for this (`requestAllDataForAccount`) sets a field on an Immutable object and
 does nothing.
 
+**The connection to the node.** The socket class of bitsharesjs-ws closes for good when the connection
+drops (the phone slept, the network changed, the node restarted) and calls a close callback that did
+nothing: the chip said "closed" and the page showed what it had until it was reloaded. The connection
+keeper (`lib/chain/connectionKeeper.ts`, wired in `installConnectionKeeper.ts`) notices a lost
+connection - by the status the app keeps, and by asking with a small request when the page comes back
+to the front, the network returns or the page is restored from the back/forward cache (a socket the
+system dropped in the background does not always say so; one that does not answer within four seconds is
+closed) - and makes it again: first to the node in use (a new socket, ChainStore's subscriptions taken
+up again), with pauses of 1, 2, 4, 8, 15 and 30 seconds, and after every third failure through the whole
+start-up, which tries the other nodes. It leaves the start-up's own connection and a node switch in the
+settings alone. Checked in the browser on the live chain: closing the socket from outside, and a network
+that goes away and comes back, both end in "Connected" with the block number moving, without a reload.
+
