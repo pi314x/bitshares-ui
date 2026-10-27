@@ -278,4 +278,107 @@ describe("design-system/Select option triggerLabel", () => {
             expect(left + width).toBeLessThanOrEqual(400 - 8);
         });
     });
+
+    // A phone's keyboard comes up when the search box of the list gets the focus, and shrinks the window:
+    // the list used to flip from under its field to above it (and onto other content) at that moment,
+    // because it chose its side again with the smaller window.
+    describe("a list on a phone, when the keyboard shrinks the window", () => {
+        const original = Element.prototype.getBoundingClientRect;
+        const height = Object.getOwnPropertyDescriptor(window, "innerHeight");
+        let field = {top: 531, bottom: 569};
+
+        const shrinkTo = (innerHeight: number) => {
+            Object.defineProperty(window, "innerHeight", {
+                configurable: true,
+                value: innerHeight
+            });
+            fireEvent(window, new Event("resize"));
+        };
+
+        beforeEach(() => {
+            Object.defineProperty(document.documentElement, "clientWidth", {
+                configurable: true,
+                value: 390
+            });
+            Object.defineProperty(window, "innerHeight", {
+                configurable: true,
+                value: 844
+            });
+            Element.prototype.getBoundingClientRect = function(this: Element) {
+                // the field
+                if (this.tagName === "DIV" && !this.getAttribute("role")) {
+                    return {
+                        left: 20,
+                        right: 370,
+                        top: field.top,
+                        bottom: field.bottom,
+                        width: 350,
+                        height: field.bottom - field.top,
+                        x: 20,
+                        y: field.top
+                    } as DOMRect;
+                }
+                return original.call(this);
+            };
+        });
+
+        afterEach(() => {
+            Element.prototype.getBoundingClientRect = original;
+            delete (document.documentElement as any).clientWidth;
+            if (height) Object.defineProperty(window, "innerHeight", height);
+            field = {top: 531, bottom: 569};
+        });
+
+        const open = () => {
+            const view = render(
+                <Select showSearch placeholder="Choose an asset">
+                    <Select.Option value="BTS">BTS</Select.Option>
+                </Select>
+            );
+            fireEvent.click(view.getByText("Choose an asset"));
+            return view.getByRole("listbox") as HTMLElement;
+        };
+
+        it("stays under its field, where there was room when it opened", () => {
+            const list = open();
+            expect(list.style.top).toBe("573px");
+            expect(list.style.bottom).toBe("");
+            // the keyboard takes the lower half of the screen
+            shrinkTo(494);
+            expect(list.style.top).toBe("573px");
+            expect(list.style.bottom).toBe("");
+        });
+
+        it("stays above its field, where there was none below when it opened", () => {
+            field = {top: 700, bottom: 738};
+            const list = open();
+            expect(list.style.top).toBe("");
+            expect(list.style.bottom).toBe("148px");
+            // a smaller window does not turn it round, and it is placed against the new window
+            shrinkTo(800);
+            expect(list.style.top).toBe("");
+            expect(list.style.bottom).toBe("104px");
+        });
+
+        it("decides its side afresh each time it opens", () => {
+            const view = render(
+                <Select showSearch placeholder="Choose an asset">
+                    <Select.Option value="BTS">BTS</Select.Option>
+                </Select>
+            );
+            field = {top: 700, bottom: 738};
+            fireEvent.click(view.getByText("Choose an asset"));
+            expect((view.getByRole("listbox") as HTMLElement).style.top).toBe(
+                ""
+            );
+            fireEvent.keyDown(document, {key: "Escape"});
+            expect(view.queryByRole("listbox")).toBeNull();
+            // the page scrolled: the field is high on the screen now
+            field = {top: 100, bottom: 138};
+            fireEvent.click(view.getByText("Choose an asset"));
+            expect((view.getByRole("listbox") as HTMLElement).style.top).toBe(
+                "142px"
+            );
+        });
+    });
 });

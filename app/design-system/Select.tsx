@@ -1,6 +1,7 @@
 import * as React from "react";
 import {createPortal} from "react-dom";
 import styles from "./Select.module.scss";
+import {listRoom} from "./listRoom";
 
 // Fifth component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md), following `Modal`/`Tooltip`/
@@ -150,7 +151,13 @@ function SelectBase({
     const [query, setQuery] = React.useState("");
     const searchRef = React.useRef<HTMLInputElement>(null);
 
+    // The side of the field the list is drawn on (above it), chosen when it opens and kept while it is open.
+    // A phone's keyboard comes up as the search box takes the focus and shrinks the window: choosing the
+    // side again then turned the list round, onto the content above its field, while a person was picking.
+    const above = React.useRef<boolean | null>(null);
+
     const setOpen = (next: boolean) => {
+        above.current = null;
         setOpenState(next);
         if (onDropdownVisibleChange) onDropdownVisibleChange(next);
         if (next) setQuery("");
@@ -163,17 +170,25 @@ function SelectBase({
     const listRef = React.useRef<HTMLDivElement>(null);
     const [box, setBox] = React.useState<{
         top: number;
+        /** the distance from the window's bottom, for a list above its field */
+        bottom: number;
         left: number;
         width: number;
         up: boolean;
+        /** what is left of the visible window for the list, in px */
+        room: number;
     } | null>(null);
 
     const place = React.useCallback(() => {
         const rect = ref.current?.getBoundingClientRect();
         if (!rect) return;
-        const room = window.innerHeight - rect.bottom;
-        // Open upwards when there is little room below and more above.
-        const up = room < 240 && rect.top > room;
+        const screenHeight = window.innerHeight;
+        // Open upwards when there is little room below and more above - once, as it opens.
+        if (above.current === null) {
+            const below = screenHeight - rect.bottom;
+            above.current = below < 240 && rect.top > below;
+        }
+        const up = above.current;
         // A list is at least as wide as an asset name needs, even under a small
         // trigger (a 100px fee asset field), and stays on the screen: under a field
         // at the right edge it opens to the left of the field's right edge, not
@@ -190,9 +205,11 @@ function SelectBase({
         );
         setBox({
             top: up ? rect.top : rect.bottom,
+            bottom: screenHeight - rect.top + 4,
             left,
             width,
-            up
+            up,
+            room: listRoom(rect, up, screenHeight, window.visualViewport)
         });
     }, []);
 
@@ -215,9 +232,19 @@ function SelectBase({
         place();
         window.addEventListener("resize", place);
         window.addEventListener("scroll", place, true);
+        // a keyboard shrinks the visual viewport, and a browser may say so only there
+        const visual = window.visualViewport;
+        if (visual) {
+            visual.addEventListener("resize", place);
+            visual.addEventListener("scroll", place);
+        }
         return () => {
             window.removeEventListener("resize", place);
             window.removeEventListener("scroll", place, true);
+            if (visual) {
+                visual.removeEventListener("resize", place);
+                visual.removeEventListener("scroll", place);
+            }
         };
     }, [open, place]);
 
@@ -253,6 +280,15 @@ function SelectBase({
     React.useEffect(() => {
         if (open && showSearch && listPlaced) searchRef.current?.focus();
     }, [open, showSearch, listPlaced]);
+
+    const listStyle: React.CSSProperties | null = box && {
+        position: "fixed",
+        left: box.left,
+        ...(box.up ? {bottom: box.bottom} : {top: box.top + 4}),
+        ...(dropdownMatchSelectWidth === false
+            ? {minWidth: box.width}
+            : {width: box.width})
+    };
 
     const options = collectOptions(children);
     const currentValue = value !== undefined ? value : uncontrolledValue;
@@ -312,16 +348,13 @@ function SelectBase({
                 ? createPortal(
                       <div
                           ref={listRef}
-                          style={{
-                              position: "fixed",
-                              left: box.left,
-                              ...(box.up
-                                  ? {bottom: window.innerHeight - box.top + 4}
-                                  : {top: box.top + 4}),
-                              ...(dropdownMatchSelectWidth === false
-                                  ? {minWidth: box.width}
-                                  : {width: box.width})
-                          }}
+                          style={
+                              {
+                                  ...listStyle,
+                                  // the stylesheet's height, or what is left of the visible window
+                                  "--list-room": `${box.room}px`
+                              } as React.CSSProperties
+                          }
                           className={[
                               styles.dropdown,
                               dropdownMatchSelectWidth === false

@@ -65,7 +65,8 @@
     z-index: 2000;
     box-sizing: border-box;
     // room for about ten compact rows, so most lists need no scrollbar
-    max-height: min(340px, 55vh);
+    // (--list-room: what is left of the visible window, set by the component: a phone's keyboard takes half)
+    max-height: min(340px, 55vh, var(--list-room, 340px));
     overflow-y: auto;
     background: var(--raised);
     border: 1px solid var(--line);
