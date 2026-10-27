@@ -116,6 +116,13 @@ const PATHS: {[name: string]: React.ReactNode} = {
             <path d="m13.5 5.5-3 13" />
         </>
     ),
+    // a medal on its ribbon
+    membership: (
+        <>
+            <circle cx="12" cy="9" r="5.5" />
+            <path d="m8.8 13.4-1.3 7 4.5-2.4 4.5 2.4-1.3-7" />
+        </>
+    ),
     // the bell of the top bar (NotificationBell draws the same), for a price alert
     bell: (
         <>

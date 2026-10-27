@@ -271,6 +271,14 @@ const QuickTrade = withLegacyRouterProps(
     })
 );
 
+const LifetimeBreakEven = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "membership" */ "./components/Membership/LifetimeBreakEven"
+        ),
+    loading: LoadingIndicator
+});
+
 const PoolmartPage = Loadable({
     loader: () =>
         import(
@@ -855,6 +863,10 @@ class App extends React.Component {
                                     <Route
                                         path="/pools"
                                         element={<PoolmartPage />}
+                                    />
+                                    <Route
+                                        path="/membership"
+                                        element={<LifetimeBreakEven />}
                                     />
                                     <Route path="*" element={<Page404 />} />
                                 </Routes>

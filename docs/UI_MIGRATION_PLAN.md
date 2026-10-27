@@ -13905,3 +13905,32 @@ pixels (the scrollbar of that table is at the bottom of the whole list). The bal
 there: while the balances load it says "Loading...", an account with none says so, and a failed request is
 made again three times before the error is shown; it used to be absent, which on a page where it belongs
 reads as a missing chart.
+
+**Lifetime membership: break-even.** A page under More in the rail (`/membership`,
+`components/Membership/LifetimeBreakEven.tsx`; maths in `lib/common/membership.ts`, chain read in
+`lib/chain/membershipData.ts`, words in the `membership_breakeven` locale group) that says after how many
+trades a Lifetime membership pays for itself. It reads `get_global_properties` for the fee of a Lifetime
+membership (5,791.31 BTS on the live chain), the network's share of a fee (20%) and the cashback vesting
+rules, the core asset's symbol and precision, and the account's `membership_expiration_date` (a Lifetime
+member's is the chain's largest date). A Lifetime member is its own lifetime referrer, referrer and
+registrar, so it gets back everything of a fee but the network's share (80%); a Basic member gets none
+(`account_object.cpp` `pay_fee`, `db_balance.cpp` `deposit_cashback`: a fee up to the vesting threshold,
+100 BTS, is paid into the cashback vesting balance already vested, a larger one vests over 90 days).
+Break-even = membership fee / cashback per trade, at a trade's fee (one limit order's by default; the help
+line names a pool exchange's and a three-hop route's; editable) and a trades-per-day rate. Read only: it
+does not upgrade anything. A comma is read as the decimal point (a phone set to German or French gives one).
+
+The page also says what the account has really paid (`components/Membership/OwnFees.tsx`, reads in
+`lib/chain/feesPaid.ts`, rules in `lib/common/ownFees.ts`): the account's own statistics object
+(`lifetime_fees_paid` + `pending_fees` + `pending_vested_fees`, the chain's count of the network fees since
+the account was created - exact, whatever history the node keeps), what a Lifetime member would have got
+back of it (80%) and whether that would have paid for the membership's fee, and a recent pace from the
+operations the node still keeps (usually the last 100; `get_account_history`). In the history an
+operation counts when the account is the one that pays its fee (`FEE_PAYERS`: the field of each operation
+that names the payer, by id, checked against the chain's list of names), and a fee paid in another asset
+is worth its amount times that asset's `core_exchange_rate`, rounded down, as the chain converts it.
+Virtual operations are not counted: a fill's `fee` is the market fee paid to the asset's issuer, not a
+network fee, and a Lifetime member gets no cashback on it. Verified live: for `thmsfnd02` the sum over
+the operations since the last maintenance equalled the chain's `pending_fees` to the unit. A Lifetime
+member sees what it has paid and gets back, without a loss to count. An estimate of what a membership
+would have returned, not a promise.

@@ -213,6 +213,7 @@ describe("the menu and the flags", () => {
             "Spotlight",
             "Advanced",
             "AI assistants",
+            "Lifetime membership",
             "Settings",
             "Help"
         ]);

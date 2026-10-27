@@ -111,6 +111,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 icon: "advanced",
                 to: "/advanced"
             },
+            // what a Lifetime membership costs and after how many trades it pays for itself
+            {
+                label: "Lifetime membership",
+                icon: "membership",
+                to: "/membership"
+            },
             {
                 label: "Settings",
                 icon: "settings",
@@ -198,6 +204,7 @@ const CRUMB_TITLES: Record<string, string> = {
     "credit-offer": "Credit offers",
     "samet-funds": "SameT funds",
     advanced: "Advanced",
+    membership: "Lifetime membership",
     mcp: "AI assistants",
     "timed-transfer": "Timed transfer",
     send: "Send",

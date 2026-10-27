@@ -35,6 +35,7 @@ describe("left navigation rail", () => {
         expect(labels("More")).toEqual([
             "Spotlight",
             "Advanced",
+            "Lifetime membership",
             "Settings",
             "Help"
         ]);
@@ -236,5 +237,12 @@ describe("withLastMarket", () => {
                 .filter(item => item.label !== "Trade")
                 .map(item => item.to);
         expect(others(groups)).toEqual(others(NAV_GROUPS));
+    });
+
+    it("has a Lifetime membership page under More, with its own title", () => {
+        const more = NAV_GROUPS.find(g => g.label === "More")!;
+        const item = more.items.find(i => i.label === "Lifetime membership")!;
+        expect(item.to).toBe("/membership");
+        expect(crumbFromPath("/membership")).toBe("Lifetime membership");
     });
 });
