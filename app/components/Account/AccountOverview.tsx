@@ -50,6 +50,7 @@ import MarginPositionsTable from "./MarginPositionsTable";
 import {RecentTransactions} from "./RecentTransactions";
 import Proposals from "components/Account/Proposals";
 import {ChainStore} from "bitsharesjs";
+import {requestAllBalances} from "../../lib/chain/requestBalances";
 import SettingsActions from "actions/SettingsActions";
 import utils from "common/utils";
 import {Tabs} from "../../design-system/Tabs";
@@ -193,7 +194,7 @@ function AccountOverview(props: AccountOverviewCoreProps) {
     const debt: any = {};
 
     // Request all balance objects for dashboard view
-    ChainStore.requestAllDataForAccount(account.toJS().id, "balance");
+    requestAllBalances(account.toJS().id);
 
     if ((account as any).toJS && account.has("call_orders"))
         call_orders = account.get("call_orders").toJS();
