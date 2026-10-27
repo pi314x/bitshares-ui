@@ -24,7 +24,8 @@ jest.mock("bitsharesjs", () => ({
             transfer: 0,
             limit_order_create: 1,
             fill_order: 4,
-            asset_settle: 17
+            asset_settle: 17,
+            made_up_operation: 55
         }
     }
 }));
@@ -191,5 +192,17 @@ describe("AccountActivityNotifications", () => {
         expect(
             window.localStorage.getItem("__graphene__lastActivityNotified_me")
         ).toBe("8");
+    });
+
+    it("names an operation the locale has no name for by the chain's own name, not by a missing-translation text", async () => {
+        mockHistory = [
+            op(5, 0, {from: "1.2.99", to: "1.2.10", amount: bts(1)})
+        ];
+        const view = render(<AccountActivityNotifications />);
+        mockHistory = [op(6, 55, {account: "1.2.10"}), ...mockHistory];
+        view.rerender(<AccountActivityNotifications />);
+        await settle();
+        expect(titles()).toEqual(["made_up_operation"]);
+        expect(titles().join(" ")).not.toContain("missing translation");
     });
 });

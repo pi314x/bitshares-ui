@@ -105,10 +105,13 @@ function contextFor(accountId: string): ActivityContext {
                 `notification_center.${key}`,
                 params
             ) as string,
+        // the shim has no `fallback` option: an operation without a name in the locale is shown by
+        // the chain's own name
         typeLabel: name => {
-            const key = `transaction.trxTypes.${name}`;
-            const text = counterpart.translate(key, {fallback: name}) as string;
-            return text || name;
+            const text = counterpart.translate(
+                `transaction.trxTypes.${name}`
+            ) as string;
+            return !text || /^missing translation/.test(text) ? name : text;
         }
     };
 }

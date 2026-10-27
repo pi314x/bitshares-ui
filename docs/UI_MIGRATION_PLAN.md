@@ -13893,7 +13893,8 @@ confirmed it); the newest three that happened to it - or that the chain did on i
 toasts. The first look only sets the baseline, so nothing is announced for old history; what happened
 while the page was closed is announced once, at most the newest thirty. The baseline is stored per
 account under a new key (`__graphene__lastActivityNotified_<name>`; the old fills-only key is not reused,
-it would have announced every old operation).
+it would have announced every old operation). An operation the locale has no name for is shown by the
+chain's own name (the shim ignores `counterpart.translate`'s `fallback` option).
 
 **Tooltips and popovers stay on the screen.** The design system's `Tooltip` and `Popover` were placed with
 CSS inside the trigger's parent, so any `overflow: hidden` ancestor cut them: on an iPhone the warning
