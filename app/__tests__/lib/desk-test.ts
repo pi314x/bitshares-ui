@@ -2,6 +2,7 @@ import {
     holdingRows,
     positionRisk,
     orderSummary,
+    settlementSummary,
     expiryMs,
     attentionItems,
     PositionInput
@@ -130,6 +131,29 @@ describe("orders", () => {
         expect(s.count).toBe(3);
         expect(s.nextExpiryMs).toBe(Date.UTC(2026, 9, 15, 8, 0, 0));
         expect(s.expiringSoon).toBe(1);
+    });
+});
+
+describe("settlements", () => {
+    it("counts the requests and finds the first to settle", () => {
+        const s = settlementSummary([
+            {id: "1.4.1", settlementDate: "2026-10-30T08:00:00"},
+            {id: "1.4.2", settlementDate: "2026-10-28T20:00:00"},
+            {id: "1.4.3", settlementDate: "2026-11-02T00:00:00"}
+        ]);
+        expect(s.count).toBe(3);
+        expect(s.nextMs).toBe(Date.UTC(2026, 9, 28, 20, 0, 0));
+    });
+
+    it("has no date to show for none, or for one the chain gives no date", () => {
+        expect(settlementSummary([])).toEqual({count: 0, nextMs: null});
+        const unreadable = settlementSummary([
+            {id: "1.4.1", settlementDate: ""},
+            {id: "1.4.2", settlementDate: "2026-10-28T20:00:00"}
+        ]);
+        // the one without a date is still a request, and does not hide the other's date
+        expect(unreadable.count).toBe(2);
+        expect(unreadable.nextMs).toBe(Date.UTC(2026, 9, 28, 20, 0, 0));
     });
 });
 

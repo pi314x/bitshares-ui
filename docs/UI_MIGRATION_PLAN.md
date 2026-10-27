@@ -12878,8 +12878,14 @@ market tabs. It is now what a trading desk's home needs:
   lines, the rest on request.
 - **Holdings** (largest first, share bars, Trade link) and **Positions** (open
   orders and next expiry, pool shares valued through the pool, borrowed with
-  ratio and distance to the call). Cards can be hidden; the choice stays in this
-  browser (`__graphene__deskCards`).
+  ratio and distance to the call, and the account's **settlements**: its
+  force-settlement requests, soonest first, each with the amount, what it is
+  worth in the unit and when it settles; five shown, "+N more" and "Open" lead
+  to the Portfolio's open-orders tab, which lists them all). A request holds a
+  smart coin that has left the wallet, so it is counted in the total (and in
+  the allocation "where it sits") until it is paid out; one with no price makes
+  the total incomplete, like an order does. Cards can be hidden; the choice
+  stays in this browser (`__graphene__deskCards`).
 - **Recent activity**, an **accounts overview** with totals (more than one
   account), 1D/1W/1M/All on the balance chart, and a 7D price line for the
   busiest markets in the market tables (hourly buckets: the node keeps 15s, 1m,

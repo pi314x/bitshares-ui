@@ -194,6 +194,31 @@ export function orderSummary(
     return {count: orders.length, nextExpiryMs, expiringSoon};
 }
 
+// ---------------------------------------------------------------- settlements
+
+export interface SettlementSummary {
+    count: number;
+    /** the soonest settlement date (ms), null when none has a readable date */
+    nextMs: number | null;
+}
+
+/**
+ * The account's force-settlement requests: how many, and when the first one settles. A request
+ * (`force_settlement_object`) holds the smart coin the account asked to settle against the collateral
+ * pool; it leaves the wallet, so it belongs to what the account is worth until it is paid out.
+ */
+export function settlementSummary(
+    settlements: Array<{id: string; settlementDate: string}>
+): SettlementSummary {
+    let nextMs: number | null = null;
+    settlements.forEach(settlement => {
+        const ms = expiryMs(settlement.settlementDate);
+        if (ms === null) return;
+        if (nextMs === null || ms < nextMs) nextMs = ms;
+    });
+    return {count: settlements.length, nextMs};
+}
+
 // ---------------------------------------------------------------- attention
 
 export type AttentionLevel = "danger" | "warn" | "info";

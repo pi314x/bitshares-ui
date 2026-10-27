@@ -14,7 +14,7 @@ jest.mock("../../../next/hooks/useReduxState", () => ({
 }));
 jest.mock("../../../actions/SettingsActions", () => ({
     __esModule: true,
-    default: {changeSetting: jest.fn()}
+    default: {changeSetting: jest.fn(), changeViewSetting: jest.fn()}
 }));
 jest.mock("../../../actions/AccountActions", () => ({
     __esModule: true,
@@ -35,6 +35,7 @@ jest.mock("../../../components/Account/BalanceHistoryChart", () => ({
     CurrentAccountBalanceChart: () => <div data-testid="chart" />
 }));
 
+import SettingsActions from "../../../actions/SettingsActions";
 import Desk from "../../../components/Dashboard/Desk/Desk";
 
 const data = (overrides: any = {}) => ({
@@ -42,7 +43,14 @@ const data = (overrides: any = {}) => ({
     accountId: "1.2.10",
     unit: {id: "1.3.0", symbol: "BTS", precision: 5},
     total: 1234.5,
-    parts: {wallet: 1000, pools: 200, orders: 34.5, collateral: 0, debt: 0},
+    parts: {
+        wallet: 1000,
+        pools: 200,
+        orders: 34.5,
+        settlements: 0,
+        collateral: 0,
+        debt: 0
+    },
     holdings: [
         {
             assetId: "1.3.0",
@@ -65,6 +73,7 @@ const data = (overrides: any = {}) => ({
     ],
     unpriced: 1,
     orders: {count: 2, nextExpiryMs: null, expiringSoon: 0, value: 34.5},
+    settlements: {count: 0, nextMs: null, value: null, items: []},
     positions: [],
     pools: [],
     attention: [],
@@ -153,6 +162,85 @@ describe("Desk", () => {
             fireEvent.change(field, {target: {value: ""}});
             expect(queryByText(/No asset matches/)).toBeNull();
             expect(queryByText("COIN0")).not.toBeNull();
+        });
+    });
+
+    describe("settlements", () => {
+        const item = (n: number, over: any = {}) => ({
+            id: `1.4.${n}`,
+            assetId: "1.3.5",
+            symbol: n === 1 ? "USD" : `COIN${n}`,
+            precision: 4,
+            amount: 2.5,
+            value: 500,
+            dateMs: Date.UTC(2026, 9, 28 + n, 20, 0, 0),
+            ...over
+        });
+        const settled = (items: any[]) => ({
+            count: items.length,
+            nextMs: items.length ? items[0].dateMs : null,
+            value: items.length ? 500 * items.length : null,
+            items
+        });
+
+        it("says there are none, without a button to open them", () => {
+            const {getByText, queryAllByText} = renderDesk();
+            expect(getByText("Settlements")).toBeTruthy();
+            expect(getByText("No settlements waiting")).toBeTruthy();
+            // only the open orders have an Open button, not the settlements
+            expect(queryAllByText("Open").length).toBe(2);
+        });
+
+        it("lists a request with its amount, its worth in the unit and when it settles", () => {
+            mockData = data({
+                parts: {...data().parts, settlements: 500},
+                settlements: settled([item(1)])
+            });
+            const {getByText, container} = renderDesk();
+            expect(getByText("USD")).toBeTruthy();
+            expect(getByText(/^2\.5\d* USD$/)).toBeTruthy();
+            const row = getByText(/^2\.5\d* USD$/).parentElement as HTMLElement;
+            expect(row.textContent).toContain("≈ 500.00 BTS");
+            expect(row.textContent).toContain("settles ");
+            // the part of the total
+            expect(container.textContent).toContain("Settlements");
+        });
+
+        it("says no price for a request without one, and no date where the chain gives none", () => {
+            mockData = data({
+                settlements: settled([item(1, {value: null, dateMs: null})])
+            });
+            const {getByText} = renderDesk();
+            const row = getByText(/^2\.5\d* USD$/).parentElement as HTMLElement;
+            expect(row.textContent).toContain("no price");
+            expect(row.textContent).not.toContain("settles ");
+        });
+
+        it("shows five and leads to the rest in the portfolio", () => {
+            mockData = data({
+                settlements: settled(
+                    Array.from({length: 7}, (_, i) => item(i + 1))
+                )
+            });
+            const {getByText, queryByText} = renderDesk();
+            expect(queryByText("COIN6")).toBeNull();
+            fireEvent.click(getByText("+2 more"));
+            // the portfolio's open orders tab, where the settlements are listed too
+            expect(SettingsActions.changeViewSetting).toHaveBeenCalledWith({
+                overviewTab: 1
+            });
+        });
+
+        it("counts in the summary, and in the allocation by place", () => {
+            mockData = data({
+                parts: {...data().parts, settlements: 500},
+                settlements: settled([item(1)])
+            });
+            const {getByText, getByTestId} = renderDesk();
+            fireEvent.click(getByText("Where it sits"));
+            expect(getByTestId("allocation").textContent).toContain(
+                "Settlements=500"
+            );
         });
     });
 

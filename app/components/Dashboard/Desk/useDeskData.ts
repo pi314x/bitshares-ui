@@ -18,10 +18,13 @@ import {
     OrderSummary,
     PositionInput,
     PositionRisk,
+    SettlementSummary,
     attentionItems,
+    expiryMs,
     holdingRows,
     orderSummary,
-    positionRisk
+    positionRisk,
+    settlementSummary
 } from "../../../lib/common/desk";
 
 export interface DeskPosition {
@@ -46,16 +49,32 @@ export interface DeskPool {
     value: number | null;
 }
 
+/** A force-settlement request of the account: a smart coin handed in, waiting for its settlement date. */
+export interface DeskSettlement {
+    id: string;
+    assetId: string;
+    symbol: string;
+    precision: number;
+    /** human amount */
+    amount: number;
+    /** in the unit, human; null without a price */
+    value: number | null;
+    /** when it settles (ms); null when the chain gives no readable date */
+    dateMs: number | null;
+}
+
 export interface DeskData {
     loading: boolean;
     accountId: string | null;
     unit: {id: string; symbol: string; precision: number} | null;
-    /** wallet + pools + orders + collateral - debt, in the unit (human) */
+    /** wallet + pools + orders + settlements + collateral - debt, in the unit (human) */
     total: number;
     parts: {
         wallet: number;
         pools: number;
         orders: number;
+        /** smart coins handed in to be settled: they left the wallet and are not paid out yet */
+        settlements: number;
         collateral: number;
         debt: number;
     };
@@ -65,6 +84,10 @@ export interface DeskData {
      * not the whole picture (a missing debt would read as a bigger total) */
     incomplete: boolean;
     orders: OrderSummary & {value: number | null};
+    settlements: SettlementSummary & {
+        value: number | null;
+        items: DeskSettlement[];
+    };
     positions: DeskPosition[];
     pools: DeskPool[];
     attention: AttentionItem[];
@@ -75,11 +98,19 @@ const EMPTY: DeskData = {
     accountId: null,
     unit: null,
     total: 0,
-    parts: {wallet: 0, pools: 0, orders: 0, collateral: 0, debt: 0},
+    parts: {
+        wallet: 0,
+        pools: 0,
+        orders: 0,
+        settlements: 0,
+        collateral: 0,
+        debt: 0
+    },
     holdings: [],
     unpriced: 0,
     incomplete: false,
     orders: {count: 0, nextExpiryMs: null, expiringSoon: 0, value: null},
+    settlements: {count: 0, nextMs: null, value: null, items: []},
     positions: [],
     pools: [],
     attention: []
@@ -151,6 +182,17 @@ export function useDeskData(
             (orderUnits[assetId] || 0) + parseInt(order.get("for_sale"), 10);
     });
 
+    // force-settlement requests (the Portfolio lists them under its open orders)
+    const settleObjects: any[] = [];
+    if (isMap(account) && account.get("settle_orders")) {
+        account.get("settle_orders").forEach((settleId: string) => {
+            const settle: any = (ChainStore as any).getObject(settleId);
+            if (isMap(settle) && isMap(settle.get("balance"))) {
+                settleObjects.push(settle);
+            }
+        });
+    }
+
     const callObjects: any[] = [];
     if (isMap(account) && account.get("call_orders")) {
         account.get("call_orders").forEach((callId: string) => {
@@ -163,6 +205,9 @@ export function useDeskData(
     const assetIds: {[id: string]: true} = {};
     Object.keys(balanceUnits).forEach(id => (assetIds[id] = true));
     Object.keys(orderUnits).forEach(id => (assetIds[id] = true));
+    settleObjects.forEach(settle => {
+        assetIds[settle.getIn(["balance", "asset_id"])] = true;
+    });
     callObjects.forEach(call => {
         assetIds[call.getIn(["call_price", "base", "asset_id"])] = true;
         assetIds[call.getIn(["call_price", "quote", "asset_id"])] = true;
@@ -323,11 +368,45 @@ export function useDeskData(
         });
     });
 
+    // ---- settlements: what was handed in is worth what it is, until it is paid out
+    const settlementItems: DeskSettlement[] = [];
+    settleObjects.forEach(settle => {
+        const assetId: string = settle.getIn(["balance", "asset_id"]);
+        const asset =
+            assetsById[assetId] || (ChainStore as any).getAsset(assetId);
+        if (!isMap(asset)) return;
+        const units = parseInt(settle.getIn(["balance", "amount"]), 10);
+        const value = valueOf(assetId, units);
+        if (value === null) incomplete = true;
+        settlementItems.push({
+            id: settle.get("id"),
+            assetId,
+            symbol: asset.get("symbol"),
+            precision: asset.get("precision"),
+            amount: units / Math.pow(10, asset.get("precision")),
+            value,
+            dateMs: expiryMs(settle.get("settlement_date") || "")
+        });
+    });
+    // the soonest first, the ones without a date last
+    settlementItems.sort(
+        (a, b) =>
+            (a.dateMs === null ? Infinity : a.dateMs) -
+            (b.dateMs === null ? Infinity : b.dateMs)
+    );
+    const settlementInfo = settlementSummary(
+        settleObjects.map(settle => ({
+            id: settle.get("id"),
+            settlementDate: settle.get("settlement_date") || ""
+        }))
+    );
+
     // ---- totals
     const parts = {
         wallet: sum(holdings.map(h => h.value)),
         pools: sum(pools.map(p => p.value)),
         orders: sum(ordersValue),
+        settlements: sum(settlementItems.map(item => item.value)),
         collateral: collateralValue,
         debt: debtValue
     };
@@ -335,6 +414,7 @@ export function useDeskData(
         parts.wallet +
         parts.pools +
         parts.orders +
+        parts.settlements +
         parts.collateral -
         parts.debt;
 
@@ -363,6 +443,11 @@ export function useDeskData(
         orders: {
             ...orderInfo,
             value: orderInfo.count ? sum(ordersValue) : null
+        },
+        settlements: {
+            ...settlementInfo,
+            value: settlementItems.length ? parts.settlements : null,
+            items: settlementItems
         },
         positions,
         pools,

@@ -181,6 +181,9 @@ function Summary({
                     {data.orders.count > 0
                         ? part(t("open_orders"), data.parts.orders)
                         : null}
+                    {data.settlements.count > 0
+                        ? part(t("settlements"), data.parts.settlements)
+                        : null}
                     {data.parts.collateral > 0
                         ? part(t("collateral"), data.parts.collateral)
                         : null}
@@ -330,6 +333,7 @@ function Attention({
 
 const SHOWN_ROWS = 8;
 const POOLS_SHOWN = 5;
+const SETTLEMENTS_SHOWN = 5;
 // a filter is for a list that is long enough to look through
 const FILTER_FROM = 5;
 
@@ -504,6 +508,11 @@ function Allocation({data}: {data: DeskData}): JSX.Element {
                           value: data.parts.orders
                       },
                       {
+                          key: "settlements",
+                          label: t("settlements"),
+                          value: data.parts.settlements
+                      },
+                      {
                           key: "pools",
                           label: t("pools"),
                           value: data.parts.pools
@@ -601,14 +610,16 @@ function Positions({
     const openOrders = useOpenOrders(accountName);
     const unit = data.unit ? data.unit.symbol : "";
     const digits = valueDigits(unit);
+    const when = (ms: number) =>
+        new Date(ms).toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
     const expiry =
         data.orders.nextExpiryMs !== null
-            ? new Date(data.orders.nextExpiryMs).toLocaleString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-              })
+            ? when(data.orders.nextExpiryMs)
             : null;
     return (
         <>
@@ -749,6 +760,73 @@ function Positions({
                         )}
                     </div>
                 )}
+            </div>
+
+            <div className={styles.section}>
+                <div className={styles.sectionHead}>
+                    <span className={styles.sectionTitle}>
+                        {t("settlements")}
+                    </span>
+                    {data.settlements.count ? (
+                        <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={openOrders}
+                        >
+                            {t("open")}
+                        </button>
+                    ) : null}
+                </div>
+                {data.settlements.items.length ? (
+                    data.settlements.items
+                        .slice(0, SETTLEMENTS_SHOWN)
+                        .map(item => (
+                            <div className={styles.row} key={item.id}>
+                                <span>
+                                    <TypedLink to={`/asset/${item.symbol}`}>
+                                        {item.symbol}
+                                    </TypedLink>
+                                </span>
+                                <span className={styles.num}>
+                                    {fmt(item.amount, item.precision)}{" "}
+                                    {item.symbol}
+                                </span>
+                                <span className={styles.rowSub}>
+                                    {item.value !== null
+                                        ? `≈ ${fmt(item.value, digits)} ${unit}`
+                                        : t("no_price")}
+                                    {item.dateMs !== null
+                                        ? ` · ${t("settles_on", {
+                                              when: when(item.dateMs)
+                                          })}`
+                                        : ""}
+                                </span>
+                            </div>
+                        ))
+                ) : (
+                    <div className={styles.muted}>
+                        {data.loading ? (
+                            <Skeleton width={120} />
+                        ) : (
+                            t("settlements_none")
+                        )}
+                    </div>
+                )}
+                {data.settlements.items.length > SETTLEMENTS_SHOWN ? (
+                    <div className={styles.muted}>
+                        <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={openOrders}
+                        >
+                            {t("more_n", {
+                                count:
+                                    data.settlements.items.length -
+                                    SETTLEMENTS_SHOWN
+                            })}
+                        </button>
+                    </div>
+                ) : null}
             </div>
         </>
     );
