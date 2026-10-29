@@ -23,6 +23,7 @@ import {
     expiryMs,
     holdingRows,
     orderSummary,
+    positionInputFromChain,
     positionRisk,
     settlementSummary
 } from "../../../lib/common/desk";
@@ -329,34 +330,11 @@ export function useDeskData(
         collateralValue += collateralWorth || 0;
         debtValue += debtWorth || 0;
 
-        const feedPrice: any = debtAsset.getIn([
-            "bitasset",
-            "current_feed",
-            "settlement_price"
-        ]);
-        const mcr = debtAsset.getIn([
-            "bitasset",
-            "current_feed",
-            "maintenance_collateral_ratio"
-        ]);
-        const input: PositionInput = {
-            id: call.get("id"),
-            debtAssetId: debtId,
-            collateralAssetId: collateralId,
-            debtUnits,
-            collateralUnits,
-            debtPrecision: debtAsset.get("precision"),
-            collateralPrecision: collateralAsset.get("precision"),
-            feed: isMap(feedPrice)
-                ? {
-                      baseUnits: Number(feedPrice.getIn(["base", "amount"])),
-                      baseAssetId: feedPrice.getIn(["base", "asset_id"]),
-                      quoteUnits: Number(feedPrice.getIn(["quote", "amount"])),
-                      quoteAssetId: feedPrice.getIn(["quote", "asset_id"])
-                  }
-                : null,
-            mcrPermille: mcr !== undefined && mcr !== null ? Number(mcr) : null
-        };
+        const input: PositionInput = positionInputFromChain(
+            call,
+            collateralAsset,
+            debtAsset
+        );
         positions.push({
             input,
             risk: positionRisk(input),

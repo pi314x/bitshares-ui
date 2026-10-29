@@ -82,6 +82,47 @@ export interface PositionInput {
     mcrPermille: number | null;
 }
 
+const isMap = (x: any): boolean => !!x && typeof x.get === "function";
+
+/**
+ * A borrow position as `positionRisk` takes it, from the chain store's objects: the call order and the two assets
+ * (Immutable maps; the debt asset carries its bitasset data with the feed).
+ */
+export function positionInputFromChain(
+    call: any,
+    collateralAsset: any,
+    debtAsset: any
+): PositionInput {
+    const feedPrice: any = debtAsset.getIn([
+        "bitasset",
+        "current_feed",
+        "settlement_price"
+    ]);
+    const mcr = debtAsset.getIn([
+        "bitasset",
+        "current_feed",
+        "maintenance_collateral_ratio"
+    ]);
+    return {
+        id: call.get("id"),
+        debtAssetId: call.getIn(["call_price", "quote", "asset_id"]),
+        collateralAssetId: call.getIn(["call_price", "base", "asset_id"]),
+        debtUnits: parseInt(call.get("debt"), 10),
+        collateralUnits: parseInt(call.get("collateral"), 10),
+        debtPrecision: debtAsset.get("precision"),
+        collateralPrecision: collateralAsset.get("precision"),
+        feed: isMap(feedPrice)
+            ? {
+                  baseUnits: Number(feedPrice.getIn(["base", "amount"])),
+                  baseAssetId: feedPrice.getIn(["base", "asset_id"]),
+                  quoteUnits: Number(feedPrice.getIn(["quote", "amount"])),
+                  quoteAssetId: feedPrice.getIn(["quote", "asset_id"])
+              }
+            : null,
+        mcrPermille: mcr !== undefined && mcr !== null ? Number(mcr) : null
+    };
+}
+
 export type Risk = "ok" | "watch" | "danger";
 
 export interface PositionRisk {

@@ -13896,6 +13896,19 @@ account under a new key (`__graphene__lastActivityNotified_<name>`; the old fill
 it would have announced every old operation). An operation the locale has no name for is shown by the
 chain's own name (the shim ignores `counterpart.translate`'s `fallback` option).
 
+**The bell also warns before a margin call.** `AccountRiskNotifications` (mounted beside the activity
+notifications) watches the connected account's borrow positions while the app is open, with the same
+figures as the Dashboard's attention strip (`positionInputFromChain` + `positionRisk` in `lib/common/desk.ts`): the
+first time a position reaches "watch" (the collateral's price may fall 25% before the call), "danger" (10%) or is
+called (below the maintenance ratio) a toast and a bell entry say so, with the collateral ratio and how far the
+price may fall (`notification_center.risk_*`, all ten languages). What was told is remembered per position
+(`lib/common/riskAlerts.ts`, localStorage `__graphene__riskAlerts_<account>`, read back only if it has the shape the
+file writes), so a reload does not repeat it; a position counts as safer only when it is 3 points past the
+threshold (a price that moves around a threshold is not announced at every crossing); a position whose assets
+are not loaded yet is looked at when they are and its memory is kept until the account no longer has it.
+Tested with the figures of positions at 400%, 230%, 190% and 170% collateral (a mutation that announces at every
+look fails six tests).
+
 **Tooltips and popovers stay on the screen.** The design system's `Tooltip` and `Popover` were placed with
 CSS inside the trigger's parent, so any `overflow: hidden` ancestor cut them: on an iPhone the warning
 of a market row was half outside the panel. They are now drawn in the body at a fixed position worked out

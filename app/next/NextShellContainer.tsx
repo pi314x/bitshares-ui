@@ -51,6 +51,7 @@ import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import BackupNotice from "./BackupNotice";
 import NotificationBell from "../components/Notifications/NotificationBell";
 import AccountActivityNotifications from "../components/Notifications/AccountActivityNotifications";
+import AccountRiskNotifications from "../components/Notifications/AccountRiskNotifications";
 import SendModal from "components/Modal/SendModal";
 import TransactionConfirm from "components/Blockchain/TransactionConfirm";
 import DepositModal from "components/Modal/DepositModal";
@@ -385,6 +386,7 @@ export default function NextShellContainer({
                         <TransactionConfirm inline />
                         {/* "unlock your wallet" is a popup (the global one) */}
                         <AccountActivityNotifications />
+                        <AccountRiskNotifications />
                         {content}
                     </>
                 }
