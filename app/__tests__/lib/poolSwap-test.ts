@@ -8,7 +8,11 @@ import {
     quoteExactIn,
     quoteExactOut
 } from "../../lib/common/poolSwap";
-import {compareVenues, fillFromOrderBook} from "../../lib/common/priceCompare";
+import {
+    bookDepth,
+    compareVenues,
+    fillFromOrderBook
+} from "../../lib/common/priceCompare";
 
 const n = (v: number | string) => BigInt(v);
 
@@ -158,6 +162,39 @@ describe("order book against the pool", () => {
         expect(fill.spent).toBe(n(8000 - 10)); // 17 USD cost 6800 + 1190
     });
 
+    it("says what the spent amount would have bought at the best price, to tell the slippage", () => {
+        const book = [order(100, 70, 1), order(100, 68, 1)];
+        // both orders taken: 13,800 BTS for 200 USD, where the best price (68) would have bought 202
+        const fill = fillFromOrderBook(book, "BTS", "USD", n(14000));
+        expect(fill.gross).toBe(n(200));
+        expect(fill.spent).toBe(n(13800));
+        expect(fill.ideal).toBe(n(202));
+        // within the best order there is no slippage
+        const small = fillFromOrderBook(book, "BTS", "USD", n(680));
+        expect(small.ideal).toBe(small.gross);
+        // no matching order: nothing to compare with
+        expect(fillFromOrderBook([], "BTS", "USD", n(5)).ideal).toBe(n(0));
+    });
+
+    it("adds up what the whole book on one side costs, and leaves the other side out", () => {
+        const sellsBts = {
+            for_sale: "1000000",
+            sell_price: {
+                base: {amount: "1", asset_id: "BTS"},
+                quote: {amount: "70", asset_id: "USD"}
+            }
+        };
+        // 100 USD at 70 BTS + 100 USD at 68 BTS = 13,800 BTS
+        expect(
+            bookDepth(
+                [order(100, 70, 1), order(100, 68, 1), sellsBts],
+                "BTS",
+                "USD"
+            )
+        ).toBe(n(13800));
+        expect(bookDepth([], "BTS", "USD")).toBe(n(0));
+    });
+
     it("is incomplete when the book is not deep enough, and ignores the other side", () => {
         const sellsBts = {
             for_sale: "1000000",
@@ -180,6 +217,7 @@ describe("order book against the pool", () => {
         const book = {
             receive: n(100),
             gross: n(100),
+            ideal: n(100),
             spent: n(5000),
             complete: true,
             levels: 1

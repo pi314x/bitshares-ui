@@ -2173,7 +2173,12 @@
             "better_book": "订单簿多收到 %(percent)s（%(amount)s）。",
             "open_order_book": "打开订单簿",
             "same_price": "资金池与订单簿所得相同。",
-            "book_too_thin": "订单簿深度不足以成交全部数量。"
+            "book_too_thin": "订单簿深度不足以成交全部数量。",
+            "split_use": "同时使用流动性池和订单簿",
+            "split_hint": "合起来多收到 %(gain)s（%(percent)s）：一笔交易含两个操作，第二个操作另有网络手续费。",
+            "split_pool_part": "流动性池：%(pay)s 换 %(receive)s",
+            "split_book_part": "订单簿（全部成交否则取消，%(orders)s 个订单）：%(pay)s 换 %(receive)s",
+            "split_refused": "按当前价格，链会拒绝此交易（%(why)s）。"
         },
         "hint": {
             "title": "流动性池",

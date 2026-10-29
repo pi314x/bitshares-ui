@@ -2173,7 +2173,12 @@
             "better_book": "Emir defteri %(percent)s daha fazla öder (%(amount)s).",
             "open_order_book": "Emir defterini aç",
             "same_price": "Havuz ve emir defteri aynı tutarı öder.",
-            "book_too_thin": "Emir defteri tutarın tamamı için çok sığ."
+            "book_too_thin": "Emir defteri tutarın tamamı için çok sığ.",
+            "split_use": "Havuzu ve emir defterini birlikte kullan",
+            "split_hint": "Birlikte %(gain)s (%(percent)s) daha fazla öderler: iki işlemli tek bir işlem ve ikincisinin kendi ağ ücreti vardır.",
+            "split_pool_part": "Havuzda: %(pay)s karşılığı %(receive)s",
+            "split_book_part": "Emir defterinde (ya hep ya hiç, %(orders)s emir): %(pay)s karşılığı %(receive)s",
+            "split_refused": "Güncel fiyatlarda zincir bunu reddederdi (%(why)s)."
         },
         "hint": {
             "title": "Likidite havuzu",

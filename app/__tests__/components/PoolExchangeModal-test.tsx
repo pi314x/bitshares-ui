@@ -7,10 +7,22 @@ import localeEn from "../../assets/locales/locale-en.json";
 
 const mockExchange = jest.fn();
 const mockLimitOrders = jest.fn();
+const mockSend = jest.fn();
 
 jest.mock("api/ApplicationApi", () => ({
     __esModule: true,
     default: {liquidityPoolExchange: (...a: any[]) => mockExchange(...a)}
+}));
+// what the chain would do with the two operations: the real simulation unless a test says it would refuse
+const mockSimulate = jest.fn();
+jest.mock("../../lib/common/chainSim", () => ({
+    ...jest.requireActual("../../lib/common/chainSim"),
+    simulateOperations: (...a: any[]) => mockSimulate(...a)
+}));
+// the split is one transaction of two operations, sent as the Advanced page sends operations
+jest.mock("../../actions/AdvancedActions", () => ({
+    __esModule: true,
+    default: {send: (...a: any[]) => mockSend(...a)}
 }));
 jest.mock("common/trxHelper", () => ({
     estimateFeeAsync: () => Promise.resolve(0)
@@ -62,6 +74,7 @@ jest.mock("bitsharesjs", () => {
                 Promise.resolve(I.List([mockPool])),
             getAccount: () =>
                 I.fromJS({
+                    id: "1.2.9",
                     balances: {"1.3.0": "2.5.1", "1.3.121": "2.5.2"}
                 }),
             getObject: (id: string) =>
@@ -81,6 +94,12 @@ beforeEach(() => {
     jest.clearAllMocks();
     mockLimitOrders.mockResolvedValue([]);
     mockExchange.mockResolvedValue(undefined);
+    mockSend.mockReset();
+    mockSend.mockResolvedValue(undefined);
+    mockSimulate.mockReset();
+    mockSimulate.mockImplementation((...a: any[]) =>
+        jest.requireActual("../../lib/common/chainSim").simulateOperations(...a)
+    );
 });
 
 async function open() {
@@ -213,5 +232,189 @@ describe("PoolExchangeModal (swap)", () => {
             await new Promise(resolve => setTimeout(resolve, 20));
         });
         expect(document.body.textContent).toContain("The order book pays");
+    });
+
+    // The pool of 200,000 BTS and 2,700 USD pays 0.0135 USD per BTS and moves along its curve. One order sells
+    // 5 USD (50,000 units) at 70 BTS each: better than the pool at the margin (0.0143 against 0.0135), but too
+    // small for a sale of 3000 BTS (it takes 350 BTS), so the pool alone is the best single venue. The order
+    // first and the pool for the rest pays more than the pool alone.
+    const thinBook = () =>
+        mockLimitOrders.mockResolvedValue([
+            {
+                for_sale: "50000",
+                sell_price: {
+                    base: {amount: "10000", asset_id: "1.3.121"},
+                    quote: {amount: "7000000", asset_id: "1.3.0"}
+                }
+            }
+        ]);
+    const sellAndLook = async (amount = "3000") => {
+        const opened = await open();
+        await act(async () => {
+            fireEvent.change(field("You pay"), {target: {value: amount}});
+        });
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 20));
+        });
+        return opened;
+    };
+    const switchSplit = async () => {
+        const box = document.querySelector(
+            'input[type="checkbox"]'
+        ) as HTMLInputElement;
+        await act(async () => {
+            fireEvent.click(box);
+        });
+    };
+    const swapButton = () =>
+        Array.from(document.querySelectorAll("button")).find(b => {
+            const label = (b.textContent || "").trim();
+            return (
+                ["Swap", "Enter an amount"].includes(label) ||
+                label.startsWith("On the current prices")
+            );
+        }) as HTMLButtonElement;
+
+    it("offers the pool and the order book together where that pays more, and says how much more", async () => {
+        thinBook();
+        await sellAndLook();
+        const text = document.body.textContent || "";
+        expect(text).toContain("Use the pool and the order book together");
+        expect(text).toMatch(/Together they pay [\d.]+ USD more \(/);
+        // not used until it is asked for: the sale is the pool's alone
+        expect(document.querySelector('input[type="checkbox"]')).not.toBeNull();
+        expect(
+            (document.querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement).checked
+        ).toBe(false);
+        expect(text).not.toContain("In the pool:");
+    });
+
+    it("does not offer it where the order book is empty, or pays less than the pool at the margin", async () => {
+        mockLimitOrders.mockResolvedValue([]);
+        const first = await sellAndLook();
+        expect(document.querySelector('input[type="checkbox"]')).toBeNull();
+        first.unmount();
+        mockLimitOrders.mockResolvedValue([
+            {
+                for_sale: "50000",
+                sell_price: {
+                    // 100 BTS for a USD: 0.01 USD per BTS, under the pool's 0.0135
+                    base: {amount: "10000", asset_id: "1.3.121"},
+                    quote: {amount: "10000000", asset_id: "1.3.0"}
+                }
+            }
+        ]);
+        await sellAndLook();
+        expect(document.querySelector('input[type="checkbox"]')).toBeNull();
+    });
+
+    it("shows both parts and the total when it is switched on, and receives more than the pool alone", async () => {
+        thinBook();
+        await open();
+        const receive = field("You receive");
+        await act(async () => {
+            fireEvent.change(field("You pay"), {target: {value: "3000"}});
+        });
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 20));
+        });
+        const alone = parseFloat(receive.value);
+        await switchSplit();
+        const text = document.body.textContent || "";
+        expect(text).toMatch(/In the pool: [\d.]+ BTS for [\d.]+ USD/);
+        expect(text).toMatch(
+            /On the order book \(fill or kill, 1 orders\): 350 BTS for 5 USD/
+        );
+        expect(parseFloat(receive.value)).toBeGreaterThan(alone);
+        expect(swapButton().disabled).toBe(false);
+    });
+
+    it("sends the pool exchange and a fill-or-kill order in ONE transaction, and not the plain exchange", async () => {
+        thinBook();
+        await sellAndLook();
+        await switchSplit();
+        await act(async () => {
+            fireEvent.click(swapButton());
+        });
+        expect(mockExchange).not.toHaveBeenCalled();
+        expect(mockSend).toHaveBeenCalledTimes(1);
+        const operations: Array<[string, any]> = mockSend.mock.calls[0][0];
+        expect(operations.map(op => op[0])).toEqual([
+            "liquidity_pool_exchange",
+            "limit_order_create"
+        ]);
+        const [, exchange] = operations[0];
+        const [, order] = operations[1];
+        expect(exchange).toMatchObject({
+            account: "1.2.9",
+            pool: "1.19.7",
+            amount_to_sell: {asset_id: "1.3.0"},
+            min_to_receive: {asset_id: "1.3.121"}
+        });
+        expect(order).toMatchObject({
+            seller: "1.2.9",
+            amount_to_sell: {amount: "35000000", asset_id: "1.3.0"},
+            fill_or_kill: true
+        });
+        // the order is priced at the price of its one order: 5 USD for 350 BTS
+        expect(order.min_to_receive).toEqual({
+            amount: "50000",
+            asset_id: "1.3.121"
+        });
+        // the two parts sell what was typed
+        expect(
+            BigInt(exchange.amount_to_sell.amount) +
+                BigInt(order.amount_to_sell.amount)
+        ).toBe(BigInt("300000000"));
+        // and the pool's part asks for no less than the quote less the slippage (0.5%)
+        expect(BigInt(exchange.min_to_receive.amount) > BigInt(0)).toBe(true);
+    });
+
+    it("sends the plain exchange when the split is not switched on", async () => {
+        thinBook();
+        await sellAndLook();
+        await act(async () => {
+            fireEvent.click(swapButton());
+        });
+        expect(mockExchange).toHaveBeenCalledTimes(1);
+        expect(mockSend).not.toHaveBeenCalled();
+    });
+
+    it("does not split what is asked for: typing the amount to receive uses the pool alone", async () => {
+        thinBook();
+        await open();
+        await act(async () => {
+            fireEvent.change(field("You receive"), {target: {value: "27"}});
+        });
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 20));
+        });
+        expect(document.querySelector('input[type="checkbox"]')).toBeNull();
+    });
+
+    it("does not send the split when the operations would be refused on the prices as they are, and says why", async () => {
+        thinBook();
+        await sellAndLook();
+        mockSimulate.mockReturnValue({
+            ok: false,
+            index: 1,
+            reason: "killed",
+            steps: []
+        });
+        await switchSplit();
+        expect(document.body.textContent).toContain(
+            "On the current prices the chain would refuse this (killed)."
+        );
+        expect(swapButton().disabled).toBe(true);
+        await act(async () => {
+            fireEvent.click(swapButton());
+        });
+        expect(mockSend).not.toHaveBeenCalled();
+        expect(mockExchange).not.toHaveBeenCalled();
+        // the plain swap is still there: switch the split off
+        await switchSplit();
+        expect(swapButton().disabled).toBe(false);
     });
 });

@@ -12,9 +12,18 @@
 //
 // Signing: `onSubmit` calls `ApplicationApi.liquidityPoolExchange(account, pool,
 // sellSymbol, amountToSell, receiveSymbol, minToReceive)` exactly as the dialog
-// always did; nothing else here builds or signs a transaction. Stable pools use
+// always did. The one other way to sign is the split (below). Stable pools use
 // another curve, which is not computed here: they keep the two plain fields
 // (amount to sell and the least to receive, both typed by hand).
+//
+// The split: when a sale is large for the pool, part of it can go to the order book
+// at a better price (lib/common/splitSwap.ts works out how much). If that pays more
+// than the pool or the book alone, a switch offers it. It is ONE transaction of two
+// operations - the pool exchange for its part with the least to receive after the
+// slippage, and a fill-or-kill order for the book's part priced at the worst order
+// it needs - so either both happen or nothing does. The two operations are applied
+// once more to the pool, book and balance as read (lib/common/chainSim.ts) before
+// the button is let go, and the transaction is shown to confirm like any other.
 import * as React from "react";
 import {Link} from "react-router-dom";
 import Translate from "react-translate-component";
@@ -23,6 +32,8 @@ import {Apis} from "bitsharesjs-ws";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
 import {Alert} from "../../design-system/Alert";
+import {Checkbox} from "../../design-system/Checkbox";
+import AdvancedActions from "../../actions/AdvancedActions";
 import ApplicationApi from "api/ApplicationApi";
 import AssetName from "../Utility/AssetName";
 import {ChainStore} from "bitsharesjs";
@@ -46,6 +57,16 @@ import {
     compareVenues,
     fillFromOrderBook
 } from "../../lib/common/priceCompare";
+import {
+    SplitSwapResult,
+    splitSwap,
+    splitSwapOperations
+} from "../../lib/common/splitSwap";
+import {
+    SimState,
+    simPairKey,
+    simulateOperations
+} from "../../lib/common/chainSim";
 import {formatPercent, formatPrice} from "../../lib/common/poolMetrics";
 import styles from "./PoolExchangeModal.module.scss";
 
@@ -150,6 +171,8 @@ function PoolExchangeModalCore({
     const [error, setError] = React.useState<string | null>(null);
     const [submitting, setSubmitting] = React.useState(false);
     const [feeReserve, setFeeReserve] = React.useState<bigint>(BigInt(0));
+    // the sale is split between the pool and the order book (offered only where that pays more)
+    const [useSplit, setUseSplit] = React.useState(false);
 
     const valid = !!pool && pool.size !== 0;
     const bought: "a" | "b" = sold === "a" ? "b" : "a";
@@ -220,38 +243,6 @@ function PoolExchangeModalCore({
                 ? quoteExactIn(swapPool, typedUnits)
                 : quoteExactOut(swapPool, typedUnits);
     }
-    const payUnits: bigint | null = stable
-        ? parseUnits(typed, precisionIn)
-        : quote
-        ? quote.pay
-        : null;
-    const minUnits: bigint | null = stable
-        ? parseUnits(manualMin, precisionOut)
-        : quote
-        ? minReceive(quote.receive, slippage)
-        : null;
-
-    const payText =
-        active === "pay" || stable
-            ? typed
-            : quote
-            ? formatUnits(quote.pay, precisionIn)
-            : "";
-    const receiveText =
-        active === "receive"
-            ? typed
-            : quote
-            ? formatUnits(quote.receive, precisionOut)
-            : "";
-
-    const impact = quote ? priceImpact(quote) : null;
-    const price =
-        quote && quote.pay > BigInt(0)
-            ? Number(quote.receive) /
-              Math.pow(10, precisionOut) /
-              (Number(quote.pay) / Math.pow(10, precisionIn))
-            : null;
-
     // ---- the order book against the pool ---------------------------------
     let bookFill: BookFill | null = null;
     if (quote && book) {
@@ -266,6 +257,115 @@ function PoolExchangeModalCore({
     const venues =
         quote && bookFill ? compareVenues(quote.receive, bookFill) : null;
 
+    // ---- the pool and the order book together -------------------------------
+    // (only for a sale that was typed: what is asked for is not split)
+    const bestAlone: bigint | null = quote
+        ? bookFill && bookFill.complete && bookFill.receive > quote.receive
+            ? bookFill.receive
+            : quote.receive
+        : null;
+    const split: SplitSwapResult | null =
+        !stable && quote && book && active === "pay" && bestAlone !== null
+            ? splitSwap({
+                  pools: [{id: pool.get("id"), swap: swapPool}],
+                  book,
+                  payAsset: idIn,
+                  receiveAsset: idOut,
+                  pay: quote.pay,
+                  feeOut: swapPool.feeOut,
+                  best: bestAlone
+              })
+            : null;
+    const splitOn = useSplit && split !== null;
+    const poolPart = split ? split.pools[0] : null;
+    const accountObject: any = account
+        ? (ChainStore as any).getAccount(account)
+        : null;
+    const accountId: string | null =
+        accountObject && typeof accountObject.get === "function"
+            ? accountObject.get("id") || null
+            : null;
+    const built =
+        splitOn && split && accountId
+            ? splitSwapOperations({
+                  accountId,
+                  poolId: pool.get("id"),
+                  payAsset: idIn,
+                  receiveAsset: idOut,
+                  split,
+                  slippage,
+                  feeOut: swapPool.feeOut,
+                  expiration: new Date(Date.now() + 60 * 60 * 1000)
+              })
+            : null;
+    const splitOperations = built ? built.operations : null;
+    const splitMin: bigint | null = built ? built.least : null;
+    // the two operations, applied alone to the pool, the order book and the balance as they were read
+    let splitRefusal: string | null = null;
+    if (splitOperations && accountId) {
+        const state: SimState = {
+            assets: new Map([
+                [idIn, {fee: swapPool.feeIn}],
+                [idOut, {fee: swapPool.feeOut}]
+            ]),
+            pools: new Map([
+                [
+                    pool.get("id"),
+                    {
+                        assetA: pool.get("asset_a").get("id"),
+                        assetB: pool.get("asset_b").get("id"),
+                        balanceA: BigInt(String(pool.get("balance_a"))),
+                        balanceB: BigInt(String(pool.get("balance_b"))),
+                        takerFeePercent: swapPool.takerFeePercent
+                    }
+                ]
+            ]),
+            books: new Map([[simPairKey(idIn, idOut), book || []]]),
+            balances: new Map([[idIn, balanceIn]])
+        };
+        const outcome = simulateOperations(state, accountId, splitOperations);
+        if (!outcome.ok) splitRefusal = outcome.reason;
+    }
+
+    const payUnits: bigint | null = stable
+        ? parseUnits(typed, precisionIn)
+        : quote
+        ? quote.pay
+        : null;
+    const minUnits: bigint | null = stable
+        ? parseUnits(manualMin, precisionOut)
+        : splitOn && splitMin !== null
+        ? splitMin
+        : quote
+        ? minReceive(quote.receive, slippage)
+        : null;
+
+    const payText =
+        active === "pay" || stable
+            ? typed
+            : quote
+            ? formatUnits(quote.pay, precisionIn)
+            : "";
+    const receiveText =
+        active === "receive"
+            ? typed
+            : splitOn && split
+            ? formatUnits(split.receive, precisionOut)
+            : quote
+            ? formatUnits(quote.receive, precisionOut)
+            : "";
+
+    // (what the sale pays per unit is the whole sale's, and the pool's part is what moves the pool's price)
+    const impact = quote
+        ? priceImpact(splitOn && poolPart ? poolPart.quote : quote)
+        : null;
+    const price =
+        quote && quote.pay > BigInt(0)
+            ? Number(splitOn && split ? split.receive : quote.receive) /
+              Math.pow(10, precisionOut) /
+              (Number(quote.pay) / Math.pow(10, precisionIn))
+            : null;
+
     // ---- what the button says ----------------------------------------------
     let blocker: string | null = null;
     if (!account) blocker = t("log_in");
@@ -275,6 +375,8 @@ function PoolExchangeModalCore({
     else if (stable && !minUnits) blocker = t("enter_minimum");
     else if (payUnits !== null && payUnits > balanceIn) {
         blocker = t("insufficient", {asset: symbolIn});
+    } else if (splitOn && splitRefusal) {
+        blocker = t("split_refused", {why: splitRefusal});
     }
 
     // Switching the direction keeps the numbers the user typed: each amount
@@ -315,6 +417,23 @@ function PoolExchangeModalCore({
         if (blocker || payUnits === null || minUnits === null) return;
         setError(null);
         setSubmitting(true);
+        if (splitOn) {
+            // one transaction: the pool exchange and the fill-or-kill order (shown to confirm, like any other)
+            if (!splitOperations) {
+                setSubmitting(false);
+                return;
+            }
+            AdvancedActions.send(splitOperations)
+                .then(() => {
+                    setSubmitting(false);
+                    onHideModal();
+                })
+                .catch((e: any) => {
+                    setSubmitting(false);
+                    console.error("split exchange:", e);
+                });
+            return;
+        }
         (ApplicationApi as any)
             .liquidityPoolExchange(
                 account,
@@ -575,6 +694,62 @@ function PoolExchangeModalCore({
                                     {" "}
                                     {t("book_too_thin")}
                                 </span>
+                            ) : null}
+                        </div>
+                    ) : null}
+
+                    {split && poolPart ? (
+                        <div className={`${styles.venues} ${styles.venueBook}`}>
+                            <Checkbox
+                                checked={useSplit}
+                                onChange={event =>
+                                    setUseSplit(event.target.checked)
+                                }
+                            >
+                                {t("split_use")}
+                            </Checkbox>
+                            <div>
+                                {t("split_hint", {
+                                    gain: `${formatUnits(
+                                        split.receive - (bestAlone as bigint),
+                                        precisionOut
+                                    )} ${symbolOut}`,
+                                    percent: formatPercent(
+                                        Number(
+                                            split.receive -
+                                                (bestAlone as bigint)
+                                        ) / Number(bestAlone)
+                                    )
+                                })}
+                            </div>
+                            {splitOn ? (
+                                <ul className={styles.parts}>
+                                    <li>
+                                        {t("split_pool_part", {
+                                            pay: `${formatUnits(
+                                                poolPart.pay,
+                                                precisionIn
+                                            )} ${symbolIn}`,
+                                            receive: `${formatUnits(
+                                                poolPart.quote.receive,
+                                                precisionOut
+                                            )} ${symbolOut}`
+                                        })}
+                                    </li>
+                                    <li>
+                                        {t("split_book_part", {
+                                            orders: split.book.fill.levels,
+                                            pay: `${formatUnits(
+                                                split.book.pay,
+                                                precisionIn
+                                            )} ${symbolIn}`,
+                                            receive: `${formatUnits(
+                                                split.book.fill.receive,
+                                                precisionOut
+                                            )} ${symbolOut}`
+                                        })}
+                                    </li>
+                                </ul>
                             ) : null}
                         </div>
                     ) : null}

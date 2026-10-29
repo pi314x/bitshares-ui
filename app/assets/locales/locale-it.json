@@ -2173,7 +2173,12 @@
             "better_book": "Il libro degli ordini paga il %(percent)s in più (%(amount)s).",
             "open_order_book": "Apri il libro degli ordini",
             "same_price": "Pool e libro degli ordini pagano lo stesso.",
-            "book_too_thin": "Il libro degli ordini è troppo sottile per l'intero importo."
+            "book_too_thin": "Il libro degli ordini è troppo sottile per l'intero importo.",
+            "split_use": "Usa insieme il pool e il libro degli ordini",
+            "split_hint": "Insieme pagano %(gain)s in più (%(percent)s): una transazione con due operazioni, e la seconda ha una commissione di rete propria.",
+            "split_pool_part": "Nel pool: %(pay)s per %(receive)s",
+            "split_book_part": "Nel libro degli ordini (tutto o niente, %(orders)s ordini): %(pay)s per %(receive)s",
+            "split_refused": "Ai prezzi attuali la catena lo rifiuterebbe (%(why)s)."
         },
         "hint": {
             "title": "Pool di liquidità",

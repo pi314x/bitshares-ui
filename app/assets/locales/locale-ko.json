@@ -2173,7 +2173,12 @@
             "better_book": "주문서가 %(percent)s 더 많이 지급합니다(%(amount)s).",
             "open_order_book": "주문서 열기",
             "same_price": "풀과 주문서의 지급액이 같습니다.",
-            "book_too_thin": "주문서가 전체 금액을 받기에 얕습니다."
+            "book_too_thin": "주문서가 전체 금액을 받기에 얕습니다.",
+            "split_use": "풀과 주문서를 함께 사용",
+            "split_hint": "함께 쓰면 %(gain)s(%(percent)s) 더 받습니다. 하나의 트랜잭션에 두 개의 작업이 들어가며, 두 번째 작업에는 별도의 네트워크 수수료가 있습니다.",
+            "split_pool_part": "풀: %(pay)s → %(receive)s",
+            "split_book_part": "주문서(전량 체결 또는 취소, 주문 %(orders)s개): %(pay)s → %(receive)s",
+            "split_refused": "현재 가격에서는 체인이 이를 거부합니다(%(why)s)."
         },
         "hint": {
             "title": "유동성 풀",

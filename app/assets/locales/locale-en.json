@@ -2173,7 +2173,12 @@
             "better_book": "The order book pays %(percent)s more (%(amount)s).",
             "open_order_book": "Open the order book",
             "same_price": "The pool and the order book pay the same.",
-            "book_too_thin": "The order book is too thin for the whole amount."
+            "book_too_thin": "The order book is too thin for the whole amount.",
+            "split_use": "Use the pool and the order book together",
+            "split_hint": "Together they pay %(gain)s more (%(percent)s): one transaction with two operations, and the second has a network fee of its own.",
+            "split_pool_part": "In the pool: %(pay)s for %(receive)s",
+            "split_book_part": "On the order book (fill or kill, %(orders)s orders): %(pay)s for %(receive)s",
+            "split_refused": "On the current prices the chain would refuse this (%(why)s)."
         },
         "hint": {
             "title": "Liquidity pool",

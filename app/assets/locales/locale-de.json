@@ -2173,7 +2173,12 @@
             "better_book": "Das Orderbuch zahlt %(percent)s mehr (%(amount)s).",
             "open_order_book": "Orderbuch öffnen",
             "same_price": "Pool und Orderbuch zahlen gleich viel.",
-            "book_too_thin": "Das Orderbuch ist für den ganzen Betrag zu dünn."
+            "book_too_thin": "Das Orderbuch ist für den ganzen Betrag zu dünn.",
+            "split_use": "Pool und Orderbuch zusammen nutzen",
+            "split_hint": "Zusammen zahlen sie %(gain)s mehr (%(percent)s): eine Transaktion mit zwei Operationen, und die zweite hat eine eigene Netzwerkgebühr.",
+            "split_pool_part": "Im Pool: %(pay)s für %(receive)s",
+            "split_book_part": "Im Orderbuch (Fill-or-Kill, %(orders)s Orders): %(pay)s für %(receive)s",
+            "split_refused": "Bei den aktuellen Preisen würde die Kette das ablehnen (%(why)s)."
         },
         "hint": {
             "title": "Liquiditätspool",

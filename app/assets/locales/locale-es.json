@@ -2173,7 +2173,12 @@
             "better_book": "El libro de órdenes paga un %(percent)s más (%(amount)s).",
             "open_order_book": "Abrir el libro de órdenes",
             "same_price": "El pool y el libro de órdenes pagan lo mismo.",
-            "book_too_thin": "El libro de órdenes es demasiado fino para toda la cantidad."
+            "book_too_thin": "El libro de órdenes es demasiado fino para toda la cantidad.",
+            "split_use": "Usar el pool y el libro de órdenes juntos",
+            "split_hint": "Juntos pagan %(gain)s más (%(percent)s): una transacción con dos operaciones, y la segunda tiene su propia comisión de red.",
+            "split_pool_part": "En el pool: %(pay)s por %(receive)s",
+            "split_book_part": "En el libro de órdenes (todo o nada, %(orders)s órdenes): %(pay)s por %(receive)s",
+            "split_refused": "Con los precios actuales, la cadena lo rechazaría (%(why)s)."
         },
         "hint": {
             "title": "Pool de liquidez",

@@ -2173,7 +2173,12 @@
             "better_book": "Le carnet d'ordres paie %(percent)s de plus (%(amount)s).",
             "open_order_book": "Ouvrir le carnet d'ordres",
             "same_price": "Le pool et le carnet d'ordres paient autant.",
-            "book_too_thin": "Le carnet d'ordres est trop mince pour tout le montant."
+            "book_too_thin": "Le carnet d'ordres est trop mince pour tout le montant.",
+            "split_use": "Utiliser le pool et le carnet d'ordres ensemble",
+            "split_hint": "Ensemble ils paient %(gain)s de plus (%(percent)s) : une transaction de deux opérations, et la seconde a ses propres frais de réseau.",
+            "split_pool_part": "Dans le pool : %(pay)s pour %(receive)s",
+            "split_book_part": "Dans le carnet d'ordres (tout ou rien, %(orders)s ordres) : %(pay)s pour %(receive)s",
+            "split_refused": "Aux prix actuels, la chaîne refuserait ceci (%(why)s)."
         },
         "hint": {
             "title": "Pool de liquidité",

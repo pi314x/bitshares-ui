@@ -2173,7 +2173,12 @@
             "better_book": "板の方が %(percent)s 多く受け取れます（%(amount)s）。",
             "open_order_book": "板を開く",
             "same_price": "プールと板で受取額は同じです。",
-            "book_too_thin": "板の厚みが全額には足りません。"
+            "book_too_thin": "板の厚みが全額には足りません。",
+            "split_use": "プールと板を一緒に使う",
+            "split_hint": "合わせると %(gain)s（%(percent)s）多く受け取れます。1 つのトランザクションに 2 つの操作が入り、2 つ目には別にネットワーク手数料がかかります。",
+            "split_pool_part": "プール：%(pay)s で %(receive)s",
+            "split_book_part": "板（全量約定のみ、%(orders)s 件の注文）：%(pay)s で %(receive)s",
+            "split_refused": "現在の価格では、チェーンに拒否されます（%(why)s）。"
         },
         "hint": {
             "title": "流動性プール",

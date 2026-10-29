@@ -23,12 +23,20 @@ export interface BookFill {
     receive: bigint;
     /** Before that fee. */
     gross: bigint;
+    /** What `spent` would have bought had every unit cost what the best order asks (before the fee). */
+    ideal: bigint;
     /** How much of the amount offered was used. */
     spent: bigint;
     /** The amount was matched (the book is deep enough), but for dust. */
     complete: boolean;
     /** How many orders were touched. */
     levels: number;
+    /**
+     * The worst-priced order touched, as the maker priced it (`quote` of the paid asset per `base` of the
+     * received one), or null when none was. A limit order matches only the orders at its own price or
+     * better, so the order that is sent must allow this price, not just the average of the fill.
+     */
+    worst?: {base: bigint; quote: bigint} | null;
 }
 
 const ZERO = BigInt(0);
@@ -37,44 +45,89 @@ function ceilDiv(a: bigint, b: bigint): bigint {
     return (a + b - BigInt(1)) / b;
 }
 
+/** An order that sells the received asset for the paid one: `forSale` of it at `quote` of the paid asset per `base`. */
+export interface MatchingOrder {
+    forSale: bigint;
+    base: bigint;
+    quote: bigint;
+    /** where it was in the list given */
+    index: number;
+}
+
 /**
- * Sells `pay` of `payAsset` into `orders` for `receiveAsset`. `orders` may be
- * the raw answer of `get_limit_orders` for the pair (both directions); only
- * those that sell `receiveAsset` for `payAsset` can fill this order.
+ * The orders of a book that an order paying `payAsset` for `receiveAsset` can be matched with, the cheapest
+ * first: the least of `payAsset` per unit of `receiveAsset`.
  */
-export function fillFromOrderBook(
+export function matchingOrders(
     orders: BookOrder[],
     payAsset: string,
-    receiveAsset: string,
-    pay: bigint,
-    receiveFee: MarketFee = NO_MARKET_FEE
-): BookFill {
-    const matching = orders
+    receiveAsset: string
+): MatchingOrder[] {
+    return orders
+        .map((o, index) => ({o, index}))
         .filter(
-            o =>
+            ({o}) =>
                 o.sell_price.base.asset_id === receiveAsset &&
                 o.sell_price.quote.asset_id === payAsset &&
                 BigInt(o.sell_price.base.amount) > ZERO &&
                 BigInt(o.for_sale) > ZERO
         )
-        .map(o => ({
+        .map(({o, index}) => ({
             forSale: BigInt(o.for_sale),
             base: BigInt(o.sell_price.base.amount),
-            quote: BigInt(o.sell_price.quote.amount)
+            quote: BigInt(o.sell_price.quote.amount),
+            index
         }))
-        // cheapest first: the least of `payAsset` per unit of `receiveAsset`
         .sort((a, b) => {
             const left = a.quote * b.base;
             const right = b.quote * a.base;
             return left < right ? -1 : left > right ? 1 : 0;
         });
+}
+
+/**
+ * The price a limit order allows: it sells `pay` and asks for at least `receive`, so it is matched only with
+ * the orders that ask no more than `pay / receive` of the paid asset per unit of the received one.
+ */
+export interface PriceLimit {
+    pay: bigint;
+    receive: bigint;
+}
+
+/** What a walk of the book used: for each order touched, how much of it was taken and what that cost. */
+export interface BookWalk {
+    fill: BookFill;
+    taken: Array<{index: number; take: bigint; cost: bigint}>;
+}
+
+/**
+ * Sells `pay` of `payAsset` into `orders` for `receiveAsset`, cheapest order first, each at its own price, the
+ * way the chain matches an order that sells at once. With `limit` the walk stops at the first order whose price
+ * is above what the order allows (a limit order is matched only with the orders at its own price or better).
+ * `taken` is what was used of each order, by its place in `orders`.
+ */
+export function walkOrderBook(
+    orders: BookOrder[],
+    payAsset: string,
+    receiveAsset: string,
+    pay: bigint,
+    receiveFee: MarketFee = NO_MARKET_FEE,
+    limit?: PriceLimit
+): BookWalk {
+    const matching = matchingOrders(orders, payAsset, receiveAsset);
 
     let remaining = pay;
     let gross = ZERO;
     let levels = 0;
+    let worst: {base: bigint; quote: bigint} | null = null;
     let stoppedInside = false;
+    const taken: BookWalk["taken"] = [];
     for (const order of matching) {
         if (remaining <= ZERO) break;
+        // the order asks more than the limit allows (and so does every one after it)
+        if (limit && order.quote * limit.receive > limit.pay * order.base) {
+            break;
+        }
         const costAll = ceilDiv(order.forSale * order.quote, order.base);
         let take: bigint;
         let cost: bigint;
@@ -90,6 +143,8 @@ export function fillFromOrderBook(
         gross += take;
         remaining -= cost;
         levels += 1;
+        worst = {base: order.base, quote: order.quote};
+        taken.push({index: order.index, take, cost});
         if (take < order.forSale) {
             // this order was only partly used: the amount is spent, but for
             // less than one more unit's price
@@ -98,14 +153,63 @@ export function fillFromOrderBook(
         }
     }
     const fee = marketFee(receiveFee, gross, false);
+    const spent = pay - remaining;
     return {
-        receive: gross - fee,
-        gross,
-        spent: pay - remaining,
-        // what cannot be spent for lack of a whole unit is dust
-        complete: stoppedInside || remaining * BigInt(1000) <= pay,
-        levels
+        fill: {
+            receive: gross - fee,
+            gross,
+            // the price of the first order is what a small trade pays
+            ideal: matching.length
+                ? (spent * matching[0].base) / matching[0].quote
+                : ZERO,
+            spent,
+            // what cannot be spent for lack of a whole unit is dust
+            complete: stoppedInside || remaining * BigInt(1000) <= pay,
+            levels,
+            worst
+        },
+        taken
     };
+}
+
+/**
+ * Sells `pay` of `payAsset` into `orders` for `receiveAsset`. `orders` may be
+ * the raw answer of `get_limit_orders` for the pair (both directions); only
+ * those that sell `receiveAsset` for `payAsset` can fill this order.
+ */
+export function fillFromOrderBook(
+    orders: BookOrder[],
+    payAsset: string,
+    receiveAsset: string,
+    pay: bigint,
+    receiveFee: MarketFee = NO_MARKET_FEE
+): BookFill {
+    return walkOrderBook(orders, payAsset, receiveAsset, pay, receiveFee).fill;
+}
+
+/**
+ * How much of `payAsset` it takes to buy everything the book offers for it: the depth of the book
+ * on this side, in the asset that is paid (rounded up per order, as a fill is).
+ */
+export function bookDepth(
+    orders: BookOrder[],
+    payAsset: string,
+    receiveAsset: string
+): bigint {
+    let total = ZERO;
+    for (const o of orders) {
+        if (
+            o.sell_price.base.asset_id !== receiveAsset ||
+            o.sell_price.quote.asset_id !== payAsset
+        ) {
+            continue;
+        }
+        const base = BigInt(o.sell_price.base.amount);
+        const forSale = BigInt(o.for_sale);
+        if (base <= ZERO || forSale <= ZERO) continue;
+        total += ceilDiv(forSale * BigInt(o.sell_price.quote.amount), base);
+    }
+    return total;
 }
 
 export interface VenueComparison {
