@@ -2,7 +2,12 @@ import * as React from "react";
 import {render, act} from "@testing-library/react";
 // The operation renderer pulls in the whole component tree (and webpack-only
 // `require.context` calls); the closed dialog never renders it.
-jest.mock("components/Blockchain/Operation", () => () => null);
+// (it leaves a mark with the type of the operation it is given, to count the rows of a toast)
+jest.mock("components/Blockchain/Operation", () => (props: any) =>
+    require("react").createElement("i", {
+        "data-operation": String(props.op[0])
+    })
+);
 jest.mock("components/Blockchain/Transaction", () => () => null);
 jest.mock("../../../components/Utility/HelpContent", () => () => null);
 import TransactionConfirm from "../../../components/Blockchain/TransactionConfirm";
@@ -84,6 +89,54 @@ describe("TransactionConfirm", () => {
         expect(crashes).toEqual([]);
         // still mounted (an error in an effect unmounts the tree)
         expect(view.container.isConnected).toBe(true);
+    });
+
+    // A swap that uses the order book too is one transaction of two operations: the notification
+    // that the transaction is confirmed names both, not only the first.
+    it("names every operation of the transaction in the confirmed notification", async () => {
+        const transfer = (to: string) => [
+            0,
+            {
+                fee: {amount: 0, asset_id: "1.3.0"},
+                from: "1.2.1",
+                to,
+                amount: {amount: 1, asset_id: "1.3.0"}
+            }
+        ];
+        const fakeTransaction = {
+            serialize: () => ({
+                operations: [transfer("1.2.2"), [63, {}], transfer("1.2.3")]
+            }),
+            has_proposed_operation: () => false,
+            update_head_block: () => Promise.resolve(),
+            finalize: () => Promise.resolve()
+        };
+        const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+        const view = render(<TransactionConfirm />);
+        await act(async () => {
+            reduxStore.dispatch(confirm({transaction: fakeTransaction}));
+        });
+        await act(async () => {
+            reduxStore.dispatch(wasBroadcast());
+        });
+        await act(async () => {
+            reduxStore.dispatch(wasIncluded([{id: "1", block_num: 1}]));
+        });
+        // the notification is sent a moment after the effect that makes it
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+        spy.mockRestore();
+        const toast = reduxStore.getState().notification.notification;
+        const shown = render(<div>{toast.children}</div>);
+        expect(
+            Array.from(
+                shown.container.querySelectorAll("[data-operation]")
+            ).map(node => node.getAttribute("data-operation"))
+        ).toEqual(["0", "63", "0"]);
+        shown.unmount();
+        view.unmount();
+        TransactionConfirmStore.reset();
     });
 
     // The operation of the transaction to confirm is a card (label over value on a phone): the

@@ -1,6 +1,8 @@
 import * as React from "react";
-import {act, fireEvent} from "@testing-library/react";
-import {Notification} from "../../design-system/Notification";
+import {act, fireEvent, render} from "@testing-library/react";
+import {FormattedNumber, IntlProvider} from "react-intl";
+import {Link, MemoryRouter} from "react-router-dom";
+import {Notification, NotificationHost} from "../../design-system/Notification";
 
 // `Notification` is an imperative API, not a rendered component - it
 // lazily mounts its own stack into `document.body` on first call (a
@@ -143,5 +145,62 @@ describe("design-system/Notification", () => {
 
         Notification.config({duration: 4.5});
         jest.useRealTimers();
+    });
+});
+
+// The confirmation of a transaction holds an operation row: links to accounts and formatted amounts. They need
+// the router and the language of the app, which a root of its own for the toasts does not have (it threw).
+describe("design-system/NotificationHost", () => {
+    const app = () => (
+        <IntlProvider locale="en">
+            <MemoryRouter>
+                <NotificationHost />
+            </MemoryRouter>
+        </IntlProvider>
+    );
+    const toast = () =>
+        Notification.success({
+            message: <Link to="/accounts">my account</Link>,
+            description: <FormattedNumber value={1234.5} />,
+            duration: 0
+        });
+    const closeAll = () =>
+        document.body
+            .querySelectorAll("button[aria-label='Close']")
+            .forEach(button => {
+                act(() => {
+                    fireEvent.click(button);
+                });
+            });
+
+    it("draws a toast inside the app: a link and a formatted amount in it find the router and the language", () => {
+        const view = render(app());
+        act(() => {
+            toast();
+        });
+        expect(document.body.textContent).toContain("my account");
+        expect(document.body.textContent).toContain("1,234.5");
+        // ... in the app's tree (a portal), not in a root of its own: one copy only
+        expect(document.body.textContent?.match(/my account/g)).toHaveLength(1);
+        closeAll();
+        expect(document.body.textContent).not.toContain("my account");
+        view.unmount();
+    });
+
+    it("takes over what a root of its own showed before it was mounted, and hands it back when it goes", () => {
+        act(() => {
+            Notification.info({message: "Before the host", duration: 0});
+        });
+        const view = render(app());
+        expect(
+            document.body.textContent?.match(/Before the host/g)
+        ).toHaveLength(1);
+        view.unmount();
+        // with no host the toast is drawn again, in a root of its own
+        expect(
+            document.body.textContent?.match(/Before the host/g)
+        ).toHaveLength(1);
+        closeAll();
+        expect(document.body.textContent).not.toContain("Before the host");
     });
 });

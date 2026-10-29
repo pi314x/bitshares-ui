@@ -1,4 +1,5 @@
 import * as React from "react";
+import {createPortal} from "react-dom";
 import {createRoot, Root} from "react-dom/client";
 import {Icon} from "./Icon";
 import styles from "./Notification.module.scss";
@@ -51,6 +52,12 @@ import {
 // `act()`/task, so the first entry pushed in the same synchronous call as
 // the container's creation was silently dropped (notified before
 // anything had subscribed to hear it).
+//
+// Where the toasts are drawn: a `<NotificationHost/>` mounted inside the app (App.jsx) draws them, through a
+// portal, so that what a toast holds finds the router and the language it needs - the confirmation of a
+// transaction holds an operation row, with links to accounts and formatted amounts, which threw in a root of
+// its own (no router, no `intl`). Until a host is mounted (the start-up, a test), the toasts are drawn in a
+// root of their own, as before.
 export interface NotificationArgs {
     message: React.ReactNode;
     /** Seconds before auto-dismissing; 0 disables auto-dismiss. Defaults
@@ -94,10 +101,14 @@ const config: Required<NotificationConfigArgs> = {
 let entries: NotificationEntry[] = [];
 let nextId = 1;
 let root: Root | null = null;
+// the hosts mounted in the app, and who wants to know when the entries change
+let hosts = 0;
+const listeners = new Set<() => void>();
 
 function render() {
+    listeners.forEach(listener => listener());
     if (!root) return;
-    root.render(<NotificationStack entries={entries} />);
+    root.render(hosts > 0 ? null : <NotificationStack entries={entries} />);
 }
 
 function dismiss(id: number) {
@@ -123,7 +134,7 @@ function push(kind: NotificationKind, args: NotificationArgs) {
     } catch (e) {
         // never let the history stop a toast
     }
-    ensureContainer();
+    if (hosts === 0) ensureContainer();
     const id = nextId++;
     const duration = args.duration ?? config.duration;
     entries = [
@@ -219,6 +230,33 @@ function NotificationStack({
             ))}
         </div>
     );
+}
+
+/** Draws the toasts inside the app, so that they share its router and language; mount it once, below both. */
+export function NotificationHost(): JSX.Element {
+    const list = React.useSyncExternalStore(
+        listener => {
+            listeners.add(listener);
+            return () => {
+                listeners.delete(listener);
+            };
+        },
+        () => entries
+    );
+    React.useEffect(() => {
+        hosts++;
+        // what a root of its own was showing moves here
+        render();
+        return () => {
+            hosts--;
+            // the toasts that are left are drawn in a root of their own again
+            if (hosts === 0 && entries.length > 0) {
+                ensureContainer();
+                render();
+            }
+        };
+    }, []);
+    return createPortal(<NotificationStack entries={list} />, document.body);
 }
 
 export const Notification = {

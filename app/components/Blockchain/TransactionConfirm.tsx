@@ -197,9 +197,9 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
             // seconds before the chain says "included": the transaction can be gone by then, and
             // `null.serialize()` here unmounted the whole app. The notification then says only that
             // it is confirmed.
-            const operation = props.transaction
-                ? props.transaction.serialize().operations[0]
-                : null;
+            const operations: any[] = props.transaction
+                ? props.transaction.serialize().operations
+                : [];
             (notify as any).addNotification.defer({
                 children: (
                     <div>
@@ -215,17 +215,21 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                                 />
                             </span>
                         </p>
-                        {operation ? (
+                        {operations.length ? (
                             <table>
-                                <Operation
-                                    op={operation}
-                                    block={1}
-                                    current={"1.2.0"}
-                                    hideFee
-                                    inverted={false}
-                                    hideOpLabel={true}
-                                    hideDate={true}
-                                />
+                                {/* every operation: a swap that uses the order book too has two */}
+                                {operations.map((operation, index) => (
+                                    <Operation
+                                        key={index}
+                                        op={operation}
+                                        block={1}
+                                        current={"1.2.0"}
+                                        hideFee
+                                        inverted={false}
+                                        hideOpLabel={true}
+                                        hideDate={true}
+                                    />
+                                ))}
                             </table>
                         ) : null}
                     </div>

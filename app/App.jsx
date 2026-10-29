@@ -25,7 +25,7 @@ import {isIncognito} from "feature_detect";
 import {updateGatewayBackers} from "common/gatewayUtils";
 import titleUtils from "common/titleUtils";
 import {BodyClassName} from "./design-system/BodyClassName";
-import {Notification} from "./design-system/Notification";
+import {Notification, NotificationHost} from "./design-system/Notification";
 import {htmlToText} from "./lib/common/notificationHistory";
 import {toastFromNotification} from "./lib/common/toastFromNotification";
 import {DEFAULT_NOTIFICATION_DURATION} from "services/Notification";
@@ -904,6 +904,7 @@ class App extends React.Component {
                     <div id="content-wrapper">
                         {content}
                         <TransactionConfirm />
+                        <NotificationHost />
                         <BrowserNotifications />
                         <PriceAlertNotifications />
                         <WalletUnlockModal />
