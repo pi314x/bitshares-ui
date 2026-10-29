@@ -3,7 +3,11 @@
 // asset/amount and a receive asset/amount, see the resulting price/fee
 // breakdown and matched order book slice, then submit a fill-or-kill
 // limit order. Mechanical class-to-hooks translation; no change to any
-// order-building, fee-calculation, or market-subscription logic.
+// order-building, fee-calculation, or market-subscription logic -
+// except one, made on purpose afterwards: the order asks to receive at
+// least what the worst order of the walk pays, not the average of the
+// walk (`fillOrKill.ts`: at the average a trade over several orders is
+// killed by the chain).
 //
 // ***** SECURITY-SENSITIVE per AGENTS.md *****
 // `handleSell()` (near the bottom of this file) builds the real
@@ -174,6 +178,7 @@ import {Switch} from "../../design-system/Switch";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Collapse} from "../../design-system/Collapse";
 import QuickTradeHelp from "./QuickTradeHelp";
+import {fillOrKillReceive} from "./fillOrKill";
 import SellReceive from "components/QuickTrade/SellReceive";
 import MarketsActions from "actions/MarketsActions";
 import {
@@ -816,10 +821,18 @@ function QuickTradeCore(props: QuickTradeProps) {
             precision: sellAssetPrecision,
             amount: (sellAmount as any) * 10 ** sellAssetPrecision
         });
+        // What it asks to receive at least is the walk of the book at the price of the worst order it
+        // touches, not the average of the walk (see `fillOrKill.ts`): at the average a trade over
+        // several orders is killed by the chain.
         const toReceive = new Asset({
             asset_id: receiveAssetId,
             precision: receiveAssetPrecision,
-            amount: (receiveAmount as any) * 10 ** receiveAssetPrecision
+            amount: fillOrKillReceive(
+                Number(sellAmount),
+                Number(receiveAmount),
+                stateRef.current.orders,
+                receiveAssetPrecision
+            )
         });
         const expirationTime = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
