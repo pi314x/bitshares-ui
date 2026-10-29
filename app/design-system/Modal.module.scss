@@ -1,0 +1,127 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1000;
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - 48px);
+    max-height: calc(100vh - 48px);
+    width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    outline: none;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.title {
+    margin: 0;
+    font-size: 16px;
+}
+
+.closeButton {
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.closeButton:hover {
+    color: var(--ink);
+    background: var(--raised);
+}
+
+.body {
+    padding: 20px;
+    overflow-y: auto;
+    color: var(--ink);
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+}
+
+// The same dialog shown as a page (`ModalAsPage`): a card in the flow of the
+// page, as wide as the page allows up to a readable width. Left-aligned at the
+// page's inset like every other screen (centered, its distance to the edge
+// changed with the window).
+.page {
+    width: 100%;
+    // the pages that were dialogs (send, deposit, withdraw, timed transfer, a
+    // lock) are one column, at a width fields still read well at
+    max-width: 760px;
+    margin: 0;
+    box-sizing: border-box;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg, 12px);
+    color: var(--ink);
+}
+
+.pageTitle {
+    margin: 0;
+    padding: 18px 20px 14px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--line);
+}
+
+.pageBody {
+    padding: 20px;
+}
+
+.pageFooter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+    .pageTitle {
+        padding: 14px 16px 12px;
+        font-size: 18px;
+    }
+
+    .pageBody {
+        padding: 16px;
+    }
+
+    .pageFooter {
+        padding: 12px 16px;
+    }
+}

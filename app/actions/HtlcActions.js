@@ -1,8 +1,24 @@
-import alt from "alt-instance";
-import {Apis} from "bitsharesjs-ws";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): plain singleton replacing the real
+// Alt `alt.createActions(HtlcActions)` wrapper - grep-confirmed no store
+// ever bound to this class (`bindListeners`), so under real Alt every
+// `dispatch(true)`/`dispatch(false)` call below was already a no-op;
+// `create`/`redeem`/`extend` returned Alt "thunks" (`dispatch => {...}`)
+// purely so they could call `dispatch`, so the thunk wrapper is dropped
+// and each method just returns the same `.then()/.catch()` chain
+// directly - same dead-dispatch precedent as the `AssetActions`/
+// `AccountActions`/`MarketsActions` batches. Preserved as-is, not fixed:
+// each method's internal `.catch()` swallows `process_transaction`
+// errors without rethrowing (only `console.log`s them), so the Promise
+// `HtlcModal.tsx` awaits always resolves - its own `.catch()` there never
+// actually fires even when the transaction fails. This was already true
+// under real Alt (the dispatch calls don't change the chain's resolution),
+// not a behavior change introduced by this port. Also drops 3 already-
+// unused imports (`Apis`, `ChainStore`, `FetchChainObjects` - dead since
+// before this port, confirmed via `git show` against the pre-port file)
+// surfaced by `yarn lint:changed` now that this file is part of a diff.
 import WalletApi from "api/WalletApi";
 import WalletDb from "stores/WalletDb";
-import {ChainStore, hash, FetchChainObjects} from "bitsharesjs";
+import {hash} from "bitsharesjs";
 
 const calculateHash = (cipher, preimage) => {
     let preimage_hash_calculated = null;
@@ -91,19 +107,14 @@ class HtlcActions {
             claim_period_seconds: lock_time
         });
 
-        return dispatch => {
-            return WalletDb.process_transaction(tr, null, true)
-                .then(() => {
-                    dispatch(true);
-                })
-                .catch(error => {
-                    console.log(
-                        "[HtlcActions.js:69] ----- htlc create error ----->",
-                        error
-                    );
-                    dispatch(false);
-                });
-        };
+        return WalletDb.process_transaction(tr, null, true)
+            .then(() => {})
+            .catch(error => {
+                console.log(
+                    "[HtlcActions.js:69] ----- htlc create error ----->",
+                    error
+                );
+            });
     }
 
     redeem({htlc_id, user_id, preimage}) {
@@ -119,19 +130,14 @@ class HtlcActions {
             redeemer: user_id
         });
 
-        return dispatch => {
-            return WalletDb.process_transaction(tr, null, true)
-                .then(() => {
-                    dispatch(true);
-                })
-                .catch(error => {
-                    console.log(
-                        "[HtlcActions.js:98] ----- htlc redeem error ----->",
-                        error
-                    );
-                    dispatch(false);
-                });
-        };
+        return WalletDb.process_transaction(tr, null, true)
+            .then(() => {})
+            .catch(error => {
+                console.log(
+                    "[HtlcActions.js:98] ----- htlc redeem error ----->",
+                    error
+                );
+            });
     }
 
     extend({htlc_id, user_id, seconds_to_add}) {
@@ -147,19 +153,14 @@ class HtlcActions {
             seconds_to_add: seconds_to_add
         });
 
-        return dispatch => {
-            return WalletDb.process_transaction(tr, null, true)
-                .then(() => {
-                    dispatch(true);
-                })
-                .catch(error => {
-                    console.log(
-                        "[HtlcActions.js:127] ----- htlc extend error ----->",
-                        error
-                    );
-                    dispatch(false);
-                });
-        };
+        return WalletDb.process_transaction(tr, null, true)
+            .then(() => {})
+            .catch(error => {
+                console.log(
+                    "[HtlcActions.js:127] ----- htlc extend error ----->",
+                    error
+                );
+            });
     }
 
     calculateHash(preimage, cipher) {
@@ -170,4 +171,4 @@ class HtlcActions {
     }
 }
 
-export default alt.createActions(HtlcActions);
+export default new HtlcActions();

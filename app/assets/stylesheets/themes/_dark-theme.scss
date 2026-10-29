@@ -1,68 +1,69 @@
 @import "theme-template";
+@import "../../../design-system/palette";
 
 // variables
 
-$light-text-color: #fff;
+$light-text-color: $palette-dark-ink;
 $dark-text-color: #444;
-$primary-text-color: #e0e0e0;
-$secondary-text-color: darken($primary-text-color, 20%);
-$inactive-text-color: darken($primary-text-color, 30%);
-$link-text-color: #1ec3fa;
-$error-text-color: #ff3950;
+$primary-text-color: $palette-dark-ink;
+$secondary-text-color: $palette-dark-ink-2;
+$inactive-text-color: $palette-dark-muted;
+$link-text-color: $palette-dark-accent;
+$error-text-color: $palette-dark-down;
 
-$settings-select-bg: #3f3f3f;
-$settings-select-color: darken($primary-text-color, 20%);
-$settings-api-node-border-color: #2a2a2a;
-$main-content-margin-block-bg-color: #1e1e1e;
-$bg-color: #2a2a2a;
-$panel-bg-color: #3f3f3f;
-$light-panel-bg-color: #6a6a6a;
-$super-light-panel-bg-color: lighten($light-panel-bg-color, 8%);
-$settings-menu-hover-bg: darken($light-panel-bg-color, 20%);
-$settings-menu-active-bg: darken($light-panel-bg-color, 20%);
-$button-bg-color: #049cce;
-$secondary-button-bg-color: #999999;
+$settings-select-bg: $palette-dark-raised;
+$settings-select-color: $palette-dark-ink-2;
+$settings-api-node-border-color: $palette-dark-line;
+$main-content-margin-block-bg-color: $palette-dark-ground;
+$bg-color: $palette-dark-surface;
+$panel-bg-color: $palette-dark-raised;
+$light-panel-bg-color: lighten($palette-dark-hover, 6%);
+$super-light-panel-bg-color: lighten($light-panel-bg-color, 6%);
+$settings-menu-hover-bg: $palette-dark-hover;
+$settings-menu-active-bg: $palette-dark-hover;
+$button-bg-color: $palette-dark-accent;
+$secondary-button-bg-color: $palette-dark-muted;
 $input-background: lighten($bg-color, 1%);
 
 $alert-color: $error-text-color;
-$info-color: #a0d3e8;
-$success-color: #7bd500;
-$warning-color: #fcab53;
+$info-color: mix($palette-dark-accent, $palette-dark-ink, 60%);
+$success-color: $palette-dark-up;
+$warning-color: $palette-dark-warn;
 $fee-color: $secondary-text-color;
 
 // Exchange colors
-$bid-color: #6ba583;
-$ask-color: #e3745b;
-$call-color: #bbbf2b;
-$positive-color: #258a14;
-$negative-color: #ff3950;
-$row-accent-color: #3c3c3c;
-$header-color: #484848;
+$bid-color: $palette-dark-up;
+$ask-color: $palette-dark-down;
+$call-color: #c9c04a;
+$positive-color: $palette-dark-up;
+$negative-color: $palette-dark-down;
+$row-accent-color: $palette-dark-raised;
+$header-color: $palette-dark-hover;
 
 // Account table view colors
-$account-header: #656565;
-$account-cells: #4b5158;
-$account-green: #7ed321;
-$account-primarytext: white;
-$account-dimmed: #afafaf;
-$account-border: #323131;
-$account-background: #3f3f3f;
-$account-tabs-background: #2f2f2f;
+$account-header: lighten($palette-dark-hover, 4%);
+$account-cells: $palette-dark-hover;
+$account-green: $palette-dark-up;
+$account-primarytext: $palette-dark-ink;
+$account-dimmed: $palette-dark-muted;
+$account-border: $palette-dark-line;
+$account-background: $palette-dark-raised;
+$account-tabs-background: $palette-dark-surface;
 
 $pulsate-green-start: $account-green;
-$pulsate-green-end: #aaf25c;
+$pulsate-green-end: lighten($palette-dark-up, 12%);
 $pulsate-red-start: $negative-color;
-$pulsate-red-end: #ef4040;
+$pulsate-red-end: lighten($palette-dark-down, 8%);
 
-$modal-bg-color: #4b5158;
+$modal-bg-color: $palette-dark-raised;
 
-$mobile-input-bg: #2d2d2d;
+$mobile-input-bg: $palette-dark-surface;
 
-$slider-thumb-color: #f00;
+$slider-thumb-color: $palette-dark-accent;
 
-$incognito-bg: #ff3950;
+$incognito-bg: $palette-dark-down;
 
-$tab-content-background-color: lighten($account-header, 4%);
+$tab-content-background-color: $palette-dark-raised;
 $explorer-tab-content-background-color: $bg-color;
 
 // * * * Explorer
@@ -72,15 +73,15 @@ $explorer-tab-content-background-color: $bg-color;
 $explorer--witnesses--info-bg: transparent;
 $explorer--witnesses--info-border: darken($account-header, 6%);
 $explorer--witnesses--info-table-title-color: $account-dimmed;
-$explorer--witnesses--info-table-text-color: #fff;
+$explorer--witnesses--info-table-text-color: $palette-dark-ink;
 
 // * * * * * Assets
 
 $explorer--assets--bg: $bg-color;
 
-$positive-color-alternative: #22d173;
-$negative-color-alternative: #ff276d;
-$medium-color: #ff9900;
+$positive-color-alternative: $palette-dark-up;
+$negative-color-alternative: $palette-dark-down;
+$medium-color: $palette-dark-warn;
 $dark-help-text: #171a25;
 $separator-line: rgba(23, 26, 37, 0.3);
 
@@ -88,17 +89,17 @@ $separator-line: rgba(23, 26, 37, 0.3);
 
 // * * * * Settings
 
-$settings-label-color: rgba(255, 255, 255, 0.5);
+$settings-label-color: $palette-dark-muted;
 
 //
 
 // color palette
 
 // branding colors
-$primary-color: #337ab7;
+$primary-color: $palette-dark-accent;
 
 // help colors
-$primary-dark: #2a2a2a;
+$primary-dark: $palette-dark-surface;
 $white: #fff;
 $dark: rgba(0, 0, 0, 0.6);
 $dark-1: lighten($dark, 30%);

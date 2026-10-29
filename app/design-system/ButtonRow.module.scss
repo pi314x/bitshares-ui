@@ -1,0 +1,14 @@
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.end {
+    justify-content: flex-end;
+}
+
+.spaced {
+    margin-top: 16px;
+}

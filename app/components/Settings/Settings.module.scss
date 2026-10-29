@@ -1,0 +1,51 @@
+// Phase 2 (docs/UI_MIGRATION_PLAN.md): visual pass on the Settings shell
+// (Settings.jsx's left nav + content panel) using the new design tokens.
+// Additive only: every class here is added alongside Settings.tsx's
+// existing classes, nothing removed, and none of its tab-switching/
+// setting-writing logic was touched — only className attributes.
+//
+// CSS Module (docs/UI_MIGRATION_PLAN.md, section 7.5): these classes were
+// referenced by Settings.tsx only, so they are scoped now.
+
+// the page: the menu row, then one column (760px) for the chosen section; the
+// nodes list takes the room it needs
+.page {
+    min-width: 0;
+}
+
+.content {
+    min-width: 0;
+}
+
+// Each setting is a block of its own: a label over its control, a rule and
+// space between blocks, and controls no wider than they need to be (a
+// full-width dropdown for "English" read as a layout bug). These sections are
+// SettingsEntry's `<section class="no-border-bottom">`.
+.content section:global(.no-border-bottom) {
+    max-width: 560px;
+    margin: 0 0 22px;
+    padding: 0 0 22px;
+    border-bottom: 1px solid var(--line-soft) !important;
+}
+
+.content section:global(.no-border-bottom):last-of-type {
+    border-bottom: none !important;
+    margin-bottom: 0;
+}
+
+.content section:global(.no-border-bottom) ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.content section:global(.no-border-bottom) :global(.settings--select),
+.content section:global(.no-border-bottom) input[type="text"] {
+    width: 100%;
+    max-width: 360px;
+}
+
+.content section:global(.no-border-bottom) label {
+    display: block;
+    margin: 0 0 8px;
+}

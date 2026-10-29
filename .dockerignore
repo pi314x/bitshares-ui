@@ -1,0 +1,23 @@
+# What the image build does not need (and must not take from a working copy).
+.git
+.github
+node_modules
+build
+docs
+scripts
+**/__tests__
+*.log
+# files of a local setup with secrets or keys are never part of an image
+.env*
+*.wif
+# the certificate and key of the TLS variant are mounted, never built into the image
+certs
+*.pem
+*.key
+# the charting library is downloaded and unpacked by `yarn install`; only what that needs stays
+charting_library/*
+!charting_library/scss
+!charting_library/*.md5
+!charting_library/*.cjs
+# what the MCP server prepared lately
+.mcp-state.json*

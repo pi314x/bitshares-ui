@@ -1,0 +1,20 @@
+// `body[class][class]`: the legacy `.clickable` / table cell rules colour and size the cell's
+// content, and a list cell's `line-height` would add a line under the icon.
+body[class][class] .star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--faint);
+    line-height: 0;
+    vertical-align: middle;
+    transition: color 120ms ease;
+}
+
+body[class][class] .star:hover {
+    color: var(--warn);
+}
+
+body[class][class] .star.on,
+body[class][class] .star.on:hover {
+    color: var(--warn);
+}

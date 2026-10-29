@@ -1,0 +1,59 @@
+// The fee tables of the explorer's Fees tab: one card per group, its title as
+// the card's first row (it used to be a bordered card of its own inside the
+// card: two borders), and the table scrolling sideways inside the card when the
+// screen is narrower than its columns.
+.title {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.scroll table {
+    min-width: 560px;
+    width: 100%;
+    margin: 0;
+}
+
+// The text above the tables is a help page (a heading and a paragraph): set like the head of every
+// other page (24px title, 14px lead), without changing the page itself.
+body[class][class] .intro {
+    margin: 0 0 16px;
+    max-width: 68ch;
+}
+
+body[class][class] .intro h1,
+body[class][class] .intro h2 {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+body[class][class] .intro p {
+    margin: 0 0 8px;
+    max-width: none;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+// the figures of a row on one line, in one width each, on the row's centre line
+.scroll th,
+.scroll td {
+    vertical-align: middle;
+}
+
+.scroll td {
+    font-variant-numeric: tabular-nums;
+}

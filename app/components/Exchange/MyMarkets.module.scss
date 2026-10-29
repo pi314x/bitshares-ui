@@ -1,0 +1,189 @@
+// The market list's controls (the trade page's side panel and the explorer's
+// Markets tab): the two "only" options as toggles, the filter below, and the
+// quote asset tabs as one row.
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 0 12px;
+}
+
+.toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--control-h-sm, 30px);
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.toggleOn {
+    border-color: var(--accent);
+    background: var(--accent-wash);
+    color: var(--accent);
+}
+
+.check {
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.search {
+    flex: 1 1 200px;
+    min-width: 0;
+    margin: 0;
+}
+
+.findField {
+    flex: 1 1 220px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+}
+
+.fieldLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+// The quote assets (BTS, BTC, CNY, ...) as pills of a size to touch.
+body[class][class] .quoteTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+
+    > li {
+        float: none;
+        margin: 0;
+        padding: 5px 12px;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        background: transparent;
+        color: var(--ink-2);
+        font-size: 12.5px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    > li:hover {
+        border-color: var(--faint);
+        color: var(--ink);
+    }
+
+    > li:global(.active) {
+        border-color: var(--accent);
+        background: var(--accent-wash);
+        color: var(--accent);
+    }
+}
+
+// "My markets | Find markets": the pill menu the pages' other sub menus use
+.subMenu {
+    margin: 0 0 12px;
+}
+
+.subMenu > div {
+    margin: 0;
+}
+
+// The list: a table of rows made to touch, numbers in the mono face so the
+// columns line up, a quiet rule between rows. (The legacy sheet sizes every
+// cell, hence `body[class][class]`.)
+body[class][class] .list {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead th {
+        padding: 10px 12px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    // the side panel is narrow: tighter cells, so the last column is in view
+    &:not(.flush) tbody td,
+    &:not(.flush) thead th {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    // the volume is in the market's header; the side panel keeps what fits
+    &:not(.flush) thead th:nth-child(3),
+    &:not(.flush) tbody td:nth-child(3) {
+        display: none;
+    }
+
+    &:not(.flush) tbody td:global(.text-right) {
+        font-size: 12px;
+    }
+
+    &:not(.flush) thead th {
+        font-size: 10.5px;
+        letter-spacing: 0.03em;
+    }
+
+    tbody td {
+        height: 38px;
+        padding: 4px 12px;
+        border: 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    tbody td:global(.text-right) {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // the star: a narrow column of its own
+    tr > :first-child {
+        width: 36px;
+        padding-right: 0;
+    }
+
+    tbody tr:hover td {
+        background: var(--hover);
+    }
+}
+
+// the market's asset: its logo, then its name
+.marketName {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

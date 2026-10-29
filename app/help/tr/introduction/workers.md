@@ -1,19 +1,24 @@
 # Emekçiler
 
-Emekçiler maaş karşılığında  hizmet veren tekliflerdir, maaşlarını blok zincirinden alırlar. Bir emekçi teklifi en azından aşağıdaki bilgileri kapsamalıdır :
+Emekçiler, blokzincirinden maaş karşılığında hizmet vermeyi öneren tekliflerdir.
+Bir emekçi teklifi en azından şu bilgileri içerir:
 
-* Bir başlangıç ve bitiş tarihi
-* Gündelik bir ücret
-* Maksimum bir toplam maaş
+* Bir başlangıç ve bir bitiş tarihi
+* Günlük bir ücret
+* Maksimum bir toplam ücret
+* Emekçi teklifinin anlatıldığı bir web sayfasının bağlantısı
 
-Emekçi teklifinin daha detaylı anlatıldığı bir web sayfasına da bağlantı sunmalıdır.
+## Emekçilere oy verme
 
-Emekçi tekliflerine verilen oylar pozitif yada negatif olabilirler, yani beğenmediğiniz bir teklife red oyu kullanabilirsiniz.
+Bir emekçi teklifinin finanse edilmesini istiyorsanız lehte, ücret almaması
+gerektiğini düşünüyorsanız aleyhte oy verebilirsiniz. Oyunuzun ağırlığı sahip
+olduğunuz BTS miktarına eşittir. Bir teklife yalnızca iade eşiğinden daha fazla oyu
+olduğu sürece ücret ödenir. Emekçi teklifinin yaşam döngüsü için
+[Oy Kullanma](/help/voting) bölümüne bakın.
 
-## Emekçi bütçesi mekanizması
-Emekçilerin ücretleri, ilk-gelen ilk-çalışır prensibiyle günlük sabit bir bütçeden para tükenene kadar ödenir. Nasıl işlediğini görmek için şu örneğe bakın:
+## Bütçe
 
-* Tüm Emekçiler için günlük toplam bütçe 400 bin BTS olsun
-* Her biri günlük 100k BTS talep eden toplam oyların pozitif olduğu 5 emekçi teklifi
-
-Oyların çoğuna sahip 4 emekçinin her birine günlük 100 bin BTS ödenecek, fakat ödemeler tamamlandığında emekçi bütçesi tükenmiş olacak. O yüzden 5. emekçiye hiç bir şey ödenmeyecek.
+Emekçilere ücretleri, günlük sabit bir bütçeden oy sırasına göre, para tükenene
+kadar ödenir. Günlük bütçe 400k BTS ve her biri günde 100k BTS isteyen, oyları
+pozitif beş teklif varsa, en çok oyu olan dört teklif 100k BTS'şer alır, beşinci
+teklif ise hiçbir şey almaz.

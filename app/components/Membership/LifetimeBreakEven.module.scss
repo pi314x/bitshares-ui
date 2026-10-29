@@ -1,0 +1,94 @@
+// The Lifetime membership page: one card under the page head, in the app's usual inset.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 760px;
+}
+
+// the title wraps where its parts are, not inside "break-even"
+.pageHead h1 {
+    text-wrap: balance;
+}
+
+.card {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+
+.head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+}
+
+.muted {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.fieldRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.field .label {
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.help,
+.error {
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.help {
+    color: var(--muted);
+}
+
+.error {
+    margin: 0;
+    color: var(--down);
+}
+
+.results {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+    .fieldRow {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

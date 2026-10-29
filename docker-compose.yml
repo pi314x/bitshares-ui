@@ -1,12 +1,21 @@
-version: "2"
-volumes:
- wallet_build: {}
-
+# BitShares Desk, built from this source and served on http://localhost:8080
+#
+#   docker compose up --build
+#
+# Plain HTTP: for the wallet put it behind HTTPS (a reverse proxy, or docker-compose.tls.yml).
+# See docs/DEPLOYMENT.md.
 services:
- web-wallet:
-  build: .
-  ports:
-   - "8080:80"
-  volumes:
-   - wallet_build:/bitshares-ui/build/dist
-   - .:/bitshares-ui
+    desk:
+        build: .
+        image: bitshares-desk:local
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+        # a static file server needs nothing else
+        read_only: true
+        tmpfs:
+            - /tmp
+        cap_drop:
+            - ALL
+        security_opt:
+            - no-new-privileges:true

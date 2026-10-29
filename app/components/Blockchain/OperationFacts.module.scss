@@ -1,0 +1,77 @@
+// `.facts.facts` and `.fact.fact`: the legacy sheet sets margins on `dl`/`dt`/`dd`.
+// Label above the value, as in the forms; an id is a mono run that breaks
+// anywhere, so a phone's dialog never scrolls sideways for it.
+.facts.facts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 0;
+}
+
+.fact.fact {
+    margin: 0;
+    padding: 0;
+}
+
+.fact.fact > dt {
+    margin: 0 0 2px;
+    padding: 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fact.fact > dd {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    color: var(--ink);
+}
+
+.fact.fact code {
+    min-width: 0;
+    background: transparent;
+    padding: 0;
+    border: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.fact.fact > dd > button {
+    flex: none;
+}
+
+.note {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+// in a list: the shortened id on a line of its own under the operation id
+.short {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    color: var(--muted);
+}
+
+.short code {
+    background: transparent;
+    padding: 0;
+    border: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.shortNote {
+    display: block;
+    color: var(--faint);
+    font-size: 12px;
+}

@@ -1,0 +1,77 @@
+// The two-step "delete local data" dialog: a column of text, a list, a field.
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.step {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.text {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.list {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.link {
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+// a sentence, not a legacy all-caps label
+body[class][class] .accept {
+    align-items: flex-start;
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+// The one button that cannot be taken back: red, not the accent.
+body .danger {
+    background: var(--down);
+    border-color: var(--down);
+    color: var(--on-accent);
+}
+
+body .danger:hover:not(:disabled) {
+    background: var(--down);
+    border-color: var(--down);
+    filter: brightness(1.1);
+}

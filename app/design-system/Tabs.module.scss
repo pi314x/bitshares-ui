@@ -1,0 +1,26 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    // a tab strip wider than the screen must scroll inside the tabs, not push
+    // the page wider (a flex item's minimum width is its content's)
+    min-width: 0;
+    max-width: 100%;
+}
+
+.barExtra {
+    padding: 0 8px;
+}
+
+// the menu row, then the content (no rule under the tabs)
+.pillRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0 16px;
+    min-width: 0;
+}
+
+.pillContent {
+    min-width: 0;
+}

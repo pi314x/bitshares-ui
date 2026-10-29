@@ -1,0 +1,499 @@
+// The desk: cards on the dashboard. Tokens only (design-system/theme.scss).
+// `.x.x` where a legacy rule for the element (table cells, h2, links) would
+// otherwise win.
+
+.desk {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    min-width: 0;
+}
+
+@media (min-width: 1100px) {
+    .grid {
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+// ---------------------------------------------------------------- the card
+
+.card {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.card .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+}
+
+.body {
+    padding: 12px 16px 16px;
+    min-width: 0;
+}
+
+.flush {
+    padding: 0;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.linkBtn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--accent);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+// ----------------------------------------------------------------- summary
+
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    padding: 16px;
+}
+
+.totalLabel {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.total {
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.totalUnit {
+    margin-left: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.parts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+
+.part {
+    min-width: 0;
+}
+
+.partLabel {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.partValue {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+
+.note {
+    padding: 0 16px 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+// --------------------------------------------------------------- attention
+
+.attention {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-left-width: 4px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--ink);
+}
+
+.alertDanger {
+    border-color: var(--down);
+    background: var(--down-wash);
+}
+
+.alertWarn {
+    border-color: var(--warn);
+}
+
+.alertInfo {
+    border-left-color: var(--accent);
+}
+
+// ---------------------------------------------------------------- holdings
+
+// A table wider than its card scrolls sideways inside it (the card clips what
+// sticks out; with no scroll the right columns were out of reach).
+.tableScroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table.table th,
+.table.table td {
+    padding: 8px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 14px;
+    text-align: right;
+    background: transparent;
+    color: var(--ink);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table.table th {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.table.table th:first-child,
+.table.table td:first-child {
+    text-align: left;
+}
+
+.table.table tr:last-child td {
+    border-bottom: 0;
+}
+
+.asset {
+    font-weight: 600;
+}
+
+.asset a {
+    color: var(--ink);
+}
+
+// the logo and the symbol on one line
+.assetCell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shareBar {
+    display: inline-block;
+    width: 56px;
+    height: 6px;
+    margin-right: 8px;
+    border-radius: 3px;
+    background: var(--line);
+    vertical-align: middle;
+    overflow: hidden;
+}
+
+.shareFill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+}
+
+@media (max-width: 560px) {
+    .hideSmall {
+        display: none;
+    }
+
+    .table.table th,
+    .table.table td {
+        padding: 8px 12px;
+    }
+}
+
+// The filter above a long list of holdings, in the card's own inset.
+.filter {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.filter > * {
+    width: 100%;
+    max-width: 320px;
+}
+
+.more {
+    padding: 10px 16px;
+    border-top: 1px solid var(--line-soft);
+    text-align: center;
+}
+
+.empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--muted);
+}
+
+// --------------------------------------------------------------- positions
+
+.section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.section:last-child {
+    border-bottom: 0;
+}
+
+.sectionHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.sectionTitle {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+.rowSub {
+    flex: 1 1 100%;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: var(--up-wash);
+    color: var(--up);
+}
+
+.badgeWatch {
+    background: transparent;
+    border: 1px solid var(--warn);
+    color: var(--warn);
+}
+
+.badgeDanger {
+    background: var(--down-wash);
+    color: var(--down);
+}
+
+// ---------------------------------------------------------------- accounts
+
+.accountRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.accountRow:hover {
+    background: var(--hover);
+}
+
+.accountRow:last-child {
+    border-bottom: 0;
+}
+
+.accountCurrent {
+    font-weight: 600;
+}
+
+// --------------------------------------------------------------- customize
+
+.customize {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 10px 16px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    font-size: 13px;
+}
+
+.customize label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+// The activity list is a wide table: it scrolls inside its card instead of
+// being cut off, and on a phone loses the operation id column and the fee, so that
+// what happened and when have the width.
+.activity {
+    overflow-x: auto;
+}
+
+// The id under the text is for the phone, where the id column is gone: it is the
+// way to the operation's details and to copying its id there.
+.activity :global(.recent-op-id) {
+    display: none;
+}
+
+@media (max-width: 560px) {
+    .activity.activity :global(table) :global(tr) > :first-child,
+    .activity.activity :global(table) :global(tr) > :nth-child(3) {
+        display: none;
+    }
+
+    .activity.activity :global(.recent-op-id) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 2px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 12px;
+    }
+}
+
+// A placeholder where a figure will be: a soft bar that shimmers, not "...".
+.skeleton {
+    display: inline-block;
+    min-width: 48px;
+    height: 1em;
+    border-radius: 6px;
+    vertical-align: middle;
+    background: linear-gradient(
+        90deg,
+        var(--line-soft) 0%,
+        var(--line) 50%,
+        var(--line-soft) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 100% 0;
+    }
+
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
+    }
+}
+
+.skeletonRows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+}
+
+// ------------------------------------------------------------- allocation
+
+.allocationMenu {
+    display: flex;
+    padding: 12px 16px 0;
+}

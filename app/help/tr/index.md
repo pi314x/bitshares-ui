@@ -1,36 +1,32 @@
-# Graphene Yardım
+# Yardım
 
-BitShares 2.0 , [Cryptonomex](http://cryptonomex.com) tarafından inşa edilmiş olan
-[Graphene](https://github.com/cryptonomex/graphene) teknolojisine dayanan bir 
-Finansal-Akıllı-Kontratlar platformudur. Graphene'i  gerçek-zamanlı blokzincirleri için 
-bir araç takımı yada bir teknoloji olarak da görebilirsiniz.
+BitShares, herkese açık bir blokzincir üzerinde merkeziyetsiz bir borsa ve cüzdandır. Bu yardım soldaki menüyü izler: her öğe için ne işe yaradığı ve daha fazlasını nerede okuyacağınız.
 
-Bu yardım bölümü özet bir genel bakış sağlar ve bu uygulamanın en temel 
-kavramlarını tanımlar.
+## Hesap
+ * [Panel](/): zaman içindeki bakiyeleriniz, favori piyasalarınız ve son hareketleriniz.
+ * [Hesaplar](/accounts): sahip olduğunuz hesaplar ve kişileriniz. [Daha fazla](accounts/general.md)
+ * [Oylama](/voting): witness, komite üyesi ve worker'lara oy verin ya da bir vekil seçin. [Daha fazla](voting.md)
+ * [Ayarlar](/settings): dil, birimler, düğümler, yedekler ve işlemlerin nasıl imzalandığı. [Cüzdan](introduction/wallets.md), [Yedeklemeler](introduction/backups.md)
 
-## Takdim 
- * [BitShares](introduction/bitshares.md)
- * [Cüzdan](introduction/wallets.md)
- * [Yedekler](introduction/backups.md)
- * [Blokzinciri](introduction/blockchain.md)
- * [Tanıklar](introduction/witness.md)
- * [İşçiler](introduction/workers.md)
- * [Kurul Üyeleri](introduction/committee.md)
+## Ödemeler
+ * [Gönder](/send): başka bir hesaba varlık gönderin, isterseniz not ekleyerek.
+ * [Yatır](/deposit) ve [Çek](/withdraw): [ağ geçitleri](gateways/introduction.md) üzerinden BitShares ile diğer blokzincirler arasında varlık taşıyın.
+ * [Zamanlı transfer](/timed-transfer): yalnızca bir tarihten sonra talep edilebilen varlık gönderin. [Daha fazla](payments/timed_transfer.md)
 
-## Hesaplar
- * [Giriş](accounts/general.md)
- * [İzinler](accounts/permissions.md)
- * [Üyelikler](accounts/membership.md)
+## Piyasalar
+ * İşlem: emir defterinde alın ve satın. [Daha fazla](dex/trading.md)
+ * [Likidite havuzları](/pools): havuza karşı takas edin ya da likidite sağlayıp ücretlerini kazanın. [Daha fazla](markets/pools.md)
+ * [Anlık işlem](/instant-trade): piyasa fiyatından alım satım için basit bir form.
+ * [Tahmin piyasaları](/prediction): gelecekteki olayların sonucu üzerine işlem yapın.
 
-## Aktifler
- * [Piyasa Sabitli Varlıklar](assets/mpa.md) (BitUSD, BitEUR, BitGOLD, Bit\*,...)
- * [Kullanıcı Aktifleri](assets/uia.md)
- * [Özelleştirilmiş Varlıklar](assets/privbitassets.md)
+## Borç verme
+ * [Kredi teklifleri](/credit-offer): teminat karşılığında bir teklifin oranıyla borç alın ya da teklif verin.
+ * [SameT fonları](/samet-funds): tek bir işlem içinde ödünç alınabilen tek varlıklı havuzlar.
 
-## Merkezsiz/Dağıtık Borsa
- * [Giriş](dex/introduction.md)
- * [Alış/Satış](dex/trading.md)
- * [BitAktif Kısa Satışları](dex/shorting.md)
+## Ağ
+ * [Gezgin](/explorer): zincirin blokları, varlıkları, havuzları, hesapları, witness'ları, komitesi, piyasaları ve ücretleri. [Blokzincir](introduction/blockchain.md), [Witness'lar](introduction/witness.md)
 
-----------
-[Terimler](glossary.md)
+## Daha fazla
+ * [Spotlight](/spotlight): takas, HTLC, otomatik ödeme, borçlanma ve diğer özellikler.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
+ * [Varlıklar](assets/mpa.md), [Terimler Listesi](glossary.md), [Sorumluluk Reddi](disclaimer.md)

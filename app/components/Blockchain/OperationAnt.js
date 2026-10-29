@@ -12,7 +12,7 @@ import account_constants from "chain/account_constants";
 import MemoText from "./MemoText";
 import ProposedOperation from "./ProposedOperation";
 import marketUtils from "common/market_utils";
-import {Tooltip} from "bitshares-ui-style-guide";
+import {Tooltip} from "../../design-system/Tooltip";
 import counterpart from "counterpart";
 
 const ShortObjectId = ({objectId}) => {
@@ -23,6 +23,16 @@ const ShortObjectId = ({objectId}) => {
     }
     return objectId;
 };
+
+// The result of a liquidity pool operation names what was paid and received.
+function hasPoolResult(result) {
+    return !!(
+        result &&
+        result[1] &&
+        Array.isArray(result[1].paid) &&
+        Array.isArray(result[1].received)
+    );
+}
 
 class Operation {
     linkToAccount(name_or_id) {
@@ -51,6 +61,8 @@ class Operation {
             color = "info";
         let memoComponent = null;
         let o = null;
+        // no wording for this operation type
+        let unknown = false;
 
         switch (
             ops[op[0]] // For a list of trx types, see chain_types.coffee
@@ -146,37 +158,58 @@ class Operation {
                                         : ""
                                     : "";
 
+                                // what the other side of the price comes to: the
+                                // BTS a buy order puts up, what a sell order asks
+                                const total = isBid
+                                    ? op[1].amount_to_sell
+                                    : op[1].min_to_receive;
+
                                 return (
-                                    <TranslateWithLinks
-                                        string={
-                                            isBid
-                                                ? "operation.limit_order_buy"
-                                                : "operation.limit_order_sell"
-                                        }
-                                        keys={[
-                                            {
-                                                type: "account",
-                                                value: op[1].seller,
-                                                arg: "account"
-                                            },
-                                            {
-                                                type: "amount",
-                                                value: amount,
-                                                arg: "amount"
-                                            },
-                                            {
-                                                type: "price",
-                                                value: {
-                                                    base: priceBase,
-                                                    quote: priceQuote
-                                                },
-                                                arg: "price"
+                                    <span>
+                                        <TranslateWithLinks
+                                            string={
+                                                isBid
+                                                    ? "operation.limit_order_buy"
+                                                    : "operation.limit_order_sell"
                                             }
-                                        ]}
-                                        params={{
-                                            order: orderId
-                                        }}
-                                    />
+                                            keys={[
+                                                {
+                                                    type: "account",
+                                                    value: op[1].seller,
+                                                    arg: "account"
+                                                },
+                                                {
+                                                    type: "amount",
+                                                    value: amount,
+                                                    arg: "amount"
+                                                },
+                                                {
+                                                    type: "price",
+                                                    value: {
+                                                        base: priceBase,
+                                                        quote: priceQuote
+                                                    },
+                                                    arg: "price"
+                                                }
+                                            ]}
+                                            params={{
+                                                order: orderId
+                                            }}
+                                        />{" "}
+                                        {/* "for" stays with the amount when the line wraps */}
+                                        <span style={{whiteSpace: "nowrap"}}>
+                                            <TranslateWithLinks
+                                                string="operation.limit_order_total"
+                                                keys={[
+                                                    {
+                                                        type: "amount",
+                                                        value: total,
+                                                        arg: "amount"
+                                                    }
+                                                ]}
+                                            />
+                                        </span>
+                                    </span>
                                 );
                             }}
                         </BindToChainState.Wrapper>
@@ -293,8 +326,8 @@ class Operation {
                     op[1].new_listing === listings.no_listing
                         ? "unlisted_by"
                         : op[1].new_listing === listings.white_listed
-                            ? "whitelisted_by"
-                            : "blacklisted_by";
+                        ? "whitelisted_by"
+                        : "blacklisted_by";
                 column = (
                     <span>
                         <TranslateWithLinks
@@ -1769,17 +1802,23 @@ class Operation {
                             },
                             {
                                 type: "amount",
-                                value: result[1].paid[0],
+                                value: hasPoolResult(result)
+                                    ? result[1].paid[0]
+                                    : op[1].amount_a,
                                 arg: "amount_a"
                             },
                             {
                                 type: "amount",
-                                value: result[1].paid[1],
+                                value: hasPoolResult(result)
+                                    ? result[1].paid[1]
+                                    : op[1].amount_b,
                                 arg: "amount_b"
                             },
                             {
                                 type: "amount",
-                                value: result[1].received[0],
+                                value: hasPoolResult(result)
+                                    ? result[1].received[0]
+                                    : op[1].amount_a,
                                 arg: "received"
                             }
                         ]}
@@ -1788,7 +1827,7 @@ class Operation {
                 break;
             case "liquidity_pool_withdraw":
                 color = "warning";
-                column = (
+                column = hasPoolResult(result) ? (
                     <TranslateWithLinks
                         string="operation.liquidity_pool_withdraw"
                         keys={[
@@ -1818,11 +1857,34 @@ class Operation {
                             }
                         ]}
                     />
+                ) : (
+                    <TranslateWithLinks
+                        string="operation.liquidity_pool_withdraw_shares"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].pool,
+                                arg: "id"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].share_amount,
+                                arg: "shares"
+                            }
+                        ]}
+                    />
                 );
                 break;
             case "liquidity_pool_exchange":
                 color = "success";
-                column = (
+                // The result (what was paid and received) is in an account's history
+                // but not in the transactions of a block: without it the operation
+                // says what was offered.
+                column = hasPoolResult(result) ? (
                     <TranslateWithLinks
                         string="operation.liquidity_pool_exchange"
                         keys={[
@@ -1843,6 +1905,31 @@ class Operation {
                             {
                                 type: "amount",
                                 value: result[1].received[0],
+                                arg: "amount_b"
+                            }
+                        ]}
+                    />
+                ) : (
+                    <TranslateWithLinks
+                        string="operation.liquidity_pool_exchange_offer"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].pool,
+                                arg: "id"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].amount_to_sell,
+                                arg: "amount_a"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].min_to_receive,
                                 arg: "amount_b"
                             }
                         ]}
@@ -1974,15 +2061,257 @@ class Operation {
                     />
                 );
                 break;
+            case "committee_member_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.committee_member_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].committee_member_account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].committee_member,
+                                arg: "id"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "assert":
+                color = "default";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.assert"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].fee_paying_account,
+                                arg: "account"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "blind_transfer":
+                color = "success";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.blind_transfer"
+                        keys={[
+                            {
+                                type: "amount",
+                                value: op[1].fee,
+                                arg: "fee"
+                            }
+                        ]}
+                        params={{
+                            inputs: op[1].inputs ? op[1].inputs.length : 0,
+                            outputs: op[1].outputs ? op[1].outputs.length : 0
+                        }}
+                    />
+                );
+                break;
+            case "fba_distribute":
+                color = "success";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.fba_distribute"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account_id,
+                                arg: "account"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].amount,
+                                arg: "amount"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "execute_bid":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.execute_bid"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].bidder,
+                                arg: "account"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].debt,
+                                arg: "debt"
+                            },
+                            {
+                                type: "amount",
+                                value: op[1].collateral,
+                                arg: "collateral"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "custom_authority_create":
+                color = "success";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.custom_authority_create"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            }
+                        ]}
+                        params={{
+                            operation:
+                                ops[op[1].operation_type] ||
+                                op[1].operation_type
+                        }}
+                    />
+                );
+                break;
+            case "custom_authority_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.custom_authority_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].authority_to_update,
+                                arg: "id"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "custom_authority_delete":
+                color = "cancel";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.custom_authority_delete"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].authority_to_delete,
+                                arg: "id"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "ticket_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.ticket_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].ticket,
+                                arg: "id"
+                            }
+                        ]}
+                        params={{
+                            target: counterpart.translate(
+                                "operation.ticket_types." + op[1].target_type
+                            )
+                        }}
+                    />
+                );
+                break;
+            case "liquidity_pool_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.liquidity_pool_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].pool,
+                                arg: "id"
+                            }
+                        ]}
+                    />
+                );
+                break;
+            case "credit_deal_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.credit_deal_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].account,
+                                arg: "account"
+                            },
+                            {
+                                value: op[1].deal_id,
+                                arg: "id"
+                            }
+                        ]}
+                        params={{
+                            mode: counterpart.translate(
+                                "operation.auto_repay_modes." + op[1].auto_repay
+                            )
+                        }}
+                    />
+                );
+                break;
+            case "limit_order_update":
+                color = "warning";
+                column = (
+                    <TranslateWithLinks
+                        string="operation.limit_order_update"
+                        keys={[
+                            {
+                                type: "account",
+                                value: op[1].seller,
+                                arg: "account"
+                            }
+                        ]}
+                        params={{
+                            order: op[1].order.substring(4)
+                        }}
+                    />
+                );
+                break;
+
             default:
-                console.log("unimplemented op '" + ops[op[0]] + "':", op);
+                unknown = true;
                 column = (
                     <span>
                         <Link to={`/block/${block}`}>#{block}</Link>
                     </span>
                 );
         }
-        return {column, color};
+        return {column, color, unknown};
     }
 }
 
