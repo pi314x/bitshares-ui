@@ -47,7 +47,6 @@ const data = (overrides: any = {}) => ({
         wallet: 1000,
         pools: 200,
         orders: 34.5,
-        settlements: 0,
         collateral: 0,
         debt: 0
     },
@@ -193,7 +192,6 @@ describe("Desk", () => {
 
         it("lists a request with its amount, its worth in the unit and when it settles", () => {
             mockData = data({
-                parts: {...data().parts, settlements: 500},
                 settlements: settled([item(1)])
             });
             const {getByText, container} = renderDesk();
@@ -202,7 +200,6 @@ describe("Desk", () => {
             const row = getByText(/^2\.5\d* USD$/).parentElement as HTMLElement;
             expect(row.textContent).toContain("≈ 500.00 BTS");
             expect(row.textContent).toContain("settles ");
-            // the part of the total
             expect(container.textContent).toContain("Settlements");
         });
 
@@ -231,15 +228,18 @@ describe("Desk", () => {
             });
         });
 
-        it("counts in the summary, and in the allocation by place", () => {
+        it("is not a part of the summary under the total value, nor of the allocation by place", () => {
             mockData = data({
-                parts: {...data().parts, settlements: 500},
                 settlements: settled([item(1)])
             });
-            const {getByText, getByTestId} = renderDesk();
+            const {getByText, getByTestId, container} = renderDesk();
+            const summary = container.querySelector(
+                '[class*="parts"]'
+            ) as HTMLElement;
+            expect(summary.textContent).not.toContain("Settlements");
             fireEvent.click(getByText("Where it sits"));
-            expect(getByTestId("allocation").textContent).toContain(
-                "Settlements=500"
+            expect(getByTestId("allocation").textContent).not.toContain(
+                "Settlements"
             );
         });
     });

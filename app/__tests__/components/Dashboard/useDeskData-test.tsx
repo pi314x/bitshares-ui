@@ -119,9 +119,9 @@ describe("useDeskData: settlements", () => {
         expect(data.settlements.value).toBe(700);
     });
 
-    it("counts what was handed in as part of what the account is worth", () => {
+    it("does not count what was handed in in the total value (it is listed, and valued for the list)", () => {
         const without = read();
-        expect(without.parts.settlements).toBe(0);
+        expect((without.parts as any).settlements).toBeUndefined();
         expect(without.settlements.value).toBeNull();
         // 1,000 BTS in the wallet; 2.5 USD (= 500 BTS) are waiting to be settled
         mockAccount = mockAccount.set(
@@ -136,12 +136,14 @@ describe("useDeskData: settlements", () => {
         );
         const withOne = read();
         expect(withOne.parts.wallet).toBe(1000);
-        expect(withOne.parts.settlements).toBe(500);
-        expect(withOne.total).toBe(1500);
+        // (the request is worth 500 BTS in the list, and is not in what the account is worth)
+        expect(withOne.settlements.value).toBe(500);
+        expect((withOne.parts as any).settlements).toBeUndefined();
+        expect(withOne.total).toBe(1000);
         expect(withOne.incomplete).toBe(false);
     });
 
-    it("says the total is not the whole picture for a request with no price", () => {
+    it("does not call the total incomplete for a request with no price: it is not in the total", () => {
         mockAccount = mockAccount.set(
             "settle_orders",
             Immutable.fromJS(["1.4.1"])
@@ -155,8 +157,8 @@ describe("useDeskData: settlements", () => {
         const data = read();
         expect(data.settlements.count).toBe(1);
         expect(data.settlements.items[0].value).toBeNull();
-        expect(data.parts.settlements).toBe(0);
-        expect(data.incomplete).toBe(true);
+        expect(data.settlements.value).toBe(0);
+        expect(data.incomplete).toBe(false);
     });
 
     it("skips a request the chain store has not loaded yet, and keeps one without a date", () => {

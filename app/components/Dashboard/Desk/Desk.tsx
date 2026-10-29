@@ -181,9 +181,6 @@ function Summary({
                     {data.orders.count > 0
                         ? part(t("open_orders"), data.parts.orders)
                         : null}
-                    {data.settlements.count > 0
-                        ? part(t("settlements"), data.parts.settlements)
-                        : null}
                     {data.parts.collateral > 0
                         ? part(t("collateral"), data.parts.collateral)
                         : null}
@@ -506,11 +503,6 @@ function Allocation({data}: {data: DeskData}): JSX.Element {
                           key: "orders",
                           label: t("open_orders"),
                           value: data.parts.orders
-                      },
-                      {
-                          key: "settlements",
-                          label: t("settlements"),
-                          value: data.parts.settlements
                       },
                       {
                           key: "pools",

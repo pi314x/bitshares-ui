@@ -68,14 +68,12 @@ export interface DeskData {
     loading: boolean;
     accountId: string | null;
     unit: {id: string; symbol: string; precision: number} | null;
-    /** wallet + pools + orders + settlements + collateral - debt, in the unit (human) */
+    /** wallet + pools + orders + collateral - debt, in the unit (human); settlement requests are not in it */
     total: number;
     parts: {
         wallet: number;
         pools: number;
         orders: number;
-        /** smart coins handed in to be settled: they left the wallet and are not paid out yet */
-        settlements: number;
         collateral: number;
         debt: number;
     };
@@ -103,7 +101,6 @@ const EMPTY: DeskData = {
         wallet: 0,
         pools: 0,
         orders: 0,
-        settlements: 0,
         collateral: 0,
         debt: 0
     },
@@ -346,7 +343,8 @@ export function useDeskData(
         });
     });
 
-    // ---- settlements: what was handed in is worth what it is, until it is paid out
+    // ---- settlements: smart coins handed in to be settled. They are listed (and valued, for the list), but are
+    // not part of the total value: they left the wallet and are paid out at the settlement date
     const settlementItems: DeskSettlement[] = [];
     settleObjects.forEach(settle => {
         const assetId: string = settle.getIn(["balance", "asset_id"]);
@@ -355,7 +353,6 @@ export function useDeskData(
         if (!isMap(asset)) return;
         const units = parseInt(settle.getIn(["balance", "amount"]), 10);
         const value = valueOf(assetId, units);
-        if (value === null) incomplete = true;
         settlementItems.push({
             id: settle.get("id"),
             assetId,
@@ -384,7 +381,6 @@ export function useDeskData(
         wallet: sum(holdings.map(h => h.value)),
         pools: sum(pools.map(p => p.value)),
         orders: sum(ordersValue),
-        settlements: sum(settlementItems.map(item => item.value)),
         collateral: collateralValue,
         debt: debtValue
     };
@@ -392,7 +388,6 @@ export function useDeskData(
         parts.wallet +
         parts.pools +
         parts.orders +
-        parts.settlements +
         parts.collateral -
         parts.debt;
 
@@ -424,7 +419,9 @@ export function useDeskData(
         },
         settlements: {
             ...settlementInfo,
-            value: settlementItems.length ? parts.settlements : null,
+            value: settlementItems.length
+                ? sum(settlementItems.map(item => item.value))
+                : null,
             items: settlementItems
         },
         positions,
