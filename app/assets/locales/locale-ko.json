@@ -781,7 +781,8 @@
         "show_no_value": "가치 없는 %(count)s개 표시",
         "hide_no_value": "가치 없는 항목 숨기기",
         "show_emptied": "잔액이 0인 %(count)s개 표시",
-        "hide_emptied": "잔액이 0인 항목 숨기기"
+        "hide_emptied": "잔액이 0인 항목 숨기기",
+        "activity_search": "활동 검색: 자산, 계정, 금액, 작업 종류"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -3739,7 +3740,8 @@
         "capped": "최근 %(count)s개 작업으로 구성했습니다. 이전 작업은 불러오지 않았습니다.",
         "retry": "다시 시도",
         "no_asset": "일치하는 자산이 없습니다.",
-        "no_balances": "아직 차트로 표시할 잔액이 없습니다."
+        "no_balances": "아직 차트로 표시할 잔액이 없습니다.",
+        "loading_older": "이전 작업을 불러오는 중: 지금까지 %(count)s개..."
     },
     "toolbar": {
         "rows": "%(count)s행",

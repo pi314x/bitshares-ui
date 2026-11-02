@@ -781,7 +781,8 @@
         "show_no_value": "显示 %(count)s 个无价值的",
         "hide_no_value": "隐藏无价值的",
         "show_emptied": "显示 %(count)s 个余额为零的",
-        "hide_emptied": "隐藏余额为零的"
+        "hide_emptied": "隐藏余额为零的",
+        "activity_search": "搜索动态：资产、账户、金额、操作类型"
     },
     "errors": {
         "loading_from_blockchain": "正在从区块链中抓取错误，请重试。",
@@ -3739,7 +3740,8 @@
         "capped": "根据最近 %(count)s 笔操作构建；更早的操作未加载。",
         "retry": "重试",
         "no_asset": "没有匹配的资产。",
-        "no_balances": "暂无可绘制图表的余额。"
+        "no_balances": "暂无可绘制图表的余额。",
+        "loading_older": "正在加载更早的操作：目前 %(count)s 条..."
     },
     "toolbar": {
         "rows": "%(count)s 行",

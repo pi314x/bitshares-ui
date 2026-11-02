@@ -25,9 +25,10 @@ import styles from "./Desk.module.scss";
 const TypedLink = Link as React.ComponentType<LinkProps>;
 const TypedRecent = RecentTransactions as React.ComponentType<any>;
 
-// The activity card shows everything the account's history holds (the node
-// sends the last 100 operations), a page of 25 at a time, and can ask the node
-// for older ones.
+// The activity card shows everything the account's history holds, a page of 25 at a
+// time. The node sends the last 100 operations; the card asks it (and, where it has
+// no more, the other nodes) for older ones by itself, up to AUTO_LOAD_MAX, and the
+// field above the list finds operations by what they say as it is typed.
 const ACTIVITY_LIMIT = 1000;
 const ACTIVITY_PAGE_SIZE = 25;
 
@@ -975,6 +976,8 @@ export default function Desk({
         readCards
     );
     const [customizing, setCustomizing] = React.useState(false);
+    // what is typed in the search above the activity: it narrows the list as it is typed
+    const [activityQuery, setActivityQuery] = React.useState("");
 
     const units: string[] =
         settings.defaults && settings.defaults.unit
@@ -1065,8 +1068,22 @@ export default function Desk({
 
             {cards.activity && data.accountId ? (
                 <Card title={t("activity")} flush>
+                    <div className={styles.activitySearch}>
+                        <Input
+                            value={activityQuery}
+                            placeholder={t("activity_search")}
+                            aria-label={t("activity_search")}
+                            autoComplete="off"
+                            spellCheck={false}
+                            onChange={(e: any) =>
+                                setActivityQuery(e.target.value)
+                            }
+                        />
+                    </div>
                     <div className={styles.activity}>
                         <TypedRecent
+                            search={activityQuery}
+                            loadAllOlder
                             accountsList={accountList}
                             compactView={true}
                             showMore={true}

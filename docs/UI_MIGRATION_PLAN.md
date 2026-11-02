@@ -12718,7 +12718,8 @@ What changed after §7.17, in the order a user meets it.
   vesting_cliff_seconds, vesting_duration_seconds}]`). **Not broadcast-tested**
   against a live chain from this environment.
 - **Balance over time** (`components/Account/BalanceHistoryChart.tsx`, shown on
-  the dashboard and the account overview). The series is rebuilt backwards from
+  the dashboard; the Portfolio / account overview does not have it since 2026-11-02,
+  the user: "Portfolio does not need a Balance over Time"). The series is rebuilt backwards from
   the current balance through the account's operation history
   (`lib/common/balanceHistory.ts`): transfers, fills (gross receive less market
   fee), order create / cancel / expiry (an expiry's refund is the order's
@@ -14012,6 +14013,19 @@ for that asset (else the one for any) is the one whose memo is filled in, the me
 picked entry for one asset switches the dialog to it when the account holds it, and "Save this recipient" saves for the
 asset being sent. "Send" on the book page opens the Send page with `{toName, asset}`; the page finds the asset by its symbol
 once the chain store has it and tells the dialog.
+
+*Recent activity: more operations, and a search* (Dashboard card, 2026-11-02; the user: "Show more than 100 operations in Dashboard. So many as the
+node can offer" and "Search in recent activities while Typing"). `RecentTransactions` got two props the card sets. `loadAllOlder`: as soon as the last
+page is in it asks for the next one (the same request as the "Load older" button: the node first, the other nodes of the list where the connected one has
+no more - `extendAccountHistory`'s fallback), until a request adds nothing or `AUTO_LOAD_MAX` (5,000) operations are in; a failure stops it and leaves the
+button, and a line says how many there are while it loads. `search`: the field above the list (state in `Desk.tsx`) narrows the list on every keystroke; every
+word typed has to be in the text of the operation (`lib/common/activitySearch.ts`: its kind as labelled and as the chain names it, its id and block, and all its
+fields with accounts as names, assets as symbols and amounts as the row shows them; the fee and the memo are left out), the text is built once for each
+operation and again while an account or asset it names is not loaded (it reads the chain store without asking the node, so a long history does not start a
+fetch for every counterparty). The history itself is only worked out again when an account's history or the filter changes. Measured on the real node.xbts.io: the
+account `thmsfnd02` has 227,055 operations on the chain but the node answers for 123 (100 + 23): the card now holds all 123 (it showed 100 until "Load older"
+was pressed); the other nodes could not be asked from the test harness, which relays every call to node.xbts.io, so what they add was not seen. The date is not searchable.
+(The Portfolio no longer has the "Balance over time" chart, the same day: the user, "Portfolio does not need a Balance over Time".)
 
 *Last 24 hours* (Dashboard card; `lib/common/dayRecap.ts`, `Dashboard/Desk/DayRecap.tsx`): counted from the history
 the balance chart is drawn from (the same shared load, with the times of its blocks): transfers in and out, order

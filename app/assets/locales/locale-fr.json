@@ -781,7 +781,8 @@
         "show_no_value": "Afficher %(count)s sans valeur",
         "hide_no_value": "Masquer ceux sans valeur",
         "show_emptied": "Afficher %(count)s avec un solde nul",
-        "hide_emptied": "Masquer ceux avec un solde nul"
+        "hide_emptied": "Masquer ceux avec un solde nul",
+        "activity_search": "Rechercher dans l'activité : un actif, un compte, un montant, un type d'opération"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -3739,7 +3740,8 @@
         "capped": "Construit à partir des %(count)s dernières opérations ; les plus anciennes ne sont pas chargées.",
         "retry": "Réessayer",
         "no_asset": "Aucun actif ne correspond.",
-        "no_balances": "Pas encore de solde à tracer."
+        "no_balances": "Pas encore de solde à tracer.",
+        "loading_older": "Chargement des opérations plus anciennes : %(count)s jusqu'ici..."
     },
     "toolbar": {
         "rows": "%(count)s lignes",

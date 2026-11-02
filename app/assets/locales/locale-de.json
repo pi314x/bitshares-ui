@@ -781,7 +781,8 @@
         "show_no_value": "%(count)s ohne Wert anzeigen",
         "hide_no_value": "Die ohne Wert ausblenden",
         "show_emptied": "%(count)s mit Guthaben null anzeigen",
-        "hide_emptied": "Die mit Guthaben null ausblenden"
+        "hide_emptied": "Die mit Guthaben null ausblenden",
+        "activity_search": "Aktivität durchsuchen: ein Asset, ein Konto, ein Betrag, eine Art von Operation"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -3739,7 +3740,8 @@
         "capped": "Aus den letzten %(count)s Operationen aufgebaut; ältere werden nicht geladen.",
         "retry": "Erneut versuchen",
         "no_asset": "Kein Asset passt.",
-        "no_balances": "Noch keine Guthaben für ein Diagramm."
+        "no_balances": "Noch keine Guthaben für ein Diagramm.",
+        "loading_older": "Ältere Operationen werden geladen: bisher %(count)s ..."
     },
     "toolbar": {
         "rows": "%(count)s Zeilen",

@@ -68,6 +68,7 @@ import CopyIconButton from "../Utility/CopyIconButton";
 import OperationFacts, {TransactionIdShort} from "../Blockchain/OperationFacts";
 import AddToAddressBook from "../AddressBook/AddToAddressBook";
 import {isSentPayment} from "../../lib/common/addressBook";
+import {matchesQuery, searchText} from "../../lib/common/activitySearch";
 const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -147,7 +148,26 @@ interface RecentTransactionsCoreProps {
     dashboard?: any;
     title?: any;
     marketDirections?: any;
+    /**
+     * what was typed in a search field of the page: only the operations that say every word of it are listed (the
+     * accounts, assets, amounts and kind of operation, as the rows show them)
+     */
+    search?: string;
+    /**
+     * ask the node for older operations again and again, as long as it has some (up to `AUTO_LOAD_MAX`), so that the
+     * list holds as many as the node can offer without the button being pressed for each hundred
+     */
+    loadAllOlder?: boolean;
     [key: string]: any;
+}
+
+/** The most operations that are loaded without being asked for; "Load older" goes on from there. */
+export const AUTO_LOAD_MAX = 5000;
+
+/** An account or an asset as the chain store has it, without asking the node for it (null: not there yet). */
+function storedObject(id: string): any {
+    const found = (ChainStore as any).objects_by_id.get(id);
+    return found && found !== true ? found : null;
 }
 
 function RecentTransactionsCore({
@@ -162,7 +182,9 @@ function RecentTransactionsCore({
     style: styleProp,
     dashboard,
     title,
-    marketDirections
+    marketDirections,
+    search,
+    loadAllOlder
 }: RecentTransactionsCoreProps) {
     const [state, setState] = React.useState<RecentTransactionsState>({
         limit: limitProp,
@@ -444,12 +466,81 @@ function RecentTransactionsCore({
         accountsList.length === 1 && accountsList[0]
             ? accountsList[0].get("id")
             : null;
-    const history = getHistory(
-        accountsList,
-        showFilters && state.filter !== "all" ? state.filter : filter,
-        customFilter
-    ).sort(compareOps);
+    // (worked out again only when the history of an account, or the filter, is another one)
+    const historyCache = React.useRef<{
+        sources: any[];
+        filter: any;
+        custom: any;
+        result: any[];
+    } | null>(null);
+    const activeFilter =
+        showFilters && state.filter !== "all" ? state.filter : filter;
+    const sources = accountsList.map((account: any) =>
+        account ? account.get("history") : null
+    );
+    const cached = historyCache.current;
+    let history: any[];
+    if (
+        cached &&
+        cached.filter === activeFilter &&
+        cached.custom === customFilter &&
+        cached.sources.length === sources.length &&
+        cached.sources.every((source, i) => source === sources[i])
+    ) {
+        history = cached.result;
+    } else {
+        history = getHistory(accountsList, activeFilter, customFilter).sort(
+            compareOps
+        );
+        historyCache.current = {
+            sources,
+            filter: activeFilter,
+            custom: customFilter,
+            result: history
+        };
+    }
     const historyCount = history.length;
+
+    // What was typed in the search: the text of each operation is built once (and again while an account or an asset
+    // it names was not loaded), and every word typed has to be in it.
+    const searchTexts = React.useRef<Map<string, string>>(new Map());
+    const query = (search || "").trim();
+    const found = query
+        ? history.filter((o: any) => {
+              let text = searchTexts.current.get(o.id);
+              if (text === undefined) {
+                  const name = ops[o.op[0]];
+                  const built = searchText(
+                      o,
+                      {
+                          name,
+                          label:
+                              (counterpart.translate(
+                                  "transaction.trxTypes"
+                              ) as any)[name] || ""
+                      },
+                      {
+                          account: id => {
+                              const stored = storedObject(id);
+                              return stored ? stored.get("name") : null;
+                          },
+                          asset: id => {
+                              const stored = storedObject(id);
+                              return stored
+                                  ? {
+                                        symbol: stored.get("symbol"),
+                                        precision: stored.get("precision")
+                                    }
+                                  : null;
+                          }
+                      }
+                  );
+                  text = built.text;
+                  if (built.complete) searchTexts.current.set(o.id, text);
+              }
+              return matchesQuery(text, query);
+          })
+        : history;
 
     const style = styleProp ? styleProp : {width: "100%", height: "100%"};
 
@@ -514,8 +605,8 @@ function RecentTransactionsCore({
             );
     };
 
-    const display_history = history.length
-        ? history.slice(0, limit).map((o: any) => {
+    const display_history = found.length
+        ? found.slice(0, limit).map((o: any) => {
               return getDataSource(o, current_account_id);
           })
         : [];
@@ -525,6 +616,26 @@ function RecentTransactionsCore({
         historyCount > 0 &&
         historyCount <= state.limit &&
         !state.historyExhausted;
+    // Asked again as soon as the last page is in, until the node has no more (or the most is loaded). A failure stops
+    // it: the button is still there.
+    React.useEffect(() => {
+        if (
+            loadAllOlder &&
+            canLoadOlder &&
+            historyCount < AUTO_LOAD_MAX &&
+            !state.fetchingAccountHistory &&
+            !state.accountHistoryError
+        ) {
+            onLoadOlder();
+        }
+        // (onLoadOlder is made again with every render: it reads the same accounts)
+    }, [
+        loadAllOlder,
+        canLoadOlder,
+        historyCount,
+        state.fetchingAccountHistory,
+        state.accountHistoryError
+    ]);
     const action = (
         <div className="total-value" key="total_value">
             {canLoadOlder ? (
@@ -649,6 +760,19 @@ function RecentTransactionsCore({
                             </Tooltip>
                         ) : null}
                     </div>
+                    {loadAllOlder &&
+                    state.fetchingAccountHistory &&
+                    historyCount > 0 ? (
+                        <div
+                            style={{paddingLeft: "0.75rem", opacity: 0.7}}
+                            role="status"
+                        >
+                            {counterpart.translate(
+                                "balance_history.loading_older",
+                                {count: historyCount}
+                            )}
+                        </div>
+                    ) : null}
                     {state.accountHistoryError && (
                         <div
                             className="has-error"

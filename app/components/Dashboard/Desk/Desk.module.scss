@@ -432,6 +432,12 @@
     overflow-x: auto;
 }
 
+// the search above the activity list: the same inset as the list
+.activitySearch {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+}
+
 // The id under the text is for the phone, where the id column is gone: it is the
 // way to the operation's details and to copying its id there.
 .activity :global(.recent-op-id) {

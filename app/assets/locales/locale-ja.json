@@ -781,7 +781,8 @@
         "show_no_value": "価値のない %(count)s 件を表示",
         "hide_no_value": "価値のないものを隠す",
         "show_emptied": "残高ゼロの %(count)s 件を表示",
-        "hide_emptied": "残高ゼロのものを隠す"
+        "hide_emptied": "残高ゼロのものを隠す",
+        "activity_search": "アクティビティを検索：アセット、アカウント、金額、操作の種類"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -3739,7 +3740,8 @@
         "capped": "直近 %(count)s 件の操作から作成しています。それより古いものは読み込んでいません。",
         "retry": "再試行",
         "no_asset": "該当する資産はありません。",
-        "no_balances": "グラフにする残高がまだありません。"
+        "no_balances": "グラフにする残高がまだありません。",
+        "loading_older": "古い操作を読み込み中：これまでに %(count)s 件..."
     },
     "toolbar": {
         "rows": "%(count)s 行",

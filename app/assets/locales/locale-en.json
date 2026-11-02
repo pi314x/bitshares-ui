@@ -781,7 +781,8 @@
         "show_no_value": "Show %(count)s without a value",
         "hide_no_value": "Hide those without a value",
         "show_emptied": "Show %(count)s with a zero balance",
-        "hide_emptied": "Hide those with a zero balance"
+        "hide_emptied": "Hide those with a zero balance",
+        "activity_search": "Search the activity: an asset, an account, an amount, a kind of operation"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching from the blockchain, please retry.",
@@ -3739,7 +3740,8 @@
         "range_1w": "1W",
         "range_all": "All",
         "no_asset": "No asset matches.",
-        "no_balances": "No balances to chart yet."
+        "no_balances": "No balances to chart yet.",
+        "loading_older": "Loading older operations: %(count)s so far..."
     },
     "toolbar": {
         "rows": "%(count)s rows",
