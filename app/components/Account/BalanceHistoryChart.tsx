@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useRefreshOnEpoch} from "../../lib/common/accountEpoch";
 import counterpart from "counterpart";
 import {
     AreaSeries,
@@ -206,6 +207,25 @@ export default function BalanceHistoryChart({
             if (retry) clearTimeout(retry);
         };
     }, [accountId]);
+
+    // what the account holds and has locked in orders changes with every trade and transfer: read again by itself
+    // (the chart stays as it is until the new figures are there; a failure leaves what is shown)
+    useRefreshOnEpoch(() => {
+        BalanceHistoryActions.getLockedInOrders(accountId)
+            .then(locked => setLockedNow(locked || {}))
+            .catch(() => undefined);
+        BalanceHistoryActions.getBalances(accountId)
+            .then(rows =>
+                BalanceHistoryActions.getAssets(rows.map(r => r.asset_id)).then(
+                    infos => {
+                        const usable = rows.filter(r => infos[r.asset_id]);
+                        setBalances(usable);
+                        setAssets(infos);
+                    }
+                )
+            )
+            .catch(() => undefined);
+    });
 
     const asset = assetId ? assets[assetId] : undefined;
     const current = balances.find(b => b.asset_id === assetId);

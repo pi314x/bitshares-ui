@@ -7,6 +7,10 @@ export interface HistoryEntry {
     op: [number, any];
     /** what the operation produced (an instant settlement says what was received) */
     result?: any;
+    /** where the chain recorded it: the block, the transaction in it, the operation in that */
+    block_num?: number;
+    trx_in_block?: number;
+    op_in_trx?: number;
 }
 
 /** The number at the end of an operation history id; -1 if it has none. */

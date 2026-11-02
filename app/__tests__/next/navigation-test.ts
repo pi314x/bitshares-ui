@@ -58,20 +58,22 @@ describe("left navigation rail", () => {
         expect(labels[1]).toBe("Liquidity pools");
     });
 
-    it("keeps moving money together: send, deposit, withdraw and timed transfer are pages", () => {
+    it("keeps moving money together: send, deposit, withdraw, timed transfer and the address book are pages", () => {
         const payments = NAV_GROUPS.find(g => g.label === "Payments")!;
         expect(payments.items.map(i => i.label)).toEqual([
             "Send",
             "Deposit",
             "Withdraw",
-            "Timed transfer"
+            "Timed transfer",
+            "Address book"
         ]);
         // pages, not popups: every entry goes somewhere
         expect(payments.items.map(i => i.to)).toEqual([
             "/send",
             "/deposit",
             "/withdraw",
-            "/timed-transfer"
+            "/timed-transfer",
+            "/address-book"
         ]);
         expect(payments.items.some(i => i.action)).toBe(false);
     });
@@ -125,6 +127,7 @@ describe("topbar title", () => {
     });
 
     it("names the payment pages", () => {
+        expect(crumbFromPath("/address-book")).toBe("Address book");
         expect(crumbFromPath("/send")).toBe("Send");
         expect(crumbFromPath("/deposit")).toBe("Deposit");
         expect(crumbFromPath("/withdraw")).toBe("Withdraw");

@@ -35,6 +35,7 @@ import SettingsEntry from "./SettingsEntry";
 import AccountsSettings from "./AccountsSettings";
 import LocalDataCard from "./LocalDataCard";
 import ExternalSignerSettings from "./ExternalSignerSettings";
+import TelegramSettings from "./TelegramSettings";
 import WalletSettings from "./WalletSettings";
 import PasswordSettings from "./PasswordSettings";
 import RestoreSettings from "./RestoreSettings";
@@ -59,6 +60,7 @@ function getMenuEntries(deprecated: boolean, passwordLogin: boolean): string[] {
     if (!passwordLogin) menuEntries.push("wallet");
     menuEntries.push("accounts");
     menuEntries.push("signing");
+    menuEntries.push("notifications");
     if (!passwordLogin) menuEntries.push("password");
     if (!passwordLogin) menuEntries.push("backup");
     if (!passwordLogin) menuEntries.push("restore");
@@ -349,6 +351,10 @@ export default function Settings(props: SettingsProps) {
 
         case "signing":
             entries = <ExternalSignerSettings />;
+            break;
+
+        case "notifications":
+            entries = <TelegramSettings />;
             break;
 
         case "password":

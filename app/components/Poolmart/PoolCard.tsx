@@ -3,6 +3,7 @@ import {Link, LinkProps} from "react-router-dom";
 import counterpart from "counterpart";
 import AssetName from "../Utility/AssetName";
 import {Button} from "../../design-system/Button";
+import {Star} from "../../design-system/Star";
 import {
     PoolMetrics,
     formatAmountShort,
@@ -37,6 +38,9 @@ export interface PoolCardProps {
     onStake: () => void;
     /** Given for a pool the signed-in account owns: change its fees. */
     onEditFees?: () => void;
+    /** The pool is a favorite (starred); `onToggleStar` stars or unstars it. */
+    starred?: boolean;
+    onToggleStar?: () => void;
 }
 
 function Fact({
@@ -62,7 +66,9 @@ export function PoolCard({
     canAct,
     onSwap,
     onStake,
-    onEditFees
+    onEditFees,
+    starred = false,
+    onToggleStar
 }: PoolCardProps): JSX.Element {
     const m = pool.metrics;
     const inverse = m.priceBPerA ? 1 / m.priceBPerA : null;
@@ -79,6 +85,22 @@ export function PoolCard({
                     </TypedLink>
                     {m.isStable ? (
                         <span className={styles.badge}>{t("stable")}</span>
+                    ) : null}
+                    {onToggleStar ? (
+                        <button
+                            type="button"
+                            className={styles.starButton}
+                            aria-pressed={starred}
+                            aria-label={t(
+                                starred ? "favorite_remove" : "favorite_add"
+                            )}
+                            title={t(
+                                starred ? "favorite_remove" : "favorite_add"
+                            )}
+                            onClick={onToggleStar}
+                        >
+                            <Star on={starred} size={20} />
+                        </button>
                     ) : null}
                 </h3>
                 <div className={styles.meta}>

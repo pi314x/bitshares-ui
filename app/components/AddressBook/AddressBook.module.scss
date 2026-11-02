@@ -1,0 +1,169 @@
+// The address book page, its form and the recipient helper of the Send dialog. Tokens only.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 720px;
+}
+
+.tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.tools > :first-child {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.empty {
+    margin: 12px 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+}
+
+.who {
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.account {
+    color: var(--accent);
+    font-size: 14px;
+    word-break: break-all;
+}
+
+.note {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.memo {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.memoLabel {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+// the form
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.help {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.error {
+    margin: 0;
+    color: var(--down);
+    font-size: 14px;
+}
+
+.dialogFoot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+// the helper under the recipient of the Send dialog
+.recipient {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 4px 0 14px;
+}
+
+.recipientInfo {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md, 8px);
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.recipientInfo strong {
+    color: var(--ink);
+}
+
+.linkButton {
+    align-self: flex-start;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}

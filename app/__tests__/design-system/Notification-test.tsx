@@ -3,6 +3,11 @@ import {act, fireEvent, render} from "@testing-library/react";
 import {FormattedNumber, IntlProvider} from "react-intl";
 import {Link, MemoryRouter} from "react-router-dom";
 import {Notification, NotificationHost} from "../../design-system/Notification";
+import {setRouteOpener} from "../../lib/common/openRoute";
+import {
+    clearNotifications,
+    getNotifications
+} from "../../lib/common/notificationHistory";
 
 // `Notification` is an imperative API, not a rendered component - it
 // lazily mounts its own stack into `document.body` on first call (a
@@ -202,5 +207,44 @@ describe("design-system/NotificationHost", () => {
         ).toHaveLength(1);
         closeAll();
         expect(document.body.textContent).not.toContain("Before the host");
+    });
+
+    it("a toast that leads to a page opens it when clicked, goes away, and the history keeps where it leads", () => {
+        const opened: string[] = [];
+        const stop = setRouteOpener(to => opened.push(to));
+        clearNotifications();
+        act(() => {
+            Notification.success({
+                message: "Pool swap",
+                description: "Swapped 1 BTS for 3 USD",
+                duration: 0,
+                to: "/block/7000/3"
+            });
+        });
+        const link = document.body.querySelector(
+            "[role='alert'] [role='link']"
+        ) as HTMLElement;
+        expect(link).not.toBeNull();
+        expect(getNotifications()[0].to).toBe("/block/7000/3");
+        act(() => {
+            fireEvent.click(link);
+        });
+        expect(opened).toEqual(["/block/7000/3"]);
+        expect(document.body.textContent).not.toContain("Swapped 1 BTS");
+        // a toast with no page is not a link
+        act(() => {
+            Notification.info({message: "Just text", duration: 0});
+        });
+        expect(
+            document.body.querySelector("[role='alert'] [role='link']")
+        ).toBeNull();
+        act(() => {
+            fireEvent.click(
+                document.body.querySelector(
+                    "button[aria-label='Close']"
+                ) as HTMLButtonElement
+            );
+        });
+        stop();
     });
 });

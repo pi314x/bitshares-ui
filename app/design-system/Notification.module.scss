@@ -138,3 +138,12 @@
 .close:hover {
     color: var(--ink-2);
 }
+
+// a toast that leads to a page: the message is the link
+.linked {
+    cursor: pointer;
+}
+
+.linked:hover .message {
+    text-decoration: underline;
+}

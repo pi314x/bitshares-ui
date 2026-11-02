@@ -29,8 +29,14 @@ jest.mock("bitsharesjs", () => ({
         }
     }
 }));
+let mockAccountState: any = {currentAccount: "me"};
 jest.mock("../../next/hooks/useReduxState", () => ({
-    useReduxState: () => ({currentAccount: "me"})
+    useReduxState: () => mockAccountState
+}));
+const mockTelegram = jest.fn();
+jest.mock("../../lib/common/telegram", () => ({
+    ...jest.requireActual("../../lib/common/telegram"),
+    telegramNotify: (...args: any[]) => mockTelegram(...args)
 }));
 jest.mock("../../actions/SametFundActions", () => ({
     __esModule: true,
@@ -68,7 +74,10 @@ jest.mock("../../design-system/Notification", () => {
     };
 });
 
-import AccountActivityNotifications from "../../components/Notifications/AccountActivityNotifications";
+import AccountActivityNotifications, {
+    TelegramActivity
+} from "../../components/Notifications/AccountActivityNotifications";
+import {DEFAULT_TELEGRAM, saveTelegram} from "../../lib/common/telegram";
 
 const op = (n: number, code: number, data: any, result?: any) => ({
     id: `1.11.${n}`,
@@ -90,6 +99,8 @@ beforeEach(() => {
     clearNotifications();
     reloadNotifications();
     mockToast.mockClear();
+    mockTelegram.mockClear();
+    mockAccountState = {currentAccount: "me"};
 });
 
 // the names are asked for first: let those requests finish before looking
@@ -204,5 +215,107 @@ describe("AccountActivityNotifications", () => {
         await settle();
         expect(titles()).toEqual(["made_up_operation"]);
         expect(titles().join(" ")).not.toContain("missing translation");
+    });
+
+    it("tells Telegram what happened, with its topic and the page of the transaction, and the toast leads to that page", async () => {
+        mockHistory = [
+            op(5, 0, {from: "1.2.99", to: "1.2.10", amount: bts(1)})
+        ];
+        const view = render(<AccountActivityNotifications />);
+        mockHistory = [
+            {
+                ...op(6, 0, {from: "1.2.99", to: "1.2.10", amount: bts(2)}),
+                block_num: 7000,
+                trx_in_block: 3
+            },
+            ...mockHistory
+        ];
+        view.rerender(<AccountActivityNotifications />);
+        await settle();
+        expect(mockTelegram).toHaveBeenCalledTimes(1);
+        expect(mockTelegram).toHaveBeenCalledWith("me", [
+            {
+                topic: "transfer",
+                title: "Transfer",
+                description: "Received 2.00000 BTS from alice",
+                link: "/block/7000/3"
+            }
+        ]);
+        expect(mockToast).toHaveBeenCalledWith("success", {
+            message: "Transfer",
+            description: "Received 2.00000 BTS from alice",
+            to: "/block/7000/3"
+        });
+    });
+
+    it("tells Telegram about a transaction's operations in one go, those the account started too", async () => {
+        window.localStorage.setItem("__graphene__lastActivityNotified_me", "5");
+        mockHistory = [
+            op(7, 1, {
+                seller: "1.2.10",
+                amount_to_sell: bts(1),
+                min_to_receive: bts(2)
+            }),
+            op(6, 0, {from: "1.2.10", to: "1.2.99", amount: bts(1)}),
+            op(5, 0, {from: "1.2.99", to: "1.2.10", amount: bts(1)})
+        ];
+        render(<AccountActivityNotifications />);
+        await settle();
+        expect(mockTelegram).toHaveBeenCalledTimes(1);
+        const notes = mockTelegram.mock.calls[0][1];
+        expect(notes.map((n: any) => `${n.topic}:${n.title}`)).toEqual([
+            "transfer:Transfer",
+            "trade:Place order"
+        ]);
+    });
+
+    describe("TelegramActivity: the other accounts of the user", () => {
+        const mine = new Set(["me", "other"]);
+
+        it("watches nothing while Telegram is not set up", async () => {
+            window.localStorage.setItem(
+                "__graphene__lastTelegramNotified_other",
+                "5"
+            );
+            mockAccountState = {currentAccount: "me", myActiveAccounts: mine};
+            mockHistory = [
+                op(6, 0, {from: "1.2.99", to: "1.2.10", amount: bts(2)}),
+                op(5, 0, {from: "1.2.99", to: "1.2.10", amount: bts(1)})
+            ];
+            render(<TelegramActivity />);
+            await settle();
+            expect(mockTelegram).not.toHaveBeenCalled();
+        });
+
+        it("tells about an account that is not the one on screen, from its own baseline, once", async () => {
+            saveTelegram({
+                ...DEFAULT_TELEGRAM,
+                enabled: true,
+                token: `123456789:${"A".repeat(35)}`,
+                chatId: "42"
+            });
+            window.localStorage.setItem(
+                "__graphene__lastTelegramNotified_other",
+                "5"
+            );
+            mockAccountState = {currentAccount: "me", myActiveAccounts: mine};
+            mockHistory = [
+                op(6, 0, {from: "1.2.99", to: "1.2.10", amount: bts(2)}),
+                op(5, 0, {from: "1.2.99", to: "1.2.10", amount: bts(1)})
+            ];
+            const view = render(<TelegramActivity />);
+            await settle();
+            // only "other" (the page's own account is watched by the notifications, not twice)
+            expect(mockTelegram).toHaveBeenCalledTimes(1);
+            expect(mockTelegram.mock.calls[0][0]).toBe("other");
+            expect(mockTelegram.mock.calls[0][1][0].description).toBe(
+                "Received 2.00000 BTS from alice"
+            );
+            // the bell of the page is not filled by it
+            expect(getNotifications()).toHaveLength(0);
+            view.rerender(<TelegramActivity />);
+            await settle();
+            expect(mockTelegram).toHaveBeenCalledTimes(1);
+        });
     });
 });

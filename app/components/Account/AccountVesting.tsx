@@ -16,6 +16,7 @@
 // used here since the only visible effect of the pre-fetch/post-fetch
 // timing gap is a `loading` flag toggling a `PaginatedList` spinner, not
 // a wrong-content flash.
+import {useRefreshOnEpoch} from "../../lib/common/accountEpoch";
 import * as React from "react";
 import Translate from "react-translate-component";
 import FormattedAsset from "../Utility/FormattedAsset";
@@ -226,10 +227,13 @@ function AccountVesting({account}: AccountVestingProps) {
         mergeState({vesting_balances});
     };
 
-    const retrieveVestingBalances = (accountIdArg?: any) => {
-        mergeState({
-            loading: true
-        });
+    const retrieveVestingBalances = (accountIdArg?: any, silent = false) => {
+        // (read again by itself: the table stays as it is until the new balances are there)
+        if (!silent) {
+            mergeState({
+                loading: true
+            });
+        }
         const accountId = accountIdArg || account.get("id");
         Apis.instance()
             .db_api()
@@ -252,6 +256,8 @@ function AccountVesting({account}: AccountVestingProps) {
     React.useEffect(() => {
         retrieveVestingBalances(account.get("id"));
     }, [account.get("id")]);
+    // a vesting balance claimed or one that has vested: read again by itself, not on a reload
+    useRefreshOnEpoch(() => retrieveVestingBalances(account.get("id"), true));
 
     const getHeader = () => {
         return [

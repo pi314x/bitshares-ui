@@ -271,6 +271,14 @@ const QuickTrade = withLegacyRouterProps(
     })
 );
 
+const AddressBookPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "addressbook" */ "./components/AddressBook/AddressBookPage"
+        ),
+    loading: LoadingIndicator
+});
+
 const LifetimeBreakEven = Loadable({
     loader: () =>
         import(
@@ -863,6 +871,10 @@ class App extends React.Component {
                                     <Route
                                         path="/pools"
                                         element={<PoolmartPage />}
+                                    />
+                                    <Route
+                                        path="/address-book"
+                                        element={<AddressBookPage />}
                                     />
                                     <Route
                                         path="/membership"

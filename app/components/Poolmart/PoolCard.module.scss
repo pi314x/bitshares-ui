@@ -116,3 +116,14 @@
         flex: 1 1 0;
     }
 }
+
+// the favorite star at the end of the pair's line
+.starButton {
+    margin: 0 0 0 auto;
+    padding: 2px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    line-height: 0;
+    align-self: center;
+}

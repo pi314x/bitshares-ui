@@ -4,6 +4,7 @@
 // writes are signed locally through `WalletDb.process_transaction`.
 //
 // Borrowing is intentionally not offered here, see `SametFundActions.ts`.
+import {useRefreshOnEpoch} from "../../../lib/common/accountEpoch";
 import * as React from "react";
 import {Link} from "react-router-dom";
 import counterpart from "counterpart";
@@ -193,6 +194,13 @@ export default function SametFundsPage() {
                 );
         }
     }, [all.funds, mine.funds]);
+
+    // what the account does elsewhere, or receives, changes the lists: they are read again by themselves (in
+    // place; a dialog that is open is left as it is)
+    useRefreshOnEpoch(() => {
+        all.reload();
+        mine.reload();
+    });
 
     const refreshAll = () => {
         setCreating(false);

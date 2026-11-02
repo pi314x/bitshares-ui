@@ -54,7 +54,9 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 match: /^\/(deposit|deposit-withdraw)(\/|$)/
             },
             {label: "Withdraw", icon: "withdraw", to: "/withdraw"},
-            {label: "Timed transfer", icon: "timed", to: "/timed-transfer"}
+            {label: "Timed transfer", icon: "timed", to: "/timed-transfer"},
+            // who is paid: the accounts with who they are and the memo to send
+            {label: "Address book", icon: "accounts", to: "/address-book"}
         ]
     },
     {
@@ -210,6 +212,7 @@ const CRUMB_TITLES: Record<string, string> = {
     send: "Send",
     deposit: "Deposit",
     withdraw: "Withdraw",
+    "address-book": "Address book",
     "instant-trade": "Instant trade",
     prediction: "Prediction markets",
     "create-worker": "Create worker",

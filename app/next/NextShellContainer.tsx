@@ -50,10 +50,13 @@ import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import BackupNotice from "./BackupNotice";
 import NotificationBell from "../components/Notifications/NotificationBell";
-import AccountActivityNotifications from "../components/Notifications/AccountActivityNotifications";
+import AccountActivityNotifications, {
+    TelegramActivity
+} from "../components/Notifications/AccountActivityNotifications";
+import AccountFreshness from "../components/AccountFreshness";
+import RouteOpener from "./RouteOpener";
 import AccountRiskNotifications from "../components/Notifications/AccountRiskNotifications";
 import SendModal from "components/Modal/SendModal";
-import TransactionConfirm from "components/Blockchain/TransactionConfirm";
 import DepositModal from "components/Modal/DepositModal";
 import WithdrawModal from "components/Modal/WithdrawModalNew";
 
@@ -382,10 +385,11 @@ export default function NextShellContainer({
                 endChips={<NotificationBell />}
                 content={
                     <>
-                        {/* "Confirm this transaction": in the page, not a popup */}
-                        <TransactionConfirm inline />
-                        {/* "unlock your wallet" is a popup (the global one) */}
+                        {/* "Confirm this transaction" and "unlock your wallet" are popups (the global ones, in App.jsx) */}
+                        <AccountFreshness />
+                        <RouteOpener />
                         <AccountActivityNotifications />
+                        <TelegramActivity />
                         <AccountRiskNotifications />
                         {content}
                     </>

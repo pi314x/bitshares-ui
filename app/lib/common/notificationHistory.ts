@@ -16,7 +16,15 @@ export interface HistoryItem {
     title: string;
     description: string;
     seen: boolean;
+    /** a page of the app the entry leads to (the transaction it is about): a route, never a web address */
+    to?: string;
 }
+
+/** Only a route of the app is kept as the place an entry leads to. */
+const routeOnly = (to: unknown): string | undefined =>
+    typeof to === "string" && /^\/[^/\\]/.test(to) && to.length < 200
+        ? to
+        : undefined;
 
 const KEY = "__graphene__notificationHistory";
 export const MAX_ITEMS = 100;
@@ -29,6 +37,9 @@ function load(): HistoryItem[] {
         const parsed = JSON.parse(window.localStorage.getItem(KEY) || "[]");
         if (!Array.isArray(parsed)) return [];
         return parsed
+            .map((x: any) =>
+                x && x.to !== undefined ? {...x, to: routeOnly(x.to)} : x
+            )
             .filter(
                 (x: any) =>
                     x &&
@@ -63,7 +74,8 @@ export function recordNotification(
     kind: NotificationKind,
     title: string,
     description = "",
-    at: number = Date.now()
+    at: number = Date.now(),
+    to?: string
 ): HistoryItem {
     const id = (items.length ? Math.max(...items.map(i => i.id)) : 0) + 1;
     const item: HistoryItem = {
@@ -72,7 +84,8 @@ export function recordNotification(
         kind,
         title: title.slice(0, 300),
         description: description.slice(0, 600),
-        seen: false
+        seen: false,
+        ...(routeOnly(to) ? {to: routeOnly(to)} : {})
     };
     // nothing to say: not an entry (the bell listed a check mark and a time)
     if (!item.title.trim() && !item.description.trim()) return item;

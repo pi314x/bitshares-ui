@@ -13,6 +13,11 @@ import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {Notification} from "../../design-system/Notification";
 import {recordNotification} from "../../lib/common/notificationHistory";
+import {
+    loadTelegram,
+    subscribeTelegram,
+    telegramNotify
+} from "../../lib/common/telegram";
 import SametFundActions from "../../actions/SametFundActions";
 import {HistoryEntry, newestSequence} from "../../lib/common/fills";
 import {
@@ -24,22 +29,25 @@ import {
 } from "../../lib/common/accountActivity";
 
 const KEY = (account: string) => `__graphene__lastActivityNotified_${account}`;
+// what Telegram was told is its own baseline: the other accounts are told about there, and not in the bell
+const TELEGRAM_KEY = (account: string) =>
+    `__graphene__lastTelegramNotified_${account}`;
 // the newest this many that the account did not start show as toasts; all go in the history
 const TOASTS = 3;
 const KEPT = 30;
 
-function readBaseline(account: string): number | null {
+function readBaseline(key: string): number | null {
     try {
-        const v = window.localStorage.getItem(KEY(account));
+        const v = window.localStorage.getItem(key);
         return v === null ? null : Number(v);
     } catch (e) {
         return null;
     }
 }
 
-function writeBaseline(account: string, value: number) {
+function writeBaseline(key: string, value: number) {
     try {
-        window.localStorage.setItem(KEY(account), String(value));
+        window.localStorage.setItem(key, String(value));
     } catch (e) {
         // announced again next time
     }
@@ -116,11 +124,17 @@ function contextFor(accountId: string): ActivityContext {
     };
 }
 
-export function AccountActivityNotifications(): null {
+/**
+ * Watches the operations of the account `name` and hands those the user was not told about yet, as notes (oldest
+ * first), to `deliver`. The first look only sets the baseline (nothing is announced for what happened before),
+ * and what happened while the page was closed is announced once, the newest ones.
+ */
+function useFreshActivity(
+    name: string | null,
+    keyFor: (account: string) => string,
+    deliver: (notes: ActivityNote[], accountName: string) => void
+): void {
     useChainStoreTick();
-    const account = useReduxState<any>(selectAccountState);
-    const name: string | null =
-        account.currentAccount || account.passwordAccount || null;
     const baseline = React.useRef<{[name: string]: number}>({});
 
     const accountObject: any = name
@@ -143,7 +157,7 @@ export function AccountActivityNotifications(): null {
         if (known === undefined) {
             // first look in this page: what the user was last told about, or,
             // with nothing stored, now
-            const stored = readBaseline(name);
+            const stored = readBaseline(keyFor(name));
             known = stored === null ? newest : stored;
             baseline.current[name] = known;
         }
@@ -152,39 +166,105 @@ export function AccountActivityNotifications(): null {
         // history while they are on their way must not announce the same operations twice
         if (newest > known) {
             baseline.current[name] = newest;
-            writeBaseline(name, newest);
-        } else if (readBaseline(name) === null) {
-            writeBaseline(name, known);
+            writeBaseline(keyFor(name), newest);
+        } else if (readBaseline(keyFor(name)) === null) {
+            writeBaseline(keyFor(name), known);
         }
         if (!fresh.length) return;
         lookUp(fresh).then(() => {
             const ctx = contextFor(accountId);
-            const notes: ActivityNote[] = fresh.map(entry =>
-                describeActivity(entry, ctx)
+            deliver(
+                fresh.map(entry => describeActivity(entry, ctx)),
+                name
             );
-            // the toasts are the newest of those the account did not start itself
-            let toasts = 0;
-            const toast = new Set<number>();
-            for (let i = notes.length - 1; i >= 0 && toasts < TOASTS; i--) {
-                if (!notes[i].mine) {
-                    toast.add(i);
-                    toasts++;
-                }
-            }
-            notes.forEach((note, i) => {
-                if (toast.has(i)) {
-                    Notification[note.kind]({
-                        message: note.title,
-                        description: note.description || undefined
-                    });
-                } else {
-                    recordNotification(note.kind, note.title, note.description);
-                }
-            });
         });
     }, [name, accountId, history]);
+}
 
+/** What happened to the account of the page, in toasts and the bell, and to Telegram. */
+export function AccountActivityNotifications(): null {
+    const account = useReduxState<any>(selectAccountState);
+    const name: string | null =
+        account.currentAccount || account.passwordAccount || null;
+    useFreshActivity(name, KEY, (notes, accountName) => {
+        // the toasts are the newest of those the account did not start itself
+        let toasts = 0;
+        const toast = new Set<number>();
+        for (let i = notes.length - 1; i >= 0 && toasts < TOASTS; i--) {
+            if (!notes[i].mine) {
+                toast.add(i);
+                toasts++;
+            }
+        }
+        notes.forEach((note, i) => {
+            if (toast.has(i)) {
+                Notification[note.kind]({
+                    message: note.title,
+                    description: note.description || undefined,
+                    to: note.link
+                });
+            } else {
+                recordNotification(
+                    note.kind,
+                    note.title,
+                    note.description,
+                    Date.now(),
+                    note.link
+                );
+            }
+        });
+        tellTelegram(notes, accountName);
+    });
     return null;
+}
+
+function tellTelegram(notes: ActivityNote[], accountName: string) {
+    telegramNotify(
+        accountName,
+        notes.map(note => ({
+            topic: note.topic,
+            title: note.title,
+            description: note.description,
+            link: note.link
+        }))
+    );
+}
+
+function TelegramWatch({name}: {name: string}): null {
+    useFreshActivity(name, TELEGRAM_KEY, tellTelegram);
+    return null;
+}
+
+/**
+ * Tells Telegram about the other accounts of the user too (the one of the page is watched above): a
+ * wallet that is not the one on screen is still "his wallet". Nothing is watched while Telegram is not set up.
+ */
+export function TelegramActivity(): null {
+    const account = useReduxState<any>(selectAccountState);
+    const current: string | null =
+        account.currentAccount || account.passwordAccount || null;
+    const [on, setOn] = React.useState(() => loadTelegram().enabled);
+    React.useEffect(() => {
+        setOn(loadTelegram().enabled);
+        return subscribeTelegram(() => setOn(loadTelegram().enabled));
+    }, []);
+    const mine = account.myActiveAccounts;
+    const names: string[] = !on
+        ? []
+        : (mine && typeof mine.toArray === "function"
+              ? mine.toArray()
+              : Array.from(mine || [])
+          ).filter((n: any) => typeof n === "string" && n !== current);
+    // (rendered as components, one watch for each account: a hook cannot be called in a loop)
+    return (names.length
+        ? React.createElement(
+              React.Fragment,
+              null,
+              names.map(n =>
+                  React.createElement(TelegramWatch, {key: n, name: n})
+              )
+          )
+        : null) as any;
 }
 
 export default AccountActivityNotifications;

@@ -32,6 +32,7 @@
 // app-wide - only `Account/CreditOffer/CreditOfferAccountPage.jsx`
 // (out of scope for this port, left untouched) renders
 // `<CreditRightsList account={this.props.account} />`, with no `ref`.
+import {useRefreshOnEpoch} from "../../../lib/common/accountEpoch";
 import * as React from "react";
 import counterpart from "counterpart";
 import {Table} from "../../../design-system/Table";
@@ -60,6 +61,13 @@ function CreditRightsListCore({
             flag: "first"
         });
     }, []);
+    // new deals on the account's offers, and repayments: read again by themselves, not on a reload
+    useRefreshOnEpoch(() => {
+        CreditOfferActions.getCreditDealsByOfferOwner({
+            name_or_id: account.get("id"),
+            flag: "first"
+        });
+    });
 
     const _getColumns = () => {
         return [

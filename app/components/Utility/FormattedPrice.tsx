@@ -31,7 +31,6 @@ import * as React from "react";
 import {FormattedNumber} from "react-intl";
 import AssetWrapper from "./AssetWrapper";
 import SettingsActions from "actions/SettingsActions";
-import Popover from "react-popover";
 import Translate from "react-translate-component";
 import AssetName from "./AssetName";
 import Pulsate from "./Pulsate";
@@ -39,6 +38,8 @@ import marketUtils from "common/market_utils";
 import {Asset, Price} from "common/MarketClasses";
 import {useNavigate, Link} from "react-router-dom";
 import {Tooltip} from "../../design-system/Tooltip";
+import {Popover} from "../../design-system/Popover";
+import menu from "./PriceMenu.module.scss";
 import MarketsActions from "actions/MarketsActions";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
@@ -102,16 +103,12 @@ function FormattedPrice({
         setMarketInfo(marketUtils.getMarketName(base_asset, quote_asset));
     }, [base_asset, quote_asset]);
 
-    const togglePopover = (e: any) => {
-        e.preventDefault();
-        setIsPopoverOpen(prev => !prev);
-    };
-
     const closePopover = () => {
         setIsPopoverOpen(false);
     };
 
     const onFlip = () => {
+        closePopover();
         const setting: any = {};
 
         setting[marketName] = !marketDirections.get(marketName);
@@ -120,6 +117,7 @@ function FormattedPrice({
 
     const goToMarket = (e: any) => {
         e.preventDefault();
+        closePopover();
         const inverted = marketDirections.get(marketName);
         MarketsActions.switchMarket();
         navigate(
@@ -234,15 +232,20 @@ function FormattedPrice({
 
     const currency_popover_body =
         !noPopOver && !hide_symbols ? (
-            <div>
-                <div className="button" onClick={onFlip}>
+            <div className={menu.menu}>
+                <button type="button" className={menu.item} onClick={onFlip}>
                     <Translate content="exchange.invert" />
-                </div>
-                <div className="button" onClick={goToMarket}>
+                </button>
+                <button
+                    type="button"
+                    className={menu.item}
+                    onClick={goToMarket}
+                >
                     <Translate content="exchange.to_market" />
-                </div>
+                </button>
                 <LinkComponent
-                    className="button"
+                    className={menu.item}
+                    onClick={closePopover}
                     to={{
                         pathname: "/instant-trade",
                         state: {
@@ -258,13 +261,13 @@ function FormattedPrice({
 
     const popOver = currency_popover_body ? (
         <Popover
-            isOpen={isPopoverOpen}
-            onOuterAction={closePopover}
-            body={currency_popover_body}
+            trigger="click"
+            placement="bottom"
+            visible={isPopoverOpen}
+            onVisibleChange={setIsPopoverOpen}
+            content={currency_popover_body}
         >
-            <span className="currency click-for-help" onClick={togglePopover}>
-                {symbols}
-            </span>
+            <span className="currency click-for-help">{symbols}</span>
         </Popover>
     ) : null;
 

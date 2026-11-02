@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useLocation} from "react-router-dom";
 import {ModalAsPage} from "../design-system/Modal";
 import {useReduxState} from "./hooks/useReduxState";
 import {selectAccountState} from "../store/slices/accountSlice";
@@ -24,6 +25,12 @@ export function SendPage(): JSX.Element {
     const leave = useLeave();
     const accountName = useCurrentAccount();
     const sendRef = React.useRef<{show: () => void} | null>(null);
+    // the address book sends here with the recipient chosen
+    const location = useLocation();
+    const toName: string | undefined =
+        location.state && typeof (location.state as any).toName === "string"
+            ? (location.state as any).toName
+            : undefined;
     React.useEffect(() => {
         // the dialog opens itself on request, as it does from a button
         sendRef.current && sendRef.current.show();
@@ -36,6 +43,7 @@ export function SendPage(): JSX.Element {
                 sendRef.current = e;
             }}
             from_name={accountName}
+            to_name={toName}
             onHide={leave}
         />
     );

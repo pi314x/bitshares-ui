@@ -74,6 +74,7 @@
 // `Asset`/`Price` helper classes from `lib/common/MarketClasses` have no
 // existing TS types in this codebase), consistent with every other port
 // in this migration touching the same objects (e.g. `FeeAssetSelector.tsx`).
+import {useRefreshOnEpoch} from "../../../lib/common/accountEpoch";
 import * as React from "react";
 import counterpart from "counterpart";
 import utils from "common/utils";
@@ -175,6 +176,13 @@ function CreditDebtList(props: CreditDebtListProps) {
             flag: "first"
         });
     }, []);
+    // a deal repaid, collateral changed, a new deal: read again by themselves, not on a reload
+    useRefreshOnEpoch(() => {
+        CreditOfferActions.getCreditDealsByBorrower({
+            name_or_id: account.get("id"),
+            flag: "first"
+        });
+    });
 
     const checkBalance = () => {
         const {feeAmount, amount, debtAsset} = stateRef.current;

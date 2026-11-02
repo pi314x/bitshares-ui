@@ -104,11 +104,7 @@ import AccountSelect from "components/Forms/AccountSelect";
 import {ChainStore} from "bitsharesjs";
 import Operation from "components/Blockchain/Operation";
 import notify from "actions/NotificationActions";
-import {Modal, ModalAsPage} from "../../design-system/Modal";
-import {
-    registerInlineHost,
-    useHasInlineHost
-} from "../../lib/common/inlineHost";
+import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
 import {Icon as AIcon} from "../../design-system/Icon";
 import {Alert} from "../../design-system/Alert";
@@ -542,29 +538,9 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
     );
 }
 
-export const TRANSACTION_CONFIRM_HOST = "transaction-confirm";
-
-/**
- * `inline`: the dialog as part of the page (the app shell renders it at the top
- * of its content and registers as the host). Without `inline` this is the
- * global instance, which stays hidden while a host exists.
- */
-function TransactionConfirm({inline = false}: {inline?: boolean}) {
+/** The one dialog that asks for the signature: a popup over whatever page is open. */
+function TransactionConfirm() {
     const storeState = useReduxState<any>(selectTransactionConfirm);
-    const hostPresent = useHasInlineHost(TRANSACTION_CONFIRM_HOST);
-    React.useEffect(
-        () =>
-            inline ? registerInlineHost(TRANSACTION_CONFIRM_HOST) : undefined,
-        [inline]
-    );
-    if (inline) {
-        return (
-            <ModalAsPage>
-                <TransactionConfirmCore {...storeState} />
-            </ModalAsPage>
-        );
-    }
-    if (hostPresent) return null;
     return <TransactionConfirmCore {...storeState} />;
 }
 

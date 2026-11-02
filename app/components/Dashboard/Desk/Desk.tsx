@@ -607,7 +607,8 @@ function Positions({
             month: "short",
             day: "numeric",
             hour: "2-digit",
-            minute: "2-digit"
+            minute: "2-digit",
+            hourCycle: "h23"
         });
     const expiry =
         data.orders.nextExpiryMs !== null

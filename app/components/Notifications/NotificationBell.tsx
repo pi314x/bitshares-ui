@@ -4,6 +4,7 @@
 import * as React from "react";
 import counterpart from "counterpart";
 import {useClickOutside} from "../../next/hooks/useClickOutside";
+import {openRoute} from "../../lib/common/openRoute";
 import {
     HistoryItem,
     clearNotifications,
@@ -158,7 +159,29 @@ export function NotificationBell(): JSX.Element {
                                     key={item.id}
                                     className={`${styles.item} ${
                                         fresh.has(item.id) ? styles.fresh : ""
-                                    }`}
+                                    } ${item.to ? styles.leads : ""}`}
+                                    // an entry about a transaction opens its page
+                                    {...(item.to
+                                        ? {
+                                              role: "link",
+                                              tabIndex: 0,
+                                              title: t("open_transaction"),
+                                              onClick: () => {
+                                                  close();
+                                                  openRoute(item.to as string);
+                                              },
+                                              onKeyDown: (
+                                                  event: React.KeyboardEvent
+                                              ) => {
+                                                  if (event.key === "Enter") {
+                                                      close();
+                                                      openRoute(
+                                                          item.to as string
+                                                      );
+                                                  }
+                                              }
+                                          }
+                                        : {})}
                                 >
                                     <span
                                         className={`${styles.kind} ${

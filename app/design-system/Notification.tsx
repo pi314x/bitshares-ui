@@ -2,6 +2,7 @@ import * as React from "react";
 import {createPortal} from "react-dom";
 import {createRoot, Root} from "react-dom/client";
 import {Icon} from "./Icon";
+import {openRoute} from "../lib/common/openRoute";
 import styles from "./Notification.module.scss";
 import {
     nodeToText,
@@ -74,6 +75,8 @@ export interface NotificationArgs {
      * up/down caret matching whether the alert fired for a price
      * crossing above or below the threshold). */
     icon?: React.ReactNode;
+    /** A page of the app (a route) the toast leads to when it is clicked; the history keeps it too. */
+    to?: string;
 }
 
 export interface NotificationConfigArgs {
@@ -91,6 +94,7 @@ interface NotificationEntry {
     message: React.ReactNode;
     description?: React.ReactNode;
     icon?: React.ReactNode;
+    to?: string;
 }
 
 const config: Required<NotificationConfigArgs> = {
@@ -129,7 +133,9 @@ function push(kind: NotificationKind, args: NotificationArgs) {
         recordNotification(
             kind,
             nodeToText(args.message),
-            nodeToText(args.description)
+            nodeToText(args.description),
+            Date.now(),
+            args.to
         );
     } catch (e) {
         // never let the history stop a toast
@@ -145,7 +151,8 @@ function push(kind: NotificationKind, args: NotificationArgs) {
             kind,
             message: args.message,
             description: args.description,
-            icon: args.icon
+            icon: args.icon,
+            to: args.to
         }
     ];
     render();
@@ -210,7 +217,31 @@ function NotificationStack({
                             <Icon type="exclamation-circle" />
                         )}
                     </span>
-                    <div className={styles.messageGroup}>
+                    <div
+                        className={[
+                            styles.messageGroup,
+                            entry.to ? styles.linked : ""
+                        ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        // a toast that leads to a page (the transaction it is about): a click opens it
+                        {...(entry.to
+                            ? {
+                                  role: "link",
+                                  tabIndex: 0,
+                                  onClick: () => {
+                                      openRoute(entry.to as string);
+                                      dismiss(entry.id);
+                                  },
+                                  onKeyDown: (event: React.KeyboardEvent) => {
+                                      if (event.key === "Enter") {
+                                          openRoute(entry.to as string);
+                                          dismiss(entry.id);
+                                      }
+                                  }
+                              }
+                            : {})}
+                    >
                         <div className={styles.message}>{entry.message}</div>
                         {entry.description ? (
                             <div className={styles.description}>

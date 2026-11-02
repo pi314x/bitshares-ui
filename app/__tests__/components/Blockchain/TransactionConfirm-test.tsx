@@ -171,4 +171,32 @@ describe("TransactionConfirm", () => {
             TransactionConfirmStore.reset();
         });
     });
+
+    // "There is no popup when you sign a trade": the confirmation was drawn in the page. It is a
+    // dialog over the page, drawn on <body> with its own backdrop.
+    it("is a popup over the page, not a part of it", async () => {
+        const fakeTransaction = {
+            serialize: () => ({operations: [[63, {}]]}),
+            has_proposed_operation: () => false,
+            update_head_block: () => Promise.resolve(),
+            finalize: () => Promise.resolve()
+        };
+        const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+        const view = render(
+            <main data-page>
+                <TransactionConfirm />
+            </main>
+        );
+        await act(async () => {
+            reduxStore.dispatch(confirm({transaction: fakeTransaction}));
+        });
+        spy.mockRestore();
+        const dialog = document.body.querySelector("[role='dialog']");
+        expect(dialog).not.toBeNull();
+        expect(view.container.contains(dialog)).toBe(false);
+        expect(dialog!.getAttribute("aria-modal")).toBe("true");
+        await act(async () => {
+            TransactionConfirmStore.reset();
+        });
+    });
 });

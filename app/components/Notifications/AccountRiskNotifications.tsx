@@ -10,6 +10,7 @@ import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {Notification} from "../../design-system/Notification";
+import {telegramNotify} from "../../lib/common/telegram";
 import {
     PositionRisk,
     positionInputFromChain,
@@ -143,8 +144,17 @@ export function AccountRiskNotifications(): null {
             const note = say(alert);
             Notification[note.kind]({
                 message: note.title,
-                description: note.description
+                description: note.description,
+                to: "/borrow"
             });
+            telegramNotify(name, [
+                {
+                    topic: "risk",
+                    title: note.title,
+                    description: note.description,
+                    link: "/borrow"
+                }
+            ]);
         });
     }, [name, key, present ? present.join(",") : "-"]);
 

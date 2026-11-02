@@ -875,7 +875,7 @@ const ScaledOrderFormInner = React.forwardRef<
     const expirationsOptionsList = Object.keys(expirations).map(key => (
         <option value={key} key={key}>
             {key === "SPECIFIC" && expirationCustomTime !== "Specific"
-                ? moment(expirationCustomTime).format("Do MMM YYYY hh:mm A")
+                ? moment(expirationCustomTime).format("Do MMM YYYY HH:mm")
                 : expirations[key].title}
         </option>
     ));
@@ -970,7 +970,7 @@ const ScaledOrderFormInner = React.forwardRef<
                             data-tip={
                                 expirationTip &&
                                 moment(expirationTip).format(
-                                    "Do MMM YYYY hh:mm A"
+                                    "Do MMM YYYY HH:mm"
                                 )
                             }
                             value={expirationType}

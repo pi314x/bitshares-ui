@@ -24,6 +24,7 @@ import {Select} from "../../design-system/Select";
 import {Toolbar} from "../../design-system/Toolbar";
 import {Button} from "../../design-system/Button";
 import {SubMenu} from "../../design-system/SubMenu";
+import {Star} from "../../design-system/Star";
 import AssetName from "../Utility/AssetName";
 import {PoolAssetSelect} from "./PoolAssetSelect";
 import {usePoolAssets} from "./usePoolAssets";
@@ -35,6 +36,11 @@ import AccountStore from "../../stores/AccountStore";
 import LoadingIndicator from "../LoadingIndicator";
 import {PoolCard, PoolCardData} from "./PoolCard";
 import {Holding, useMyHoldings} from "./useMyHoldings";
+import {useFavoritePoolObjects} from "./useFavoritePoolObjects";
+import {
+    toggleFavoritePool,
+    useFavoritePools
+} from "../../lib/common/favoritePools";
 import PoolGraph from "./PoolGraph";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
@@ -168,6 +174,9 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
         !!AccountStore.getState().currentAccount;
 
     const mine = useMyHoldings(accountName);
+    // the pools with a star: their own section on top, whatever the filters say
+    const favoriteIds = useFavoritePools();
+    const favoritePools = useFavoritePoolObjects(favoriteIds);
 
     const cards: {data: PoolCardData; pool: any}[] = [];
     liquidityPools.forEach((pool: any) => {
@@ -183,6 +192,12 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
         })),
         sortKey
     );
+
+    const favoriteCards: {data: PoolCardData; pool: any}[] = [];
+    favoritePools.forEach(pool => {
+        const data = toCard(pool, mine.holdings[pool.id] || null);
+        if (data) favoriteCards.push({data, pool});
+    });
 
     const yourCards: {data: PoolCardData; pool: any}[] = [];
     mine.pools.forEach(pool => {
@@ -214,10 +229,39 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
             onEditFees={
                 owns(entry.pool) ? () => setFeesPool(entry.pool) : undefined
             }
+            starred={favoriteIds.includes(entry.pool.share_asset)}
+            onToggleStar={() => toggleFavoritePool(entry.pool.share_asset)}
         />
     );
 
     const columns = [
+        {
+            key: "star",
+            title: "",
+            render: (_value: any, row: any) => (
+                <button
+                    type="button"
+                    className={styles.starButton}
+                    aria-pressed={favoriteIds.includes(row.pool.share_asset)}
+                    aria-label={t(
+                        favoriteIds.includes(row.pool.share_asset)
+                            ? "favorite_remove"
+                            : "favorite_add"
+                    )}
+                    title={t(
+                        favoriteIds.includes(row.pool.share_asset)
+                            ? "favorite_remove"
+                            : "favorite_add"
+                    )}
+                    onClick={() => toggleFavoritePool(row.pool.share_asset)}
+                >
+                    <Star
+                        on={favoriteIds.includes(row.pool.share_asset)}
+                        size={18}
+                    />
+                </button>
+            )
+        },
         {
             key: "pair",
             title: t("pair"),
@@ -348,6 +392,15 @@ function LiquidityPools({liquidityPools, lastPoolId}: LiquidityPoolsCoreProps) {
 
     return (
         <div className={styles.page} ref={pageRef}>
+            {favoriteCards.length > 0 ? (
+                <section className={styles.section}>
+                    <h2 className={styles.heading}>{t("favorites")}</h2>
+                    <div className={styles.cards}>
+                        {favoriteCards.map(renderCard)}
+                    </div>
+                </section>
+            ) : null}
+
             {yourCards.length > 0 ? (
                 <section className={styles.section}>
                     <h2 className={styles.heading}>{t("your_liquidity")}</h2>

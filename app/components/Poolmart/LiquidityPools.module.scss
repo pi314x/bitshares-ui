@@ -77,3 +77,13 @@
 .page :global(td) {
     white-space: nowrap;
 }
+
+// the favorite star of a table row
+.starButton {
+    margin: 0;
+    padding: 2px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    line-height: 0;
+}

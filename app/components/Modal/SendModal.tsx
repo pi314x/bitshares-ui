@@ -52,6 +52,7 @@ import AmountSelector from "../Utility/AmountSelectorStyleGuide";
 import FeeAssetSelector from "../Utility/FeeAssetSelector";
 import AccountStore from "stores/AccountStore";
 import AccountSelector from "../Account/AccountSelector";
+import RecipientHelper from "../AddressBook/RecipientHelper";
 import TransactionConfirmStore from "stores/TransactionConfirmStore";
 import {Asset} from "common/MarketClasses";
 import {isNaN} from "lodash-es";
@@ -689,6 +690,28 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                     typeahead={true}
                                     includeMyActiveAccounts={false}
                                     tabIndex={tabIndex++}
+                                />
+
+                                {/* the address book: who to pay, who this is, the memo that goes with them */}
+                                <RecipientHelper
+                                    toName={to_name}
+                                    memo={memo}
+                                    known={
+                                        !!to_account &&
+                                        typeof to_account.get === "function"
+                                    }
+                                    onPick={entry =>
+                                        mergeState({
+                                            to_name: entry.name,
+                                            to_account: (ChainStore as any).getAccount(
+                                                entry.name
+                                            ),
+                                            error: null
+                                        })
+                                    }
+                                    onUseMemo={saved =>
+                                        mergeState({memo: saved})
+                                    }
                                 />
 
                                 <AmountSelector

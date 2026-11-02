@@ -87,11 +87,28 @@
     cursor: pointer;
 }
 
+// The list scrolls inside the panel (the panel keeps its height; a phone's touch scroll stays in the list
+// and does not pass to the page behind it).
 .list {
     list-style: none;
     margin: 0;
     padding: 0;
+    min-height: 0;
+    flex: 1 1 auto;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+// an entry that opens the transaction it is about
+.leads {
+    cursor: pointer;
+}
+
+.leads:hover,
+.leads:focus-visible {
+    background: var(--raised);
+    outline: none;
 }
 
 .item {

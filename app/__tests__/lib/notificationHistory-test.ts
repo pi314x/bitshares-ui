@@ -106,4 +106,49 @@ describe("text of a message", () => {
         reloadNotifications();
         expect(getNotifications().map(i => i.title)).toEqual(["Trade done"]);
     });
+
+    it("keeps the page an entry leads to, and only if it is a route of the app", () => {
+        const kept = recordNotification("info", "A", "", 1, "/block/5/2");
+        expect(kept.to).toBe("/block/5/2");
+        // a web address, a protocol-relative one and a script are not routes
+        expect(
+            recordNotification("info", "B", "", 1, "https://evil.example/x").to
+        ).toBeUndefined();
+        expect(
+            recordNotification("info", "C", "", 1, "//evil.example/x").to
+        ).toBeUndefined();
+        expect(
+            recordNotification("info", "D", "", 1, "javascript:alert(1)").to
+        ).toBeUndefined();
+        expect(recordNotification("info", "E", "").to).toBeUndefined();
+        // and what was stored is checked again when it is read back
+        window.localStorage.setItem(
+            "__graphene__notificationHistory",
+            JSON.stringify([
+                {
+                    id: 1,
+                    at: 1,
+                    kind: "info",
+                    title: "F",
+                    description: "",
+                    seen: true,
+                    to: "https://evil.example"
+                },
+                {
+                    id: 2,
+                    at: 1,
+                    kind: "info",
+                    title: "G",
+                    description: "",
+                    seen: true,
+                    to: "/block/9"
+                }
+            ])
+        );
+        reloadNotifications();
+        const byTitle = (title: string) =>
+            getNotifications().find(i => i.title === title)!;
+        expect(byTitle("F").to).toBeUndefined();
+        expect(byTitle("G").to).toBe("/block/9");
+    });
 });

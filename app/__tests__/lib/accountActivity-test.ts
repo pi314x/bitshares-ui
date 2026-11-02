@@ -1,6 +1,9 @@
 import {
     ActivityContext,
+    activityLink,
     describeActivity,
+    priceText,
+    topicOf,
     newOperations,
     referencedIds,
     startedByAccount
@@ -29,7 +32,7 @@ const ACCOUNTS: {[id: string]: string} = {
 const WORDS: {[key: string]: string} = {
     sent: "Sent {amount} to {to}",
     received: "Received {amount} from {from}",
-    order_placed: "Sell {sell} for at least {receive}",
+    order_placed: "Sell {sell} for at least {receive}{price}",
     order_cancelled: "Order {order} cancelled",
     borrow_changed: "Collateral {collateral}, debt {debt}",
     margin_call_title: "Margin call",
@@ -40,8 +43,19 @@ const WORDS: {[key: string]: string} = {
     settle_done: "Settled: paid {pays}, received {receives}",
     settle_cancelled: "Settlement of {amount} cancelled",
     trade_done: "Trade done",
-    trade_sold: "Sold {pays}, received {receives}",
-    trade_sold_maker: "Your order sold {pays} for {receives}"
+    trade_sold: "Sold {pays}, received {receives}{price}",
+    trade_sold_maker: "Your order {order} sold {pays} for {receives}{price}",
+    order_filled_title: "Order filled",
+    pool_swap_title: "Pool swap",
+    pool_swap: "Swapped {pays} for {receives} in pool {pool}{price}",
+    pool_swap_asked: "Sold {pays} into pool {pool} for at least {min}",
+    pool_deposit_title: "Liquidity added",
+    pool_deposit: "Added {a} and {b} to pool {pool}",
+    pool_withdraw_title: "Liquidity withdrawn",
+    pool_withdraw: "Withdrew {share} from pool {pool}",
+    loan_title: "Flash loan",
+    loan_borrowed: "Borrowed {amount} from fund {fund}",
+    loan_repaid: "Repaid {amount} with {fee} fee to fund {fund}"
 };
 const ctx: ActivityContext = {
     accountId: ME,
@@ -172,7 +186,7 @@ describe("describeActivity", () => {
                 }),
                 ctx
             ).description
-        ).toBe("Sell 10.00000 BTS for at least 2.0000 USD");
+        ).toBe("Sell 10.00000 BTS for at least 2.0000 USD (1 BTS = 0.2 USD)");
         expect(
             describeActivity(
                 entry(4, 2, {fee_paying_account: ME, order: "1.7.55"}),
@@ -195,13 +209,15 @@ describe("describeActivity", () => {
             );
         expect(fill("1.7.1")).toMatchObject({
             title: "Trade done",
-            description: "Sold 1.0000 USD, received 20.00000 BTS",
+            description:
+                "Sold 1.0000 USD, received 20.00000 BTS (1 USD = 20 BTS)",
             kind: "success",
             mine: false
         });
         expect(fill("1.7.1", {is_maker: true}).description).toBe(
-            "Your order sold 1.0000 USD for 20.00000 BTS"
+            "Your order #1 sold 1.0000 USD for 20.00000 BTS (1 USD = 20 BTS)"
         );
+        expect(fill("1.7.1", {is_maker: true}).title).toBe("Order filled");
         expect(fill("1.4.9")).toMatchObject({
             title: "Settlement",
             description: "Settled: paid 1.0000 USD, received 20.00000 BTS",
@@ -259,7 +275,8 @@ describe("describeActivity", () => {
             kind: "info",
             title: "<account_update>",
             description: "",
-            mine: true
+            mine: true,
+            topic: "other"
         });
     });
 
@@ -278,5 +295,156 @@ describe("describeActivity", () => {
             ctx
         );
         expect(unknown.description).toBe("Sent 42 1.3.77 to alice");
+    });
+
+    it("names the transaction page when the chain says where the operation is", () => {
+        const placed = {
+            seller: ME,
+            amount_to_sell: bts(10),
+            min_to_receive: usd(2)
+        };
+        const at = (extra: any) => ({
+            ...entry(20, 1, placed),
+            ...extra
+        });
+        expect(
+            describeActivity(at({block_num: 7000, trx_in_block: 3}), ctx).link
+        ).toBe("/block/7000/3");
+        // a block without a place in it: the block's page
+        expect(describeActivity(at({block_num: 7000}), ctx).link).toBe(
+            "/block/7000"
+        );
+        // nothing known, nothing made up
+        expect(describeActivity(at({}), ctx).link).toBeUndefined();
+        expect(
+            describeActivity(at({block_num: -1, trx_in_block: 0}), ctx).link
+        ).toBeUndefined();
+        expect(activityLink(at({block_num: 12.5}))).toBeUndefined();
+    });
+
+    it("writes a price as an exchange does, in six significant digits", () => {
+        expect(priceText(ctx, usd(1), bts(20))).toBe(" (1 USD = 20 BTS)");
+        expect(
+            priceText(ctx, {amount: "30000", asset_id: "1.3.5"}, bts(1))
+        ).toBe(" (1 USD = 0.333333 BTS)");
+        // an asset that is not known yet, or nothing moved: no price
+        expect(priceText(ctx, {amount: "5", asset_id: "1.3.77"}, bts(1))).toBe(
+            ""
+        );
+        expect(priceText(ctx, usd(0), bts(1))).toBe("");
+        expect(priceText(ctx, undefined, bts(1))).toBe("");
+    });
+
+    it("tells a pool swap with what it received and the price, and a deposit, a withdrawal and a flash loan", () => {
+        const swap = {
+            account: ME,
+            pool: "1.19.12",
+            amount_to_sell: bts(100),
+            min_to_receive: usd(1)
+        };
+        expect(
+            describeActivity(
+                entry(30, 63, swap, [
+                    4,
+                    {received: [usd(3)], paid: [bts(100)]}
+                ]),
+                {
+                    ...ctx,
+                    opName: c =>
+                        c === 63 ? "liquidity_pool_exchange" : NAMES[c]
+                }
+            )
+        ).toMatchObject({
+            kind: "success",
+            title: "Pool swap",
+            description:
+                "Swapped 100.00000 BTS for 3.0000 USD in pool #12 (1 BTS = 0.03 USD)",
+            mine: true
+        });
+        // no result known: what was asked for
+        expect(
+            describeActivity(entry(31, 63, swap), {
+                ...ctx,
+                opName: c => (c === 63 ? "liquidity_pool_exchange" : NAMES[c])
+            }).description
+        ).toBe("Sold 100.00000 BTS into pool #12 for at least 1.0000 USD");
+        const named = (code: number, name: string) => ({
+            ...ctx,
+            opName: (c: number) => (c === code ? name : NAMES[c])
+        });
+        expect(
+            describeActivity(
+                entry(32, 61, {
+                    account: ME,
+                    pool: "1.19.12",
+                    amount_a: bts(5),
+                    amount_b: usd(1)
+                }),
+                named(61, "liquidity_pool_deposit")
+            )
+        ).toMatchObject({
+            title: "Liquidity added",
+            description: "Added 5.00000 BTS and 1.0000 USD to pool #12"
+        });
+        expect(
+            describeActivity(
+                entry(33, 62, {
+                    account: ME,
+                    pool: "1.19.12",
+                    share_amount: {amount: "250", asset_id: "1.3.5"}
+                }),
+                named(62, "liquidity_pool_withdraw")
+            )
+        ).toMatchObject({
+            title: "Liquidity withdrawn",
+            description: "Withdrew 0.0250 USD from pool #12"
+        });
+        expect(
+            describeActivity(
+                entry(34, 90, {
+                    borrower: ME,
+                    fund_id: "1.20.4",
+                    borrow_amount: bts(50)
+                }),
+                named(90, "samet_fund_borrow")
+            )
+        ).toMatchObject({
+            title: "Flash loan",
+            description: "Borrowed 50.00000 BTS from fund #4"
+        });
+        expect(
+            describeActivity(
+                entry(35, 91, {
+                    account: ME,
+                    fund_id: "1.20.4",
+                    repay_amount: bts(50),
+                    fund_fee: bts(1)
+                }),
+                named(91, "samet_fund_repay")
+            ).description
+        ).toBe("Repaid 50.00000 BTS with 1.00000 BTS fee to fund #4");
+    });
+
+    it("sorts every operation into a topic by its name", () => {
+        expect(topicOf("fill_order")).toBe("trade");
+        expect(topicOf("limit_order_create")).toBe("trade");
+        expect(topicOf("call_order_update")).toBe("trade");
+        expect(topicOf("liquidity_pool_exchange")).toBe("pool");
+        expect(topicOf("samet_fund_borrow")).toBe("pool");
+        expect(topicOf("transfer")).toBe("transfer");
+        expect(topicOf("account_update")).toBe("other");
+        expect(topicOf(undefined)).toBe("other");
+        // the note carries it
+        expect(
+            describeActivity(
+                entry(40, 4, {
+                    account_id: ME,
+                    order_id: "1.7.1",
+                    pays: usd(1),
+                    receives: bts(20)
+                }),
+                ctx
+            ).topic
+        ).toBe("trade");
     });
 });
