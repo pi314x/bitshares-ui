@@ -4259,7 +4259,9 @@
         "error_full": "La rubrica è piena.",
         "pick": "Scegli dalla rubrica",
         "use_memo": "Usa il memo salvato: %(memo)s",
-        "save_recipient": "Salva questo destinatario in rubrica"
+        "save_recipient": "Salva questo destinatario in rubrica",
+        "add_from_activity": "Aggiungi alla rubrica",
+        "in_book": "Nella rubrica"
     },
     "day_recap": {
         "title": "Ultime 24 ore",

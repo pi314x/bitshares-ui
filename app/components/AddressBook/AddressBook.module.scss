@@ -171,3 +171,15 @@
     font-size: 14px;
     cursor: pointer;
 }
+
+// the button on a payment in the recent activity, and the note that says the book has the account
+.activityAction {
+    margin-top: 6px;
+}
+
+.saved {
+    display: inline-block;
+    margin-top: 6px;
+    color: var(--ink-2);
+    font-size: 12px;
+}

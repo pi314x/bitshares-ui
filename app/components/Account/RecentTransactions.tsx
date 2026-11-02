@@ -66,6 +66,8 @@ import cnames from "classnames";
 import PaginatedList from "../Utility/PaginatedList";
 import CopyIconButton from "../Utility/CopyIconButton";
 import OperationFacts, {TransactionIdShort} from "../Blockchain/OperationFacts";
+import AddToAddressBook from "../AddressBook/AddToAddressBook";
+import {isSentPayment} from "../../lib/common/addressBook";
 const {operations} = grapheneChainTypes as any;
 import LoadingIndicator from "../LoadingIndicator";
 import {Tooltip} from "../../design-system/Tooltip";
@@ -342,6 +344,12 @@ function RecentTransactionsCore({
             marketDirections
         );
         fee.amount = parseInt(fee.amount, 10);
+        // a payment this account sent (a withdrawal to an exchange or a gateway is one): it can be saved in the address book
+        const sentPayment = isSentPayment(
+            ops[o.op[0]],
+            o.op[1],
+            accountsList.map((account: any) => account && account.get("id"))
+        );
         const dynGlobalObject: any = ChainStore.getObject("2.1.0");
         const lastIrreversibleBlockNum = dynGlobalObject.get(
             "last_irreversible_block_num"
@@ -412,6 +420,9 @@ function RecentTransactionsCore({
                             <PendingBlock blockNumber={o.block_num} />
                         ) : null}
                     </div>
+                    {sentPayment ? (
+                        <AddToAddressBook to={o.op[1].to} memo={o.op[1].memo} />
+                    ) : null}
                     {compactView ? (
                         // the compact list drops its id column on a phone (Desk.module.scss):
                         // the id, its details and its copy button follow the text there

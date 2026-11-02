@@ -4259,7 +4259,9 @@
         "error_full": "주소록이 가득 찼습니다.",
         "pick": "주소록에서 선택",
         "use_memo": "저장된 메모 사용: %(memo)s",
-        "save_recipient": "이 수신자를 주소록에 저장"
+        "save_recipient": "이 수신자를 주소록에 저장",
+        "add_from_activity": "주소록에 추가",
+        "in_book": "주소록에 있음"
     },
     "day_recap": {
         "title": "최근 24시간",

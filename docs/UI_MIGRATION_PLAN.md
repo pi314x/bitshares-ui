@@ -13993,6 +13993,14 @@ a section on top of the list, read by their share asset so that no filter hides 
 with a payment - kept in this browser and exported/imported as a file. In the Send dialog a picker fills the
 recipient and, when the memo box is empty, its memo (a memo that was typed is never replaced; the saved one is
 offered), the dialog says who the typed account is, and a recipient the book does not know can be saved from it.
+In the recent activity (the Dashboard card, an account's history), a payment the account sent - a withdrawal to an
+exchange or a gateway is one (2026-11-02; the user: "When finding. A withdrawal in the recents add a button which
+does add to address book") - has a button "Add to address book" (`AddressBook/AddToAddressBook.tsx`; `isSentPayment`
+picks the rows: transfers FROM the listed accounts, not to them). It opens the entry form with the recipient and
+the memo that went along (`PrivateKeyStore.decodeMemo`, the same reading as the row's own memo; the memo is encrypted,
+so a locked wallet is asked to log in first, and a cancelled prompt or a memo that cannot be read opens the form
+without it). Where the book has the account already, the row says "In the address book" instead. Not in the Send flow
+or anywhere else: only in these rows.
 
 *Last 24 hours* (Dashboard card; `lib/common/dayRecap.ts`, `Dashboard/Desk/DayRecap.tsx`): counted from the history
 the balance chart is drawn from (the same shared load, with the times of its blocks): transfers in and out, order

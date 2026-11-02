@@ -4259,7 +4259,9 @@
         "error_full": "地址簿已满。",
         "pick": "从地址簿选择",
         "use_memo": "使用已保存的备注：%(memo)s",
-        "save_recipient": "将此收款人保存到地址簿"
+        "save_recipient": "将此收款人保存到地址簿",
+        "add_from_activity": "添加到地址簿",
+        "in_book": "已在地址簿中"
     },
     "day_recap": {
         "title": "最近 24 小时",

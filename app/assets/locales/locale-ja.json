@@ -4259,7 +4259,9 @@
         "error_full": "アドレス帳がいっぱいです。",
         "pick": "アドレス帳から選ぶ",
         "use_memo": "保存したメモを使う：%(memo)s",
-        "save_recipient": "この宛先をアドレス帳に保存"
+        "save_recipient": "この宛先をアドレス帳に保存",
+        "add_from_activity": "アドレス帳に追加",
+        "in_book": "アドレス帳に登録済み"
     },
     "day_recap": {
         "title": "過去 24 時間",

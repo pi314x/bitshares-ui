@@ -4259,7 +4259,9 @@
         "error_full": "Le carnet d'adresses est plein.",
         "pick": "Choisir dans le carnet d'adresses",
         "use_memo": "Utiliser le mémo enregistré : %(memo)s",
-        "save_recipient": "Enregistrer ce destinataire dans le carnet d'adresses"
+        "save_recipient": "Enregistrer ce destinataire dans le carnet d'adresses",
+        "add_from_activity": "Ajouter au carnet d'adresses",
+        "in_book": "Dans le carnet d'adresses"
     },
     "day_recap": {
         "title": "Dernières 24 heures",

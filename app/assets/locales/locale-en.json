@@ -4259,7 +4259,9 @@
         "error_full": "The address book is full.",
         "pick": "Pick from the address book",
         "use_memo": "Use the saved memo: %(memo)s",
-        "save_recipient": "Save this recipient in the address book"
+        "save_recipient": "Save this recipient in the address book",
+        "add_from_activity": "Add to address book",
+        "in_book": "In the address book"
     },
     "day_recap": {
         "title": "Last 24 hours",

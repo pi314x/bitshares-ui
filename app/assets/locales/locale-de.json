@@ -4259,7 +4259,9 @@
         "error_full": "Das Adressbuch ist voll.",
         "pick": "Aus dem Adressbuch wählen",
         "use_memo": "Gespeichertes Memo verwenden: %(memo)s",
-        "save_recipient": "Diesen Empfänger im Adressbuch speichern"
+        "save_recipient": "Diesen Empfänger im Adressbuch speichern",
+        "add_from_activity": "Zum Adressbuch hinzufügen",
+        "in_book": "Im Adressbuch"
     },
     "day_recap": {
         "title": "Letzte 24 Stunden",

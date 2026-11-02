@@ -4259,7 +4259,9 @@
         "error_full": "Adres defteri dolu.",
         "pick": "Adres defterinden seç",
         "use_memo": "Kayıtlı notu kullan: %(memo)s",
-        "save_recipient": "Bu alıcıyı adres defterine kaydet"
+        "save_recipient": "Bu alıcıyı adres defterine kaydet",
+        "add_from_activity": "Adres defterine ekle",
+        "in_book": "Adres defterinde"
     },
     "day_recap": {
         "title": "Son 24 saat",

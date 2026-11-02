@@ -107,6 +107,23 @@ export function findEntry(
     return list.find(entry => entry.name === wanted);
 }
 
+/**
+ * Whether an operation of an account's history is a payment that one of these accounts sent (a withdrawal to an
+ * exchange or a gateway is one): the recipient of such a payment can be saved in the book.
+ */
+export function isSentPayment(
+    type: string | undefined,
+    payload: any,
+    ownIds: Array<string | null | undefined>
+): boolean {
+    return (
+        type === "transfer" &&
+        !!payload &&
+        typeof payload.from === "string" &&
+        ownIds.indexOf(payload.from) >= 0
+    );
+}
+
 export type SaveResult =
     | {ok: true; entry: AddressEntry}
     | {ok: false; error: "name" | "duplicate" | "full"};
