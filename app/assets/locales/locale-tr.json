@@ -774,7 +774,10 @@
         "unpriced": "%(count)s without a price are not counted",
         "value": "Değer",
         "wallet": "Cüzdan",
-        "card_recap": "Son 24 saat"
+        "card_recap": "Son 24 saat",
+        "pool_share_tag": "Havuz payı",
+        "pool_share_hint": "Bir likidite havuzunun payı: değeri havuzunkidir, cüzdanda değil Havuzlar'da sayılır.",
+        "assets_loading": "Cüzdandaki %(count)s token daha hâlâ okunuyor ve birazdan listelenecek."
     },
     "errors": {
         "loading_from_blockchain": "Blok zincirinden alınırken hata oluştu, lütfen tekrar deneyin.",

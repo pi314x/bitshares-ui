@@ -774,7 +774,10 @@
         "unpriced": "%(count)s without a price are not counted",
         "value": "价值",
         "wallet": "钱包",
-        "card_recap": "最近 24 小时"
+        "card_recap": "最近 24 小时",
+        "pool_share_tag": "资金池份额",
+        "pool_share_hint": "流动性资金池的份额：其价值属于资金池，计入“资金池”，不计入钱包。",
+        "assets_loading": "钱包中还有 %(count)s 个代币正在读取，稍后会列出。"
     },
     "errors": {
         "loading_from_blockchain": "正在从区块链中抓取错误，请重试。",

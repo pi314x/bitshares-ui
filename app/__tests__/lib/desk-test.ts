@@ -45,6 +45,50 @@ describe("holdingRows", () => {
     });
 });
 
+describe("holdingRows: the shares of liquidity pools", () => {
+    it("lists a pool share with its value, but counts it in no total, gives it no share, and does not call it unpriced", () => {
+        const {rows, total, unpriced} = holdingRows([
+            {
+                assetId: "1.3.0",
+                symbol: "BTS",
+                precision: 5,
+                units: 3000000,
+                value: 30
+            },
+            {
+                assetId: "1.3.8",
+                symbol: "LPSHARE",
+                precision: 5,
+                units: 134,
+                value: 500,
+                pool: true
+            },
+            {
+                assetId: "1.3.9",
+                symbol: "OTHERSHARE",
+                precision: 5,
+                units: 7,
+                value: null,
+                pool: true
+            }
+        ]);
+        // listed: nothing the wallet holds is left out
+        expect(rows.map(r => r.symbol)).toEqual([
+            "BTS",
+            "LPSHARE",
+            "OTHERSHARE"
+        ]);
+        // the pool's value is the pool's: the wallet's total is BTS alone
+        expect(total).toBe(30);
+        expect(rows[0].share).toBeCloseTo(1);
+        expect(rows[1].share).toBeNull();
+        expect(rows[1].value).toBe(500);
+        expect(rows[1].pool).toBe(true);
+        // a share with no value is the pool's matter, not a token without a price
+        expect(unpriced).toBe(0);
+    });
+});
+
 describe("positionRisk", () => {
     const base: PositionInput = {
         id: "1.8.1",

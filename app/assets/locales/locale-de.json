@@ -774,7 +774,10 @@
         "unpriced": "%(count)s ohne Preis sind nicht eingerechnet",
         "value": "Wert",
         "wallet": "Wallet",
-        "card_recap": "Letzte 24 Stunden"
+        "card_recap": "Letzte 24 Stunden",
+        "pool_share_tag": "Pool-Anteil",
+        "pool_share_hint": "Ein Anteil an einem Liquiditätspool: sein Wert ist der des Pools, gezählt unter Pools, nicht in der Wallet.",
+        "assets_loading": "%(count)s weitere Token der Wallet werden noch gelesen und gleich aufgeführt."
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

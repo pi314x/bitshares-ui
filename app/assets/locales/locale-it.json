@@ -774,7 +774,10 @@
         "unpriced": "%(count)s without a price are not counted",
         "value": "Valore",
         "wallet": "Portafoglio",
-        "card_recap": "Ultime 24 ore"
+        "card_recap": "Ultime 24 ore",
+        "pool_share_tag": "Quota di pool",
+        "pool_share_hint": "Una quota di un pool di liquidità: il suo valore è quello del pool, contato in Pool, non nel wallet.",
+        "assets_loading": "Altri %(count)s token del wallet sono ancora in lettura e verranno elencati a breve."
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

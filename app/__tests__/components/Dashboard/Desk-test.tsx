@@ -70,6 +70,7 @@ const data = (overrides: any = {}) => ({
             share: null
         }
     ],
+    assetsLoading: 0,
     unpriced: 1,
     orders: {count: 2, nextExpiryMs: null, expiringSoon: 0, value: 34.5},
     settlements: {count: 0, nextMs: null, value: null, items: []},
@@ -110,6 +111,43 @@ describe("Desk", () => {
         expect(getAllByText("no price").length).toBe(1);
         expect(getByText("2 open orders")).toBeTruthy();
         expect(getByText("1 without a price are not counted")).toBeTruthy();
+    });
+
+    it("shows a share of a pool among the holdings, marked, with no link to a market", () => {
+        mockData = data({
+            holdings: [
+                ...data().holdings,
+                {
+                    assetId: "1.3.7",
+                    symbol: "LPSHARE",
+                    precision: 5,
+                    units: 134,
+                    value: 20,
+                    amount: 0.00134,
+                    share: null,
+                    pool: true
+                }
+            ]
+        });
+        const {getByText, container} = renderDesk();
+        expect(getByText("LPSHARE")).toBeTruthy();
+        expect(getByText("Pool share")).toBeTruthy();
+        const row = getByText("LPSHARE").closest("tr") as HTMLElement;
+        expect(row.querySelector('a[href*="/market/"]')).toBeNull();
+        // and the pie by asset does not count it (the Pools part of the whole is the pool's)
+        expect(container.textContent).not.toContain("LPSHARE=20");
+    });
+
+    it("says that more tokens of the wallet are still being read, instead of leaving them out without a word", () => {
+        mockData = data({assetsLoading: 3});
+        const first = renderDesk();
+        expect(first.container.textContent).toContain(
+            "3 more tokens of the wallet are still being read"
+        );
+        first.unmount();
+        mockData = data({assetsLoading: 0});
+        const second = renderDesk();
+        expect(second.container.textContent).not.toContain("still being read");
     });
 
     describe("the holdings filter", () => {

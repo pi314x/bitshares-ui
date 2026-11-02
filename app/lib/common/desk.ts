@@ -17,6 +17,11 @@ export interface HoldingInput {
     units: number;
     /** in the chosen unit, or null without a price */
     value: number | null;
+    /**
+     * The token is the share of a liquidity pool the account is in: listed with the rest of the wallet, valued as
+     * its part of the pool, but not counted here (the Pools line of the total counts it).
+     */
+    pool?: boolean;
 }
 
 export interface HoldingRow extends HoldingInput {
@@ -37,14 +42,19 @@ export function holdingRows(
     inputs: HoldingInput[]
 ): {rows: HoldingRow[]; total: number; unpriced: number} {
     const held = inputs.filter(input => input.units > 0);
+    // a pool share is shown, but what it is worth is the pool's: not in this total, and no share of it
     const total = held.reduce(
-        (sum, input) => sum + (input.value !== null ? input.value : 0),
+        (sum, input) =>
+            sum + (!input.pool && input.value !== null ? input.value : 0),
         0
     );
     const rows: HoldingRow[] = held.map(input => ({
         ...input,
         amount: input.units / Math.pow(10, input.precision),
-        share: input.value !== null && total > 0 ? input.value / total : null
+        share:
+            !input.pool && input.value !== null && total > 0
+                ? input.value / total
+                : null
     }));
     rows.sort((a, b) => {
         if ((a.assetId === CORE_ASSET_ID) !== (b.assetId === CORE_ASSET_ID)) {
@@ -57,7 +67,11 @@ export function holdingRows(
         if (b.value === null) return -1;
         return b.value - a.value;
     });
-    return {rows, total, unpriced: rows.filter(r => r.value === null).length};
+    return {
+        rows,
+        total,
+        unpriced: rows.filter(r => !r.pool && r.value === null).length
+    };
 }
 
 // -------------------------------------------------------- borrow positions

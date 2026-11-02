@@ -406,6 +406,14 @@ function Holdings({
                                         <TypedLink to={`/asset/${row.symbol}`}>
                                             {row.symbol}
                                         </TypedLink>
+                                        {row.pool ? (
+                                            <span
+                                                className={styles.poolTag}
+                                                title={t("pool_share_hint")}
+                                            >
+                                                {t("pool_share_tag")}
+                                            </span>
+                                        ) : null}
                                     </span>
                                 </td>
                                 <td className={styles.num}>
@@ -443,7 +451,7 @@ function Holdings({
                                     )}
                                 </td>
                                 <td className={styles.hideSmall}>
-                                    {row.symbol !== coreSymbol ? (
+                                    {row.symbol !== coreSymbol && !row.pool ? (
                                         <TypedLink
                                             to={`/market/${row.symbol}_${coreSymbol}`}
                                         >
@@ -456,6 +464,11 @@ function Holdings({
                     </tbody>
                 </table>
             </div>
+            {data.assetsLoading > 0 ? (
+                <div className={styles.note}>
+                    {t("assets_loading", {count: data.assetsLoading})}
+                </div>
+            ) : null}
             {query && !matching.length ? (
                 <div className={styles.empty}>
                     {t("no_match", {filter: filter.trim()})}
@@ -490,11 +503,14 @@ function Allocation({data}: {data: DeskData}): JSX.Element {
     const parts = React.useMemo(
         () =>
             mode === "asset"
-                ? data.holdings.map(row => ({
-                      key: row.assetId,
-                      label: row.symbol,
-                      value: row.value
-                  }))
+                ? // (a pool's share is the Pools part of the whole, not a token of the wallet here)
+                  data.holdings
+                      .filter(row => !row.pool)
+                      .map(row => ({
+                          key: row.assetId,
+                          label: row.symbol,
+                          value: row.value
+                      }))
                 : [
                       {
                           key: "wallet",

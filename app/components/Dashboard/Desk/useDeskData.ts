@@ -78,6 +78,8 @@ export interface DeskData {
         debt: number;
     };
     holdings: HoldingRow[];
+    /** tokens the wallet holds whose asset the chain store has not loaded yet: not in `holdings` until it has */
+    assetsLoading: number;
     unpriced: number;
     /** an open order, a collateral or a debt has no price yet: the total is
      * not the whole picture (a missing debt would read as a bigger total) */
@@ -105,6 +107,7 @@ const EMPTY: DeskData = {
         debt: 0
     },
     holdings: [],
+    assetsLoading: 0,
     unpriced: 0,
     incomplete: false,
     orders: {count: 0, nextExpiryMs: null, expiringSoon: 0, value: null},
@@ -253,7 +256,9 @@ export function useDeskData(
         values.reduce<number>((s, v) => s + (v === null ? 0 : v), 0);
 
     // ---- pools: the share tokens are priced through the pool
+    // what the account's share of each pool is worth, by the pool's share asset
     const poolShareIds = new Set<string>();
+    const poolShareValue = new Map<string, number | null>();
     const pools: DeskPool[] = [];
     mine.pools.forEach(pool => {
         const holding = mine.holdings[pool.id];
@@ -266,6 +271,7 @@ export function useDeskData(
             idA,
             Math.round(2 * holding.amountA * Math.pow(10, precisionA))
         );
+        poolShareValue.set(pool.share_asset, valueA);
         pools.push({
             id: pool.id,
             symbolA: pool.asset_a_obj.get("symbol"),
@@ -278,16 +284,28 @@ export function useDeskData(
     });
 
     // ---- holdings
+    // every token of the wallet: the shares of pools too (listed, valued as their part of the pool, counted under Pools)
     const holdingInputs = Object.keys(balanceUnits)
-        .filter(id => !poolShareIds.has(id) && assetsById[id])
-        .map(id => ({
-            assetId: id,
-            symbol: assetsById[id].get("symbol") as string,
-            precision: assetsById[id].get("precision") as number,
-            units: balanceUnits[id],
-            value: valueOf(id, balanceUnits[id])
-        }));
+        .filter(id => assetsById[id])
+        .map(id => {
+            const pooled = poolShareIds.has(id);
+            const value = pooled
+                ? poolShareValue.get(id) ?? null
+                : valueOf(id, balanceUnits[id]);
+            return {
+                assetId: id,
+                symbol: assetsById[id].get("symbol") as string,
+                precision: assetsById[id].get("precision") as number,
+                units: balanceUnits[id],
+                value,
+                ...(pooled ? {pool: true} : {})
+            };
+        });
     const {rows: holdings, unpriced} = holdingRows(holdingInputs);
+    // what the wallet holds and cannot be listed yet: its asset is still being read
+    const assetsLoading = Object.keys(balanceUnits).filter(
+        id => balanceUnits[id] > 0 && !assetsById[id]
+    ).length;
 
     // ---- orders
     const ordersValue = Object.keys(orderUnits).map(id =>
@@ -378,7 +396,7 @@ export function useDeskData(
 
     // ---- totals
     const parts = {
-        wallet: sum(holdings.map(h => h.value)),
+        wallet: sum(holdings.map(h => (h.pool ? null : h.value))),
         pools: sum(pools.map(p => p.value)),
         orders: sum(ordersValue),
         collateral: collateralValue,
@@ -411,6 +429,7 @@ export function useDeskData(
         total,
         parts,
         holdings,
+        assetsLoading,
         unpriced,
         incomplete,
         orders: {

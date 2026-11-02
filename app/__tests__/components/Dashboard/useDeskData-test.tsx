@@ -43,8 +43,10 @@ jest.mock("../../../next/dashboard/balanceCalculations", () => ({
         return human * mockPrices[fromId] * Math.pow(10, to.get("precision"));
     }
 }));
+// the pools the account is in (none unless a test says)
+let mockMine: any = {pools: [], holdings: {}};
 jest.mock("../../../components/Poolmart/useMyHoldings", () => ({
-    useMyHoldings: () => ({pools: [], holdings: {}})
+    useMyHoldings: () => mockMine
 }));
 
 import {useDeskData} from "../../../components/Dashboard/Desk/useDeskData";
@@ -70,6 +72,7 @@ const settle = (id: string, assetId: string, amount: string, date: string) =>
     });
 
 beforeEach(() => {
+    mockMine = {pools: [], holdings: {}};
     mockAssets["1.3.0"] = asset("1.3.0", "BTS", 5);
     mockAssets["1.3.5"] = asset("1.3.5", "USD", 4);
     mockAssets["1.3.9"] = asset("1.3.9", "NOPRICE", 2);
@@ -181,5 +184,73 @@ describe("useDeskData: settlements", () => {
         ]);
         expect(data.settlements.items[1].dateMs).toBeNull();
         expect(data.settlements.nextMs).toBe(Date.UTC(2026, 9, 28, 20, 0, 0));
+    });
+});
+
+describe("useDeskData: the shares of pools in the wallet", () => {
+    it("lists a pool share among the holdings, valued as the account's part of the pool, and counts it only under Pools", () => {
+        mockAssets["1.3.7"] = asset("1.3.7", "LPSHARE", 5);
+        mockAccount = mockAccount.set(
+            "balances",
+            Immutable.fromJS(["2.5.1", "2.5.2"])
+        );
+        mockObjects["2.5.2"] = Immutable.fromJS({
+            id: "2.5.2",
+            asset_type: "1.3.7",
+            balance: "134"
+        });
+        // a pool of BTS and USD: the account's part is 10 BTS and 0.05 USD, worth 2 x 10 = 20 BTS
+        mockMine = {
+            pools: [
+                {
+                    id: "1.19.9",
+                    share_asset: "1.3.7",
+                    asset_a_obj: asset("1.3.0", "BTS", 5),
+                    asset_b_obj: asset("1.3.5", "USD", 4)
+                }
+            ],
+            holdings: {"1.19.9": {fraction: 0.1, amountA: 10, amountB: 0.05}}
+        };
+        const data = read();
+        const share = data.holdings.find((h: any) => h.symbol === "LPSHARE");
+        expect(share).toBeTruthy();
+        expect(share.pool).toBe(true);
+        expect(share.value).toBe(20);
+        expect(share.share).toBeNull();
+        // the wallet is BTS alone (1,000 BTS), the pool's 20 is the Pools part, once
+        expect(data.parts.wallet).toBe(1000);
+        expect(data.parts.pools).toBe(20);
+        expect(data.total).toBe(1020);
+        expect(data.unpriced).toBe(0);
+    });
+});
+
+describe("useDeskData: tokens whose asset is not loaded yet", () => {
+    it("counts them, so that the card can say they are coming, and lists them when the asset is there", () => {
+        mockAccount = mockAccount.set(
+            "balances",
+            Immutable.fromJS(["2.5.1", "2.5.3", "2.5.4"])
+        );
+        mockObjects["2.5.3"] = Immutable.fromJS({
+            id: "2.5.3",
+            asset_type: "1.3.40",
+            balance: "5"
+        });
+        mockObjects["2.5.4"] = Immutable.fromJS({
+            id: "2.5.4",
+            asset_type: "1.3.41",
+            balance: "0"
+        });
+        const before = read();
+        // the empty balance is not a token held; the other has no asset yet
+        expect(before.assetsLoading).toBe(1);
+        expect(before.holdings.map((h: any) => h.symbol)).toEqual(["BTS"]);
+        mockAssets["1.3.40"] = asset("1.3.40", "LATE", 2);
+        const after = read();
+        expect(after.assetsLoading).toBe(0);
+        expect(after.holdings.map((h: any) => h.symbol).sort()).toEqual([
+            "BTS",
+            "LATE"
+        ]);
     });
 });
