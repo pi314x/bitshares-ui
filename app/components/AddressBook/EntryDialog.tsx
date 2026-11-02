@@ -110,6 +110,20 @@ export default function EntryDialog({
                     <span className={styles.help}>{t("name_help")}</span>
                 </div>
                 <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-memo">
+                        {t("memo")}
+                    </label>
+                    <Input
+                        id="address-memo"
+                        value={memo}
+                        maxLength={MAX_MEMO}
+                        autoComplete="off"
+                        aria-label={t("memo")}
+                        onChange={(e: any) => setMemo(e.target.value)}
+                    />
+                    <span className={styles.help}>{t("memo_help")}</span>
+                </div>
+                <div className={styles.field}>
                     <label className={styles.label} htmlFor="address-asset">
                         {t("asset")}
                     </label>
@@ -157,20 +171,6 @@ export default function EntryDialog({
                         aria-label={t("note")}
                         onChange={(e: any) => setNote(e.target.value)}
                     />
-                </div>
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="address-memo">
-                        {t("memo")}
-                    </label>
-                    <Input
-                        id="address-memo"
-                        value={memo}
-                        maxLength={MAX_MEMO}
-                        autoComplete="off"
-                        aria-label={t("memo")}
-                        onChange={(e: any) => setMemo(e.target.value)}
-                    />
-                    <span className={styles.help}>{t("memo_help")}</span>
                 </div>
                 {error ? (
                     <p className={styles.error} role="alert">

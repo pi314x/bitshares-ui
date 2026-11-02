@@ -14015,7 +14015,8 @@ asset being sent. "Send" on the book page opens the Send page with `{toName, ass
 once the chain store has it and tells the dialog. On the book page a card for an asset also shows what the logged-in account holds of it
 ("Balance 0.644205 XBTSX.USDT", `HeldBalance.tsx`; the user: "In the address Book Show also the Balance of the Asset"), read from the chain store's balance
 objects like the Dashboard's holdings: zero where the account holds none, nothing until the account, the asset and its balance objects are loaded, and nothing
-without an account or on a card that is for any asset.
+without an account or on a card that is for any asset. The fields of an entry are in this order, in the form and on the card (the user: "Order entry in addressbook:
+account name, memo, asset"): the account name, the memo, the asset (on the card with the balance under it), then who it is and the info.
 
 *Recent activity: more operations, and a search* (Dashboard card, 2026-11-02; the user: "Show more than 100 operations in Dashboard. So many as the
 node can offer", "Search in recent activities while Typing", "Max 100 per Page", then "Load First 100 operations and the rest only when you step forward").

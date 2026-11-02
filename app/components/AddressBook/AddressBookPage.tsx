@@ -1,5 +1,5 @@
 // /address-book: the accounts the user pays - who they are, what to know about them, the memo to send. A card for
-// each (a phone is the first screen), a search over all of it, "Send" that opens the Send page with the
+// each (a phone is the first screen) with its account, memo and asset in that order, a search over all of it, "Send" that opens the Send page with the
 // recipient (and its asset) in, and the book as a file (export, import). An entry for an asset also shows what
 // the account holds of that asset.
 import * as React from "react";
@@ -142,19 +142,7 @@ export default function AddressBookPage(): JSX.Element {
                                 >
                                     {entry.name}
                                 </TypedLink>
-                                {entry.asset ? (
-                                    <span className={styles.asset}>
-                                        {entry.asset}
-                                    </span>
-                                ) : null}
                             </div>
-                            {entry.note ? (
-                                <p className={styles.note}>{entry.note}</p>
-                            ) : null}
-                            {/* an entry for an asset: what the account holds of it, to withdraw */}
-                            {entry.asset ? (
-                                <HeldBalance symbol={entry.asset} />
-                            ) : null}
                             {entry.memo ? (
                                 <p className={styles.memo}>
                                     <span className={styles.memoLabel}>
@@ -162,6 +150,21 @@ export default function AddressBookPage(): JSX.Element {
                                     </span>{" "}
                                     <code>{entry.memo}</code>
                                 </p>
+                            ) : null}
+                            {entry.asset ? (
+                                <p className={styles.memo}>
+                                    <span className={styles.memoLabel}>
+                                        {t("asset")}
+                                    </span>{" "}
+                                    <code>{entry.asset}</code>
+                                </p>
+                            ) : null}
+                            {/* an entry for an asset: what the account holds of it, to withdraw */}
+                            {entry.asset ? (
+                                <HeldBalance symbol={entry.asset} />
+                            ) : null}
+                            {entry.note ? (
+                                <p className={styles.note}>{entry.note}</p>
                             ) : null}
                             <div className={styles.actions}>
                                 <Button

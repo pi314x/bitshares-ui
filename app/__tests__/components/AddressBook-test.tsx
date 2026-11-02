@@ -488,6 +488,48 @@ describe("the asset on the address book page", () => {
         expect(held(without)).toEqual([]);
     });
 
+    it("asks for the account, then the memo, then the asset, and then who it is and what to know", () => {
+        page();
+        fireEvent.click(button("Add"));
+        const labels = Array.from(
+            document.body.querySelectorAll("label")
+        ).map(l => (l.textContent || "").trim());
+        expect(labels).toEqual([
+            "Account name",
+            "Memo",
+            "Asset",
+            "Who is it?",
+            "Info"
+        ]);
+    });
+
+    it("lists the account, the memo and the asset on a card in that order, with what is held of the asset under it", () => {
+        saveEntry({
+            name: "xbts-hive",
+            asset: "XBTSX.HIVE",
+            memo: "hive-address-1",
+            note: "My withdrawals"
+        });
+        const {container} = page();
+        const card = container.querySelector("li") as HTMLElement;
+        const text = card.textContent || "";
+        const at = (word: string) => text.indexOf(word);
+        expect(at("xbts-hive")).toBeGreaterThanOrEqual(0);
+        expect(at("xbts-hive")).toBeLessThan(at("Memo"));
+        expect(at("Memo")).toBeLessThan(at("hive-address-1"));
+        expect(at("hive-address-1")).toBeLessThan(at("Asset"));
+        expect(at("Asset")).toBeLessThan(at("My withdrawals"));
+        // the balance of the asset follows the asset line (it is mocked here as the symbol)
+        const held = card.querySelector('[data-testid="held"]') as HTMLElement;
+        const assetLine = Array.from(card.querySelectorAll("p")).find(p =>
+            (p.textContent || "").startsWith("Asset")
+        ) as HTMLElement;
+        expect(
+            assetLine.compareDocumentPosition(held) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+    });
+
     it("sends to an entry with its asset: the Send page opens with the recipient and the asset", () => {
         saveEntry({name: "xbts-hive", asset: "XBTSX.HIVE"});
         const {getByTestId} = page();
