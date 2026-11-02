@@ -18,10 +18,14 @@ describe("isDesktopModalPath", () => {
 
     // Send opened as a page of its own, and the page it was left from showed its dialog behind
     // Deposit's: Send is a dialog over the page the user came from, like Deposit and Withdraw.
-    it("includes Send, Timed transfer, Deposit and Withdraw", () => {
-        ["/send", "/timed-transfer", "/deposit", "/withdraw"].forEach(path =>
+    it("includes Send, Deposit and Withdraw (still dialogs on a desktop)", () => {
+        ["/send", "/deposit", "/withdraw"].forEach(path =>
             expect(isDesktopModalPath(path)).toBe(true)
         );
+    });
+
+    it("does not include Timed transfer: it is a page on a desktop as on a phone", () => {
+        expect(isDesktopModalPath("/timed-transfer")).toBe(false);
     });
 
     it("is false for every other page, and for a path that only starts alike", () => {

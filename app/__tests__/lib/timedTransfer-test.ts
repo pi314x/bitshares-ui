@@ -4,7 +4,8 @@ import {
     buildTimedTransferOp,
     checkRelease,
     parseLocalDateTime,
-    toChainTime
+    toChainTime,
+    relativeFromNow
 } from "../../lib/common/timedTransfer";
 
 const NOW = 1800000000; // 2027-01-15T08:00:00Z
@@ -99,5 +100,30 @@ describe("checkRelease / parseLocalDateTime", () => {
         expect(parseLocalDateTime("")).toBeNull();
         expect(parseLocalDateTime("tomorrow")).toBeNull();
         expect(parseLocalDateTime("2030-13-45T99:99")).toBeNull();
+    });
+});
+
+describe("relativeFromNow", () => {
+    const NOW = 1_800_000_000;
+    const DAY = 86400;
+    it("says how far a time is in the words of the language: minutes, hours, days, months, years", () => {
+        expect(relativeFromNow(NOW + 5 * 60, NOW, "en")).toBe("in 5 minutes");
+        expect(relativeFromNow(NOW + 3 * 3600, NOW, "en")).toBe("in 3 hours");
+        expect(relativeFromNow(NOW + 7 * DAY, NOW, "en")).toBe("in 7 days");
+        expect(relativeFromNow(NOW + 91 * DAY, NOW, "en")).toBe("in 3 months");
+        expect(relativeFromNow(NOW + 400 * DAY, NOW, "en")).toBe(
+            "in 13 months"
+        );
+        expect(relativeFromNow(NOW + 3 * 365 * DAY, NOW, "en")).toBe(
+            "in 3 years"
+        );
+    });
+    it("says tomorrow, and speaks German", () => {
+        expect(relativeFromNow(NOW + DAY, NOW, "en")).toBe("tomorrow");
+        expect(relativeFromNow(NOW + 7 * DAY, NOW, "de")).toBe("in 7 Tagen");
+    });
+    it("copes with a bad locale, and with the past", () => {
+        expect(relativeFromNow(NOW + 7 * DAY, NOW, "not a locale!!")).toBe("");
+        expect(relativeFromNow(NOW - 2 * DAY, NOW, "en")).toBe("2 days ago");
     });
 });

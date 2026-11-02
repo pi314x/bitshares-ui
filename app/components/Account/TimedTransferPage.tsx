@@ -1,13 +1,12 @@
 import * as React from "react";
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import counterpart from "counterpart";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {Alert} from "../../design-system/Alert";
 import SametFundActions, {AccountInfo} from "../../actions/SametFundActions";
-import {ModalAsPage} from "../../design-system/Modal";
-import TimedTransferModal from "./TimedTransferModal";
-import {ModalOrPage, useDesktopModal} from "../../next/desktopModal";
+import {useLeave} from "../../next/desktopModal";
+import TimedTransferForm from "./TimedTransferForm";
 import styles from "../../next/PaymentPages.module.scss";
 
 const TypedLink = Link as React.ComponentType<any>;
@@ -15,17 +14,16 @@ const TypedLink = Link as React.ComponentType<any>;
 const t = (key: string, params?: Record<string, any>) =>
     counterpart.translate(`timed_transfer.${key}`, params);
 
-// The same dialog as on the Vesting page, as a page of its own so it can be
-// reached from the main menu: what a timed transfer is, how it works, and the
-// button that opens the dialog for the selected account.
+// Timed transfer, as a page of its own (menu: Payments): what it is, the form as cards, and the summary with the
+// button beside them. Nothing opens over anything: it is a page on a phone and on a desktop alike.
 export default function TimedTransferPage() {
     const accountState = useReduxState<any>(selectAccountState);
     const accountName: string | null =
         accountState.currentAccount || accountState.passwordAccount || null;
-    const navigate = useNavigate();
     const [creator, setCreator] = React.useState<AccountInfo | null>(null);
-    // a new form after a transfer was made (the dialog is the page's own card)
+    // a new form after a transfer was made
     const [round, setRound] = React.useState(0);
+    const leave = useLeave();
 
     React.useEffect(() => {
         setCreator(null);
@@ -43,67 +41,25 @@ export default function TimedTransferPage() {
         };
     }, [accountName]);
 
-    const leave = () => {
-        if (window.history.state && window.history.state.idx > 0) {
-            navigate(-1);
-        } else {
-            navigate("/", {replace: true});
-        }
-    };
-
-    const asModal = useDesktopModal();
-    // on a desktop the dialog opens over the page the user came from, like Send and Deposit
-    if (asModal) {
-        if (!accountName) {
-            return (
-                <ModalOrPage title={t("title")} width={560}>
-                    <Alert type="info" message={t("no_account")} />
-                </ModalOrPage>
-            );
-        }
-        return creator ? (
-            <TimedTransferModal
-                key={round}
-                visible={true}
-                creator={creator}
-                onCancel={leave}
-                onDone={() => setRound(r => r + 1)}
-            />
-        ) : null;
-    }
-
-    return (
-        <div className={styles.page}>
-            {accountName ? (
-                creator ? (
-                    <ModalAsPage>
-                        <TimedTransferModal
-                            key={round}
-                            visible={true}
-                            creator={creator}
-                            onCancel={leave}
-                            onDone={() => setRound(r => r + 1)}
-                        />
-                    </ModalAsPage>
-                ) : null
-            ) : (
+    if (!accountName) {
+        return (
+            <div className={styles.page}>
                 <Alert type="info" message={t("no_account")} />
-            )}
-
-            {accountName ? (
-                <p className={styles.links}>
-                    <TypedLink to={`/account/${accountName}/vesting`}>
-                        {t("claim_link")}
-                    </TypedLink>
-                </p>
-            ) : null}
-
-            <p className={styles.intro}>{t("page_intro")}</p>
-            <ol className={styles.steps}>
-                <li>{t("step1")}</li>
-                <li>{t("step2")}</li>
-                <li>{t("step3")}</li>
-            </ol>
-        </div>
+            </div>
+        );
+    }
+    if (!creator) return null;
+    return (
+        <TimedTransferForm
+            key={round}
+            creator={creator}
+            onCancel={leave}
+            onDone={() => setRound(r => r + 1)}
+            claimLink={
+                <TypedLink to={`/account/${accountName}/vesting`}>
+                    {t("claim_link")}
+                </TypedLink>
+            }
+        />
     );
 }

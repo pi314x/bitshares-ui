@@ -111,3 +111,43 @@ export function buildTimedTransferOp(args: TimedTransferArgs) {
         ]
     };
 }
+
+/**
+ * How far a time is from now, in the words of the language ("in 7 days", "tomorrow"); empty where the browser
+ * cannot say it. Minutes up to an hour, hours up to a day, days up to two months, months up to two years, then years.
+ */
+export function relativeFromNow(
+    targetSec: number,
+    nowSec: number,
+    locale?: string
+): string {
+    const diff = targetSec - nowSec;
+    const abs = Math.abs(diff);
+    const DAY = 86400;
+    let value: number;
+    let unit: Intl.RelativeTimeFormatUnit;
+    if (abs < 3600) {
+        unit = "minute";
+        value = Math.round(diff / 60);
+    } else if (abs < DAY) {
+        unit = "hour";
+        value = Math.round(diff / 3600);
+    } else if (abs < DAY * 60) {
+        unit = "day";
+        value = Math.round(diff / DAY);
+    } else if (abs < DAY * 730) {
+        unit = "month";
+        value = Math.round(diff / (DAY * 30.4375));
+    } else {
+        unit = "year";
+        value = Math.round(diff / (DAY * 365.25));
+    }
+    try {
+        return new Intl.RelativeTimeFormat(locale, {numeric: "auto"}).format(
+            value,
+            unit
+        );
+    } catch (e) {
+        return "";
+    }
+}

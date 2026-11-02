@@ -14018,6 +14018,13 @@ objects like the Dashboard's holdings: zero where the account holds none, nothin
 without an account or on a card that is for any asset. The fields of an entry are in this order, in the form and on the card (the user: "Order entry in addressbook:
 account name, memo, asset"): the account name, the memo, the asset (on the card with the balance under it), then who it is and the info.
 
+*Payment pages: no dialogs (2026-11-02; the user: "No modal for send, deposit withdraw. Create pages with GREAT UI/UX" and "Same for Timed transfer").* The Payments pages are real pages on a desktop too:
+`/timed-transfer` is no longer in `DESKTOP_MODAL_PATHS`. `components/Payments/PaymentPage.tsx` is their frame: the page head, the form as numbered cards (`PaymentCard`, `Field` with its hint, help, error and
+"found" line, `Picks` for the shortcut buttons) in a column, and beside them - on a desktop, sticky - a `SummaryCard` that says what is about to happen with the page's one button under it and, under a button that cannot
+be pressed yet, what is missing; on a phone it is one column. Timed transfer is the first page in it (`Account/TimedTransferForm.tsx`; the dialog and its Vesting-page button's dialog are gone: that button goes to the
+page): who gets it (the address book's picker is there), what and how much (the assets are listed with what is held and can be searched; 25 / 50 / 75 % / Max), when it can be claimed (1 week / 1 month / 3 months / 1 year,
+and the date in words: "in 7 days"), the summary, and how it works. The transaction and its checks are the dialog's. Send, Deposit and Withdraw follow.
+
 *Recent activity: more operations, and a search* (Dashboard card, 2026-11-02; the user: "Show more than 100 operations in Dashboard. So many as the
 node can offer", "Search in recent activities while Typing", "Max 100 per Page", then "Load First 100 operations and the rest only when you step forward").
 `RecentTransactions` got two props the card sets. `loadOnStep`: the first operations the node sends (100) are listed and that is all until the reader

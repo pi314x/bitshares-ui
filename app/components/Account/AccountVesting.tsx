@@ -29,7 +29,7 @@ import PaginatedList from "components/Utility/PaginatedList";
 import SearchInput from "../Utility/SearchInput";
 import counterpart from "counterpart";
 import {PageHead} from "../../design-system/PageHead";
-import TimedTransferModal from "./TimedTransferModal";
+import {useNavigate} from "react-router-dom";
 
 interface AccountVestingState {
     vesting_balances: any[];
@@ -54,7 +54,7 @@ function AccountVesting({account}: AccountVestingProps) {
         setState(prev => ({...prev, ...partial}));
     };
 
-    const [timedTransferOpen, setTimedTransferOpen] = React.useState(false);
+    const navigate = useNavigate();
 
     const mapVestingBalances = (vb: any) => {
         if (!vb) {
@@ -441,20 +441,11 @@ function AccountVesting({account}: AccountVestingProps) {
                 <Button
                     variant="accent"
                     style={{marginLeft: "auto"}}
-                    onClick={() => setTimedTransferOpen(true)}
+                    onClick={() => navigate("/timed-transfer")}
                 >
                     {counterpart.translate("timed_transfer.button")}
                 </Button>
             </div>
-            <TimedTransferModal
-                visible={timedTransferOpen}
-                creator={{id: account.get("id"), name: account.get("name")}}
-                onCancel={() => setTimedTransferOpen(false)}
-                onDone={() => {
-                    setTimedTransferOpen(false);
-                    retrieveVestingBalances(account.get("id"));
-                }}
-            />
             <div>
                 <PaginatedList
                     loading={state.loading}
