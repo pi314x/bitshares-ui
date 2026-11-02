@@ -5,9 +5,14 @@ import counterpart from "counterpart";
 import localeEn from "../../../assets/locales/locale-en.json";
 
 let mockData: any;
+// the options the card gave the hook, one per render
+let mockOptions: any[] = [];
 
 jest.mock("../../../components/Dashboard/Desk/useDeskData", () => ({
-    useDeskData: () => mockData
+    useDeskData: (_name: string, options: any) => {
+        mockOptions.push(options);
+        return mockData;
+    }
 }));
 jest.mock("../../../next/hooks/useReduxState", () => ({
     useReduxState: () => ({defaults: {unit: ["BTS", "USD"]}, settings: {}})
@@ -70,6 +75,8 @@ const data = (overrides: any = {}) => ({
             share: null
         }
     ],
+    emptied: [],
+    emptiedCount: 0,
     assetsLoading: 0,
     unpriced: 1,
     orders: {count: 2, nextExpiryMs: null, expiringSoon: 0, value: 34.5},
@@ -99,6 +106,7 @@ beforeAll(() => {
 
 beforeEach(() => {
     window.localStorage.clear();
+    mockOptions = [];
     mockData = data();
 });
 
@@ -206,6 +214,70 @@ describe("Desk", () => {
             expect(getByText("Show all (10)")).toBeTruthy();
             fireEvent.click(getByText("Show 1 without a value"));
             expect(rowsOf(container)).toHaveLength(11);
+        });
+
+        const emptyRows = (...symbols: string[]) =>
+            symbols.map(symbol => ({
+                ...holding(symbol, 0),
+                amount: 0,
+                units: 0
+            }));
+
+        it("asks for the balances with nothing in them with a second click at the bottom, after the ones without a value, and only then has their assets read", () => {
+            mockData = data({
+                holdings: [holding("BTS", 1000), holding("NOPRICE", null)],
+                emptied: [],
+                emptiedCount: 2
+            });
+            const {container, getByText, queryByText} = renderDesk();
+            expect(rowsOf(container)).toEqual(["BTS"]);
+            // the zero balances are not offered before the ones with a balance but no value
+            expect(queryByText(/with a zero balance/)).toBeNull();
+            fireEvent.click(getByText("Show 1 without a value"));
+            expect(rowsOf(container)).toEqual(["BTS", "NOPRICE"]);
+            // nothing about them was asked of the hook until now
+            expect(mockOptions.some(o => o && o.emptied)).toBe(false);
+            mockData = data({
+                holdings: [holding("BTS", 1000), holding("NOPRICE", null)],
+                emptied: emptyRows("OLDA", "OLDB"),
+                emptiedCount: 2
+            });
+            fireEvent.click(getByText("Show 2 with a zero balance"));
+            expect(mockOptions[mockOptions.length - 1]).toEqual({
+                emptied: true
+            });
+            expect(rowsOf(container)).toEqual([
+                "BTS",
+                "NOPRICE",
+                "OLDA",
+                "OLDB"
+            ]);
+            expect(queryByText(/^Show \d+ /)).toBeNull();
+            fireEvent.click(getByText("Hide those with a zero balance"));
+            expect(rowsOf(container)).toEqual(["BTS", "NOPRICE"]);
+            fireEvent.click(getByText("Hide those without a value"));
+            expect(rowsOf(container)).toEqual(["BTS"]);
+        });
+
+        it("offers the zero balances at once when every token held has a value", () => {
+            mockData = data({
+                holdings: Array.from({length: 6}, (_, i) =>
+                    holding(`COIN${i}`, 100 - i)
+                ),
+                emptied: [],
+                emptiedCount: 1
+            });
+            const {container, getByText} = renderDesk();
+            expect(rowsOf(container)).toHaveLength(6);
+            mockData = data({
+                holdings: Array.from({length: 6}, (_, i) =>
+                    holding(`COIN${i}`, 100 - i)
+                ),
+                emptied: emptyRows("OLDA"),
+                emptiedCount: 1
+            });
+            fireEvent.click(getByText("Show 1 with a zero balance"));
+            expect(rowsOf(container)).toHaveLength(7);
         });
 
         it("still lists what is held when nothing in the wallet has a value yet", () => {

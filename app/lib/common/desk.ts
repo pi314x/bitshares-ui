@@ -36,11 +36,17 @@ const CORE_ASSET_ID = "1.3.0";
 
 /**
  * Rows for the holdings table: BTS first, then the biggest value, unpriced
- * last.
+ * last. `emptied` are the balances the wallet still has an entry for but nothing in (an asset it once held):
+ * by symbol, worth nothing, and in none of the figures.
  */
 export function holdingRows(
     inputs: HoldingInput[]
-): {rows: HoldingRow[]; total: number; unpriced: number} {
+): {
+    rows: HoldingRow[];
+    emptied: HoldingRow[];
+    total: number;
+    unpriced: number;
+} {
     const held = inputs.filter(input => input.units > 0);
     // a pool share is shown, but what it is worth is the pool's: not in this total, and no share of it
     const total = held.reduce(
@@ -67,8 +73,13 @@ export function holdingRows(
         if (b.value === null) return -1;
         return b.value - a.value;
     });
+    const emptied: HoldingRow[] = inputs
+        .filter(input => input.units <= 0)
+        .map(input => ({...input, units: 0, value: 0, amount: 0, share: null}))
+        .sort((a, b) => a.symbol.localeCompare(b.symbol));
     return {
         rows,
+        emptied,
         total,
         unpriced: rows.filter(r => !r.pool && r.value === null).length
     };

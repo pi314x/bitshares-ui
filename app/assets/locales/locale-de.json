@@ -779,7 +779,9 @@
         "pool_share_hint": "Ein Anteil an einem Liquiditätspool: sein Wert ist der des Pools, gezählt unter Pools, nicht in der Wallet.",
         "assets_loading": "%(count)s weitere Token der Wallet werden noch gelesen und gleich aufgeführt.",
         "show_no_value": "%(count)s ohne Wert anzeigen",
-        "hide_no_value": "Die ohne Wert ausblenden"
+        "hide_no_value": "Die ohne Wert ausblenden",
+        "show_emptied": "%(count)s mit Guthaben null anzeigen",
+        "hide_emptied": "Die mit Guthaben null ausblenden"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

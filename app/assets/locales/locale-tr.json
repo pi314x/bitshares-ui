@@ -779,7 +779,9 @@
         "pool_share_hint": "Bir likidite havuzunun payı: değeri havuzunkidir, cüzdanda değil Havuzlar'da sayılır.",
         "assets_loading": "Cüzdandaki %(count)s token daha hâlâ okunuyor ve birazdan listelenecek.",
         "show_no_value": "Değeri olmayan %(count)s tanesini göster",
-        "hide_no_value": "Değeri olmayanları gizle"
+        "hide_no_value": "Değeri olmayanları gizle",
+        "show_emptied": "Bakiyesi sıfır olan %(count)s tanesini göster",
+        "hide_emptied": "Bakiyesi sıfır olanları gizle"
     },
     "errors": {
         "loading_from_blockchain": "Blok zincirinden alınırken hata oluştu, lütfen tekrar deneyin.",

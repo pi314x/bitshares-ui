@@ -779,7 +779,9 @@
         "pool_share_hint": "A share of a liquidity pool: what it is worth is the pool's, counted under Pools, not in the wallet.",
         "assets_loading": "%(count)s more tokens of the wallet are still being read and will be listed in a moment.",
         "show_no_value": "Show %(count)s without a value",
-        "hide_no_value": "Hide those without a value"
+        "hide_no_value": "Hide those without a value",
+        "show_emptied": "Show %(count)s with a zero balance",
+        "hide_emptied": "Hide those with a zero balance"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching from the blockchain, please retry.",

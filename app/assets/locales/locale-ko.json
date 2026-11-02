@@ -779,7 +779,9 @@
         "pool_share_hint": "유동성 풀의 지분: 가치는 풀의 것으로, 지갑이 아니라 풀에 포함됩니다.",
         "assets_loading": "지갑의 토큰 %(count)s개를 아직 읽는 중이며 곧 목록에 표시됩니다.",
         "show_no_value": "가치 없는 %(count)s개 표시",
-        "hide_no_value": "가치 없는 항목 숨기기"
+        "hide_no_value": "가치 없는 항목 숨기기",
+        "show_emptied": "잔액이 0인 %(count)s개 표시",
+        "hide_emptied": "잔액이 0인 항목 숨기기"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

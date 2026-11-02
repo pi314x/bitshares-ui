@@ -779,7 +779,9 @@
         "pool_share_hint": "流动性资金池的份额：其价值属于资金池，计入“资金池”，不计入钱包。",
         "assets_loading": "钱包中还有 %(count)s 个代币正在读取，稍后会列出。",
         "show_no_value": "显示 %(count)s 个无价值的",
-        "hide_no_value": "隐藏无价值的"
+        "hide_no_value": "隐藏无价值的",
+        "show_emptied": "显示 %(count)s 个余额为零的",
+        "hide_emptied": "隐藏余额为零的"
     },
     "errors": {
         "loading_from_blockchain": "正在从区块链中抓取错误，请重试。",

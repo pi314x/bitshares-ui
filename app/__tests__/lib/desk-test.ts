@@ -45,6 +45,48 @@ describe("holdingRows", () => {
     });
 });
 
+describe("holdingRows: balances with nothing in them", () => {
+    it("keeps them apart, by symbol and worth nothing, out of the rows, the total and the unpriced count", () => {
+        const {rows, emptied, total, unpriced} = holdingRows([
+            {
+                assetId: "1.3.0",
+                symbol: "BTS",
+                precision: 5,
+                units: 100000,
+                value: 1
+            },
+            {
+                assetId: "1.3.8",
+                symbol: "ZED",
+                precision: 4,
+                units: 0,
+                value: null
+            },
+            {
+                assetId: "1.3.7",
+                symbol: "ALPHA",
+                precision: 4,
+                units: 0,
+                value: 0
+            },
+            {
+                assetId: "1.3.6",
+                symbol: "NOPE",
+                precision: 4,
+                units: 3,
+                value: null
+            }
+        ]);
+        expect(rows.map(r => r.symbol)).toEqual(["BTS", "NOPE"]);
+        expect(emptied.map(r => r.symbol)).toEqual(["ALPHA", "ZED"]);
+        expect(emptied.every(r => r.value === 0 && r.amount === 0)).toBe(true);
+        expect(emptied.every(r => r.share === null)).toBe(true);
+        expect(total).toBe(1);
+        // only NOPE is held without a price: an empty balance has nothing to price
+        expect(unpriced).toBe(1);
+    });
+});
+
 describe("holdingRows: the shares of liquidity pools", () => {
     it("lists a pool share with its value, but counts it in no total, gives it no share, and does not call it unpriced", () => {
         const {rows, total, unpriced} = holdingRows([

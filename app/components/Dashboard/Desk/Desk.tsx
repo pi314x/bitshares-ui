@@ -345,13 +345,17 @@ const FILTER_FROM = 5;
 
 function Holdings({
     data,
-    coreSymbol
+    coreSymbol,
+    onAskEmptied
 }: {
     data: DeskData;
     coreSymbol: string;
+    /** the balances with nothing in them are asked for: their assets are read only now */
+    onAskEmptied: () => void;
 }): JSX.Element {
     const [all, setAll] = React.useState(false);
-    const [noValue, setNoValue] = React.useState(false);
+    // how many of the tiers the card holds back are asked for (each is one more click at the bottom of the list)
+    const [asked, setAsked] = React.useState(0);
     const [filter, setFilter] = React.useState("");
     const query = filter.trim().toLowerCase();
     const digits = valueDigits(data.unit && data.unit.symbol);
@@ -364,14 +368,35 @@ function Holdings({
         row => !hasValue(row, digits)
     );
     // a wallet in which nothing has a value yet still lists what it holds
-    const listed: HoldingRow[] =
-        noValue || !valued.length ? data.holdings : valued;
-    // a filter looks through all of them, also the ones without a value, not just the first rows
+    const base: HoldingRow[] = valued.length ? valued : data.holdings;
+    // then, one link after the other: what is held without a value, and the balances with nothing in them
+    const tiers: Array<{
+        key: "no_value" | "emptied";
+        rows: HoldingRow[];
+        count: number;
+    }> = [];
+    if (valued.length && unvalued.length) {
+        tiers.push({key: "no_value", rows: unvalued, count: unvalued.length});
+    }
+    if (data.emptiedCount) {
+        tiers.push({
+            key: "emptied",
+            rows: data.emptied,
+            count: data.emptiedCount
+        });
+    }
+    const open = Math.min(asked, tiers.length);
+    const listed: HoldingRow[] = tiers
+        .slice(0, open)
+        .reduce((rows, tier) => rows.concat(tier.rows), base);
+    // a filter looks through all of them, also the ones behind the links, not just the first rows
     const matching: HoldingRow[] = query
-        ? data.holdings.filter(row => row.symbol.toLowerCase().includes(query))
+        ? data.holdings
+              .concat(data.emptied)
+              .filter(row => row.symbol.toLowerCase().includes(query))
         : listed;
     const rows: HoldingRow[] =
-        all || query || noValue ? matching : listed.slice(0, SHOWN_ROWS);
+        all || query || open ? matching : listed.slice(0, SHOWN_ROWS);
 
     if (!data.holdings.length) {
         if (data.loading) {
@@ -493,9 +518,9 @@ function Holdings({
                     {t("no_match", {filter: filter.trim()})}
                 </div>
             ) : null}
-            {!query && (listed.length > SHOWN_ROWS || unvalued.length) ? (
+            {!query && (base.length > SHOWN_ROWS || tiers.length) ? (
                 <div className={styles.more}>
-                    {listed.length > SHOWN_ROWS && !noValue ? (
+                    {base.length > SHOWN_ROWS && !open ? (
                         <button
                             type="button"
                             className={styles.linkBtn}
@@ -503,18 +528,32 @@ function Holdings({
                         >
                             {all
                                 ? t("show_less")
-                                : t("show_all", {count: listed.length})}
+                                : t("show_all", {count: base.length})}
                         </button>
                     ) : null}
-                    {valued.length && unvalued.length ? (
+                    {open < tiers.length ? (
                         <button
                             type="button"
                             className={styles.linkBtn}
-                            onClick={() => setNoValue(v => !v)}
+                            onClick={() => {
+                                if (tiers[open].key === "emptied") {
+                                    onAskEmptied();
+                                }
+                                setAsked(open + 1);
+                            }}
                         >
-                            {noValue
-                                ? t("hide_no_value")
-                                : t("show_no_value", {count: unvalued.length})}
+                            {t(`show_${tiers[open].key}`, {
+                                count: tiers[open].count
+                            })}
+                        </button>
+                    ) : null}
+                    {open > 0 ? (
+                        <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={() => setAsked(open - 1)}
+                        >
+                            {t(`hide_${tiers[open - 1].key}`)}
                         </button>
                     ) : null}
                 </div>
@@ -929,7 +968,9 @@ export default function Desk({
     markets
 }: DeskProps): JSX.Element {
     const settings = useReduxState<any>(selectSettingsState);
-    const data = useDeskData(accountName);
+    // the balances with nothing in them are read when the Holdings card is asked for them
+    const [wantEmptied, setWantEmptied] = React.useState(false);
+    const data = useDeskData(accountName, {emptied: wantEmptied});
     const [cards, setCards] = React.useState<Record<CardKey, boolean>>(
         readCards
     );
@@ -980,7 +1021,11 @@ export default function Desk({
                     <div className={styles.stack}>
                         {cards.holdings ? (
                             <Card title={t("holdings")} flush>
-                                <Holdings data={data} coreSymbol={coreSymbol} />
+                                <Holdings
+                                    data={data}
+                                    coreSymbol={coreSymbol}
+                                    onAskEmptied={() => setWantEmptied(true)}
+                                />
                             </Card>
                         ) : null}
                         {cards.positions ? (

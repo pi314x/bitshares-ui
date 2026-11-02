@@ -779,7 +779,9 @@
         "pool_share_hint": "流動性プールの持分：その価値はプールのもので、ウォレットではなくプールに計上されます。",
         "assets_loading": "ウォレットのトークンがさらに %(count)s 件読み込み中です。まもなく一覧に表示されます。",
         "show_no_value": "価値のない %(count)s 件を表示",
-        "hide_no_value": "価値のないものを隠す"
+        "hide_no_value": "価値のないものを隠す",
+        "show_emptied": "残高ゼロの %(count)s 件を表示",
+        "hide_emptied": "残高ゼロのものを隠す"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

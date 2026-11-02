@@ -779,7 +779,9 @@
         "pool_share_hint": "Une part d'un pool de liquidité : sa valeur est celle du pool, comptée dans Pools, pas dans le portefeuille.",
         "assets_loading": "%(count)s autres jetons du portefeuille sont encore en cours de lecture et seront listés dans un instant.",
         "show_no_value": "Afficher %(count)s sans valeur",
-        "hide_no_value": "Masquer ceux sans valeur"
+        "hide_no_value": "Masquer ceux sans valeur",
+        "show_emptied": "Afficher %(count)s avec un solde nul",
+        "hide_emptied": "Masquer ceux avec un solde nul"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

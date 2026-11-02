@@ -78,6 +78,11 @@ export interface DeskData {
         debt: number;
     };
     holdings: HoldingRow[];
+    /** balances of the wallet with nothing in them (an asset it once held), by symbol: not in `holdings`; only
+        once they are asked for (`options.emptied`), and as their assets arrive */
+    emptied: HoldingRow[];
+    /** how many such balances the wallet has (known without reading their assets) */
+    emptiedCount: number;
     /** tokens the wallet holds whose asset the chain store has not loaded yet: not in `holdings` until it has */
     assetsLoading: number;
     unpriced: number;
@@ -107,6 +112,8 @@ const EMPTY: DeskData = {
         debt: 0
     },
     holdings: [],
+    emptied: [],
+    emptiedCount: 0,
     assetsLoading: 0,
     unpriced: 0,
     incomplete: false,
@@ -131,10 +138,12 @@ function headBlockAge(now: number): number | null {
 
 export function useDeskData(
     accountName: string | null,
-    options: {light?: boolean} = {}
+    options: {light?: boolean; emptied?: boolean} = {}
 ): DeskData {
     // `light`: the totals only (a row of the accounts card): no pool lookup
     const light = !!options.light;
+    // `emptied`: also read the assets of the balances with nothing in them (hundreds, for a wallet that has held
+    // many tokens): the card asks for them when the person does, not for every look at the Dashboard
     useChainStoreTick();
     const settings = useReduxState<any>(selectSettingsState);
     const marketsState = useReduxState<any>(selectMarkets);
@@ -155,17 +164,20 @@ export function useDeskData(
     // balance objects arrive one by one after the account: until they are all
     // there the lists are not empty, they are not complete yet
     let pendingBalances = 0;
+    // the balances with nothing in them: only their assets are noted, they are not read unless asked for
+    const emptyIds: string[] = [];
     if (isMap(account) && account.get("balances")) {
         account.get("balances").forEach((balanceId: string) => {
             const balance: any = (ChainStore as any).getObject(balanceId);
-            if (!isMap(balance) || !balance.get("balance")) {
+            // (an empty balance comes as the number 0, which is not "no balance")
+            const held = isMap(balance) ? balance.get("balance") : null;
+            if (!isMap(balance) || held === undefined || held === null) {
                 if (!isMap(balance)) pendingBalances++;
                 return;
             }
-            balanceUnits[balance.get("asset_type")] = parseInt(
-                balance.get("balance"),
-                10
-            );
+            const units = parseInt(held, 10);
+            if (units > 0) balanceUnits[balance.get("asset_type")] = units;
+            else emptyIds.push(balance.get("asset_type"));
         });
     }
 
@@ -301,11 +313,29 @@ export function useDeskData(
                 ...(pooled ? {pool: true} : {})
             };
         });
-    const {rows: holdings, unpriced} = holdingRows(holdingInputs);
+    // (an asset that is not there yet is read now: ChainStore fetches it, and the card lists the balance when it arrives)
+    const emptiedInputs =
+        options.emptied && !light
+            ? emptyIds
+                  .map(id => ({id, asset: (ChainStore as any).getAsset(id)}))
+                  .filter(entry => isMap(entry.asset))
+                  .map(entry => ({
+                      assetId: entry.id,
+                      symbol: entry.asset.get("symbol") as string,
+                      precision: entry.asset.get("precision") as number,
+                      units: 0,
+                      value: 0
+                  }))
+            : [];
+    const {rows: holdings, emptied, unpriced} = holdingRows(
+        holdingInputs.concat(emptiedInputs)
+    );
     // what the wallet holds and cannot be listed yet: its asset is still being read
-    const assetsLoading = Object.keys(balanceUnits).filter(
-        id => balanceUnits[id] > 0 && !assetsById[id]
-    ).length;
+    const assetsLoading =
+        Object.keys(balanceUnits).filter(id => !assetsById[id]).length +
+        (options.emptied && !light
+            ? emptyIds.length - emptiedInputs.length
+            : 0);
 
     // ---- orders
     const ordersValue = Object.keys(orderUnits).map(id =>
@@ -429,6 +459,8 @@ export function useDeskData(
         total,
         parts,
         holdings,
+        emptied,
+        emptiedCount: emptyIds.length,
         assetsLoading,
         unpriced,
         incomplete,

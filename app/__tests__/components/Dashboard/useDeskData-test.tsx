@@ -54,13 +54,13 @@ import {useDeskData} from "../../../components/Dashboard/Desk/useDeskData";
 const asset = (id: string, symbol: string, precision: number) =>
     Immutable.fromJS({id, symbol, precision});
 
-function Probe(props: {onData: (data: any) => void}) {
-    props.onData(useDeskData("alice"));
+function Probe(props: {onData: (data: any) => void; options?: any}) {
+    props.onData(useDeskData("alice", props.options));
     return null;
 }
-const read = () => {
+const read = (options?: any) => {
     let data: any;
-    render(<Probe onData={d => (data = d)} />);
+    render(<Probe onData={d => (data = d)} options={options} />);
     return data;
 };
 const settle = (id: string, assetId: string, amount: string, date: string) =>
@@ -239,11 +239,15 @@ describe("useDeskData: tokens whose asset is not loaded yet", () => {
         mockObjects["2.5.4"] = Immutable.fromJS({
             id: "2.5.4",
             asset_type: "1.3.41",
-            balance: "0"
+            // the node sends an empty balance as the number 0 (falsy), not as "0"
+            balance: 0
         });
         const before = read();
         // the empty balance is not a token held; the other has no asset yet
         expect(before.assetsLoading).toBe(1);
+        // the empty balance is counted, and its asset is not read unless asked for
+        expect(before.emptied).toEqual([]);
+        expect(before.emptiedCount).toBe(1);
         expect(before.holdings.map((h: any) => h.symbol)).toEqual(["BTS"]);
         mockAssets["1.3.40"] = asset("1.3.40", "LATE", 2);
         const after = read();
@@ -252,5 +256,19 @@ describe("useDeskData: tokens whose asset is not loaded yet", () => {
             "BTS",
             "LATE"
         ]);
+        // asked for, the balance with nothing in it is listed apart once its asset is there
+        const asked = read({emptied: true});
+        expect(asked.emptied).toEqual([]);
+        expect(asked.assetsLoading).toBe(1);
+        mockAssets["1.3.41"] = asset("1.3.41", "EMPTIED", 2);
+        const last = read({emptied: true});
+        expect(last.assetsLoading).toBe(0);
+        expect(last.emptied.map((h: any) => h.symbol)).toEqual(["EMPTIED"]);
+        expect(last.emptied[0].value).toBe(0);
+        expect(last.holdings.map((h: any) => h.symbol)).not.toContain(
+            "EMPTIED"
+        );
+        // LATE has no price; the empty balance adds nothing to that count
+        expect(last.unpriced).toBe(1);
     });
 });
