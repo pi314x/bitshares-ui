@@ -4,7 +4,7 @@ import {render, act} from "@testing-library/react";
 // `require.context` calls); the closed dialog never renders it.
 // (it leaves a mark with the type of the operation it is given, to count the rows of a toast)
 jest.mock("components/Blockchain/Operation", () => (props: any) =>
-    require("react").createElement("i", {
+    jest.requireActual("react").createElement("i", {
         "data-operation": String(props.op[0])
     })
 );

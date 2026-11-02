@@ -14,7 +14,7 @@ jest.mock("../../components/Utility/AssetWrapper", () => ({
 jest.mock("../../components/Utility/AssetName", () => ({
     __esModule: true,
     default: (props: any) =>
-        require("react").createElement("span", null, props.name)
+        jest.requireActual("react").createElement("span", null, props.name)
 }));
 const mockChangeDirection = jest.fn();
 jest.mock("actions/SettingsActions", () => ({
@@ -27,7 +27,9 @@ jest.mock("actions/MarketsActions", () => ({
     default: {switchMarket: () => mockSwitchMarket()}
 }));
 jest.mock("../../next/hooks/useReduxState", () => ({
-    useReduxState: () => ({marketDirections: require("immutable").Map()})
+    useReduxState: () => ({
+        marketDirections: jest.requireActual("immutable").Map()
+    })
 }));
 
 import FormattedPrice from "../../components/Utility/FormattedPrice";

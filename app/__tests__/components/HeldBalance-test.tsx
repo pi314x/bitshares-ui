@@ -59,9 +59,7 @@ beforeEach(() => {
 
 describe("HeldBalance", () => {
     it("shows what the account holds of the asset", () => {
-        const {container, getByTestId} = render(
-            <HeldBalance symbol="XBTSX.HIVE" />
-        );
+        const {container} = render(<HeldBalance symbol="XBTSX.HIVE" />);
         expect(container.textContent).toContain("Balance");
         expect(container.textContent).toContain("820.211111 XBTSX.HIVE");
     });

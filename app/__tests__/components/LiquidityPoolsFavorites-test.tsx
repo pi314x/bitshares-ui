@@ -75,7 +75,7 @@ jest.mock("../../components/Poolmart/PoolFeesModal", () => ({
 jest.mock("../../components/Utility/AssetName", () => ({
     __esModule: true,
     default: (props: any) =>
-        require("react").createElement("span", null, props.name)
+        jest.requireActual("react").createElement("span", null, props.name)
 }));
 jest.mock("../../next/hooks/useChainStoreTick", () => ({
     useChainStoreTick: () => 0

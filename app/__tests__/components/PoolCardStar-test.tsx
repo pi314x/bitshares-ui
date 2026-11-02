@@ -7,7 +7,7 @@ import localeEn from "../../assets/locales/locale-en.json";
 jest.mock("../../components/Utility/AssetName", () => ({
     __esModule: true,
     default: (props: any) =>
-        require("react").createElement("span", null, props.name)
+        jest.requireActual("react").createElement("span", null, props.name)
 }));
 
 import {PoolCard, PoolCardData} from "../../components/Poolmart/PoolCard";
