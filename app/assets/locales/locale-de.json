@@ -773,7 +773,8 @@
         "unit": "Wert in",
         "unpriced": "%(count)s ohne Preis sind nicht eingerechnet",
         "value": "Wert",
-        "wallet": "Wallet"
+        "wallet": "Wallet",
+        "card_recap": "Letzte 24 Stunden"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -4252,5 +4253,20 @@
         "pick": "Aus dem Adressbuch wählen",
         "use_memo": "Gespeichertes Memo verwenden: %(memo)s",
         "save_recipient": "Diesen Empfänger im Adressbuch speichern"
+    },
+    "day_recap": {
+        "title": "Letzte 24 Stunden",
+        "quiet": "In den letzten 24 Stunden ist nichts passiert.",
+        "loading": "Ältere Vorgänge des Kontos werden gelesen ...",
+        "partial": "Bisher sind nur die neuesten %(count)s Vorgänge geladen: die letzten 24 Stunden können mehr enthalten.",
+        "operations": "Vorgänge: %(count)s",
+        "transfers_in": "Erhalten: %(count)s Überweisungen - %(amounts)s",
+        "transfers_out": "Gesendet: %(count)s Überweisungen - %(amounts)s",
+        "fills": "Order-Ausführungen: %(count)s - verkauft %(sold)s, erhalten %(got)s",
+        "orders": "Orders: %(placed)s platziert, %(cancelled)s storniert",
+        "pools": "Pools: %(swaps)s Tauschvorgänge, %(liquidity)s Liquiditätsänderungen",
+        "loans": "Flash-Kredite: %(count)s",
+        "fees": "Gezahlte Netzwerkgebühren: %(amounts)s",
+        "more": "und %(count)s weitere"
     }
 }

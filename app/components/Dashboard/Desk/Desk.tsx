@@ -19,6 +19,7 @@ import {AttentionItem, HoldingRow} from "../../../lib/common/desk";
 import {DeskData, DeskPosition, useDeskData} from "./useDeskData";
 import AssetLogo from "../../Utility/AssetLogo";
 import AllocationChart from "./AllocationChart";
+import DayRecap from "./DayRecap";
 import styles from "./Desk.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
@@ -83,6 +84,7 @@ function Skeleton({width = 96}: {width?: number}) {
 const CARDS = [
     "attention",
     "chart",
+    "recap",
     "allocation",
     "holdings",
     "positions",
@@ -913,6 +915,12 @@ export default function Desk({
             ) : null}
 
             {cards.chart ? <CurrentAccountBalanceChart /> : null}
+
+            {cards.recap && data.accountId ? (
+                <Card title={counterpart.translate("day_recap.title")}>
+                    <DayRecap accountId={data.accountId} />
+                </Card>
+            ) : null}
 
             <div className={styles.grid}>
                 {/* two columns of about the same height: what the account

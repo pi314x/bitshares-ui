@@ -115,10 +115,14 @@
     font-weight: 600;
 }
 
+// (inside a <label>, which the legacy sheet sets in capitals: the help is a sentence)
 .help {
     color: var(--muted);
     font-size: 13px;
+    font-weight: 400;
     line-height: 1.4;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 .error {

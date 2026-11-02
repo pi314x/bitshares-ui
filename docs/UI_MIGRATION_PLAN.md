@@ -13956,3 +13956,46 @@ network fee, and a Lifetime member gets no cashback on it. Verified live: for `t
 the operations since the last maintenance equalled the chain's `pending_fees` to the unit. A Lifetime
 member sees what it has paid and gets back, without a loss to count. An estimate of what a membership
 would have returned, not a promise.
+
+### 7.36 Notifications that lead somewhere, Telegram, favorite pools, an address book, the day's recap
+
+*Popups.* "Confirm this transaction" is a popup over the page again (it was drawn inside the page, which the user
+did not take for a signing step); the unlock prompt is one too. The menu a price opens on its pair
+("Invert the price", "Go to market", "Quick trade") is drawn by the design system's popover as three rows
+(it was the old `react-popover` package: a grey strip across a phone). Times of day use the 24-hour clock
+everywhere (the order forms' expiry, the react-intl formats, the dashboard's list).
+
+*The bell* (`Notifications/NotificationBell.tsx`, `lib/common/accountActivity.ts`): an entry that is about a
+transaction leads to its page (`/block/<n>/<index>`, kept with the entry as a route, never a web address; the
+toast leads there too). `lib/common/openRoute.ts` is the small registry the shell fills (`next/RouteOpener.tsx`),
+so a toast drawn outside the router can still open a page. The entries tell it like an exchange: an order
+placed or filled with its price ("1 BITEUR = 1,186.2 BTS"), a pool swap with what it received (from the
+operation's result), liquidity added and withdrawn, a flash loan borrowed and repaid. The list scrolls inside its
+panel (`min-height: 0`, `overscroll-behavior: contain`); measured on a phone-sized page: 40 entries,
+scrollHeight 4,283, the panel keeps its height.
+
+*Telegram* (Settings -> Notifications; `lib/common/telegram.ts`, `components/Settings/TelegramSettings.tsx`):
+the user makes a bot with @BotFather, saves its token and the chat (the "Find my chat" button reads it from the
+bot's `getUpdates`), chooses what to hear about (trades, pools and flash loans, transfers, margin warnings, the
+rest) and gets a message when the chain records something for any of the accounts they hold, and when a margin
+position gets close. The message goes from the browser straight to `api.telegram.org` (the content security
+policy allows `https:`), so it is sent while the app is open; there is no server of ours. The token is kept in
+this browser only, can only write to the chat, and never appears in an error text; a message holds amounts,
+assets, pools, account names and a link to the transaction, never a key. Several notes that come together
+(the operations of one transaction) are one message; messages go out at least 1.1 s apart and a flood is counted
+("... +3"). Each account has its own baseline (what Telegram was told is not what the bell was told).
+
+*Favorite pools* (`lib/common/favoritePools.ts`): a star on every pool (card and table row); starred pools are
+a section on top of the list, read by their share asset so that no filter hides them.
+
+*Address book* (`/address-book`, "Address book" under Payments; `lib/common/addressBook.ts`,
+`components/AddressBook/`): who the user pays - the account, who it is, what to know about it, and the memo to send
+with a payment - kept in this browser and exported/imported as a file. In the Send dialog a picker fills the
+recipient and, when the memo box is empty, its memo (a memo that was typed is never replaced; the saved one is
+offered), the dialog says who the typed account is, and a recipient the book does not know can be saved from it.
+
+*Last 24 hours* (Dashboard card; `lib/common/dayRecap.ts`, `Dashboard/Desk/DayRecap.tsx`): counted from the history
+the balance chart is drawn from (the same shared load, with the times of its blocks): transfers in and out, order
+fills (sold and got), orders placed and cancelled, pool swaps and liquidity changes, flash loans, and the network
+fees the account paid, with the largest three assets named in each line. It says when the loaded history does
+not yet reach back a day.

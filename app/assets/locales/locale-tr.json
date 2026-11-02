@@ -773,7 +773,8 @@
         "unit": "Değer birimi",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Değer",
-        "wallet": "Cüzdan"
+        "wallet": "Cüzdan",
+        "card_recap": "Son 24 saat"
     },
     "errors": {
         "loading_from_blockchain": "Blok zincirinden alınırken hata oluştu, lütfen tekrar deneyin.",
@@ -4252,5 +4253,20 @@
         "pick": "Adres defterinden seç",
         "use_memo": "Kayıtlı notu kullan: %(memo)s",
         "save_recipient": "Bu alıcıyı adres defterine kaydet"
+    },
+    "day_recap": {
+        "title": "Son 24 saat",
+        "quiet": "Son 24 saatte hiçbir şey olmadı.",
+        "loading": "Hesabın eski işlemleri okunuyor...",
+        "partial": "Şimdilik yalnızca en yeni %(count)s işlem yüklendi: son 24 saatte daha fazlası olabilir.",
+        "operations": "İşlemler: %(count)s",
+        "transfers_in": "Alınan: %(count)s transfer - %(amounts)s",
+        "transfers_out": "Gönderilen: %(count)s transfer - %(amounts)s",
+        "fills": "Emir gerçekleşmeleri: %(count)s - satılan %(sold)s, alınan %(got)s",
+        "orders": "Emirler: %(placed)s verildi, %(cancelled)s iptal edildi",
+        "pools": "Havuzlar: %(swaps)s takas, %(liquidity)s likidite değişikliği",
+        "loans": "Flaş krediler: %(count)s",
+        "fees": "Ödenen ağ ücretleri: %(amounts)s",
+        "more": "ve %(count)s tane daha"
     }
 }

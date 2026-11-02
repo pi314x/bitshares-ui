@@ -773,7 +773,8 @@
         "unit": "평가 단위",
         "unpriced": "%(count)s without a price are not counted",
         "value": "평가액",
-        "wallet": "지갑"
+        "wallet": "지갑",
+        "card_recap": "최근 24시간"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -4252,5 +4253,20 @@
         "pick": "주소록에서 선택",
         "use_memo": "저장된 메모 사용: %(memo)s",
         "save_recipient": "이 수신자를 주소록에 저장"
+    },
+    "day_recap": {
+        "title": "최근 24시간",
+        "quiet": "최근 24시간 동안 아무 일도 없었습니다.",
+        "loading": "계정의 오래된 작업을 읽는 중...",
+        "partial": "지금까지 최신 작업 %(count)s개만 불러왔습니다. 최근 24시간에는 더 있을 수 있습니다.",
+        "operations": "작업: %(count)s개",
+        "transfers_in": "받음: 송금 %(count)s건 - %(amounts)s",
+        "transfers_out": "보냄: 송금 %(count)s건 - %(amounts)s",
+        "fills": "주문 체결: %(count)s건 - 매도 %(sold)s, 수령 %(got)s",
+        "orders": "주문: 등록 %(placed)s건, 취소 %(cancelled)s건",
+        "pools": "풀: 교환 %(swaps)s건, 유동성 변경 %(liquidity)s건",
+        "loans": "플래시 대출: %(count)s건",
+        "fees": "지불한 네트워크 수수료: %(amounts)s",
+        "more": "외 %(count)s개"
     }
 }

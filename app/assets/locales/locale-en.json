@@ -773,7 +773,8 @@
         "unit": "Value in",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Value",
-        "wallet": "Wallet"
+        "wallet": "Wallet",
+        "card_recap": "Last 24 hours"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching from the blockchain, please retry.",
@@ -4252,5 +4253,20 @@
         "pick": "Pick from the address book",
         "use_memo": "Use the saved memo: %(memo)s",
         "save_recipient": "Save this recipient in the address book"
+    },
+    "day_recap": {
+        "title": "Last 24 hours",
+        "quiet": "Nothing happened in the last 24 hours.",
+        "loading": "Reading the older operations of the account...",
+        "partial": "Only the newest %(count)s operations are loaded so far: the last 24 hours may hold more.",
+        "operations": "Operations: %(count)s",
+        "transfers_in": "Received: %(count)s transfers - %(amounts)s",
+        "transfers_out": "Sent: %(count)s transfers - %(amounts)s",
+        "fills": "Order fills: %(count)s - sold %(sold)s, got %(got)s",
+        "orders": "Orders: %(placed)s placed, %(cancelled)s cancelled",
+        "pools": "Pools: %(swaps)s swaps, %(liquidity)s liquidity changes",
+        "loans": "Flash loans: %(count)s",
+        "fees": "Network fees paid: %(amounts)s",
+        "more": "and %(count)s more"
     }
 }

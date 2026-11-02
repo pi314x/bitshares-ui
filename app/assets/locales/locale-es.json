@@ -773,7 +773,8 @@
         "unit": "Valor en",
         "unpriced": "%(count)s without a price are not counted",
         "value": "Valor",
-        "wallet": "Billetera"
+        "wallet": "Billetera",
+        "card_recap": "Últimas 24 horas"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -4252,5 +4253,20 @@
         "pick": "Elegir de la libreta",
         "use_memo": "Usar el memo guardado: %(memo)s",
         "save_recipient": "Guardar este destinatario en la libreta"
+    },
+    "day_recap": {
+        "title": "Últimas 24 horas",
+        "quiet": "No pasó nada en las últimas 24 horas.",
+        "loading": "Leyendo las operaciones más antiguas de la cuenta...",
+        "partial": "Hasta ahora solo se han cargado las %(count)s operaciones más recientes: las últimas 24 horas pueden tener más.",
+        "operations": "Operaciones: %(count)s",
+        "transfers_in": "Recibido: %(count)s transferencias - %(amounts)s",
+        "transfers_out": "Enviado: %(count)s transferencias - %(amounts)s",
+        "fills": "Ejecuciones de órdenes: %(count)s - vendido %(sold)s, recibido %(got)s",
+        "orders": "Órdenes: %(placed)s colocadas, %(cancelled)s canceladas",
+        "pools": "Pools: %(swaps)s intercambios, %(liquidity)s cambios de liquidez",
+        "loans": "Préstamos relámpago: %(count)s",
+        "fees": "Comisiones de red pagadas: %(amounts)s",
+        "more": "y %(count)s más"
     }
 }

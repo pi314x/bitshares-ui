@@ -773,7 +773,8 @@
         "unit": "評価通貨",
         "unpriced": "%(count)s without a price are not counted",
         "value": "評価額",
-        "wallet": "ウォレット"
+        "wallet": "ウォレット",
+        "card_recap": "過去 24 時間"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
@@ -4252,5 +4253,20 @@
         "pick": "アドレス帳から選ぶ",
         "use_memo": "保存したメモを使う：%(memo)s",
         "save_recipient": "この宛先をアドレス帳に保存"
+    },
+    "day_recap": {
+        "title": "過去 24 時間",
+        "quiet": "過去 24 時間は何も起きていません。",
+        "loading": "アカウントの古い操作を読み込んでいます...",
+        "partial": "これまでに読み込んだのは最新の %(count)s 件のみです。過去 24 時間にはもっとあるかもしれません。",
+        "operations": "操作：%(count)s 件",
+        "transfers_in": "受取：送金 %(count)s 件 - %(amounts)s",
+        "transfers_out": "送金：%(count)s 件 - %(amounts)s",
+        "fills": "約定：%(count)s 件 - 売却 %(sold)s、受取 %(got)s",
+        "orders": "注文：発注 %(placed)s 件、取消 %(cancelled)s 件",
+        "pools": "プール：交換 %(swaps)s 件、流動性の変更 %(liquidity)s 件",
+        "loans": "フラッシュローン：%(count)s 件",
+        "fees": "支払ったネットワーク手数料：%(amounts)s",
+        "more": "ほか %(count)s 件"
     }
 }
