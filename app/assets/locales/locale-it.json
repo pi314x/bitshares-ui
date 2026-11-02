@@ -3740,8 +3740,7 @@
         "capped": "Costruito dalle ultime %(count)s operazioni; quelle più vecchie non sono caricate.",
         "retry": "Riprova",
         "no_asset": "Nessun asset corrisponde.",
-        "no_balances": "Ancora nessun saldo da mostrare nel grafico.",
-        "loading_older": "Caricamento delle operazioni precedenti: finora %(count)s..."
+        "no_balances": "Ancora nessun saldo da mostrare nel grafico."
     },
     "toolbar": {
         "rows": "%(count)s righe",

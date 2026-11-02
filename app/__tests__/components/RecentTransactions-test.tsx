@@ -1,6 +1,6 @@
 // The recent activity list: the search above it narrows it as it is typed (what an operation says: its kind, its
-// accounts, its assets, its amounts), and on the dashboard it asks the node for older operations again and again until
-// the node has no more.
+// accounts, its assets, its amounts), and on the dashboard the first operations the node sends are listed and older
+// ones are loaded only when the reader steps forward to the end of what is loaded.
 import * as React from "react";
 import {act, render} from "@testing-library/react";
 import Immutable from "immutable";
@@ -8,6 +8,7 @@ import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
 
 const mockExtend = jest.fn<Promise<number>, any[]>();
+let mockOnPage: ((page: number, size: number) => void) | undefined;
 jest.mock("../../lib/chain/extendAccountHistory", () => ({
     extendAccountHistory: (...args: any[]) => mockExtend(...args)
 }));
@@ -41,16 +42,19 @@ jest.mock("bitsharesjs", () => ({
 // the parts that are not what is tested: the list shows its row keys and the button under it
 jest.mock("../../components/Utility/PaginatedList", () => ({
     __esModule: true,
-    default: ({rows, extraRow}: any) => (
-        <div>
-            <ul>
-                {rows.map((row: any) => (
-                    <li key={row.key} data-row={row.key} />
-                ))}
-            </ul>
-            {extraRow}
-        </div>
-    )
+    default: ({rows, extraRow, onPage}: any) => {
+        mockOnPage = onPage;
+        return (
+            <div>
+                <ul>
+                    {rows.map((row: any) => (
+                        <li key={row.key} data-row={row.key} />
+                    ))}
+                </ul>
+                {extraRow}
+            </div>
+        );
+    }
 }));
 jest.mock("../../components/Blockchain/OperationAnt", () => ({
     __esModule: true,
@@ -108,10 +112,7 @@ jest.mock("../../next/hooks/useReduxState", () => ({
     })
 }));
 
-import {
-    AUTO_LOAD_MAX,
-    RecentTransactions
-} from "../../components/Account/RecentTransactions";
+import {RecentTransactions} from "../../components/Account/RecentTransactions";
 
 beforeAll(() => {
     (counterpart as any).registerTranslations("en", localeEn);
@@ -246,59 +247,94 @@ describe("the search in the recent activity", () => {
 });
 
 describe("the older operations on the dashboard", () => {
-    it("are asked for again and again until the node has no more", async () => {
-        mockExtend
-            .mockResolvedValueOnce(100)
-            .mockResolvedValueOnce(100)
-            .mockResolvedValueOnce(0);
-        render(list({loadAllOlder: true}));
-        await flush();
-        await flush();
-        await flush();
-        await flush();
-        expect(mockExtend).toHaveBeenCalledTimes(3);
-        // no more once it said so
-        await flush();
-        expect(mockExtend).toHaveBeenCalledTimes(3);
-    });
-
-    it("are not asked for by themselves where the list is not told to", async () => {
-        render(list());
-        await flush();
-        await flush();
-        expect(mockExtend).not.toHaveBeenCalled();
-    });
-
-    it("stop at a failure, and leave the button", async () => {
-        mockExtend.mockRejectedValue(new Error("node gone"));
-        const {container} = render(list({loadAllOlder: true}));
-        await flush();
-        await flush();
-        await flush();
-        expect(mockExtend).toHaveBeenCalledTimes(1);
-        expect(container.textContent).toContain("Load older");
-    });
-
-    it("say how many are there while they are loaded", async () => {
-        let done: (n: number) => void = () => undefined;
-        mockExtend.mockReturnValue(new Promise(resolve => (done = resolve)));
-        const {container} = render(list({loadAllOlder: true}));
-        await flush();
-        expect(container.textContent).toContain(
-            "Loading older operations: 3 so far"
-        );
-        await act(async () => done(0));
-    });
-
-    it("are not asked for beyond the most that is loaded by itself", async () => {
+    const hundred = () =>
         setHistory(
-            Array.from({length: AUTO_LOAD_MAX}, (_, i) =>
+            Array.from({length: 100}, (_, i) =>
                 transfer(i, "1.2.50", "1", "1.3.0")
             )
         );
-        render(list({loadAllOlder: true, limit: AUTO_LOAD_MAX + 10}));
+    const step = (page: number, size: number) =>
+        act(async () => {
+            (mockOnPage as any)(page, size);
+        });
+
+    it("loads nothing by itself: the first operations are listed and that is all", async () => {
+        hundred();
+        const {container} = render(list({loadOnStep: true, limit: 500}));
         await flush();
         await flush();
         expect(mockExtend).not.toHaveBeenCalled();
+        expect(rows(container)).toHaveLength(100);
+    });
+
+    it("loads the next hundred when the reader steps to the last page that is loaded, and not before", async () => {
+        hundred();
+        render(list({loadOnStep: true, limit: 500}));
+        // pages of 25: 2 and 3 still have a full page after them
+        await step(2, 25);
+        await step(3, 25);
+        expect(mockExtend).not.toHaveBeenCalled();
+        await step(4, 25);
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+        // for the first hundred (the page the chain store loaded), 100 more
+        expect(mockExtend.mock.calls[0][3]).toBe(100);
+    });
+
+    it("loads when a page size is chosen that needs more than there is, and not for one that does not", async () => {
+        hundred();
+        render(list({loadOnStep: true, limit: 500}));
+        await step(1, 50);
+        expect(mockExtend).not.toHaveBeenCalled();
+        await step(1, 100);
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+    });
+
+    it("counts what the search found: the end of a short list of matches is the end of what to step through", async () => {
+        hundred();
+        // 8 of them go to somebody else
+        setHistory(
+            Array.from({length: 100}, (_, i) =>
+                transfer(i, i < 8 ? "1.2.60" : "1.2.50", "1", "1.3.0")
+            )
+        );
+        render(list({loadOnStep: true, limit: 500, search: "bob"}));
+        await step(1, 25);
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+    });
+
+    it("asks once while a request is out, and nothing more once the node has no more", async () => {
+        hundred();
+        let done: (n: number) => void = () => undefined;
+        mockExtend.mockReturnValueOnce(
+            new Promise(resolve => (done = resolve))
+        );
+        render(list({loadOnStep: true, limit: 500}));
+        await step(4, 25);
+        await step(4, 25);
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+        await act(async () => done(0));
+        // the node had nothing: no more asking
+        await step(4, 25);
+        await step(1, 100);
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing where the list is not told to load on a step", async () => {
+        hundred();
+        render(list({limit: 500}));
+        await step(4, 25);
+        expect(mockExtend).not.toHaveBeenCalled();
+    });
+
+    it("leaves the button, and tries again on the next step, after a failure", async () => {
+        hundred();
+        mockExtend.mockRejectedValueOnce(new Error("node gone"));
+        const {container} = render(list({loadOnStep: true, limit: 500}));
+        await step(4, 25);
+        await flush();
+        expect(mockExtend).toHaveBeenCalledTimes(1);
+        expect(container.textContent).toContain("Load older");
+        await step(4, 25);
+        expect(mockExtend).toHaveBeenCalledTimes(2);
     });
 });

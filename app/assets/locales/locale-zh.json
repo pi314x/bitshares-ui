@@ -3740,8 +3740,7 @@
         "capped": "根据最近 %(count)s 笔操作构建；更早的操作未加载。",
         "retry": "重试",
         "no_asset": "没有匹配的资产。",
-        "no_balances": "暂无可绘制图表的余额。",
-        "loading_older": "正在加载更早的操作：目前 %(count)s 条..."
+        "no_balances": "暂无可绘制图表的余额。"
     },
     "toolbar": {
         "rows": "%(count)s 行",

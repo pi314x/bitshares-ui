@@ -15,6 +15,9 @@ import counterpart from "counterpart";
 import {Table} from "../../design-system/Table";
 import "./paginated-list.scss";
 
+/** No list shows more than this many rows on a page (a long list is read page by page, not all at once). */
+export const MAX_PAGE_SIZE = 100;
+
 interface PaginatedListProps {
     rows?: any[];
     pageSize?: number;
@@ -26,6 +29,8 @@ interface PaginatedListProps {
     label?: string | null;
     header?: any;
     toggleSortOrder?: any;
+    /** told when the reader steps to another page or chooses another page size: (page, rows on a page) */
+    onPage?: (page: number, pageSize: number) => void;
     rowClassName?: (record: any, index: number) => string;
     rowSelection?: any;
     children?: React.ReactNode;
@@ -42,19 +47,25 @@ export default function PaginatedList({
     label = null,
     header,
     toggleSortOrder,
+    onPage,
     rowClassName,
     rowSelection,
     children
 }: PaginatedListProps) {
-    const [pageSize] = React.useState(pageSizeProp);
+    const [pageSize] = React.useState(Math.min(pageSizeProp, MAX_PAGE_SIZE));
 
-    // the page size asked for is one of the choices (25 is not in the usual list)
+    // the page size asked for is one of the choices (25 is not in the usual list); the last choice is the whole
+    // list on one page where it is short, and no more than MAX_PAGE_SIZE where it is long
+    const largest = Math.min(
+        MAX_PAGE_SIZE,
+        Math.max(pageSizeProp, rows.length)
+    );
     const pageSizeOptions = Array.from(
         new Set([10, 20, 30, 40, 50, 100, pageSizeProp])
     )
         .sort((a, b) => a - b)
-        .filter(item => item < Math.max(pageSizeProp, rows.length));
-    pageSizeOptions.push(Math.max(pageSizeProp, rows.length));
+        .filter(item => item < largest);
+    pageSizeOptions.push(largest);
 
     let totalColumnsLabel: ((total: number) => string) | null = null;
     if (label !== null) {
@@ -85,7 +96,21 @@ export default function PaginatedList({
                 dataSource={rows}
                 columns={Array.isArray(header) ? header : []}
                 footer={() => (extraRow ? extraRow : <span>&nbsp;</span>)}
-                onChange={toggleSortOrder}
+                onChange={
+                    toggleSortOrder || onPage
+                        ? (pagination: any, filters: any, sorter: any) => {
+                              if (toggleSortOrder) {
+                                  toggleSortOrder(pagination, filters, sorter);
+                              }
+                              if (onPage) {
+                                  onPage(
+                                      pagination.current,
+                                      pagination.pageSize
+                                  );
+                              }
+                          }
+                        : undefined
+                }
                 pagination={{
                     showSizeChanger: true,
                     hideOnSinglePage: false,

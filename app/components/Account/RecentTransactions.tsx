@@ -154,15 +154,13 @@ interface RecentTransactionsCoreProps {
      */
     search?: string;
     /**
-     * ask the node for older operations again and again, as long as it has some (up to `AUTO_LOAD_MAX`), so that the
-     * list holds as many as the node can offer without the button being pressed for each hundred
+     * the first operations the node sends are listed (100), and older ones are loaded only when the reader steps
+     * forward: to the last page that is loaded, or to a page size that needs more than there is. "Load older" does the
+     * same by hand.
      */
-    loadAllOlder?: boolean;
+    loadOnStep?: boolean;
     [key: string]: any;
 }
-
-/** The most operations that are loaded without being asked for; "Load older" goes on from there. */
-export const AUTO_LOAD_MAX = 5000;
 
 /** An account or an asset as the chain store has it, without asking the node for it (null: not there yet). */
 function storedObject(id: string): any {
@@ -184,7 +182,7 @@ function RecentTransactionsCore({
     title,
     marketDirections,
     search,
-    loadAllOlder
+    loadOnStep
 }: RecentTransactionsCoreProps) {
     const [state, setState] = React.useState<RecentTransactionsState>({
         limit: limitProp,
@@ -616,26 +614,15 @@ function RecentTransactionsCore({
         historyCount > 0 &&
         historyCount <= state.limit &&
         !state.historyExhausted;
-    // Asked again as soon as the last page is in, until the node has no more (or the most is loaded). A failure stops
-    // it: the button is still there.
-    React.useEffect(() => {
-        if (
-            loadAllOlder &&
-            canLoadOlder &&
-            historyCount < AUTO_LOAD_MAX &&
-            !state.fetchingAccountHistory &&
-            !state.accountHistoryError
-        ) {
-            onLoadOlder();
+    // When the reader steps to a page, or to a page size, after which there is less than a page of what is loaded,
+    // the next hundred are asked for (and the next page is there by the time it is wanted): only then, never in
+    // the background.
+    const onPage = (page: number, size: number) => {
+        if (!loadOnStep || !canLoadOlder || state.fetchingAccountHistory) {
+            return;
         }
-        // (onLoadOlder is made again with every render: it reads the same accounts)
-    }, [
-        loadAllOlder,
-        canLoadOlder,
-        historyCount,
-        state.fetchingAccountHistory,
-        state.accountHistoryError
-    ]);
+        if (found.length - page * size < size) onLoadOlder();
+    };
     const action = (
         <div className="total-value" key="total_value">
             {canLoadOlder ? (
@@ -760,19 +747,6 @@ function RecentTransactionsCore({
                             </Tooltip>
                         ) : null}
                     </div>
-                    {loadAllOlder &&
-                    state.fetchingAccountHistory &&
-                    historyCount > 0 ? (
-                        <div
-                            style={{paddingLeft: "0.75rem", opacity: 0.7}}
-                            role="status"
-                        >
-                            {counterpart.translate(
-                                "balance_history.loading_older",
-                                {count: historyCount}
-                            )}
-                        </div>
-                    ) : null}
                     {state.accountHistoryError && (
                         <div
                             className="has-error"
@@ -876,6 +850,7 @@ function RecentTransactionsCore({
                     rows={display_history}
                     pageSize={pageSize}
                     label="utility.total_x_operations"
+                    onPage={onPage}
                     extraRow={action}
                 />
 

@@ -58,6 +58,60 @@ describe("PaginatedList", () => {
         ]);
     });
 
+    it("offers no page of more than 100 rows, however long the list is", () => {
+        render(
+            <PaginatedList rows={rows(5000)} header={header} pageSize={25} />
+        );
+        fireEvent.click(screen.getByText("25 / page"));
+        const options = screen
+            .getAllByRole("option")
+            .map(node => node.textContent);
+        expect(options[options.length - 1]).toBe("100 / page");
+        expect(options).not.toContain("5000 / page");
+        // 100 is the most, and a longer list is read page by page
+        fireEvent.click(screen.getByText("100 / page"));
+        expect(screen.getByText("row 100")).toBeTruthy();
+        expect(screen.queryByText("row 101")).toBeNull();
+        expect(screen.getByText("1 / 50")).toBeTruthy();
+    });
+
+    it("keeps the whole list as the last choice where it is shorter than 100, and takes no more than 100 for a page asked for", () => {
+        const {unmount} = render(
+            <PaginatedList rows={rows(73)} header={header} pageSize={25} />
+        );
+        fireEvent.click(screen.getByText("25 / page"));
+        const options = screen
+            .getAllByRole("option")
+            .map(node => node.textContent);
+        expect(options[options.length - 1]).toBe("73 / page");
+        unmount();
+        // a page size above the most is the most
+        render(
+            <PaginatedList rows={rows(300)} header={header} pageSize={250} />
+        );
+        expect(screen.getByText("row 100")).toBeTruthy();
+        expect(screen.queryByText("row 101")).toBeNull();
+    });
+
+    it("tells when the reader steps to another page or chooses another page size, and not before", () => {
+        const onPage = jest.fn();
+        render(
+            <PaginatedList
+                rows={rows(100)}
+                header={header}
+                pageSize={25}
+                onPage={onPage}
+            />
+        );
+        expect(onPage).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByText("›"));
+        expect(onPage).toHaveBeenLastCalledWith(2, 25);
+        fireEvent.click(screen.getByText("25 / page"));
+        fireEvent.click(screen.getByText("50 / page"));
+        expect(onPage).toHaveBeenLastCalledWith(1, 50);
+        expect(onPage).toHaveBeenCalledTimes(2);
+    });
+
     it("names the page size in the language of the page", () => {
         (counterpart as any).registerTranslations("de", {
             utility: {per_page: "%(count)s / Seite"}

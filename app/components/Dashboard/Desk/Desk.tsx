@@ -26,9 +26,10 @@ const TypedLink = Link as React.ComponentType<LinkProps>;
 const TypedRecent = RecentTransactions as React.ComponentType<any>;
 
 // The activity card shows everything the account's history holds, a page of 25 at a
-// time. The node sends the last 100 operations; the card asks it (and, where it has
-// no more, the other nodes) for older ones by itself, up to AUTO_LOAD_MAX, and the
-// field above the list finds operations by what they say as it is typed.
+// time. The node sends the last 100 operations; older ones (from the node, and where it
+// has no more, from the other nodes) are loaded only when the reader steps forward to
+// the end of what is loaded. The field above the list finds operations by what they
+// say as it is typed.
 const ACTIVITY_LIMIT = 1000;
 const ACTIVITY_PAGE_SIZE = 25;
 
@@ -1083,7 +1084,7 @@ export default function Desk({
                     <div className={styles.activity}>
                         <TypedRecent
                             search={activityQuery}
-                            loadAllOlder
+                            loadOnStep
                             accountsList={accountList}
                             compactView={true}
                             showMore={true}

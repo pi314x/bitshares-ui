@@ -14015,17 +14015,21 @@ asset being sent. "Send" on the book page opens the Send page with `{toName, ass
 once the chain store has it and tells the dialog.
 
 *Recent activity: more operations, and a search* (Dashboard card, 2026-11-02; the user: "Show more than 100 operations in Dashboard. So many as the
-node can offer" and "Search in recent activities while Typing"). `RecentTransactions` got two props the card sets. `loadAllOlder`: as soon as the last
-page is in it asks for the next one (the same request as the "Load older" button: the node first, the other nodes of the list where the connected one has
-no more - `extendAccountHistory`'s fallback), until a request adds nothing or `AUTO_LOAD_MAX` (5,000) operations are in; a failure stops it and leaves the
-button, and a line says how many there are while it loads. `search`: the field above the list (state in `Desk.tsx`) narrows the list on every keystroke; every
-word typed has to be in the text of the operation (`lib/common/activitySearch.ts`: its kind as labelled and as the chain names it, its id and block, and all its
-fields with accounts as names, assets as symbols and amounts as the row shows them; the fee and the memo are left out), the text is built once for each
-operation and again while an account or asset it names is not loaded (it reads the chain store without asking the node, so a long history does not start a
-fetch for every counterparty). The history itself is only worked out again when an account's history or the filter changes. Measured on the real node.xbts.io: the
-account `thmsfnd02` has 227,055 operations on the chain but the node answers for 123 (100 + 23): the card now holds all 123 (it showed 100 until "Load older"
-was pressed); the other nodes could not be asked from the test harness, which relays every call to node.xbts.io, so what they add was not seen. The date is not searchable.
-(The Portfolio no longer has the "Balance over time" chart, the same day: the user, "Portfolio does not need a Balance over Time".)
+node can offer", "Search in recent activities while Typing", "Max 100 per Page", then "Load First 100 operations and the rest only when you step forward").
+`RecentTransactions` got two props the card sets. `loadOnStep`: the first operations the node sends (100) are listed and that is all until the reader
+steps: when a page is reached, or a page size is chosen, after which less than a page of what is loaded is left (`PaginatedList`'s new `onPage` reports
+both; the table does not report the first render), the next hundred are asked for - the same request as the "Load older" button (the node first, the other
+nodes of the list where the connected one has no more, `extendAccountHistory`'s fallback) - once at a time, and not again after a request adds nothing; a
+failure leaves the button and the next step tries again. With a search typed, "what is loaded" is the list of matches, so the end of a short list of
+matches asks for more. (A first version loaded everything in the background up to 5,000; it was replaced the same day.) `search`: the field above the
+list (state in `Desk.tsx`) narrows the list on every keystroke; every word typed has to be in the text of the operation (`lib/common/activitySearch.ts`: its
+kind as labelled and as the chain names it, its id and block, and all its fields with accounts as names, assets as symbols and amounts as the row shows
+them; the fee and the memo are left out), the text is built once for each operation and again while an account or asset it names is not loaded (it reads
+the chain store without asking the node, so a long history does not start a fetch for every counterparty). The history itself is only worked out again
+when an account's history or the filter changes. `PaginatedList` offers no page of more than 100 rows (`MAX_PAGE_SIZE`; the last choice is the whole list
+only where it is shorter than that). Measured on the real node.xbts.io: the account `thmsfnd02` has 227,055 operations on the chain but the node answers
+for 123 (100 + 23); the other nodes could not be asked from the test harness, which relays every call to node.xbts.io, so what they add was not seen. The
+date is not searchable. (The Portfolio no longer has the "Balance over time" chart, the same day: the user, "Portfolio does not need a Balance over Time".)
 
 *Last 24 hours* (Dashboard card; `lib/common/dayRecap.ts`, `Dashboard/Desk/DayRecap.tsx`): counted from the history
 the balance chart is drawn from (the same shared load, with the times of its blocks): transfers in and out, order

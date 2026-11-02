@@ -3740,8 +3740,7 @@
         "capped": "Son %(count)s işlemden oluşturuldu; daha eskiler yüklenmedi.",
         "retry": "Tekrar dene",
         "no_asset": "Hiçbir varlık eşleşmiyor.",
-        "no_balances": "Henüz grafiğe dökülecek bakiye yok.",
-        "loading_older": "Daha eski işlemler yükleniyor: şimdiye kadar %(count)s..."
+        "no_balances": "Henüz grafiğe dökülecek bakiye yok."
     },
     "toolbar": {
         "rows": "%(count)s satır",

@@ -3740,8 +3740,7 @@
         "range_1w": "1W",
         "range_all": "All",
         "no_asset": "No asset matches.",
-        "no_balances": "No balances to chart yet.",
-        "loading_older": "Loading older operations: %(count)s so far..."
+        "no_balances": "No balances to chart yet."
     },
     "toolbar": {
         "rows": "%(count)s rows",
