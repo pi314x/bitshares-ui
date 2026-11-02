@@ -4255,13 +4255,16 @@
         "note": "Info",
         "memo_help": "Inviato con ogni pagamento a questo account, finché non lo cambi nella finestra di invio (il tag di deposito di un exchange, un numero di fattura).",
         "error_name": "Non è un nome di account BitShares.",
-        "error_duplicate": "Quell'account è già in rubrica.",
+        "error_duplicate": "Quell'account è già nella rubrica per questo asset.",
         "error_full": "La rubrica è piena.",
         "pick": "Scegli dalla rubrica",
         "use_memo": "Usa il memo salvato: %(memo)s",
         "save_recipient": "Salva questo destinatario in rubrica",
         "add_from_activity": "Aggiungi alla rubrica",
-        "in_book": "Nella rubrica"
+        "in_book": "Nella rubrica",
+        "asset": "Asset",
+        "asset_help": "Facoltativo. L'asset a cui si riferisce: un prelievo di esso va a questo account con questo memo (l'indirizzo di un gateway per quell'asset). Vuoto: qualsiasi asset.",
+        "error_asset": "Questo non è un simbolo di asset (lettere maiuscole, cifre e punti, da 3 a 16 caratteri)."
     },
     "day_recap": {
         "title": "Ultime 24 ore",

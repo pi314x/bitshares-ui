@@ -1,6 +1,6 @@
 // /address-book: the accounts the user pays - who they are, what to know about them, the memo to send. A card for
 // each (a phone is the first screen), a search over all of it, "Send" that opens the Send page with the
-// recipient (and its memo) in, and the book as a file (export, import).
+// recipient (and its asset) in, and the book as a file (export, import).
 import * as React from "react";
 import {Link, useNavigate} from "react-router-dom";
 import counterpart from "counterpart";
@@ -28,9 +28,13 @@ const TypedLink = Link as React.ComponentType<any>;
 export function matches(entry: AddressEntry, query: string): boolean {
     const q = query.trim().toLowerCase();
     if (!q) return true;
-    return [entry.name, entry.label, entry.note, entry.memo].some(text =>
-        text.toLowerCase().includes(q)
-    );
+    return [
+        entry.name,
+        entry.asset,
+        entry.label,
+        entry.note,
+        entry.memo
+    ].some(text => text.toLowerCase().includes(q));
 }
 
 export default function AddressBookPage(): JSX.Element {
@@ -46,8 +50,13 @@ export default function AddressBookPage(): JSX.Element {
 
     const shown = book.filter(entry => matches(entry, query));
 
+    // the Send page opens with the recipient and, for an entry that is for one asset, that asset
     const send = (entry: AddressEntry) =>
-        navigate("/send", {state: {toName: entry.name}});
+        navigate("/send", {
+            state: entry.asset
+                ? {toName: entry.name, asset: entry.asset}
+                : {toName: entry.name}
+        });
 
     const exportBook = () => {
         saveAs(
@@ -131,6 +140,11 @@ export default function AddressBookPage(): JSX.Element {
                                 >
                                     {entry.name}
                                 </TypedLink>
+                                {entry.asset ? (
+                                    <span className={styles.asset}>
+                                        {entry.asset}
+                                    </span>
+                                ) : null}
                             </div>
                             {entry.note ? (
                                 <p className={styles.note}>{entry.note}</p>

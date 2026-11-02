@@ -14001,6 +14001,17 @@ the memo that went along (`PrivateKeyStore.decodeMemo`, the same reading as the 
 so a locked wallet is asked to log in first, and a cancelled prompt or a memo that cannot be read opens the form
 without it). Where the book has the account already, the row says "In the address book" instead. Not in the Send flow
 or anywhere else: only in these rows.
+An entry is linked to the asset of a withdrawal (2026-11-02; the user: "The address Book entry Must be linked to the withdrawal asset"):
+`AddressEntry.asset` is a symbol (empty: any asset), and the book keeps one entry for each account AND asset (a gateway
+takes another address in the memo for another asset). The button takes the asset of the payment (its `amount.asset_id`)
+into the form, "In the address book" means an entry for that asset or for any asset, the form has an "Asset" field
+(optional, validated as a symbol), the card shows it and the search finds it, and the file carries it (an older file
+without assets reads as "any"). In the Send dialog `RecipientHelper` is given the symbol of the asset being sent: the entry
+for that asset (else the one for any) is the one whose memo is filled in, the memo follows the asset when it is changed
+(only while the box still holds what an entry put there: a typed memo is never replaced), the list names the asset, a
+picked entry for one asset switches the dialog to it when the account holds it, and "Save this recipient" saves for the
+asset being sent. "Send" on the book page opens the Send page with `{toName, asset}`; the page finds the asset by its symbol
+once the chain store has it and tells the dialog.
 
 *Last 24 hours* (Dashboard card; `lib/common/dayRecap.ts`, `Dashboard/Desk/DayRecap.tsx`): counted from the history
 the balance chart is drawn from (the same shared load, with the times of its blocks): transfers in and out, order

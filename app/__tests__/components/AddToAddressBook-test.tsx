@@ -1,6 +1,6 @@
-// The button on a payment in the recent activity that saves who it went to in the address book: with the memo that
-// went along when it can be read, after an unlock when the wallet is locked, and a note instead when the book has the
-// account already.
+// The button on a payment in the recent activity that saves who it went to in the address book, for the asset that was
+// paid (a withdrawal of it): with the memo that went along when it can be read, after an unlock when the wallet is
+// locked, and a note instead when the book has the account (for that asset) already.
 import * as React from "react";
 import {act, fireEvent, render} from "@testing-library/react";
 import counterpart from "counterpart";
@@ -8,9 +8,13 @@ import Immutable from "immutable";
 import localeEn from "../../assets/locales/locale-en.json";
 
 let mockAccounts: Record<string, any> = {};
+let mockAssets: Record<string, any> = {};
 jest.mock("bitsharesjs", () => ({
     ...jest.requireActual("bitsharesjs"),
-    ChainStore: {getAccount: (id: string) => mockAccounts[id]}
+    ChainStore: {
+        getAccount: (id: string) => mockAccounts[id],
+        getAsset: (id: string) => mockAssets[id]
+    }
 }));
 const mockDecode = jest.fn<any, any[]>();
 jest.mock("stores/PrivateKeyStore", () => ({
@@ -50,6 +54,10 @@ beforeEach(() => {
     mockLocked = false;
     mockAccounts = {
         "1.2.50": Immutable.fromJS({id: "1.2.50", name: "mexc-deposit"})
+    };
+    mockAssets = {
+        "1.3.7": Immutable.fromJS({id: "1.3.7", symbol: "XBTSX.HIVE"}),
+        "1.3.8": Immutable.fromJS({id: "1.3.8", symbol: "XBTSX.BTC"})
     };
     mockDecode.mockReturnValue({text: "tag-12345", isMine: true});
     mockUnlock.mockResolvedValue(undefined);
@@ -140,6 +148,63 @@ describe("AddToAddressBook", () => {
             fireEvent.click(addButton() as HTMLButtonElement);
         });
         expect(mockUnlock).not.toHaveBeenCalled();
+    });
+
+    it("saves the entry for the asset that was paid: the form opens with it, and the book's entry for another asset does not count", async () => {
+        saveEntry({name: "mexc-deposit", asset: "XBTSX.BTC", memo: "btc"});
+        render(<AddToAddressBook to="1.2.50" memo={MEMO} assetId="1.3.7" />);
+        // an entry for another asset: this one (XBTSX.HIVE) is not in the book yet
+        expect(document.body.textContent).not.toContain("In the address book");
+        await act(async () => {
+            fireEvent.click(addButton() as HTMLButtonElement);
+        });
+        expect(field("Account name").value).toBe("mexc-deposit");
+        expect(field("Asset").value).toBe("XBTSX.HIVE");
+        expect(field("Memo").value).toBe("tag-12345");
+        fireEvent.click(
+            Array.from(document.body.querySelectorAll("button")).find(
+                b => (b.textContent || "").trim() === "Save"
+            ) as HTMLButtonElement
+        );
+        expect(findEntry("mexc-deposit", undefined, "XBTSX.HIVE")?.memo).toBe(
+            "tag-12345"
+        );
+        expect(findEntry("mexc-deposit", undefined, "XBTSX.BTC")?.memo).toBe(
+            "btc"
+        );
+        await flush();
+        expect(document.body.textContent).toContain("In the address book");
+    });
+
+    it("says the book has it for the asset that was paid, or for any asset", () => {
+        saveEntry({name: "mexc-deposit", asset: "XBTSX.HIVE"});
+        const first = render(
+            <AddToAddressBook to="1.2.50" memo={MEMO} assetId="1.3.7" />
+        );
+        expect(first.container.textContent).toContain("In the address book");
+        first.unmount();
+        // another asset of the same account: not there
+        const other = render(
+            <AddToAddressBook to="1.2.50" memo={MEMO} assetId="1.3.8" />
+        );
+        expect(other.container.textContent).not.toContain(
+            "In the address book"
+        );
+        other.unmount();
+        // an entry for any asset covers every one
+        saveEntry({name: "mexc-deposit"});
+        const any = render(
+            <AddToAddressBook to="1.2.50" memo={MEMO} assetId="1.3.8" />
+        );
+        expect(any.container.textContent).toContain("In the address book");
+    });
+
+    it("shows nothing until the asset that was paid is loaded", () => {
+        mockAssets = {};
+        const {container} = render(
+            <AddToAddressBook to="1.2.50" memo={MEMO} assetId="1.3.7" />
+        );
+        expect(container.textContent).toBe("");
     });
 
     it("shows nothing until the account is loaded", () => {

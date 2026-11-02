@@ -1,6 +1,7 @@
 // Under the recipient of the Send dialog: the address book at hand. Pick who to pay from the book (the memo that goes
 // with them comes along), see who the typed account is when the book knows it (its label and what is noted
-// about it), and save a recipient the book does not know yet.
+// about it), and save a recipient the book does not know yet. An entry that is for one asset is the one used when
+// that asset is the one being sent (a withdrawal of it): the memo follows the asset chosen in the dialog.
 import * as React from "react";
 import counterpart from "counterpart";
 import {Select} from "../../design-system/Select";
@@ -21,6 +22,8 @@ export interface RecipientHelperProps {
     toName: string;
     /** the memo as typed */
     memo: string;
+    /** the symbol of the asset being sent (an entry for that asset is the one that counts) */
+    asset?: string;
     /** the typed account exists on the chain (it is loaded) */
     known: boolean;
     onPick: (entry: AddressEntry) => void;
@@ -30,27 +33,33 @@ export interface RecipientHelperProps {
 export default function RecipientHelper({
     toName,
     memo,
+    asset,
     known,
     onPick,
     onUseMemo
 }: RecipientHelperProps): JSX.Element | null {
     const book = useAddressBook();
     const [saving, setSaving] = React.useState(false);
-    const entry = findEntry(toName, book);
+    const entry = findEntry(toName, book, asset);
 
-    // The memo of an entry comes with it, once for each recipient, when the memo box is empty: a memo that was
-    // typed is never replaced.
+    // The memo of an entry comes with it, once for each entry, when the memo box is empty or still holds the memo
+    // an entry put there (the asset was changed): a memo that was typed is never replaced.
     const filledFor = React.useRef<string | null>(null);
+    const filledMemo = React.useRef<string | null>(null);
     React.useEffect(() => {
         if (!entry) {
             filledFor.current = null;
             return;
         }
-        if (filledFor.current === entry.name) return;
-        filledFor.current = entry.name;
-        if (entry.memo && !memo) onUseMemo(entry.memo);
-        // (only when the recipient changes)
-    }, [entry && entry.name]);
+        if (filledFor.current === entry.id) return;
+        filledFor.current = entry.id;
+        const ours = filledMemo.current !== null && memo === filledMemo.current;
+        if ((!memo || ours) && entry.memo !== memo) {
+            filledMemo.current = entry.memo;
+            onUseMemo(entry.memo);
+        }
+        // (only when the entry changes)
+    }, [entry && entry.id]);
 
     const typed = toName.trim().toLowerCase();
     const canSave = !entry && known && validAccountName(typed);
@@ -70,7 +79,8 @@ export default function RecipientHelper({
                 >
                     {book.map(e => (
                         <Select.Option key={e.id} value={e.id}>
-                            {e.label ? `${e.label} - ${e.name}` : e.name}
+                            {(e.label ? `${e.label} - ${e.name}` : e.name) +
+                                (e.asset ? ` (${e.asset})` : "")}
                         </Select.Option>
                     ))}
                 </Select>
@@ -102,7 +112,7 @@ export default function RecipientHelper({
             ) : null}
             {saving ? (
                 <EntryDialog
-                    initial={{name: typed, memo}}
+                    initial={{name: typed, memo, asset: asset || ""}}
                     onClose={() => setSaving(false)}
                 />
             ) : null}

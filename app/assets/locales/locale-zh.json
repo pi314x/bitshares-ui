@@ -4255,13 +4255,16 @@
         "note": "信息",
         "memo_help": "每次向该账户付款都会附带（直到您在发送窗口中更改），例如交易所的充值标签、发票号。",
         "error_name": "这不是 BitShares 账户名。",
-        "error_duplicate": "该账户已在地址簿中。",
+        "error_duplicate": "该账户已就此资产在地址簿中。",
         "error_full": "地址簿已满。",
         "pick": "从地址簿选择",
         "use_memo": "使用已保存的备注：%(memo)s",
         "save_recipient": "将此收款人保存到地址簿",
         "add_from_activity": "添加到地址簿",
-        "in_book": "已在地址簿中"
+        "in_book": "已在地址簿中",
+        "asset": "资产",
+        "asset_help": "可选。此条目对应的资产：该资产的提现会带着这个备注发送到该账户（该资产的网关地址）。留空：任何资产。",
+        "error_asset": "这不是资产符号（大写字母、数字和点，3 到 16 个字符）。"
     },
     "day_recap": {
         "title": "最近 24 小时",

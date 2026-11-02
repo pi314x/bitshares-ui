@@ -696,19 +696,41 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                 <RecipientHelper
                                     toName={to_name}
                                     memo={memo}
+                                    asset={
+                                        asset && asset.get
+                                            ? asset.get("symbol")
+                                            : undefined
+                                    }
                                     known={
                                         !!to_account &&
                                         typeof to_account.get === "function"
                                     }
-                                    onPick={entry =>
+                                    onPick={entry => {
                                         mergeState({
                                             to_name: entry.name,
                                             to_account: (ChainStore as any).getAccount(
                                                 entry.name
                                             ),
                                             error: null
-                                        })
-                                    }
+                                        });
+                                        // an entry for one asset is a withdrawal of it: that asset is sent, when it is held
+                                        const entryAsset: any = entry.asset
+                                            ? (ChainStore as any).getAsset(
+                                                  entry.asset
+                                              )
+                                            : null;
+                                        if (
+                                            entryAsset &&
+                                            asset_types.indexOf(
+                                                entryAsset.get("id")
+                                            ) >= 0
+                                        ) {
+                                            onAmountChanged({
+                                                amount: state.amount,
+                                                asset: entryAsset
+                                            });
+                                        }
+                                    }}
                                     onUseMemo={saved =>
                                         mergeState({memo: saved})
                                     }

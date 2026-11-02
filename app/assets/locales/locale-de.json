@@ -4255,13 +4255,16 @@
         "note": "Info",
         "memo_help": "Wird bei jeder Zahlung an dieses Konto mitgeschickt, bis du es im Senden-Dialog änderst (der Einzahlungs-Tag einer Börse, eine Rechnungsnummer).",
         "error_name": "Das ist kein BitShares-Kontoname.",
-        "error_duplicate": "Dieses Konto ist schon im Adressbuch.",
+        "error_duplicate": "Dieses Konto ist für dieses Asset schon im Adressbuch.",
         "error_full": "Das Adressbuch ist voll.",
         "pick": "Aus dem Adressbuch wählen",
         "use_memo": "Gespeichertes Memo verwenden: %(memo)s",
         "save_recipient": "Diesen Empfänger im Adressbuch speichern",
         "add_from_activity": "Zum Adressbuch hinzufügen",
-        "in_book": "Im Adressbuch"
+        "in_book": "Im Adressbuch",
+        "asset": "Asset",
+        "asset_help": "Optional. Das Asset, für das dies gilt: Eine Auszahlung davon geht mit diesem Memo an dieses Konto (die Adresse eines Gateways für dieses Asset). Leer: jedes Asset.",
+        "error_asset": "Das ist kein Asset-Symbol (Großbuchstaben, Ziffern und Punkte, 3 bis 16 Zeichen)."
     },
     "day_recap": {
         "title": "Letzte 24 Stunden",

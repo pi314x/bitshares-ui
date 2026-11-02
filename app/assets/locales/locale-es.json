@@ -4255,13 +4255,16 @@
         "note": "Información",
         "memo_help": "Se envía con cada pago a esta cuenta, hasta que lo cambies en el diálogo de envío (la etiqueta de depósito de un exchange, un número de factura).",
         "error_name": "Ese no es un nombre de cuenta de BitShares.",
-        "error_duplicate": "Esa cuenta ya está en la libreta.",
+        "error_duplicate": "Esa cuenta ya está en la libreta de direcciones para este activo.",
         "error_full": "La libreta está llena.",
         "pick": "Elegir de la libreta",
         "use_memo": "Usar el memo guardado: %(memo)s",
         "save_recipient": "Guardar este destinatario en la libreta",
         "add_from_activity": "Añadir a la libreta de direcciones",
-        "in_book": "En la libreta de direcciones"
+        "in_book": "En la libreta de direcciones",
+        "asset": "Activo",
+        "asset_help": "Opcional. El activo al que corresponde: un retiro de él va a esta cuenta con este memo (la dirección de una pasarela para ese activo). Vacío: cualquier activo.",
+        "error_asset": "Eso no es un símbolo de activo (mayúsculas, dígitos y puntos, de 3 a 16 caracteres)."
     },
     "day_recap": {
         "title": "Últimas 24 horas",

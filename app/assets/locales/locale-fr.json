@@ -4255,13 +4255,16 @@
         "note": "Infos",
         "memo_help": "Envoyé avec chaque paiement à ce compte, jusqu'à ce que vous le changiez dans la fenêtre d'envoi (le tag de dépôt d'une plateforme, un numéro de facture).",
         "error_name": "Ce n'est pas un nom de compte BitShares.",
-        "error_duplicate": "Ce compte est déjà dans le carnet.",
+        "error_duplicate": "Ce compte est déjà dans le carnet d'adresses pour cet actif.",
         "error_full": "Le carnet d'adresses est plein.",
         "pick": "Choisir dans le carnet d'adresses",
         "use_memo": "Utiliser le mémo enregistré : %(memo)s",
         "save_recipient": "Enregistrer ce destinataire dans le carnet d'adresses",
         "add_from_activity": "Ajouter au carnet d'adresses",
-        "in_book": "Dans le carnet d'adresses"
+        "in_book": "Dans le carnet d'adresses",
+        "asset": "Actif",
+        "asset_help": "Facultatif. L'actif concerné : un retrait de cet actif va à ce compte avec ce mémo (l'adresse d'une passerelle pour cet actif). Vide : n'importe quel actif.",
+        "error_asset": "Ce n'est pas un symbole d'actif (majuscules, chiffres et points, de 3 à 16 caractères)."
     },
     "day_recap": {
         "title": "Dernières 24 heures",

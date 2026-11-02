@@ -184,8 +184,8 @@ describe("export and import", () => {
         saveEntry({name: "bob"});
         const text = exportAddressBook();
         expect(JSON.parse(text).entries).toEqual([
-            {name: "bob", label: "", note: "", memo: ""},
-            {name: "alice", label: "A", note: "n", memo: "m"}
+            {name: "bob", label: "", note: "", memo: "", asset: ""},
+            {name: "alice", label: "A", note: "n", memo: "m", asset: ""}
         ]);
         window.localStorage.clear();
         reloadAddressBook();

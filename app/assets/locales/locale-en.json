@@ -4255,13 +4255,16 @@
         "note": "Info",
         "memo_help": "Sent with every payment to this account, until you change it in the Send dialog (an exchange's deposit tag, an invoice number).",
         "error_name": "That is not a BitShares account name.",
-        "error_duplicate": "That account is in the address book already.",
+        "error_duplicate": "That account is in the address book already for this asset.",
         "error_full": "The address book is full.",
         "pick": "Pick from the address book",
         "use_memo": "Use the saved memo: %(memo)s",
         "save_recipient": "Save this recipient in the address book",
         "add_from_activity": "Add to address book",
-        "in_book": "In the address book"
+        "in_book": "In the address book",
+        "asset": "Asset",
+        "asset_help": "Optional. The asset this is for: a withdrawal of it goes to this account with this memo (a gateway's address for that asset). Empty: any asset.",
+        "error_asset": "That is not an asset symbol (upper case letters, digits and dots, 3 to 16 characters)."
     },
     "day_recap": {
         "title": "Last 24 hours",

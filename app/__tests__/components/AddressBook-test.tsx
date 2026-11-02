@@ -18,10 +18,14 @@ import AddressBookPage, {
 } from "../../components/AddressBook/AddressBookPage";
 import RecipientHelper from "../../components/AddressBook/RecipientHelper";
 import {
+    exportAddressBook,
     findEntry,
     getAddressBook,
+    importAddressBook,
+    normalizeAsset,
     reloadAddressBook,
-    saveEntry
+    saveEntry,
+    validAssetSymbol
 } from "../../lib/common/addressBook";
 
 beforeAll(() => {
@@ -103,7 +107,7 @@ describe("the address book page", () => {
         type("Account name", "alice");
         fireEvent.click(button("Save"));
         expect(document.body.textContent).toContain(
-            "That account is in the address book already."
+            "That account is in the address book already for this asset."
         );
         expect(getAddressBook()).toHaveLength(1);
     });
@@ -290,5 +294,277 @@ describe("the address book in the Send dialog", () => {
         ).toBe("inv 5");
         fireEvent.click(button("Save"));
         expect(findEntry("carol")?.memo).toBe("inv 5");
+    });
+});
+
+describe("an entry for an asset (a withdrawal of it)", () => {
+    it("knows what an asset symbol is, and keeps it in capitals; what is not one makes the entry for any asset", () => {
+        expect(validAssetSymbol("XBTSX.HIVE")).toBe(true);
+        expect(validAssetSymbol("BTS")).toBe(true);
+        for (const bad of [
+            "",
+            "AB",
+            "xbtsx",
+            "1ABC",
+            "ABC.",
+            "A B C",
+            "A".repeat(17)
+        ]) {
+            expect(validAssetSymbol(bad)).toBe(false);
+        }
+        expect(normalizeAsset("  xbtsx.hive ")).toBe("XBTSX.HIVE");
+        expect(normalizeAsset("no good")).toBe("");
+        expect(normalizeAsset(undefined)).toBe("");
+        expect(
+            saveEntry({name: "xbts-hive", asset: "xbtsx.hive"})
+        ).toMatchObject({
+            ok: true,
+            entry: {asset: "XBTSX.HIVE"}
+        });
+        expect(saveEntry({name: "alice", asset: "no good"})).toMatchObject({
+            ok: true,
+            entry: {asset: ""}
+        });
+    });
+
+    it("keeps one entry for each account and asset: the same account for another asset, or for any, is another entry", () => {
+        expect(saveEntry({name: "gateway", asset: "AAA", memo: "a"}).ok).toBe(
+            true
+        );
+        expect(saveEntry({name: "gateway", asset: "BBB", memo: "b"}).ok).toBe(
+            true
+        );
+        expect(saveEntry({name: "gateway", memo: "any"}).ok).toBe(true);
+        expect(getAddressBook()).toHaveLength(3);
+        // the same account and asset again is refused
+        expect(saveEntry({name: "gateway", asset: "aaa"})).toEqual({
+            ok: false,
+            error: "duplicate"
+        });
+        // and so is moving an entry onto another's account and asset
+        const bbb = findEntry("gateway", undefined, "BBB")!;
+        expect(saveEntry({id: bbb.id, name: "gateway", asset: "AAA"})).toEqual({
+            ok: false,
+            error: "duplicate"
+        });
+        // changing its own memo is not a clash
+        expect(
+            saveEntry({id: bbb.id, name: "gateway", asset: "BBB", memo: "b2"})
+                .ok
+        ).toBe(true);
+        reloadAddressBook();
+        expect(getAddressBook()).toHaveLength(3);
+        expect(findEntry("gateway", undefined, "BBB")?.memo).toBe("b2");
+    });
+
+    it("finds the entry for the asset that is sent, or else the one for any asset", () => {
+        saveEntry({name: "gateway", asset: "AAA", memo: "a"});
+        saveEntry({name: "gateway", asset: "BBB", memo: "b"});
+        expect(findEntry("gateway", undefined, "AAA")?.memo).toBe("a");
+        expect(findEntry("gateway", undefined, "bbb")?.memo).toBe("b");
+        // no entry for CCC, and none for any asset
+        expect(findEntry("gateway", undefined, "CCC")).toBeUndefined();
+        saveEntry({name: "gateway", memo: "any"});
+        expect(findEntry("gateway", undefined, "CCC")?.memo).toBe("any");
+        // the exact one wins over the one for any asset
+        expect(findEntry("gateway", undefined, "AAA")?.memo).toBe("a");
+        // without an asset: the one for any asset, else the newest
+        expect(findEntry("gateway")?.memo).toBe("any");
+        saveEntry({name: "solo", asset: "AAA"});
+        expect(findEntry("solo")?.asset).toBe("AAA");
+        expect(findEntry("solo", undefined, "BBB")).toBeUndefined();
+    });
+
+    it("is exported and imported with its asset, and an older file without assets still imports", () => {
+        saveEntry({name: "gateway", asset: "AAA", memo: "a"});
+        saveEntry({name: "gateway", memo: "any"});
+        const file = exportAddressBook();
+        expect(JSON.parse(file).entries).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({name: "gateway", asset: "AAA"}),
+                expect.objectContaining({name: "gateway", asset: ""})
+            ])
+        );
+        window.localStorage.clear();
+        reloadAddressBook();
+        expect(importAddressBook(file)).toEqual({added: 2, skipped: 0});
+        expect(findEntry("gateway", undefined, "AAA")?.memo).toBe("a");
+        expect(
+            importAddressBook(
+                JSON.stringify({
+                    format: "address-book",
+                    version: 1,
+                    entries: [{name: "oldfriend", memo: "m"}]
+                })
+            )
+        ).toEqual({added: 1, skipped: 0});
+        expect(findEntry("oldfriend")).toMatchObject({asset: "", memo: "m"});
+    });
+
+    it("is read as it was kept: an entry from before assets has none, and two kept for one account and asset are one", () => {
+        window.localStorage.setItem(
+            "__graphene__addressBook",
+            JSON.stringify([
+                {id: "1", name: "alice", memo: "old"},
+                {id: "2", name: "gate", asset: "AAA"},
+                {id: "3", name: "gate", asset: "aaa"},
+                {id: "4", name: "gate", asset: "BBB"}
+            ])
+        );
+        reloadAddressBook();
+        expect(getAddressBook().map(e => [e.name, e.asset])).toEqual([
+            ["alice", ""],
+            ["gate", "AAA"],
+            ["gate", "BBB"]
+        ]);
+    });
+});
+
+describe("the asset on the address book page", () => {
+    it("adds an entry for an asset, shows it on the card, and finds it in the search", () => {
+        saveEntry({name: "bob", label: "Plumber"});
+        const {container} = page();
+        fireEvent.click(button("Add"));
+        type("Account name", "xbts-hive");
+        type("Asset", "xbtsx.hive");
+        type("Memo", "hive-address-1");
+        fireEvent.click(button("Save"));
+        expect(findEntry("xbts-hive")).toMatchObject({
+            asset: "XBTSX.HIVE",
+            memo: "hive-address-1"
+        });
+        expect(container.textContent).toContain("XBTSX.HIVE");
+        expect(container.querySelectorAll("li")).toHaveLength(2);
+        type("Search the address book", "xbtsx");
+        expect(container.querySelectorAll("li")).toHaveLength(1);
+        expect(container.textContent).toContain("xbts-hive");
+    });
+
+    it("refuses what is not an asset symbol, and the same account and asset twice, but takes the account for another asset", () => {
+        saveEntry({name: "xbts-hive", asset: "XBTSX.HIVE"});
+        page();
+        fireEvent.click(button("Add"));
+        type("Account name", "xbts-hive");
+        type("Asset", "no good");
+        expect(button("Save").disabled).toBe(true);
+        expect(document.body.textContent).toContain(
+            "That is not an asset symbol"
+        );
+        type("Asset", "XBTSX.HIVE");
+        fireEvent.click(button("Save"));
+        expect(document.body.textContent).toContain(
+            "That account is in the address book already for this asset."
+        );
+        type("Asset", "XBTSX.BTC");
+        fireEvent.click(button("Save"));
+        expect(getAddressBook()).toHaveLength(2);
+        expect(findEntry("xbts-hive", undefined, "XBTSX.BTC")).toBeDefined();
+    });
+
+    it("sends to an entry with its asset: the Send page opens with the recipient and the asset", () => {
+        saveEntry({name: "xbts-hive", asset: "XBTSX.HIVE"});
+        const {getByTestId} = page();
+        fireEvent.click(button("Send"));
+        expect(getByTestId("where").textContent).toBe(
+            '/send|{"toName":"xbts-hive","asset":"XBTSX.HIVE"}'
+        );
+    });
+});
+
+describe("the asset in the Send dialog", () => {
+    const helper = (props: any = {}) => {
+        const picked = jest.fn();
+        const memo = jest.fn();
+        const view = render(
+            <RecipientHelper
+                toName="gateway"
+                memo=""
+                known={true}
+                onPick={picked}
+                onUseMemo={memo}
+                {...props}
+            />
+        );
+        const again = (next: any) =>
+            view.rerender(
+                <RecipientHelper
+                    toName="gateway"
+                    memo=""
+                    known={true}
+                    onPick={picked}
+                    onUseMemo={memo}
+                    {...props}
+                    {...next}
+                />
+            );
+        return {view, picked, memo, again};
+    };
+
+    beforeEach(() => {
+        saveEntry({name: "gateway", asset: "AAA", memo: "address-a"});
+        saveEntry({name: "gateway", asset: "BBB", memo: "address-b"});
+    });
+
+    it("fills the memo of the entry for the asset that is sent, and says who it is", () => {
+        const {memo, view} = helper({asset: "BBB"});
+        expect(memo).toHaveBeenCalledTimes(1);
+        expect(memo).toHaveBeenCalledWith("address-b");
+        expect(view.container.textContent).not.toContain("Save this recipient");
+    });
+
+    it("takes the memo of another asset's entry when the asset is changed, as long as the memo is the one that was filled in", () => {
+        const {memo, again} = helper({asset: "AAA"});
+        expect(memo).toHaveBeenLastCalledWith("address-a");
+        // the box holds what was filled in: another asset, another address
+        again({asset: "BBB", memo: "address-a"});
+        expect(memo).toHaveBeenLastCalledWith("address-b");
+        expect(memo).toHaveBeenCalledTimes(2);
+    });
+
+    it("never replaces a memo that was typed, when the asset is changed", () => {
+        const {memo, again} = helper({asset: "AAA", memo: "my own words"});
+        expect(memo).not.toHaveBeenCalled();
+        again({asset: "BBB", memo: "my own words"});
+        expect(memo).not.toHaveBeenCalled();
+    });
+
+    it("has nothing to fill for an asset the account has no entry for (unless one is for any asset), and offers to save it for that asset", () => {
+        const {memo, view} = helper({asset: "CCC", memo: "inv 5"});
+        expect(memo).not.toHaveBeenCalled();
+        fireEvent.click(
+            Array.from(view.container.querySelectorAll("button")).find(b =>
+                (b.textContent || "").includes("Save this recipient")
+            ) as HTMLElement
+        );
+        expect(
+            (document.body.querySelector(
+                '[aria-label="Asset"]'
+            ) as HTMLInputElement).value
+        ).toBe("CCC");
+        fireEvent.click(button("Save"));
+        expect(findEntry("gateway", undefined, "CCC")?.memo).toBe("inv 5");
+        // (the others are untouched)
+        expect(findEntry("gateway", undefined, "AAA")?.memo).toBe("address-a");
+    });
+
+    it("names the asset in the list of the book, and an entry for any asset applies to every asset", () => {
+        saveEntry({name: "friend", label: "Friend", memo: "hi"});
+        const {view, memo} = helper({toName: "friend", asset: "CCC"});
+        expect(memo).toHaveBeenCalledWith("hi");
+        fireEvent.click(
+            view.container.querySelector(
+                "[aria-haspopup='listbox']"
+            ) as HTMLElement
+        );
+        const options = Array.from(
+            document.body.querySelectorAll("[role='option']")
+        ).map(o => o.textContent);
+        expect(options).toEqual(
+            expect.arrayContaining([
+                "gateway (AAA)",
+                "gateway (BBB)",
+                "Friend - friend"
+            ])
+        );
     });
 });

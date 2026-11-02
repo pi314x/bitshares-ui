@@ -1,7 +1,8 @@
 // On a payment the account sent (the recent activity: a withdrawal to an exchange or a gateway is one): a button that
-// saves who it went to in the address book, with the memo that went along (a deposit tag, an address) when it can
-// be read - it is encrypted, so a locked wallet is asked to unlock first, and if that is cancelled the form simply
-// opens without it. Where the book has the account already, it says so instead.
+// saves who it went to in the address book, for the asset that was paid (a withdrawal of it), with the memo that went
+// along (a deposit tag, an address) when it can be read - it is encrypted, so a locked wallet is asked to unlock
+// first, and if that is cancelled the form simply opens without it. Where the book has the account for that asset
+// already, it says so instead.
 import * as React from "react";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
@@ -38,20 +39,28 @@ export interface AddToAddressBookProps {
     to: string;
     /** the memo of the payment, as the chain has it (encrypted) */
     memo?: any;
+    /** the id of the asset that was paid: the entry is for it */
+    assetId?: string;
 }
 
 export default function AddToAddressBook({
     to,
-    memo
+    memo,
+    assetId
 }: AddToAddressBookProps): JSX.Element | null {
     const book = useAddressBook();
-    const [form, setForm] = React.useState<{name: string; memo: string} | null>(
-        null
-    );
+    const [form, setForm] = React.useState<{
+        name: string;
+        memo: string;
+        asset: string;
+    } | null>(null);
     const account: any = ChainStore.getAccount(to);
     const name: string | null = account ? account.get("name") : null;
-    if (!name) return null;
-    if (findEntry(name, book)) {
+    const paid: any = assetId ? ChainStore.getAsset(assetId) : null;
+    const asset: string = paid ? paid.get("symbol") : "";
+    // (the account and the asset are shown by the row itself, so they are there at once)
+    if (!name || (assetId && !asset)) return null;
+    if (findEntry(name, book, asset)) {
         return <span className={styles.saved}>{t("in_book")}</span>;
     }
 
@@ -66,7 +75,7 @@ export default function AddToAddressBook({
                 // cancelled: the form opens without the memo
             }
         }
-        setForm({name, memo: text});
+        setForm({name, memo: text, asset});
     };
 
     return (

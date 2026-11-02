@@ -1,6 +1,6 @@
-// The form that adds an address book entry, or changes one: the account, who it is, what to know about it, and
-// the memo to send with a payment to it. Opened by the address book page and by the Send dialog ("save this
-// recipient").
+// The form that adds an address book entry, or changes one: the account, the asset it is for (a withdrawal of it),
+// who it is, what to know about it, and the memo to send with a payment to it. Opened by the address book page,
+// by the Send dialog ("save this recipient") and by the recent activity (a payment that was sent).
 import * as React from "react";
 import counterpart from "counterpart";
 import {Button} from "../../design-system/Button";
@@ -8,11 +8,14 @@ import {Input} from "../../design-system/Input";
 import {Modal} from "../../design-system/Modal";
 import {
     AddressEntry,
+    MAX_ASSET,
     MAX_LABEL,
     MAX_MEMO,
     MAX_NOTE,
+    normalizeAsset,
     saveEntry,
-    validAccountName
+    validAccountName,
+    validAssetSymbol
 } from "../../lib/common/addressBook";
 import styles from "./AddressBook.module.scss";
 
@@ -23,7 +26,7 @@ export interface EntryDialogProps {
     /** the entry being changed (none: a new one) */
     entry?: AddressEntry | null;
     /** what a new entry starts with (the recipient of a payment that is being typed) */
-    initial?: {name?: string; memo?: string};
+    initial?: {name?: string; memo?: string; asset?: string};
     onClose: () => void;
     onSaved?: (entry: AddressEntry) => void;
 }
@@ -42,16 +45,24 @@ export default function EntryDialog({
     const [memo, setMemo] = React.useState(
         entry ? entry.memo : (initial && initial.memo) || ""
     );
+    const [asset, setAsset] = React.useState(
+        entry ? entry.asset : (initial && initial.asset) || ""
+    );
     const [error, setError] = React.useState<string | null>(null);
 
     const typed = name.trim().toLowerCase();
     const nameOk = validAccountName(typed);
+    // the asset is optional: empty is any asset; what is typed must be a symbol
+    const typedAsset = asset.trim().toUpperCase();
+    const assetOk = !typedAsset || validAssetSymbol(typedAsset);
 
     const save = () => {
         if (!nameOk) return setError(t("error_name"));
+        if (!assetOk) return setError(t("error_asset"));
         const result = saveEntry({
             id: entry ? entry.id : undefined,
             name: typed,
+            asset: normalizeAsset(typedAsset),
             label,
             note,
             memo
@@ -70,7 +81,11 @@ export default function EntryDialog({
             footer={
                 <div className={styles.dialogFoot}>
                     <Button onClick={onClose}>{t("cancel")}</Button>
-                    <Button variant="accent" disabled={!nameOk} onClick={save}>
+                    <Button
+                        variant="accent"
+                        disabled={!nameOk || !assetOk}
+                        onClick={save}
+                    >
                         {t("save")}
                     </Button>
                 </div>
@@ -93,6 +108,30 @@ export default function EntryDialog({
                         }}
                     />
                     <span className={styles.help}>{t("name_help")}</span>
+                </div>
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-asset">
+                        {t("asset")}
+                    </label>
+                    <Input
+                        id="address-asset"
+                        value={asset}
+                        maxLength={MAX_ASSET}
+                        autoComplete="off"
+                        spellCheck={false}
+                        aria-label={t("asset")}
+                        onChange={(e: any) => {
+                            setAsset(e.target.value);
+                            setError(null);
+                        }}
+                    />
+                    {assetOk ? (
+                        <span className={styles.help}>{t("asset_help")}</span>
+                    ) : (
+                        <span className={styles.error} role="alert">
+                            {t("error_asset")}
+                        </span>
+                    )}
                 </div>
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="address-label">

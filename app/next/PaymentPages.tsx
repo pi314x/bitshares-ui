@@ -1,7 +1,9 @@
 import * as React from "react";
 import {useLocation} from "react-router-dom";
 import {ModalAsPage} from "../design-system/Modal";
+import {ChainStore} from "bitsharesjs";
 import {useReduxState} from "./hooks/useReduxState";
+import {useChainStoreTick} from "./hooks/useChainStoreTick";
 import {selectAccountState} from "../store/slices/accountSlice";
 import {selectGateway} from "../store/slices/gatewaySlice";
 import SendModal from "../components/Modal/SendModal";
@@ -31,10 +33,24 @@ export function SendPage(): JSX.Element {
         location.state && typeof (location.state as any).toName === "string"
             ? (location.state as any).toName
             : undefined;
+    // and the asset of an entry that is for one (a withdrawal of it), found by its symbol once the chain store has it
+    useChainStoreTick();
+    const symbol: string | undefined =
+        location.state && typeof (location.state as any).asset === "string"
+            ? (location.state as any).asset
+            : undefined;
+    const sendAsset: any = symbol ? ChainStore.getAsset(symbol) : null;
+    const assetId: string | undefined = sendAsset
+        ? sendAsset.get("id")
+        : undefined;
     React.useEffect(() => {
         // the dialog opens itself on request, as it does from a button
         sendRef.current && sendRef.current.show();
     }, []);
+    // the asset of the entry may be loaded after the dialog opened: it is chosen when it arrives
+    React.useEffect(() => {
+        if (assetId) sendRef.current && sendRef.current.show();
+    }, [assetId]);
     const asModal = useDesktopModal();
     const dialog = (
         <SendModal
@@ -44,6 +60,7 @@ export function SendPage(): JSX.Element {
             }}
             from_name={accountName}
             to_name={toName}
+            asset_id={assetId}
             onHide={leave}
         />
     );

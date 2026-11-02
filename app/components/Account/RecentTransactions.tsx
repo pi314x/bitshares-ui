@@ -421,7 +421,11 @@ function RecentTransactionsCore({
                         ) : null}
                     </div>
                     {sentPayment ? (
-                        <AddToAddressBook to={o.op[1].to} memo={o.op[1].memo} />
+                        <AddToAddressBook
+                            to={o.op[1].to}
+                            memo={o.op[1].memo}
+                            assetId={o.op[1].amount && o.op[1].amount.asset_id}
+                        />
                     ) : null}
                     {compactView ? (
                         // the compact list drops its id column on a phone (Desk.module.scss):

@@ -1,6 +1,9 @@
 // The address book: the accounts the user pays, with who they are and the memo to send with a payment (an
-// exchange's deposit tag, an invoice number). Kept in this browser; nothing here is a key or a secret, but it
-// is the user's own list, so it can be exported and imported as a file.
+// exchange's deposit tag, an invoice number, the address of a withdrawal). An entry can be for one ASSET: a
+// withdrawal of an asset goes to the account of its gateway with the address in the memo, and the same account
+// takes another address for another asset, so the book keeps one entry for each account and asset (no asset:
+// the entry is for any). Kept in this browser; nothing here is a key or a secret, but it is the user's own list,
+// so it can be exported and imported as a file.
 //
 // A small external store (read with `useSyncExternalStore`), persisted in localStorage.
 import * as React from "react";
@@ -15,23 +18,42 @@ export interface AddressEntry {
     note: string;
     /** the memo to send with a payment to it (may be empty) */
     memo: string;
+    /** the symbol of the asset the entry is for (a withdrawal of it); empty: any asset */
+    asset: string;
     /** ms since the epoch */
     at: number;
 }
 
 export type AddressInput = Pick<AddressEntry, "name"> &
-    Partial<Pick<AddressEntry, "id" | "label" | "note" | "memo">>;
+    Partial<Pick<AddressEntry, "id" | "label" | "note" | "memo" | "asset">>;
 
 export const MAX_ENTRIES = 500;
 export const MAX_LABEL = 60;
 export const MAX_NOTE = 500;
 export const MAX_MEMO = 256;
+export const MAX_ASSET = 16;
 
 const KEY = "__graphene__addressBook";
 
 /** A BitShares account name: lower case, digits, dashes and dots, from 3 to 63 characters. */
 export const validAccountName = (name: string): boolean =>
     /^[a-z][a-z0-9.-]{1,61}[a-z0-9]$/.test(name);
+
+/** A BitShares asset symbol: upper case letters, digits and dots, from 3 to 16 characters, a letter first. */
+export const validAssetSymbol = (symbol: string): boolean =>
+    /^[A-Z][A-Z0-9.]{1,14}[A-Z0-9]$/.test(symbol);
+
+/** The symbol as it is kept: trimmed, upper case, or empty when it is not a symbol (then the entry is for any asset). */
+export const normalizeAsset = (value: unknown): string => {
+    const symbol =
+        typeof value === "string"
+            ? value
+                  .trim()
+                  .slice(0, MAX_ASSET)
+                  .toUpperCase()
+            : "";
+    return validAssetSymbol(symbol) ? symbol : "";
+};
 
 const clean = (value: unknown, max: number): string =>
     typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -49,9 +71,14 @@ function sanitize(raw: any): AddressEntry | null {
         label: clean(raw.label, MAX_LABEL),
         note: clean(raw.note, MAX_NOTE),
         memo: clean(raw.memo, MAX_MEMO),
+        asset: normalizeAsset(raw.asset),
         at: typeof raw.at === "number" && isFinite(raw.at) ? raw.at : Date.now()
     };
 }
+
+/** What an entry is for: the account and the asset (an empty asset is any). */
+const targetOf = (entry: {name: string; asset: string}): string =>
+    `${entry.name}|${entry.asset}`;
 
 let counter = 0;
 function makeId(): string {
@@ -69,8 +96,9 @@ function load(): AddressEntry[] {
         const out: AddressEntry[] = [];
         for (const raw of parsed) {
             const entry = sanitize(raw);
-            if (entry && !seen.has(entry.name)) {
-                seen.add(entry.name);
+            // an account is in the book once for each asset
+            if (entry && !seen.has(targetOf(entry))) {
+                seen.add(targetOf(entry));
                 out.push(entry);
             }
         }
@@ -97,14 +125,27 @@ function save() {
 
 export const getAddressBook = (): AddressEntry[] => entries;
 
-/** The entry for an account name, if the book has one. */
+/**
+ * The entry for an account name, if the book has one. With an asset (a symbol), the entry for that asset, or else
+ * the account's entry for any asset: what is to be paid in that asset. Without one, the account's entry for any
+ * asset, or else its newest entry.
+ */
 export function findEntry(
     name: string | null | undefined,
-    list: AddressEntry[] = entries
+    list: AddressEntry[] = entries,
+    asset?: string | null
 ): AddressEntry | undefined {
     if (!name) return undefined;
     const wanted = name.trim().toLowerCase();
-    return list.find(entry => entry.name === wanted);
+    const mine = list.filter(entry => entry.name === wanted);
+    const wantedAsset = normalizeAsset(asset);
+    if (wantedAsset) {
+        return (
+            mine.find(entry => entry.asset === wantedAsset) ||
+            mine.find(entry => !entry.asset)
+        );
+    }
+    return mine.find(entry => !entry.asset) || mine[0];
 }
 
 /**
@@ -129,14 +170,14 @@ export type SaveResult =
     | {ok: false; error: "name" | "duplicate" | "full"};
 
 /**
- * Adds an entry, or changes the one with the same `id` (renaming it onto the name of another entry is
- * refused: an account is in the book once).
+ * Adds an entry, or changes the one with the same `id` (moving it onto the account and asset of another entry is
+ * refused: an account is in the book once for each asset).
  */
 export function saveEntry(input: AddressInput): SaveResult {
     const entry = sanitize({...input, id: input.id || undefined});
     if (!entry) return {ok: false, error: "name"};
     const index = input.id ? entries.findIndex(e => e.id === input.id) : -1;
-    const clash = entries.find(e => e.name === entry.name);
+    const clash = entries.find(e => targetOf(e) === targetOf(entry));
     if (clash && (index < 0 || clash.id !== entries[index].id)) {
         return {ok: false, error: "duplicate"};
     }
@@ -152,7 +193,9 @@ export function saveEntry(input: AddressInput): SaveResult {
     emit();
     return {
         ok: true,
-        entry: entries.find(e => e.name === entry.name) as AddressEntry
+        entry: entries.find(
+            e => targetOf(e) === targetOf(entry)
+        ) as AddressEntry
     };
 }
 
@@ -169,11 +212,12 @@ export function exportAddressBook(list: AddressEntry[] = entries): string {
         {
             format: "address-book",
             version: 1,
-            entries: list.map(({name, label, note, memo}) => ({
+            entries: list.map(({name, label, note, memo, asset}) => ({
                 name,
                 label,
                 note,
-                memo
+                memo,
+                asset
             }))
         },
         null,
@@ -182,7 +226,7 @@ export function exportAddressBook(list: AddressEntry[] = entries): string {
 }
 
 /**
- * Adds the entries of an exported file; one for an account that is in the book already is left as it is.
+ * Adds the entries of an exported file; one for an account and asset that are in the book already is left as it is.
  * Returns how many were added and how many were skipped (not valid, already there, or no room).
  */
 export function importAddressBook(

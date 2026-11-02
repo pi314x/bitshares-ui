@@ -183,3 +183,14 @@
     color: var(--ink-2);
     font-size: 12px;
 }
+
+// the asset an entry is for (a withdrawal of it), beside its account
+.asset {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-size: 12px;
+}
