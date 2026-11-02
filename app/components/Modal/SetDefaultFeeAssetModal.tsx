@@ -48,6 +48,7 @@ import {ChainStore} from "bitsharesjs";
 import {Link} from "react-router-dom";
 import {Table} from "../../design-system/Table";
 import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
 import {Radio} from "../../design-system/Radio";
 import {Modal} from "../../design-system/Modal";
 import {Checkbox} from "../../design-system/Checkbox";
@@ -225,7 +226,7 @@ function SetDefaultFeeAssetModal({
     }
     const dataSource = getAssetsRows(assets);
     const footer = (
-        <div key="buttons" style={{position: "relative", left: "0px"}}>
+        <ButtonRow key="buttons" end>
             <Button key="cancel" onClick={close}>
                 <Translate component="span" content="transfer.cancel" />
             </Button>
@@ -240,7 +241,7 @@ function SetDefaultFeeAssetModal({
                     content="explorer.asset.fee_pool.use_selected_asset"
                 />
             </Button>
-        </div>
+        </ButtonRow>
     );
     return (
         <Modal

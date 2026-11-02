@@ -102,6 +102,7 @@ import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import {Table} from "../../design-system/Table";
 import {Button} from "../../design-system/Button";
+import {ButtonRow} from "../../design-system/ButtonRow";
 import {Modal} from "../../design-system/Modal";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Icon} from "../../design-system/Icon";
@@ -379,7 +380,7 @@ export default function GatewaySelectorModal(props: GatewaySelectorModalProps) {
     };
 
     const footer = !showIntroduction ? (
-        <div key="buttons" style={{position: "relative", left: "0px"}}>
+        <ButtonRow key="buttons" end>
             <Tooltip
                 title={counterpart.translate(
                     "external_service_provider.welcome.explanation_later"
@@ -404,9 +405,9 @@ export default function GatewaySelectorModal(props: GatewaySelectorModalProps) {
                     content="external_service_provider.selector.use_selected"
                 />
             </Button>
-        </div>
+        </ButtonRow>
     ) : (
-        <div key="buttons" style={{position: "relative", left: "0px"}}>
+        <ButtonRow key="buttons" end>
             <Button key="cancel" onClick={onClose}>
                 <Translate
                     component="span"
@@ -419,7 +420,7 @@ export default function GatewaySelectorModal(props: GatewaySelectorModalProps) {
                     content="external_service_provider.selector.choose_services"
                 />
             </Button>
-        </div>
+        </ButtonRow>
     );
 
     const rowSelection = {
