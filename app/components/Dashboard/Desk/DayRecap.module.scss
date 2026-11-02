@@ -34,3 +34,20 @@
     color: var(--muted);
     font-size: 13px;
 }
+
+// what was gained and what was lost
+.net {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.up {
+    color: var(--up);
+}
+
+.down {
+    color: var(--down);
+}

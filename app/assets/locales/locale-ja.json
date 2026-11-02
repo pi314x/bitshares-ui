@@ -4267,6 +4267,8 @@
         "pools": "プール：交換 %(swaps)s 件、流動性の変更 %(liquidity)s 件",
         "loans": "フラッシュローン：%(count)s 件",
         "fees": "支払ったネットワーク手数料：%(amounts)s",
-        "more": "ほか %(count)s 件"
+        "more": "ほか %(count)s 件",
+        "net": "増減したトークン：",
+        "net_none": "なし：すべてのトークンは元のままです"
     }
 }

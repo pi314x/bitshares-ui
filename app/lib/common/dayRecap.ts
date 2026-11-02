@@ -5,6 +5,7 @@
 //
 // Pure: the history, the times of its blocks and the clock are given.
 import {startedByAccount} from "./accountActivity";
+import {HistoryEntry, newOrderTracker, operationDelta} from "./balanceHistory";
 
 /** The window (24 hours). */
 export const DAY_SECONDS = 24 * 60 * 60;
@@ -25,6 +26,11 @@ export interface DayRecap {
     loans: number;
     /** the network fees of what the account started, by the asset they were paid in */
     fees: Totals;
+    /**
+     * What the account holds of each token now against 24 hours ago, in smallest units (a token that did not change
+     * is not in it). Transfers, fills, pool swaps, fees and refunds are all in it: what was gained or lost.
+     */
+    net: Totals;
     /** the history loaded reaches back past the start of the window (or holds all the account has) */
     covered: boolean;
 }
@@ -33,6 +39,8 @@ export interface RecapEntry {
     id: string;
     op: [number, any];
     block_num: number;
+    /** what the operation produced (the id of an order that was placed) */
+    result?: [number, any];
 }
 
 export interface RecapInput {
@@ -78,6 +86,7 @@ export function recapOf(input: RecapInput): DayRecap {
         pools: {swaps: 0, liquidity: 0},
         loans: 0,
         fees: emptyTotals(),
+        net: emptyTotals(),
         covered: input.complete
     };
     for (const entry of input.entries) {
@@ -134,7 +143,40 @@ export function recapOf(input: RecapInput): DayRecap {
             add(recap.fees, data.fee);
         }
     }
+    recap.net = netChange(input, since, recapAssets(recap));
     return recap;
+}
+
+/**
+ * The change of the balances (available and locked in orders) of `assets` since `since`: every operation of the loaded
+ * history is replayed oldest first, as the balance chart does, so that an order placed before the window and
+ * cancelled or expired in it is refunded as it was locked; only what happened since `since` is added up.
+ */
+export function netChange(
+    input: RecapInput,
+    since: number,
+    assets: string[]
+): Totals {
+    const net: Totals = new Map();
+    const chronological = input.entries.slice().reverse();
+    assets.forEach(assetId => {
+        const orders = newOrderTracker();
+        let total = BigInt(0);
+        for (const entry of chronological) {
+            const resolved = operationDelta(
+                entry as HistoryEntry,
+                input.accountId,
+                assetId,
+                orders
+            );
+            const time = input.times[entry.block_num];
+            if (time !== undefined && time >= since) {
+                total += resolved.delta + resolved.locked;
+            }
+        }
+        if (total !== BigInt(0)) net.set(assetId, total);
+    });
+    return net;
 }
 
 /** The asset ids a recap names, to be looked up before it is written out. */
@@ -145,7 +187,8 @@ export function recapAssets(recap: DayRecap): string[] {
         recap.transfersOut.total,
         recap.fills.sold,
         recap.fills.got,
-        recap.fees
+        recap.fees,
+        recap.net
     ].forEach(totals => totals.forEach((_amount, id) => ids.add(id)));
     return Array.from(ids);
 }

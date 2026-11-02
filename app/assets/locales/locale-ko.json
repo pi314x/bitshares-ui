@@ -4267,6 +4267,8 @@
         "pools": "풀: 교환 %(swaps)s건, 유동성 변경 %(liquidity)s건",
         "loans": "플래시 대출: %(count)s건",
         "fees": "지불한 네트워크 수수료: %(amounts)s",
-        "more": "외 %(count)s개"
+        "more": "외 %(count)s개",
+        "net": "얻거나 잃은 토큰:",
+        "net_none": "없음: 모든 토큰이 그대로입니다"
     }
 }

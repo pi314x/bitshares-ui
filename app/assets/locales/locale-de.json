@@ -4267,6 +4267,8 @@
         "pools": "Pools: %(swaps)s Tauschvorgänge, %(liquidity)s Liquiditätsänderungen",
         "loans": "Flash-Kredite: %(count)s",
         "fees": "Gezahlte Netzwerkgebühren: %(amounts)s",
-        "more": "und %(count)s weitere"
+        "more": "und %(count)s weitere",
+        "net": "Gewonnene oder verlorene Token:",
+        "net_none": "keine: jeder Token steht, wo er war"
     }
 }

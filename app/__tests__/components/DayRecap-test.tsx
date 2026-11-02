@@ -122,6 +122,11 @@ describe("the Last 24 hours card", () => {
         await settle();
         const text = container.textContent || "";
         expect(text).toContain("Operations: 5");
+        // what was gained and what was lost, with signs (the fill sold 10.00 USD for 2.50000 BTS, 50.00 EUR came in,
+        // and the network fees of what the account started went out)
+        expect(text).toContain("Tokens gained or lost:");
+        expect(text).toContain("+50.00 EUR");
+        expect(text).toContain("-10.00 USD");
         expect(text).toContain("Received: 1 transfers - 50.00 EUR");
         expect(text).toContain(
             "Order fills: 1 - sold 10.00 USD, got 2.50000 BTS"

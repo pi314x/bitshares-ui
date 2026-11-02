@@ -4267,6 +4267,8 @@
         "pools": "资金池：兑换 %(swaps)s 笔，流动性变动 %(liquidity)s 笔",
         "loans": "闪电贷：%(count)s 笔",
         "fees": "已付网络手续费：%(amounts)s",
-        "more": "以及另外 %(count)s 项"
+        "more": "以及另外 %(count)s 项",
+        "net": "获得或损失的代币：",
+        "net_none": "无：每种代币都没变"
     }
 }

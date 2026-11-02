@@ -4267,6 +4267,8 @@
         "pools": "Havuzlar: %(swaps)s takas, %(liquidity)s likidite değişikliği",
         "loans": "Flaş krediler: %(count)s",
         "fees": "Ödenen ağ ücretleri: %(amounts)s",
-        "more": "ve %(count)s tane daha"
+        "more": "ve %(count)s tane daha",
+        "net": "Kazanılan veya kaybedilen tokenlar:",
+        "net_none": "yok: her token olduğu yerde"
     }
 }

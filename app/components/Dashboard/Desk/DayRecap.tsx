@@ -21,6 +21,17 @@ const t = (key: string, params?: Record<string, any>) =>
 
 /** How many assets a line names before "and N more". */
 const SHOWN = 3;
+/** How many tokens the gained-or-lost line names. */
+const SHOWN_NET = 6;
+
+/** The size of a change in whole units of its token (to put the largest first). */
+const whole = (
+    [id, units]: [string, bigint],
+    assetOf: (id: string) => {precision: number} | null
+): number => {
+    const info = assetOf(id);
+    return Math.abs(Number(units)) / Math.pow(10, info ? info.precision : 0);
+};
 
 const OP_NAMES: {[code: number]: string} = {};
 function opName(code: number): string | undefined {
@@ -108,6 +119,10 @@ export default function DayRecap({
         return more > 0 ? `${text} ${t("more", {count: more})}` : text;
     };
 
+    // what was gained (green) and what was lost (red), the largest first
+    const gains = Array.from(recap.net.entries()).sort(
+        (a, b) => whole(b, assetOf) - whole(a, assetOf)
+    );
     const lines: string[] = [];
     if (recap.transfersIn.count) {
         lines.push(
@@ -162,6 +177,40 @@ export default function DayRecap({
                 <>
                     <p className={styles.count}>
                         {t("operations", {count: recap.operations})}
+                    </p>
+                    <p className={styles.net}>
+                        {t("net")}{" "}
+                        {gains.length ? (
+                            gains.slice(0, SHOWN_NET).map(([id, units], i) => (
+                                <span key={id}>
+                                    {i > 0 ? ", " : ""}
+                                    <span
+                                        className={
+                                            units > BigInt(0)
+                                                ? styles.up
+                                                : styles.down
+                                        }
+                                    >
+                                        {units > BigInt(0) ? "+" : ""}
+                                        {formatAssetAmount(
+                                            {
+                                                amount: units.toString(),
+                                                asset_id: id
+                                            },
+                                            assetOf(id)
+                                        )}
+                                    </span>
+                                </span>
+                            ))
+                        ) : (
+                            <span>{t("net_none")}</span>
+                        )}
+                        {gains.length > SHOWN_NET ? (
+                            <span className={styles.note}>
+                                {" "}
+                                {t("more", {count: gains.length - SHOWN_NET})}
+                            </span>
+                        ) : null}
                     </p>
                     {lines.length ? (
                         <ul className={styles.lines}>

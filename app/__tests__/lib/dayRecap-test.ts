@@ -204,4 +204,73 @@ describe("what happened in the last 24 hours", () => {
         });
         expect(largest(new Map(), 3)).toEqual({shown: [], more: 0});
     });
+
+    it("adds up what was gained and lost of each token: transfers, fills, fees, and an order placed before the window and cancelled in it", () => {
+        const placed = {
+            id: "1.11.1",
+            block_num: 90,
+            // placed a day and an hour ago: 100 AAA locked in order 1.7.1
+            op: [
+                1,
+                {
+                    seller: ME,
+                    amount_to_sell: amount(100, "1.3.5"),
+                    min_to_receive: amount(1),
+                    fee: fee(10)
+                }
+            ] as [number, any],
+            result: [1, "1.7.1"] as [number, any]
+        };
+        const entries = [
+            entry(6, 100, 0, {
+                from: "1.2.99",
+                to: ME,
+                amount: amount(500, "1.3.5"),
+                fee: fee()
+            }),
+            entry(5, 100, 2, {
+                fee_paying_account: ME,
+                order: "1.7.1",
+                fee: fee(0)
+            }),
+            entry(4, 99, 4, {
+                account_id: ME,
+                order_id: "1.7.2",
+                pays: amount(40, "1.3.5"),
+                receives: amount(300)
+            }),
+            entry(3, 99, 0, {
+                from: ME,
+                to: "1.2.98",
+                amount: amount(50),
+                fee: fee(7)
+            }),
+            placed
+        ];
+        const recap = run(entries);
+        // 1.3.5: +500 received, -40 sold in the fill; the cancelled order gave its 100 back, which is not a gain
+        // (they were the account's already, locked in the order before the window)
+        expect(recap.net.get("1.3.5") === BigInt(500 - 40)).toBe(true);
+        // 1.3.0: +300 from the fill, -50 sent, -7 fee of the transfer; the order placed before the window cost nothing in it
+        expect(recap.net.get("1.3.0") === BigInt(300 - 50 - 7)).toBe(true);
+    });
+
+    it("leaves out a token that did not change, and has none when nothing was done", () => {
+        const back = run([
+            entry(2, 100, 0, {
+                from: ME,
+                to: "1.2.99",
+                amount: amount(5),
+                fee: fee(0)
+            }),
+            entry(1, 99, 0, {
+                from: "1.2.99",
+                to: ME,
+                amount: amount(5),
+                fee: fee(0)
+            })
+        ]);
+        expect(back.net.has("1.3.0")).toBe(false);
+        expect(run([]).net.size).toBe(0);
+    });
 });

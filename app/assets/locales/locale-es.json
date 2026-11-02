@@ -4267,6 +4267,8 @@
         "pools": "Pools: %(swaps)s intercambios, %(liquidity)s cambios de liquidez",
         "loans": "Préstamos relámpago: %(count)s",
         "fees": "Comisiones de red pagadas: %(amounts)s",
-        "more": "y %(count)s más"
+        "more": "y %(count)s más",
+        "net": "Tokens ganados o perdidos:",
+        "net_none": "ninguno: cada token está donde estaba"
     }
 }

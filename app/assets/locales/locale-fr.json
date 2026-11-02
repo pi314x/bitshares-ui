@@ -4267,6 +4267,8 @@
         "pools": "Pools : %(swaps)s échanges, %(liquidity)s changements de liquidité",
         "loans": "Prêts flash : %(count)s",
         "fees": "Frais de réseau payés : %(amounts)s",
-        "more": "et %(count)s de plus"
+        "more": "et %(count)s de plus",
+        "net": "Jetons gagnés ou perdus :",
+        "net_none": "aucun : chaque jeton est où il était"
     }
 }

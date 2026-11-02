@@ -4267,6 +4267,8 @@
         "pools": "Pools: %(swaps)s swaps, %(liquidity)s liquidity changes",
         "loans": "Flash loans: %(count)s",
         "fees": "Network fees paid: %(amounts)s",
-        "more": "and %(count)s more"
+        "more": "and %(count)s more",
+        "net": "Tokens gained or lost:",
+        "net_none": "none: every token is where it was"
     }
 }
