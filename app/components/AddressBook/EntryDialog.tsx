@@ -77,9 +77,12 @@ export default function EntryDialog({
             }
         >
             <div className={styles.form}>
-                <label className={styles.field}>
-                    <span className={styles.label}>{t("name")}</span>
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-name">
+                        {t("name")}
+                    </label>
                     <Input
+                        id="address-name"
                         value={name}
                         autoComplete="off"
                         spellCheck={false}
@@ -90,29 +93,38 @@ export default function EntryDialog({
                         }}
                     />
                     <span className={styles.help}>{t("name_help")}</span>
-                </label>
-                <label className={styles.field}>
-                    <span className={styles.label}>{t("label")}</span>
+                </div>
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-label">
+                        {t("label")}
+                    </label>
                     <Input
+                        id="address-label"
                         value={label}
                         maxLength={MAX_LABEL}
                         aria-label={t("label")}
                         onChange={(e: any) => setLabel(e.target.value)}
                     />
-                </label>
-                <label className={styles.field}>
-                    <span className={styles.label}>{t("note")}</span>
+                </div>
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-note">
+                        {t("note")}
+                    </label>
                     <Input.TextArea
+                        id="address-note"
                         rows={3}
                         value={note}
                         maxLength={MAX_NOTE}
                         aria-label={t("note")}
                         onChange={(e: any) => setNote(e.target.value)}
                     />
-                </label>
-                <label className={styles.field}>
-                    <span className={styles.label}>{t("memo")}</span>
+                </div>
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="address-memo">
+                        {t("memo")}
+                    </label>
                     <Input
+                        id="address-memo"
                         value={memo}
                         maxLength={MAX_MEMO}
                         autoComplete="off"
@@ -120,7 +132,7 @@ export default function EntryDialog({
                         onChange={(e: any) => setMemo(e.target.value)}
                     />
                     <span className={styles.help}>{t("memo_help")}</span>
-                </label>
+                </div>
                 {error ? (
                     <p className={styles.error} role="alert">
                         {error}
