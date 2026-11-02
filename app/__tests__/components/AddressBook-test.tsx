@@ -13,6 +13,13 @@ jest.mock("../../design-system/Notification", () => ({
 }));
 
 import {Notification} from "../../design-system/Notification";
+jest.mock("../../components/AddressBook/HeldBalance", () => ({
+    __esModule: true,
+    default: ({symbol}: {symbol: string}) => (
+        <span data-testid="held">{symbol}</span>
+    )
+}));
+
 import AddressBookPage, {
     matches
 } from "../../components/AddressBook/AddressBookPage";
@@ -459,6 +466,26 @@ describe("the asset on the address book page", () => {
         fireEvent.click(button("Save"));
         expect(getAddressBook()).toHaveLength(2);
         expect(findEntry("xbts-hive", undefined, "XBTSX.BTC")).toBeDefined();
+    });
+
+    it("shows what the account holds of the asset only on a card that is for one", () => {
+        saveEntry({name: "xbts-hive", asset: "XBTSX.HIVE"});
+        saveEntry({name: "friend", label: "Friend"});
+        const {container} = page();
+        const cards = Array.from(container.querySelectorAll("li"));
+        expect(cards).toHaveLength(2);
+        const held = (card: Element) =>
+            Array.from(card.querySelectorAll('[data-testid="held"]')).map(
+                e => e.textContent
+            );
+        const withAsset = cards.find(card =>
+            (card.textContent || "").includes("xbts-hive")
+        ) as Element;
+        const without = cards.find(card =>
+            (card.textContent || "").includes("Friend")
+        ) as Element;
+        expect(held(withAsset)).toEqual(["XBTSX.HIVE"]);
+        expect(held(without)).toEqual([]);
     });
 
     it("sends to an entry with its asset: the Send page opens with the recipient and the asset", () => {

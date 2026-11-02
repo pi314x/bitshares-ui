@@ -4265,7 +4265,8 @@
         "in_book": "En la libreta de direcciones",
         "asset": "Activo",
         "asset_help": "Opcional. El activo al que corresponde: un retiro de él va a esta cuenta con este memo (la dirección de una pasarela para ese activo). Vacío: cualquier activo.",
-        "error_asset": "Eso no es un símbolo de activo (mayúsculas, dígitos y puntos, de 3 a 16 caracteres)."
+        "error_asset": "Eso no es un símbolo de activo (mayúsculas, dígitos y puntos, de 3 a 16 caracteres).",
+        "balance": "Saldo"
     },
     "day_recap": {
         "title": "Últimas 24 horas",

@@ -4265,7 +4265,8 @@
         "in_book": "Adres defterinde",
         "asset": "Varlık",
         "asset_help": "İsteğe bağlı. Bunun ait olduğu varlık: o varlığın çekimi bu hesaba bu notla gider (o varlık için bir geçidin adresi). Boş: her varlık.",
-        "error_asset": "Bu bir varlık sembolü değil (büyük harfler, rakamlar ve noktalar, 3 ila 16 karakter)."
+        "error_asset": "Bu bir varlık sembolü değil (büyük harfler, rakamlar ve noktalar, 3 ila 16 karakter).",
+        "balance": "Bakiye"
     },
     "day_recap": {
         "title": "Son 24 saat",

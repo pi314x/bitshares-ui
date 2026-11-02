@@ -4265,7 +4265,8 @@
         "in_book": "Im Adressbuch",
         "asset": "Asset",
         "asset_help": "Optional. Das Asset, für das dies gilt: Eine Auszahlung davon geht mit diesem Memo an dieses Konto (die Adresse eines Gateways für dieses Asset). Leer: jedes Asset.",
-        "error_asset": "Das ist kein Asset-Symbol (Großbuchstaben, Ziffern und Punkte, 3 bis 16 Zeichen)."
+        "error_asset": "Das ist kein Asset-Symbol (Großbuchstaben, Ziffern und Punkte, 3 bis 16 Zeichen).",
+        "balance": "Guthaben"
     },
     "day_recap": {
         "title": "Letzte 24 Stunden",

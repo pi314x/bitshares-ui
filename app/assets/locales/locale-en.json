@@ -4265,7 +4265,8 @@
         "in_book": "In the address book",
         "asset": "Asset",
         "asset_help": "Optional. The asset this is for: a withdrawal of it goes to this account with this memo (a gateway's address for that asset). Empty: any asset.",
-        "error_asset": "That is not an asset symbol (upper case letters, digits and dots, 3 to 16 characters)."
+        "error_asset": "That is not an asset symbol (upper case letters, digits and dots, 3 to 16 characters).",
+        "balance": "Balance"
     },
     "day_recap": {
         "title": "Last 24 hours",

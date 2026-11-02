@@ -14012,7 +14012,10 @@ for that asset (else the one for any) is the one whose memo is filled in, the me
 (only while the box still holds what an entry put there: a typed memo is never replaced), the list names the asset, a
 picked entry for one asset switches the dialog to it when the account holds it, and "Save this recipient" saves for the
 asset being sent. "Send" on the book page opens the Send page with `{toName, asset}`; the page finds the asset by its symbol
-once the chain store has it and tells the dialog.
+once the chain store has it and tells the dialog. On the book page a card for an asset also shows what the logged-in account holds of it
+("Balance 0.644205 XBTSX.USDT", `HeldBalance.tsx`; the user: "In the address Book Show also the Balance of the Asset"), read from the chain store's balance
+objects like the Dashboard's holdings: zero where the account holds none, nothing until the account, the asset and its balance objects are loaded, and nothing
+without an account or on a card that is for any asset.
 
 *Recent activity: more operations, and a search* (Dashboard card, 2026-11-02; the user: "Show more than 100 operations in Dashboard. So many as the
 node can offer", "Search in recent activities while Typing", "Max 100 per Page", then "Load First 100 operations and the rest only when you step forward").
