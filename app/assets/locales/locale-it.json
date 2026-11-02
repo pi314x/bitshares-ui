@@ -777,7 +777,9 @@
         "card_recap": "Ultime 24 ore",
         "pool_share_tag": "Quota di pool",
         "pool_share_hint": "Una quota di un pool di liquidità: il suo valore è quello del pool, contato in Pool, non nel wallet.",
-        "assets_loading": "Altri %(count)s token del wallet sono ancora in lettura e verranno elencati a breve."
+        "assets_loading": "Altri %(count)s token del wallet sono ancora in lettura e verranno elencati a breve.",
+        "show_no_value": "Mostra %(count)s senza valore",
+        "hide_no_value": "Nascondi quelli senza valore"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

@@ -777,7 +777,9 @@
         "card_recap": "Dernières 24 heures",
         "pool_share_tag": "Part de pool",
         "pool_share_hint": "Une part d'un pool de liquidité : sa valeur est celle du pool, comptée dans Pools, pas dans le portefeuille.",
-        "assets_loading": "%(count)s autres jetons du portefeuille sont encore en cours de lecture et seront listés dans un instant."
+        "assets_loading": "%(count)s autres jetons du portefeuille sont encore en cours de lecture et seront listés dans un instant.",
+        "show_no_value": "Afficher %(count)s sans valeur",
+        "hide_no_value": "Masquer ceux sans valeur"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

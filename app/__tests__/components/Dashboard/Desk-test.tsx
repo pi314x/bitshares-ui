@@ -107,6 +107,8 @@ describe("Desk", () => {
         const {getByText, getAllByText} = renderDesk();
         expect(getByText("Total value")).toBeTruthy();
         expect(getByText("1,234.50")).toBeTruthy();
+        // what has no value in the unit is behind a link, with its no-price mark once it is asked for
+        fireEvent.click(getByText("Show 1 without a value"));
         expect(getByText("JUNK")).toBeTruthy();
         expect(getAllByText("no price").length).toBe(1);
         expect(getByText("2 open orders")).toBeTruthy();
@@ -148,6 +150,88 @@ describe("Desk", () => {
         mockData = data({assetsLoading: 0});
         const second = renderDesk();
         expect(second.container.textContent).not.toContain("still being read");
+    });
+
+    describe("the holdings without a value", () => {
+        const holding = (symbol: string, value: number | null) => ({
+            assetId: `symbol-${symbol}`,
+            symbol,
+            precision: 4,
+            units: 1000,
+            value,
+            amount: 0.1,
+            share: null
+        });
+        // the symbol is the link in the first cell (the logo's letter is text there too)
+        const rowsOf = (container: HTMLElement) =>
+            Array.from(container.querySelectorAll("tbody tr")).map(
+                row => (row.querySelector("a") as HTMLElement).textContent
+            );
+
+        it("lists the tokens worth something in the unit and puts the rest behind a link", () => {
+            mockData = data({
+                holdings: [
+                    holding("BTS", 1000),
+                    holding("SMALL", 12.5),
+                    // 0.004 shows as 0.00 in BTS: not worth a row either
+                    holding("DUST", 0.004),
+                    holding("NOPRICE", null)
+                ]
+            });
+            const {container, getByText, queryByText} = renderDesk();
+            expect(rowsOf(container)).toEqual(["BTS", "SMALL"]);
+            fireEvent.click(getByText("Show 2 without a value"));
+            expect(rowsOf(container)).toEqual([
+                "BTS",
+                "SMALL",
+                "DUST",
+                "NOPRICE"
+            ]);
+            fireEvent.click(getByText("Hide those without a value"));
+            expect(rowsOf(container)).toEqual(["BTS", "SMALL"]);
+            expect(queryByText("Show all (2)")).toBeNull();
+        });
+
+        it("counts the rows to show with a value only, and shows everything once the link is used", () => {
+            mockData = data({
+                holdings: [
+                    ...Array.from({length: 10}, (_, i) =>
+                        holding(`COIN${i}`, 100 - i)
+                    ),
+                    holding("NOPRICE", null)
+                ]
+            });
+            const {container, getByText} = renderDesk();
+            expect(rowsOf(container)).toHaveLength(8);
+            expect(getByText("Show all (10)")).toBeTruthy();
+            fireEvent.click(getByText("Show 1 without a value"));
+            expect(rowsOf(container)).toHaveLength(11);
+        });
+
+        it("still lists what is held when nothing in the wallet has a value yet", () => {
+            mockData = data({
+                holdings: [holding("AAA", null), holding("BBB", null)]
+            });
+            const {container, queryByText} = renderDesk();
+            expect(rowsOf(container)).toEqual(["AAA", "BBB"]);
+            expect(queryByText(/without a value/)).toBeNull();
+        });
+
+        it("finds a token without a value with the filter", () => {
+            mockData = data({
+                holdings: [
+                    ...Array.from({length: 6}, (_, i) =>
+                        holding(`COIN${i}`, 100 - i)
+                    ),
+                    holding("NOPRICE", null)
+                ]
+            });
+            const {container, getByPlaceholderText} = renderDesk();
+            fireEvent.change(getByPlaceholderText("Filter assets"), {
+                target: {value: "nopr"}
+            });
+            expect(rowsOf(container)).toEqual(["NOPRICE"]);
+        });
     });
 
     describe("the holdings filter", () => {

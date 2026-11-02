@@ -62,6 +62,13 @@ function valueDigits(symbol: string | null | undefined): number {
     return symbol && symbol.indexOf("BTC") !== -1 ? 6 : 2;
 }
 
+/** Whether a holding is worth something in the unit, as the card shows it (not 0.00, not without a price). */
+function hasValue(row: HoldingRow, digits: number): boolean {
+    return (
+        row.value !== null && Math.round(row.value * Math.pow(10, digits)) > 0
+    );
+}
+
 /** An amount of an asset: enough digits to read it, not all 8. */
 function amountDigits(amount: number): number {
     const abs = Math.abs(amount);
@@ -344,15 +351,27 @@ function Holdings({
     coreSymbol: string;
 }): JSX.Element {
     const [all, setAll] = React.useState(false);
+    const [noValue, setNoValue] = React.useState(false);
     const [filter, setFilter] = React.useState("");
     const query = filter.trim().toLowerCase();
-    // a filter looks through all of them, not just the first rows
+    const digits = valueDigits(data.unit && data.unit.symbol);
+    // the card is about what the wallet is worth in the unit (BTS, or the one chosen): the tokens that show 0.00
+    // or have no price are behind a link, not among the rows (the list is sorted by value, they are its tail)
+    const valued: HoldingRow[] = data.holdings.filter(row =>
+        hasValue(row, digits)
+    );
+    const unvalued: HoldingRow[] = data.holdings.filter(
+        row => !hasValue(row, digits)
+    );
+    // a wallet in which nothing has a value yet still lists what it holds
+    const listed: HoldingRow[] =
+        noValue || !valued.length ? data.holdings : valued;
+    // a filter looks through all of them, also the ones without a value, not just the first rows
     const matching: HoldingRow[] = query
         ? data.holdings.filter(row => row.symbol.toLowerCase().includes(query))
-        : data.holdings;
+        : listed;
     const rows: HoldingRow[] =
-        all || query ? matching : data.holdings.slice(0, SHOWN_ROWS);
-    const digits = valueDigits(data.unit && data.unit.symbol);
+        all || query || noValue ? matching : listed.slice(0, SHOWN_ROWS);
 
     if (!data.holdings.length) {
         if (data.loading) {
@@ -474,17 +493,30 @@ function Holdings({
                     {t("no_match", {filter: filter.trim()})}
                 </div>
             ) : null}
-            {data.holdings.length > SHOWN_ROWS && !query ? (
+            {!query && (listed.length > SHOWN_ROWS || unvalued.length) ? (
                 <div className={styles.more}>
-                    <button
-                        type="button"
-                        className={styles.linkBtn}
-                        onClick={() => setAll(a => !a)}
-                    >
-                        {all
-                            ? t("show_less")
-                            : t("show_all", {count: data.holdings.length})}
-                    </button>
+                    {listed.length > SHOWN_ROWS && !noValue ? (
+                        <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={() => setAll(a => !a)}
+                        >
+                            {all
+                                ? t("show_less")
+                                : t("show_all", {count: listed.length})}
+                        </button>
+                    ) : null}
+                    {valued.length && unvalued.length ? (
+                        <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={() => setNoValue(v => !v)}
+                        >
+                            {noValue
+                                ? t("hide_no_value")
+                                : t("show_no_value", {count: unvalued.length})}
+                        </button>
+                    ) : null}
                 </div>
             ) : null}
         </>

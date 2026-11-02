@@ -777,7 +777,9 @@
         "card_recap": "Son 24 saat",
         "pool_share_tag": "Havuz payı",
         "pool_share_hint": "Bir likidite havuzunun payı: değeri havuzunkidir, cüzdanda değil Havuzlar'da sayılır.",
-        "assets_loading": "Cüzdandaki %(count)s token daha hâlâ okunuyor ve birazdan listelenecek."
+        "assets_loading": "Cüzdandaki %(count)s token daha hâlâ okunuyor ve birazdan listelenecek.",
+        "show_no_value": "Değeri olmayan %(count)s tanesini göster",
+        "hide_no_value": "Değeri olmayanları gizle"
     },
     "errors": {
         "loading_from_blockchain": "Blok zincirinden alınırken hata oluştu, lütfen tekrar deneyin.",
