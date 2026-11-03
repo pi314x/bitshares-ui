@@ -15,8 +15,17 @@ import {useReduxState} from "../../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../../store/slices/settingsSlice";
 import {RecentTransactions} from "../../Account/RecentTransactions";
 import {CurrentAccountBalanceChart} from "../../Account/BalanceHistoryChart";
-import {AttentionItem, HoldingRow} from "../../../lib/common/desk";
-import {DeskData, DeskPosition, useDeskData} from "./useDeskData";
+import {
+    AttentionItem,
+    HoldingRow,
+    settlementTotals
+} from "../../../lib/common/desk";
+import {
+    DeskData,
+    DeskPosition,
+    DeskSettlement,
+    useDeskData
+} from "./useDeskData";
 import AssetLogo from "../../Utility/AssetLogo";
 import AllocationChart from "./AllocationChart";
 import DayRecap from "./DayRecap";
@@ -896,6 +905,13 @@ function Positions({
                         )}
                     </div>
                 )}
+                {data.settlements.items.length > 1 ? (
+                    <SettlementsTotal
+                        items={data.settlements.items}
+                        unit={unit}
+                        digits={digits}
+                    />
+                ) : null}
                 {data.settlements.items.length > SETTLEMENTS_SHOWN ? (
                     <div className={styles.muted}>
                         <button
@@ -913,6 +929,42 @@ function Positions({
                 ) : null}
             </div>
         </>
+    );
+}
+
+/**
+ * What all the settlement requests add up to - not only the five listed: the worth in the unit, and the smart
+ * coins themselves, a sum for each asset where they differ.
+ */
+function SettlementsTotal({
+    items,
+    unit,
+    digits
+}: {
+    items: DeskSettlement[];
+    unit: string;
+    digits: number;
+}) {
+    const totals = settlementTotals(items);
+    return (
+        <div className={`${styles.row} ${styles.totalRow}`}>
+            <span>{t("settlements_total")}</span>
+            <span className={styles.num}>
+                {totals.assets
+                    .map(a => `${fmt(a.amount, a.precision)} ${a.symbol}`)
+                    .join(" · ")}
+            </span>
+            <span className={styles.rowSub}>
+                {totals.value !== null
+                    ? `≈ ${fmt(totals.value, digits)} ${unit}`
+                    : t("no_price")}
+                {totals.unpriced && totals.value !== null
+                    ? ` · ${t("settlements_unpriced", {
+                          count: totals.unpriced
+                      })}`
+                    : ""}
+            </span>
+        </div>
     );
 }
 

@@ -3,6 +3,7 @@ import {
     positionRisk,
     orderSummary,
     settlementSummary,
+    settlementTotals,
     expiryMs,
     attentionItems,
     PositionInput
@@ -293,5 +294,83 @@ describe("attentionItems", () => {
                 blockAgeSeconds: 3
             })
         ).toEqual([]);
+    });
+});
+
+describe("settlementTotals", () => {
+    const req = (
+        assetId: string,
+        symbol: string,
+        amount: number,
+        value: number | null,
+        precision = 4
+    ) => ({
+        assetId,
+        symbol,
+        precision,
+        amount,
+        value
+    });
+
+    it("adds the worth in the unit, and the amounts of one asset into one sum", () => {
+        const t = settlementTotals([
+            req("1.3.5", "USD", 2.5, 500),
+            req("1.3.5", "USD", 1.25, 250.5)
+        ]);
+        expect(t.value).toBe(750.5);
+        expect(t.unpriced).toBe(0);
+        expect(t.assets).toEqual([
+            {assetId: "1.3.5", symbol: "USD", precision: 4, amount: 3.75}
+        ]);
+    });
+
+    it("keeps different assets apart: a sum for each, by symbol", () => {
+        const t = settlementTotals([
+            req("1.3.7", "EUR", 5, 600),
+            req("1.3.5", "USD", 2, 400),
+            req("1.3.7", "EUR", 1, 120),
+            req("1.3.9", "CNY", 10, 200, 2)
+        ]);
+        expect(t.assets.map(a => [a.symbol, a.amount])).toEqual([
+            ["CNY", 10],
+            ["EUR", 6],
+            ["USD", 2]
+        ]);
+        expect(t.value).toBe(1320);
+    });
+
+    it("sums in whole units of the asset, so that 0.1 + 0.2 is 0.3", () => {
+        const t = settlementTotals([
+            req("1.3.5", "USD", 0.1, 1, 1),
+            req("1.3.5", "USD", 0.2, 1, 1)
+        ]);
+        expect(t.assets[0].amount).toBe(0.3);
+        const small = settlementTotals(
+            Array.from({length: 10}, () => req("1.3.5", "USD", 0.1, 1, 8))
+        );
+        expect(small.assets[0].amount).toBe(1);
+    });
+
+    it("leaves a request without a price out of the worth, and counts it", () => {
+        const t = settlementTotals([
+            req("1.3.5", "USD", 2, 400),
+            req("1.3.7", "EUR", 5, null)
+        ]);
+        expect(t.value).toBe(400);
+        expect(t.unpriced).toBe(1);
+        // its amount is still in what was handed in
+        expect(t.assets.map(a => a.symbol)).toEqual(["EUR", "USD"]);
+    });
+
+    it("has no worth when no request has a price, and nothing for none", () => {
+        expect(settlementTotals([req("1.3.5", "USD", 2, null)])).toMatchObject({
+            value: null,
+            unpriced: 1
+        });
+        expect(settlementTotals([])).toEqual({
+            value: null,
+            unpriced: 0,
+            assets: []
+        });
     });
 });

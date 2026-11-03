@@ -782,7 +782,9 @@
         "hide_no_value": "隐藏无价值的",
         "show_emptied": "显示 %(count)s 个余额为零的",
         "hide_emptied": "隐藏余额为零的",
-        "activity_search": "搜索动态：资产、账户、金额、操作类型"
+        "activity_search": "搜索动态：资产、账户、金额、操作类型",
+        "settlements_total": "合计",
+        "settlements_unpriced": "%(count)s 个没有价格"
     },
     "errors": {
         "loading_from_blockchain": "正在从区块链中抓取错误，请重试。",

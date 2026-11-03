@@ -12882,7 +12882,12 @@ market tabs. It is now what a trading desk's home needs:
   ratio and distance to the call, and the account's **settlements**: its
   force-settlement requests, soonest first, each with the amount, what it is
   worth in the unit and when it settles; five shown, "+N more" and "Open" lead
-  to the Portfolio's open-orders tab, which lists them all). A request holds a
+  to the Portfolio's open-orders tab, which lists them all). With two or more
+  a **Total** row adds up all of them, not only the five listed: their worth
+  in the unit, and the smart coins themselves, one sum for each asset (3 USD
+  and 5 EUR are two sums, not one; summed in whole units of the asset, so
+  that 0.1 + 0.2 is 0.3); a request with no price is left out of the worth
+  and counted ("1 without a price"). A request holds a
   smart coin that has left the wallet, so it is counted in the total (and in
   the allocation "where it sits") until it is paid out; one with no price makes
   the total incomplete, like an order does. Cards can be hidden; the choice

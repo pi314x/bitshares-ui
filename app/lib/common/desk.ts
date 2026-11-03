@@ -285,6 +285,67 @@ export function settlementSummary(
     return {count: settlements.length, nextMs};
 }
 
+/** What the requests add up to: their worth in the unit, and what was handed in, a sum for each asset. */
+export interface SettlementTotals {
+    /** the sum of the values in the unit (human); null when no request has a price */
+    value: number | null;
+    /** how many requests have no price: their worth is not in `value` */
+    unpriced: number;
+    /** the amounts handed in, summed for each asset (human), by symbol */
+    assets: Array<{
+        assetId: string;
+        symbol: string;
+        precision: number;
+        amount: number;
+    }>;
+}
+
+/**
+ * The sum of the settlement requests: in the unit, and in the smart coins themselves - grouped, one sum for
+ * each asset, because 3 USD and 5 EUR are not 8 of anything. Amounts are summed in whole units of the asset,
+ * not as decimals, so that 0.1 + 0.2 is 0.3.
+ */
+export function settlementTotals(
+    items: Array<{
+        assetId: string;
+        symbol: string;
+        precision: number;
+        amount: number;
+        value: number | null;
+    }>
+): SettlementTotals {
+    let value: number | null = null;
+    let unpriced = 0;
+    const byAsset = new Map<
+        string,
+        {symbol: string; precision: number; units: number}
+    >();
+    items.forEach(item => {
+        if (item.value === null || !Number.isFinite(item.value)) unpriced++;
+        else value = (value === null ? 0 : value) + item.value;
+        const units = Math.round(item.amount * Math.pow(10, item.precision));
+        const have = byAsset.get(item.assetId);
+        if (have) have.units += units;
+        else
+            byAsset.set(item.assetId, {
+                symbol: item.symbol,
+                precision: item.precision,
+                units
+            });
+    });
+    const assets = Array.from(byAsset.entries())
+        .map(([assetId, a]) => ({
+            assetId,
+            symbol: a.symbol,
+            precision: a.precision,
+            amount: a.units / Math.pow(10, a.precision)
+        }))
+        .sort((a, b) =>
+            a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0
+        );
+    return {value, unpriced, assets};
+}
+
 // ---------------------------------------------------------------- attention
 
 export type AttentionLevel = "danger" | "warn" | "info";

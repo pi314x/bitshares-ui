@@ -782,7 +782,9 @@
         "hide_no_value": "Masquer ceux sans valeur",
         "show_emptied": "Afficher %(count)s avec un solde nul",
         "hide_emptied": "Masquer ceux avec un solde nul",
-        "activity_search": "Rechercher dans l'activité : un actif, un compte, un montant, un type d'opération"
+        "activity_search": "Rechercher dans l'activité : un actif, un compte, un montant, un type d'opération",
+        "settlements_total": "Total",
+        "settlements_unpriced": "%(count)s sans prix"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

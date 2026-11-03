@@ -782,7 +782,9 @@
         "hide_no_value": "Die ohne Wert ausblenden",
         "show_emptied": "%(count)s mit Guthaben null anzeigen",
         "hide_emptied": "Die mit Guthaben null ausblenden",
-        "activity_search": "Aktivität durchsuchen: ein Asset, ein Konto, ein Betrag, eine Art von Operation"
+        "activity_search": "Aktivität durchsuchen: ein Asset, ein Konto, ein Betrag, eine Art von Operation",
+        "settlements_total": "Summe",
+        "settlements_unpriced": "%(count)s ohne Preis"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

@@ -782,7 +782,9 @@
         "hide_no_value": "Ocultar los que no tienen valor",
         "show_emptied": "Mostrar %(count)s con saldo cero",
         "hide_emptied": "Ocultar los de saldo cero",
-        "activity_search": "Buscar en la actividad: un activo, una cuenta, una cantidad, un tipo de operación"
+        "activity_search": "Buscar en la actividad: un activo, una cuenta, una cantidad, un tipo de operación",
+        "settlements_total": "Total",
+        "settlements_unpriced": "%(count)s sin precio"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

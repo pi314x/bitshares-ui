@@ -407,6 +407,71 @@ describe("Desk", () => {
             expect(row.textContent).not.toContain("settles ");
         });
 
+        it("adds the requests up: the worth in the unit, and the smart coins, one sum for each asset", () => {
+            mockData = data({
+                settlements: settled([
+                    item(1, {amount: 2.5, value: 500}),
+                    item(2, {
+                        assetId: "1.3.7",
+                        symbol: "EUR",
+                        amount: 4,
+                        value: 800
+                    }),
+                    item(3, {amount: 1.5, value: 300})
+                ])
+            });
+            const {getByText} = renderDesk();
+            const row = getByText("Total").parentElement as HTMLElement;
+            // 2.5 + 1.5 USD, and the EUR apart (not 8 of anything)
+            expect(row.textContent).toContain("4.0000 USD");
+            expect(row.textContent).toContain("4.0000 EUR");
+            expect(row.textContent).toContain("≈ 1,600.00 BTS");
+            expect(row.textContent).not.toContain("without a price");
+        });
+
+        it("adds up all of them, not only the five listed", () => {
+            mockData = data({
+                settlements: settled(
+                    Array.from({length: 7}, (_, i) => item(i + 1))
+                )
+            });
+            const {getByText} = renderDesk();
+            const row = getByText("Total").parentElement as HTMLElement;
+            // 7 requests of 500 BTS: 3,500; the five listed would be 2,500
+            expect(row.textContent).toContain("≈ 3,500.00 BTS");
+        });
+
+        it("says how many have no price, and has no worth where none has", () => {
+            mockData = data({
+                settlements: settled([
+                    item(1, {value: 500}),
+                    item(2, {value: null})
+                ])
+            });
+            const some = renderDesk();
+            expect(
+                (some.getByText("Total").parentElement as HTMLElement)
+                    .textContent
+            ).toContain("≈ 500.00 BTS · 1 without a price");
+            some.unmount();
+            mockData = data({
+                settlements: settled([
+                    item(1, {value: null}),
+                    item(2, {value: null})
+                ])
+            });
+            const none = renderDesk();
+            const row = none.getByText("Total").parentElement as HTMLElement;
+            expect(row.textContent).toContain("no price");
+            expect(row.textContent).not.toContain("≈");
+        });
+
+        it("has no total for a single request: the row is the sum", () => {
+            mockData = data({settlements: settled([item(1)])});
+            const {queryByText} = renderDesk();
+            expect(queryByText("Total")).toBeNull();
+        });
+
         it("shows five and leads to the rest in the portfolio", () => {
             mockData = data({
                 settlements: settled(

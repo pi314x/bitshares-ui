@@ -782,7 +782,9 @@
         "hide_no_value": "가치 없는 항목 숨기기",
         "show_emptied": "잔액이 0인 %(count)s개 표시",
         "hide_emptied": "잔액이 0인 항목 숨기기",
-        "activity_search": "활동 검색: 자산, 계정, 금액, 작업 종류"
+        "activity_search": "활동 검색: 자산, 계정, 금액, 작업 종류",
+        "settlements_total": "합계",
+        "settlements_unpriced": "%(count)s개는 가격 없음"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",

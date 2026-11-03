@@ -782,7 +782,9 @@
         "hide_no_value": "Değeri olmayanları gizle",
         "show_emptied": "Bakiyesi sıfır olan %(count)s tanesini göster",
         "hide_emptied": "Bakiyesi sıfır olanları gizle",
-        "activity_search": "Etkinlikte ara: bir varlık, bir hesap, bir tutar, bir işlem türü"
+        "activity_search": "Etkinlikte ara: bir varlık, bir hesap, bir tutar, bir işlem türü",
+        "settlements_total": "Toplam",
+        "settlements_unpriced": "%(count)s tanesinin fiyatı yok"
     },
     "errors": {
         "loading_from_blockchain": "Blok zincirinden alınırken hata oluştu, lütfen tekrar deneyin.",

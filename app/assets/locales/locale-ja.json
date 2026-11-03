@@ -782,7 +782,9 @@
         "hide_no_value": "価値のないものを隠す",
         "show_emptied": "残高ゼロの %(count)s 件を表示",
         "hide_emptied": "残高ゼロのものを隠す",
-        "activity_search": "アクティビティを検索：アセット、アカウント、金額、操作の種類"
+        "activity_search": "アクティビティを検索：アセット、アカウント、金額、操作の種類",
+        "settlements_total": "合計",
+        "settlements_unpriced": "%(count)s 件は価格なし"
     },
     "errors": {
         "loading_from_blockchain": "Error fetching form the blockchain, please retry.",
