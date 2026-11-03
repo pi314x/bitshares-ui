@@ -32,13 +32,7 @@ const locale_en = require("assets/locales/locale-en.json");
 counterpart.registerTranslations("en", locale_en);
 counterpart.setFallbackLocale("en");
 
-import {addLocaleData} from "react-intl";
-
-import localeCodes from "assets/locales";
-for (const localeCode of localeCodes as any) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    addLocaleData(require(`react-intl/locale-data/${localeCode}`));
-}
+// (the dates, numbers and relative times are formatted by the browser's Intl: lib/i18n/intlShim.js)
 
 import {
     setCurrentLocale,

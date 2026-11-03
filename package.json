@@ -108,7 +108,10 @@
             "\\.(png|jpe?g|gif|svg|woff2?)$": "<rootDir>/app/__tests__/__mocks__/fileMock.js",
             "^lodash-es/(.*)$": "lodash/$1",
             "^lodash-es$": "lodash",
-            "^counterpart$": "<rootDir>/app/lib/i18n/counterpartShim.js"
+            "^counterpart$": "<rootDir>/app/lib/i18n/counterpartShim.js",
+            "^react-translate-component$": "<rootDir>/app/lib/i18n/translateShim.js",
+            "^react-intl$": "<rootDir>/app/lib/i18n/intlShim.js",
+            "^react-loadable$": "<rootDir>/app/lib/loadableShim.js"
         },
         "testPathIgnorePatterns": [
             "/node_modules/",

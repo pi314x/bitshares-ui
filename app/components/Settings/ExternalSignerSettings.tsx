@@ -25,6 +25,13 @@ export default function ExternalSignerSettings() {
     const connecting = state.status === "connecting";
     const currentAccount =
         accountState.currentAccount || accountState.passwordAccount;
+    // Connect was pressed: with no extension in the browser the status line says "not found" already (it did before the
+    // button was pressed), so pressing it seemed to do nothing. Now it says what to do about it.
+    const [tried, setTried] = React.useState(false);
+    // (`isSecureContext` is true for HTTPS and for localhost, which is what the extension accepts; a browser that does not
+    // have it is not said to be insecure)
+    const insecure =
+        typeof window !== "undefined" && window.isSecureContext === false;
 
     return (
         <div className={styles.panel}>
@@ -74,6 +81,29 @@ export default function ExternalSignerSettings() {
                 {state.error && state.status !== "unavailable" && (
                     <Alert type="error" showIcon message={state.error} />
                 )}
+                {/* the extension connects only to pages opened over HTTPS (or as localhost): said before Connect is pressed */}
+                {insecure && !connected && (
+                    <Alert
+                        type="warning"
+                        showIcon
+                        message={
+                            <Translate
+                                content="externalSigner.insecure"
+                                origin={window.location.origin}
+                            />
+                        }
+                    />
+                )}
+                {/* ... but what to do about it is said after Connect is pressed */}
+                {tried && !connected && state.status === "unavailable" && (
+                    <Alert
+                        type="warning"
+                        showIcon
+                        message={
+                            <Translate content="externalSigner.not_found_help" />
+                        }
+                    />
+                )}
 
                 <div className={styles.actions}>
                     {connected ? (
@@ -86,7 +116,10 @@ export default function ExternalSignerSettings() {
                         <Button
                             variant="accent"
                             disabled={connecting}
-                            onClick={() => ExternalSignerActions.connect()}
+                            onClick={() => {
+                                setTried(true);
+                                ExternalSignerActions.connect();
+                            }}
                         >
                             <Translate content="externalSigner.connect" />
                         </Button>

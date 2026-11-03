@@ -73,7 +73,13 @@ class RootIntl extends React.Component {
                 formats={intlData.formats}
                 initialNow={Date.now()}
             >
-                <Router>
+                {/* the two flags are what React Router 7 does anyway: asked for now so that the console does not say so */}
+                <Router
+                    future={{
+                        v7_startTransition: true,
+                        v7_relativeSplatPath: true
+                    }}
+                >
                     <App {...this.props} />
                 </Router>
             </IntlProvider>

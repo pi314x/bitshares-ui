@@ -34,6 +34,7 @@ import {
     selectExternalSigningActive
 } from "../store/slices/externalSignerSlice";
 import ExternalSignerActions from "../actions/ExternalSignerActions";
+import {connectFromChip} from "./extensionChip";
 import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
@@ -216,9 +217,7 @@ export default function NextShellContainer({
                           ? "Connecting…"
                           : "Connect extension",
                   disabled: externalSigner.status === "connecting",
-                  onClick: () => {
-                      ExternalSignerActions.connect();
-                  }
+                  onClick: () => connectFromChip(navigate)
               }
             : undefined;
 

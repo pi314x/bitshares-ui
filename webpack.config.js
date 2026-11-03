@@ -299,7 +299,16 @@ module.exports = function(env) {
         // exact subset of its API this app (and react-translate
         // -component, which imports `counterpart` internally) actually
         // uses. See app/lib/i18n/counterpartShim.js's header.
-        counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js")
+        counterpart$: path.resolve(root_dir, "app/lib/i18n/counterpartShim.js"),
+        // React 18 reports the legacy context these three packages are built on in the console on every start: local
+        // replacements for the part of each that this app uses (a function component, a context from createContext,
+        // the browser's own Intl). See the headers of the files.
+        "react-translate-component$": path.resolve(
+            root_dir,
+            "app/lib/i18n/translateShim.js"
+        ),
+        "react-intl$": path.resolve(root_dir, "app/lib/i18n/intlShim.js"),
+        "react-loadable$": path.resolve(root_dir, "app/lib/loadableShim.js")
     };
     // The licensed TradingView library is not part of the repository. Without
     // it the import is aliased to an empty module (app/components/Exchange/

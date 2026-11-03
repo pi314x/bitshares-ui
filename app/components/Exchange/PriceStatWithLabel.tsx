@@ -87,6 +87,9 @@ function PriceStatWithLabelInner({
     const prevPropsRef = React.useRef({price, ready});
 
     const isFirstRender = React.useRef(true);
+    // (on a change of the price, of whether it is ready or of the market - not on every render: it sets the state, and an
+    // effect that runs after every render and sets a new state every time renders again for ever, which React stops after
+    // 50 rounds with "Maximum update depth exceeded", dozens of times a page)
     React.useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
@@ -94,25 +97,22 @@ function PriceStatWithLabelInner({
             return;
         }
         const prev = prevPropsRef.current;
-
-        const checkMarketChange = state.curMarket !== market;
-        const marketChange =
-            state.curMarket == null ? false : checkMarketChange;
-
-        const newState: any = {
-            change: 0,
-            marketChange,
-            curMarket: market
-        };
-
-        if (ready && prev.ready) {
-            newState.change = parseFloat(price) - parseFloat(prev.price);
-        }
-
-        setState(newState);
         prevPropsRef.current = {price, ready};
-        // eslint-disable-next-line
-    });
+        setState((old: any) => {
+            const checkMarketChange = old.curMarket !== market;
+            const marketChange =
+                old.curMarket == null ? false : checkMarketChange;
+            const newState: any = {
+                change: 0,
+                marketChange,
+                curMarket: market
+            };
+            if (ready && prev.ready) {
+                newState.change = parseFloat(price) - parseFloat(prev.price);
+            }
+            return newState;
+        });
+    }, [price, ready, market]);
 
     React.useEffect(() => {
         (ReactTooltip as any).rebuild();

@@ -51,3 +51,36 @@ describe("routerTransition with frozen settings state", () => {
         expect(SettingsStore.getState().apiLatencies[url]).toBe(42);
     });
 });
+
+describe("the nodes the automatic selection knocks on", () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    it("leaves out a node on this computer unless it is the one that was chosen: the browser logs every refused connection as an error", () => {
+        const local = "ws://127.0.0.1:8090";
+        const urls = chosen => {
+            jest.spyOn(routerTransitioner, "_getLastNode").mockReturnValue(
+                chosen
+            );
+            return routerTransitioner
+                .getNodes(null, false, true)
+                .map(node => node.url);
+        };
+        expect(urls("wss://fake.automatic-selection.com")).not.toContain(local);
+        expect(urls("wss://dex.iobanker.com/ws")).not.toContain(local);
+        // chosen: it is tried
+        expect(urls(local)).toContain(local);
+        // (the public nodes are there either way)
+        expect(urls(local)).toContain("wss://dex.iobanker.com/ws");
+    });
+
+    it("has no node whose host does not exist any more", () => {
+        const urls = routerTransitioner
+            .getNodes(null, false, true, true, true)
+            .map(node => node.url);
+        [
+            "btsws.roelandp.nl",
+            "api.btslebin.com",
+            "bitsharesapi.loclx.io"
+        ].forEach(host => expect(urls.join(" ")).not.toContain(host));
+    });
+});

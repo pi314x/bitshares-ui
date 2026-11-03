@@ -278,6 +278,31 @@ describe("signAndBroadcast", () => {
         expect(error.message).toMatch(/check your account history/);
     });
 
+    it('says what the extension means by "non-HTTPS origins": the page is opened as an address it refuses, and how to open it', () => {
+        const error = toSignerError(
+            new Error("Connections from non-HTTPS origins are not supported")
+        );
+        expect(error.code).toBe("insecure");
+        expect(error.message).toContain(window.location.origin);
+        expect(error.message).toMatch(/HTTPS/);
+        expect(error.message).toMatch(/localhost/);
+        // and it is that error when the provider says it
+        const fake = makeFakeProvider({connected: false});
+        fake.provider.connect = async () => {
+            throw new Error(
+                "Connections from non-HTTPS origins are not supported"
+            );
+        };
+        return createExtensionSigner(() => fake.provider)
+            .connect(MAINNET)
+            .then(
+                () => {
+                    throw new Error("connected");
+                },
+                e => expect(e.code).toBe("insecure")
+            );
+    });
+
     it("keeps only the first line of a long broadcast error", () => {
         const error = toSignerError(
             new Error(

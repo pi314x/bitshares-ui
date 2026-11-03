@@ -32,6 +32,8 @@ export type ExternalSignerErrorCode =
     | "chain_mismatch"
     | "account_mismatch"
     | "unsupported"
+    /** the extension refuses a page that is not opened over HTTPS (localhost counts as secure) */
+    | "insecure"
     | "failed";
 
 export class ExternalSignerError extends Error {

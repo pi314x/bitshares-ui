@@ -113,6 +113,101 @@ describe("Settings -> Signing", () => {
         expect(await findByText(/was not found in this browser/i)).toBeTruthy();
     });
 
+    it("says what to do when Connect is pressed and there is no extension: pressing it did nothing visible before", async () => {
+        delete win.bitsharesWallet;
+        reduxStore.dispatch(
+            patchExternalSigner({
+                ...initialExternalSignerState,
+                status: "unavailable"
+            })
+        );
+        const {getByText, queryByText, findByText, getByTestId} = render(
+            <ExternalSignerSettings />
+        );
+        // the status line says "not found" before anything is pressed, and the advice is not there yet
+        expect(getByTestId("signer-status").textContent).toMatch(/not found/i);
+        expect(
+            queryByText(/Browser extensions are usually not available/i)
+        ).toBeNull();
+        await act(async () => {
+            fireEvent.click(getByText("Connect"));
+        });
+        expect(
+            await findByText(/Browser extensions are usually not available/i)
+        ).toBeTruthy();
+        expect(getByText("Connect")).toBeTruthy();
+    });
+
+    it("says before anything is pressed that the extension connects only to pages on HTTPS or localhost, where the page is not", () => {
+        const secure = (value: boolean | undefined) =>
+            Object.defineProperty(window, "isSecureContext", {
+                value,
+                configurable: true
+            });
+        try {
+            secure(false);
+            const insecure = render(<ExternalSignerSettings />);
+            expect(
+                insecure.getByText(/connects only to pages opened over HTTPS/i)
+            ).toBeTruthy();
+            // (with the address it was refused for)
+            expect(insecure.container.textContent).toContain(
+                window.location.origin
+            );
+            insecure.unmount();
+            secure(true);
+            const fine = render(<ExternalSignerSettings />);
+            expect(
+                fine.queryByText(/connects only to pages opened over HTTPS/i)
+            ).toBeNull();
+            fine.unmount();
+            // a browser that does not say is not said to be insecure
+            secure(undefined);
+            const unknown = render(<ExternalSignerSettings />);
+            expect(
+                unknown.queryByText(/connects only to pages opened over HTTPS/i)
+            ).toBeNull();
+        } finally {
+            delete (window as any).isSecureContext;
+        }
+    });
+
+    it("shows the refusal of a page that is not on HTTPS after Connect is pressed", async () => {
+        const fake = makeFakeProvider({connected: false});
+        fake.provider.connect = async () => {
+            throw new Error(
+                "Connections from non-HTTPS origins are not supported"
+            );
+        };
+        win.bitsharesWallet = fake.provider;
+        const {getByText, findByText} = render(<ExternalSignerSettings />);
+        await act(async () => {
+            fireEvent.click(getByText("Connect"));
+        });
+        expect(
+            await findByText(
+                /The extension connects only to pages opened over HTTPS/i
+            )
+        ).toBeTruthy();
+    });
+
+    it("does not give that advice where the extension is there", async () => {
+        const {getByText, queryByText, getByTestId} = render(
+            <ExternalSignerSettings />
+        );
+        await act(async () => {
+            fireEvent.click(getByText("Connect"));
+        });
+        await waitFor(() =>
+            expect(getByTestId("signer-status").textContent).toBe(
+                "Connected as alice."
+            )
+        );
+        expect(
+            queryByText(/Browser extensions are usually not available/i)
+        ).toBeNull();
+    });
+
     it("lists what is not supported with the extension", () => {
         const {getByText} = render(<ExternalSignerSettings />);
         expect(getByText(/memos/i)).toBeTruthy();

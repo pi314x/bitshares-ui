@@ -1388,6 +1388,8 @@
         "intro": "Sign with the BitShares wallet browser extension. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key. The account chosen in the account menu is the one that signs: the extension's account through the extension, any other account through the wallet stored in this browser.",
         "status_unknown": "Looking for the extension...",
         "status_unavailable": "The BitShares wallet extension was not found in this browser.",
+        "not_found_help": "이 브라우저에서 확장 프로그램을 찾을 수 없어 연결할 것이 없습니다. 휴대폰이나 태블릿의 브라우저에서는 보통 확장 프로그램을 사용할 수 없습니다: BitShares 지갑 확장 프로그램이 설치된 데스크톱 브라우저에서 이 페이지를 여세요. 확장 프로그램이 없으면 거래는 이 브라우저에 저장된 지갑으로 서명됩니다.",
+        "insecure": "이 페이지는 %(origin)s(으)로 열려 있습니다. 확장 프로그램은 HTTPS로 열린 페이지 또는 같은 컴퓨터의 localhost를 통해 열린 페이지에만 연결됩니다: 연결하려면 그렇게 페이지를 여세요.",
         "status_disconnected": "The extension was found but is not connected.",
         "status_connecting": "Waiting for you to approve the connection in the extension...",
         "status_connected": "Connected as %(account)s.",

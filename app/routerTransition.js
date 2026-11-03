@@ -502,6 +502,15 @@ class RouterTransitioner {
             // remove the automatic fallback dummy url
             if (a.url.indexOf("fake.automatic-selection") !== -1) return false;
 
+            // A node on this very computer is tried when it was chosen (the node picker lists it): the automatic
+            // selection does not knock on a door that is usually shut, which the browser logs as an error each time.
+            if (
+                /^wss?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(a.url) &&
+                this._getLastNode() !== a.url
+            ) {
+                return false;
+            }
+
             // Remove insecure websocket urls when using secure protocol
             if (!unsuitableSecurity && !this._apiUrlSecuritySuitable(a.url)) {
                 return false;

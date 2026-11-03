@@ -1388,6 +1388,8 @@
         "intro": "Sign with the BitShares wallet browser extension. The extension keeps your keys and asks you to approve each transaction in its own window; this app never sees a key. The account chosen in the account menu is the one that signs: the extension's account through the extension, any other account through the wallet stored in this browser.",
         "status_unknown": "Looking for the extension...",
         "status_unavailable": "The BitShares wallet extension was not found in this browser.",
+        "not_found_help": "L'extension n'a pas été trouvée dans ce navigateur, il n'y a donc rien à connecter. Les extensions de navigateur ne sont en général pas disponibles dans le navigateur d'un téléphone ou d'une tablette : ouvrez cette page dans un navigateur de bureau où l'extension de portefeuille BitShares est installée. Sans elle, les transactions sont signées par le portefeuille stocké dans ce navigateur.",
+        "insecure": "Cette page est ouverte comme %(origin)s. L'extension ne se connecte qu'aux pages ouvertes en HTTPS, ou via localhost sur le même ordinateur : ouvrez cette page ainsi pour la connecter.",
         "status_disconnected": "The extension was found but is not connected.",
         "status_connecting": "Waiting for you to approve the connection in the extension...",
         "status_connected": "Connected as %(account)s.",

@@ -38,6 +38,20 @@ export function toSignerError(error: unknown): ExternalSignerError {
                 "there it may still have been sent - check your account history " +
                 "before trying again."
         );
+    // The extension answers a page that is not opened over HTTPS (localhost is fine) with this and nothing else: said
+    // with the address that was refused, since "http://192.168.x.x:8080" is what a dev server on another machine is
+    if (/non-https origins/i.test(message)) {
+        const origin =
+            typeof window !== "undefined" && window.location
+                ? window.location.origin
+                : "this page";
+        return new ExternalSignerError(
+            "insecure",
+            "The extension connects only to pages opened over HTTPS, or through localhost on the same computer. This page is opened as " +
+                origin +
+                ": open it over HTTPS, or as http://localhost on this computer."
+        );
+    }
     if (/locked/i.test(message))
         return new ExternalSignerError("locked", message);
     if (/chain id mismatch/i.test(message))

@@ -96,14 +96,6 @@ export const settingsAPIs = {
             contact: "telegram:abitmore"
         },
         {
-            url: "wss://btsws.roelandp.nl/ws",
-            region: "Northern Europe",
-            country: "Finland",
-            location: "Helsinki",
-            operator: "Witness: roelandp",
-            contact: "telegram:roelandp"
-        },
-        {
             url: "wss://api.dex.trading/",
             region: "Western Europe",
             country: "France",
@@ -142,22 +134,6 @@ export const settingsAPIs = {
             location: "Falkenstein",
             operator: "Witness: xbtsio-wallet",
             contact: "telegram: xbtsio"
-        },
-        {
-            url: "wss://api.btslebin.com/ws",
-            region: "Eastern Asia",
-            country: "China",
-            location: "Hong Kong",
-            operator: "Witness: lebin-witness",
-            contact: "telegram: lebinbit"
-        },
-        {
-            url: "wss://bitsharesapi.loclx.io",
-            region: "North America",
-            country: "United States",
-            location: "Chicago",
-            operator: "bitshares.info",
-            contact: "telegram:brekyrself"
         },
         // Testnet
         //{

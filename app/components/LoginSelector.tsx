@@ -49,7 +49,7 @@ import SettingsStore from "stores/SettingsStore";
 import IntlActions from "actions/IntlActions";
 import CreateAccount from "./Account/CreateAccount";
 import CreateAccountPassword from "./Account/CreateAccountPassword";
-import {Routes, Route, Link, useNavigate} from "react-router-dom";
+import {Routes, Route, Link, useMatch, useNavigate} from "react-router-dom";
 import {getWalletName, getAllowedLogins} from "branding";
 import {Select} from "../design-system/Select";
 import {Button} from "../design-system/Button";
@@ -69,6 +69,7 @@ interface LoginSelectorState {
 export default function LoginSelector() {
     useReduxState<any>(selectAccountState);
     const navigate = useNavigate();
+    const inCreateAccount = !!useMatch("/create-account/*");
 
     const [state, setState] = React.useState<LoginSelectorState>({
         locales: (SettingsStore as any).getState().defaults.locale,
@@ -245,17 +246,24 @@ export default function LoginSelector() {
             {/* `id`: the forms scroll their first field into view inside it
                 (react-scroll `containerId: "accountForm"`) */}
             <div className={styles.form} id="accountForm">
-                <Routes>
-                    {allowed.includes("wallet") && (
-                        <RouteAny path="wallet" element={<CreateAccount />} />
-                    )}
-                    {allowed.includes("password") && (
-                        <RouteAny
-                            path="password"
-                            element={<CreateAccountPassword />}
-                        />
-                    )}
-                </Routes>
+                {/* (its own routes are relative to /create-account/*: from the dashboard, which is "/", there is
+                    nothing for them to match, and React Router says so in the console) */}
+                {inCreateAccount ? (
+                    <Routes>
+                        {allowed.includes("wallet") && (
+                            <RouteAny
+                                path="wallet"
+                                element={<CreateAccount />}
+                            />
+                        )}
+                        {allowed.includes("password") && (
+                            <RouteAny
+                                path="password"
+                                element={<CreateAccountPassword />}
+                            />
+                        )}
+                    </Routes>
+                ) : null}
             </div>
         </OnboardingPage>
     );
