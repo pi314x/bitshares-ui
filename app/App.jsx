@@ -287,6 +287,14 @@ const LifetimeBreakEven = Loadable({
     loading: LoadingIndicator
 });
 
+const StrategiesPage = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "strategies" */ "./components/Strategies/StrategiesPage"
+        ),
+    loading: LoadingIndicator
+});
+
 const PoolmartPage = Loadable({
     loader: () =>
         import(
@@ -871,6 +879,10 @@ class App extends React.Component {
                                     <Route
                                         path="/pools"
                                         element={<PoolmartPage />}
+                                    />
+                                    <Route
+                                        path="/strategies"
+                                        element={<StrategiesPage />}
                                     />
                                     <Route
                                         path="/address-book"

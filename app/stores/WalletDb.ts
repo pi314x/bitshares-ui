@@ -191,11 +191,20 @@ export class WalletDb {
         return this.decryptTcomb_PrivateKey(private_key_tcomb);
     }
 
+    /**
+     * Signs (unlocking the wallet first) and broadcasts. By default a failure is only logged and the
+     * promise still resolves (what every screen written for it expects); `options.strict` makes a
+     * failure - the node's refusal, a cancelled unlock or confirmation - the promise's rejection, and
+     * `options.confirm` says whether the "Confirm transaction" dialog is shown first (default: the
+     * wallet's own setting). A page that shows the operations itself and must not report a failed
+     * send as sent (the strategies page, which places orders) sends with both.
+     */
     process_transaction(
         tr: any,
         signer_pubkeys: any,
         broadcast: any,
-        extra_keys: any[] = []
+        extra_keys: any[] = [],
+        options: {strict?: boolean; confirm?: boolean} = {}
     ) {
         // The wallet extension is connected and this transaction acts for its
         // account: it holds the key, asks for its own approval and broadcasts,
@@ -295,7 +304,11 @@ export class WalletDb {
                         })
                         .then(() => {
                             if (broadcast) {
-                                if (this.confirm_transactions) {
+                                const confirm =
+                                    options.confirm === undefined
+                                        ? this.confirm_transactions
+                                        : options.confirm;
+                                if (confirm) {
                                     const p = new Promise((resolve, reject) => {
                                         (TransactionConfirmActions as any).confirm(
                                             tr,
@@ -310,6 +323,7 @@ export class WalletDb {
                 });
             })
             .catch((e: any) => {
+                if (options.strict) throw e;
                 console.error(e);
             });
     }

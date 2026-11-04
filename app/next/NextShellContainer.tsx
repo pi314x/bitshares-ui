@@ -33,7 +33,6 @@ import {
     selectExternalSigner,
     selectExternalSigningActive
 } from "../store/slices/externalSignerSlice";
-import ExternalSignerActions from "../actions/ExternalSignerActions";
 import {connectFromChip} from "./extensionChip";
 import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —

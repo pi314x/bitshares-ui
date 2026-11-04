@@ -83,6 +83,13 @@ const PATHS: {[name: string]: React.ReactNode} = {
         <path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.7 12 3.5 12 3.5Z" />
     ),
     instant: <path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z" />,
+    // a result rising over a baseline: the trading strategies
+    strategy: (
+        <>
+            <path d="M3.5 4.5v15.5H20.5" />
+            <path d="M7 15.5l3.5-4.5 3 2.5L19 7" />
+        </>
+    ),
     prediction: (
         <>
             <circle cx="12" cy="12" r="8.5" />

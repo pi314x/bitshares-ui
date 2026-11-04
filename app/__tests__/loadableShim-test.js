@@ -96,7 +96,11 @@ describe("Loadable", () => {
 
     it("takes a module without an ES default as the component, and a `render` of its own", async () => {
         const Plain = Loadable({
-            loader: async () => () => React.createElement("s", null, "plain"),
+            loader: async () => {
+                const PlainComponent = () =>
+                    React.createElement("s", null, "plain");
+                return PlainComponent;
+            },
             loading: () => null
         });
         const a = render(React.createElement(Plain));

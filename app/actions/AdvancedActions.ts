@@ -9,6 +9,8 @@ import "../lib/chain/extraOperations";
 import {Apis} from "bitsharesjs-ws";
 import WalletApi from "api/WalletApi";
 import WalletDb from "../stores/WalletDb";
+import ExternalSignerActions from "./ExternalSignerActions";
+import WalletUnlockActions from "./WalletUnlockActions";
 import {
     CustomAuthority,
     authorityIdsFromHistory,
@@ -182,6 +184,45 @@ class AdvancedActionsFacade {
                 tr.add_type_operation(name, data)
             );
             return WalletDb.process_transaction(tr, null, true);
+        });
+    }
+
+    /**
+     * Opens the wallet's unlock prompt now, where a password has to be typed (resolves at once
+     * when it is unlocked, or when the account signs in the extension, which asks for its own
+     * approval), so that what is quoted next is not made stale by the typing.
+     */
+    ensureUnlocked(accountName: string | null): Promise<void> {
+        if (
+            accountName &&
+            (ExternalSignerActions as any).isSigningFor(accountName)
+        ) {
+            return Promise.resolve();
+        }
+        return (WalletUnlockActions as any).unlock();
+    }
+
+    /** Closes the password prompt that `ensureUnlocked` raised; its promise is rejected as cancelled. */
+    cancelUnlock(): void {
+        (WalletUnlockActions as any).cancel();
+    }
+
+    /**
+     * Like `send`, but for a caller that shows the operations itself (the strategies page): there
+     * is no second "Confirm transaction" dialog, and a failure - the node's refusal, a cancelled
+     * unlock - is the promise's rejection, so that nothing that failed is reported as sent.
+     * Resolves when the node has included the transaction.
+     */
+    sendNow(operations: Array<[string, any]>): Promise<any> {
+        return Promise.resolve().then(() => {
+            const tr = WalletApi.new_transaction();
+            operations.forEach(([name, data]) =>
+                tr.add_type_operation(name, data)
+            );
+            return WalletDb.process_transaction(tr, null, true, [], {
+                strict: true,
+                confirm: false
+            });
         });
     }
 

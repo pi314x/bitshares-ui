@@ -72,6 +72,8 @@ export const NAV_GROUPS: RailNavGroup[] = [
             // right behind the order book: the other way to trade a pair
             {label: "Liquidity pools", icon: "pools", to: "/pools"},
             {label: "Instant trade", icon: "instant", to: "/instant-trade"},
+            // a grid, a market maker or a dollar-cost average: calculated, tested on past prices, run on paper, placed for real
+            {label: "Strategies", icon: "strategy", to: "/strategies"},
             {label: "Prediction markets", icon: "prediction", to: "/prediction"}
         ]
     },
@@ -214,6 +216,7 @@ const CRUMB_TITLES: Record<string, string> = {
     withdraw: "Withdraw",
     "address-book": "Address book",
     "instant-trade": "Instant trade",
+    strategies: "Strategies",
     prediction: "Prediction markets",
     "create-worker": "Create worker",
     "deposit-withdraw": "Deposit & withdraw",
