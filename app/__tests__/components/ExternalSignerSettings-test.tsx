@@ -139,11 +139,15 @@ describe("Settings -> Signing", () => {
     });
 
     it("says before anything is pressed that the extension connects only to pages on HTTPS or localhost, where the page is not", () => {
-        const secure = (value: boolean | undefined) =>
-            Object.defineProperty(window, "isSecureContext", {
-                value,
-                configurable: true
-            });
+        // (defined once, as a getter: a second defineProperty with another value is silently ignored on Node 16, which CI runs)
+        let isSecure: boolean | undefined;
+        Object.defineProperty(window, "isSecureContext", {
+            get: () => isSecure,
+            configurable: true
+        });
+        const secure = (value: boolean | undefined) => {
+            isSecure = value;
+        };
         try {
             secure(false);
             const insecure = render(<ExternalSignerSettings />);
