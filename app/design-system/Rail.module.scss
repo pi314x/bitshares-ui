@@ -1,0 +1,265 @@
+// `.rail.rail`: same specificity workaround as `.topbar.topbar` in
+// Topbar.module.scss - the legacy `body.<theme> nav { display: block }`
+// rule would otherwise override this flex column.
+.rail.rail {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 8px;
+    // Wide enough for an icon and the longest label ("Prediction markets") with
+    // air around them, not wider: the page keeps the space.
+    width: 224px;
+    flex: none;
+    // The rail is as tall as the window and stays put while the page scrolls;
+    // if its entries and the footer are taller than the window, the rail
+    // scrolls inside itself (the footer is its last row, never over an entry),
+    // without a scrollbar of its own: the page has the one scrollbar there is,
+    // and a second one beside it read as two pages scrolling.
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+}
+
+.rail.rail::-webkit-scrollbar {
+    display: none;
+}
+
+// The last row of the rail: language and theme. It follows the entries and, on
+// a window taller than they are, sits at the bottom edge.
+.footer {
+    margin-top: auto;
+    padding: 10px 4px 8px;
+    background: var(--surface);
+    // Language and theme stay on screen: when the entries are taller than the
+    // window they scroll under this row instead of pushing it below the fold.
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid var(--line-soft);
+}
+
+// Without a scrollbar the only sign that more entries follow is one cut by the
+// footer: a short fade above it, from nothing to the rail's own colour. Where
+// nothing is under it, it is the colour of what it lies on.
+.footer::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 22px;
+    background: linear-gradient(to bottom, transparent, var(--surface));
+    pointer-events: none;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 14px;
+}
+
+.brandMark {
+    height: 28px;
+    width: auto;
+    flex: none;
+}
+
+.brandName {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.group {
+    margin-top: 10px;
+}
+
+.groupLabel {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    padding: 0 8px 6px;
+    display: block;
+}
+
+// One rule for every entry, link or button, so that they can never differ in
+// height or spacing: Send, Deposit and Withdraw are buttons (they open
+// dialogs), the others are links, and a separate rule per element is how the
+// phone's larger touch padding ended up on the links only.
+//
+// `.rail a.navItem` rather than a bare `.navItem`: the legacy global sheet
+// colours every `a` per theme (`body.darkTheme a`, plus `a:hover`), which beats
+// a single-class rule and used to turn the whole rail link-blue with no visible
+// active state.
+.rail a.navItem,
+.rail button.navItem {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: inherit;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.rail a.navItem:hover,
+.rail button.navItem:hover {
+    background: var(--hover);
+    color: var(--ink);
+}
+
+.rail button.navItem:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.rail a.navItem.navItemActive {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.close {
+    display: none;
+}
+
+// Phone and small tablet (the reference mockup's own breakpoint): the rail is an
+// off-canvas drawer opened from the top bar's menu button instead of a 224px
+// column that leaves a phone about 150px for the page. `.rail.rail` and
+// `.rail.rail.railOpen` match the specificity of the base rule above; the old
+// version of this block used a single `.rail`, lost to `.rail.rail` and never
+// applied, so the full-width sidebar stayed on every phone screen.
+@media (max-width: 860px) {
+    .rail.rail {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1100;
+        width: min(288px, 86vw);
+        // the window's height, and scroll inside (`height: auto` between top
+        // and bottom made it as tall as its entries, so it could not scroll)
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-100%);
+        // closed: out of the tab order and away from screen readers
+        visibility: hidden;
+        transition: transform 0.2s var(--ease), visibility 0s linear 0.2s;
+    }
+
+    // the drawer scrolls; language and theme stay in reach at its bottom edge
+    .footer {
+        border-top-color: var(--line);
+    }
+
+    .rail.rail.railOpen {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.2s var(--ease);
+    }
+
+    .close {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--ink-2);
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        background: var(--hover);
+        color: var(--ink);
+    }
+
+    // a finger needs more than the desktop's 8px of padding - on every entry
+    .rail a.navItem,
+    .rail button.navItem {
+        padding: 12px 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rail.rail,
+    .rail.rail.railOpen {
+        transition: none;
+    }
+}
+
+// An entry's icon: the entry's own colour (so hover and current follow), a bit
+// quieter at rest.
+.navIcon {
+    flex: none;
+    opacity: 0.8;
+    transition: opacity 0.15s var(--ease, ease);
+}
+
+.rail a.navItem:hover .navIcon,
+.rail a.navItem.navItemActive .navIcon,
+.rail button.navItem:hover .navIcon {
+    opacity: 1;
+}
+
+// A short window: the entries and the group labels take less air so that all of
+// the menu fits more often, and the footer row never hides one.
+@media (min-width: 861px) and (max-height: 940px) {
+    .rail a.navItem,
+    .rail button.navItem {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
+    .group {
+        margin-top: 6px;
+    }
+
+    .brand {
+        padding-bottom: 8px;
+    }
+}

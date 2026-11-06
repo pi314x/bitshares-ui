@@ -1,0 +1,2 @@
+Les [Witnesses](introduction/witness) sont les producteurs de blocs de BitShares. Ils valident les transactions et assurent la sécurité du réseau. Vous pouvez voter pour autant de witnesses que vous le souhaitez, et ils recevront tous le même nombre de voix. Vous trouverez les propositions de witnesses ici : [BitSharestalk - Stakeholder Proposals Board](https://bitsharestalk.org/index.php/board,75.0.html).
+

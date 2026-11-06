@@ -1,0 +1,2 @@
+[Worker](introduction/workers) sind eine Besonderheit von BitShares. Es sind Vorschläge, Leistungen gegen ein Gehalt aus der Blockchain selbst zu erbringen. Ein Vorschlag sollte einen Link zu einer Webseite oder einem Forenthread enthalten, der den Zweck des Vorschlags erklärt. Eine Sammlung von Vorschlägen findest du hier: [BitSharestalk - Stakeholder Proposals Board](https://bitsharestalk.org/index.php/board,75.0.html).
+

@@ -1,0 +1,73 @@
+.wrap {
+    position: relative;
+}
+
+.trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    cursor: pointer;
+}
+
+.trigger:hover {
+    border-color: var(--faint);
+    color: var(--ink);
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.dotOk {
+    background: var(--up);
+    box-shadow: 0 0 0 3px var(--up-wash);
+}
+
+.dotWarn {
+    background: var(--warn);
+}
+
+.panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    padding: 12px;
+    z-index: 20;
+}
+
+.panelTop {
+    top: auto;
+    bottom: calc(100% + 6px);
+}
+
+// Phone: the 320px panel is right-aligned to a chip that sits at the left of the
+// status row, so it opened off the left edge of the screen. Anchor it to the whole
+// row instead (Topbar's `.status`, which is `position: relative` there) and let it
+// span it.
+@media (max-width: 860px) {
+    .wrap {
+        position: static;
+    }
+
+    .panel {
+        left: 0;
+        right: 0;
+        width: auto;
+    }
+}

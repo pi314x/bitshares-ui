@@ -1,9 +1,7 @@
-Bir aktif yaratmak için şunlar gerekli :
-* Geçerli bir varlık sembolü
-* 0 (sıfır)dan büyük maksimum arz
+[# permissions]
+İzinler, bir varlık için kullanılabilecek özellikleri tanımlar. Ancak bir özelliğe izin verilmiş olsa bile, blokzinciri tarafından uygulanabilmesi için ilgili bayrakla (flag) etkinleştirilmesi gerekir.
 
-Hassasiyet , varlığın destekleyeceği ondalık hane sayısını belirler.
+Oluşturulduktan sonra yalnızca belirli bir izni kaldırabilirsiniz; oluşturma sırasında devre dışı bırakılmış bir izni etkinleştiremezsiniz.
 
-Varlık yaratmanın masraf ücreti öncelikle varlığa ait sembolün uzunluğuna bağlıdır. 
-
-Ücretlerin nekadarını tutacağınızı da piyasa ücreti ile yüzde olarak belirtebilirsiniz.
+[# flags]
+Bayraklar, varlığın hangi özelliklerinin etkin veya devre dışı olduğunu tanımlar. Varlığın sahibi bunları istediği zaman açıp kapatabilir.

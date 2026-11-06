@@ -1,0 +1,138 @@
+import {
+    canCopyImage,
+    copyImage,
+    dataUrlToBlob,
+    copyText,
+    saveImage
+} from "../../lib/common/clipboard";
+
+// One getter, defined once: Node 16's vm global ignores a second defineProperty
+// of the same property, so redefining it per test left it at the first value.
+let secure = false;
+Object.defineProperty(window, "isSecureContext", {
+    get: () => secure,
+    configurable: true
+});
+const setSecure = (value: boolean) => {
+    secure = value;
+};
+const setClipboard = (value: any) =>
+    Object.defineProperty(navigator, "clipboard", {
+        value,
+        configurable: true
+    });
+
+afterEach(() => {
+    setClipboard(undefined);
+    setSecure(false);
+    delete (window as any).ClipboardItem;
+    delete (document as any).execCommand;
+});
+
+describe("copyText", () => {
+    it("uses the clipboard API in a secure context", async () => {
+        const writeText = jest.fn().mockResolvedValue(undefined);
+        setClipboard({writeText});
+        setSecure(true);
+        expect(await copyText("bts-address")).toBe(true);
+        expect(writeText).toHaveBeenCalledWith("bts-address");
+    });
+
+    it("falls back to selecting a field where the API is missing (plain http)", async () => {
+        const exec = jest.fn().mockReturnValue(true);
+        (document as any).execCommand = exec;
+        let copied = "";
+        exec.mockImplementation(() => {
+            const field = document.querySelector("textarea");
+            copied = field ? field.value : "";
+            return true;
+        });
+        expect(await copyText("0xabc")).toBe(true);
+        expect(exec).toHaveBeenCalledWith("copy");
+        expect(copied).toBe("0xabc");
+        // the field it used is gone again
+        expect(document.querySelector("textarea")).toBeNull();
+    });
+
+    it("falls back when the API refuses", async () => {
+        setClipboard({writeText: jest.fn().mockRejectedValue(new Error("no"))});
+        setSecure(true);
+        (document as any).execCommand = jest.fn().mockReturnValue(true);
+        expect(await copyText("x")).toBe(true);
+    });
+
+    it("says so when nothing worked", async () => {
+        (document as any).execCommand = jest.fn().mockReturnValue(false);
+        expect(await copyText("x")).toBe(false);
+        (document as any).execCommand = jest.fn(() => {
+            throw new Error("not allowed");
+        });
+        expect(await copyText("x")).toBe(false);
+    });
+});
+
+describe("images", () => {
+    it("cannot be copied without ClipboardItem or a secure context", () => {
+        expect(canCopyImage()).toBe(false);
+        setClipboard({write: jest.fn()});
+        (window as any).ClipboardItem = jest.fn();
+        expect(canCopyImage()).toBe(false); // not secure
+        setSecure(true);
+        expect(canCopyImage()).toBe(true);
+    });
+
+    it("are copied as a PNG where the browser can", async () => {
+        const write = jest.fn().mockResolvedValue(undefined);
+        setClipboard({write});
+        setSecure(true);
+        const items: any[] = [];
+        (window as any).ClipboardItem = function(data: any) {
+            items.push(data);
+        };
+        // no network: the policy's connect-src does not allow a fetch of data:
+        const fetchMock = jest.fn();
+        (global as any).fetch = fetchMock;
+        expect(
+            await copyImage("data:image/png;base64,iVBORw0K", "qr.png")
+        ).toBe("copied");
+        expect(write).toHaveBeenCalledTimes(1);
+        expect(Object.keys(items[0])).toEqual(["image/png"]);
+        expect(fetchMock).not.toHaveBeenCalled();
+        const blob: Blob = await items[0]["image/png"];
+        expect(blob.type).toBe("image/png");
+        expect(blob.size).toBe(6); // "iVBORw0K" is the PNG signature's first six bytes
+    });
+
+    it("decodes a data URL into the bytes it holds", async () => {
+        const blob = dataUrlToBlob("data:image/png;base64,SGk=");
+        expect(blob.type).toBe("image/png");
+        expect(blob.size).toBe(2);
+        expect(dataUrlToBlob("data:text/plain,a%20b").size).toBe(3);
+    });
+
+    it("are saved as a file where they cannot be copied", async () => {
+        let clicked: any = null;
+        const click = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function() {
+            clicked = {href: this.href, download: this.download};
+        };
+        expect(await copyImage("data:image/png;base64,AAA", "qr.png")).toBe(
+            "saved"
+        );
+        HTMLAnchorElement.prototype.click = click;
+        expect(clicked).toEqual({
+            href: "data:image/png;base64,AAA",
+            download: "qr.png"
+        });
+        expect(document.querySelector("a[download]")).toBeNull();
+    });
+
+    it("saveImage reports a failure", () => {
+        const click = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function() {
+            throw new Error("blocked");
+        };
+        expect(saveImage("data:,", "x.png")).toBe(false);
+        HTMLAnchorElement.prototype.click = click;
+    });
+});

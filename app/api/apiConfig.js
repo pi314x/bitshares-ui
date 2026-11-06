@@ -29,63 +29,6 @@ export const openledgerAPIs = {
     RPC_URL: "https://openledger.info/api/"
 };
 
-export const rudexAPIs = {
-    BASE: "https://gateway.rudex.org/api/rudex",
-    COINS_LIST: "/coins",
-    NEW_DEPOSIT_ADDRESS: "/simple-api/initiate-trade"
-};
-
-export const bitsparkAPIs = {
-    BASE: "https://dex-api.bitspark.io/api/v1",
-    COINS_LIST: "/coins",
-    ACTIVE_WALLETS: "/active-wallets",
-    TRADING_PAIRS: "/trading-pairs",
-    DEPOSIT_LIMIT: "/deposit-limits",
-    ESTIMATE_OUTPUT: "/estimate-output-amount",
-    ESTIMATE_INPUT: "/estimate-input-amount"
-};
-
-export const cryptoBridgeAPIs = {
-    BASE: "https://api.crypto-bridge.org/api/v1",
-    COINS_LIST: "/coins",
-    ACTIVE_WALLETS: "/wallets",
-    MARKETS: "/markets",
-    TRADING_PAIRS: "/trading-pairs"
-};
-
-export const citadelAPIs = {
-    BASE: "https://citadel.li/trade",
-    COINS_LIST: "/coins",
-    ACTIVE_WALLETS: "/active-wallets",
-    TRADING_PAIRS: "/trading-pairs",
-    DEPOSIT_LIMIT: "/deposit-limits",
-    ESTIMATE_OUTPUT: "/estimate-output-amount",
-    ESTIMATE_INPUT: "/estimate-input-amount"
-};
-
-export const gdex2APIs = {
-    BASE: "https://openapi.52bts.net/adjust",
-    COINS_LIST: "/coins",
-    ACTIVE_WALLETS: "/active-wallets",
-    TRADING_PAIRS: "/trading-pairs"
-};
-
-// Legacy Deposit/Withdraw
-export const gdexAPIs = {
-    BASE: "https://api.52bts.net",
-    ASSET_LIST: "/gateway/asset/assetList",
-    ASSET_DETAIL: "/gateway/asset/assetDetail",
-    GET_DEPOSIT_ADDRESS: "/gateway/address/getAddress",
-    CHECK_WITHDRAY_ADDRESS: "/gateway/address/checkAddress",
-    DEPOSIT_RECORD_LIST: "/gateway/deposit/recordList",
-    DEPOSIT_RECORD_DETAIL: "/gateway/deposit/recordDetail",
-    WITHDRAW_RECORD_LIST: "/gateway/withdraw/recordList",
-    WITHDRAW_RECORD_DETAIL: "/gateway/withdraw/recordDetail",
-    GET_USER_INFO: "/gateway/user/getUserInfo",
-    USER_AGREEMENT: "/gateway/user/isAgree",
-    WITHDRAW_RULE: "/gateway/withdraw/rule"
-};
-
 export const pirateCashAPIs = {
     BASE: "https://pirate.cash/dexapi",
     COINS_LIST: "/coins"
@@ -153,14 +96,6 @@ export const settingsAPIs = {
             contact: "telegram:abitmore"
         },
         {
-            url: "wss://btsws.roelandp.nl/ws",
-            region: "Northern Europe",
-            country: "Finland",
-            location: "Helsinki",
-            operator: "Witness: roelandp",
-            contact: "telegram:roelandp"
-        },
-        {
             url: "wss://api.dex.trading/",
             region: "Western Europe",
             country: "France",
@@ -199,22 +134,6 @@ export const settingsAPIs = {
             location: "Falkenstein",
             operator: "Witness: xbtsio-wallet",
             contact: "telegram: xbtsio"
-        },
-        {
-            url: "wss://api.btslebin.com/ws",
-            region: "Eastern Asia",
-            country: "China",
-            location: "Hong Kong",
-            operator: "Witness: lebin-witness",
-            contact: "telegram: lebinbit"
-        },
-        {
-            url: "wss://bitsharesapi.loclx.io",
-            region: "North America",
-            country: "United States",
-            location: "Chicago",
-            operator: "bitshares.info",
-            contact: "telegram:brekyrself"
         },
         // Testnet
         //{

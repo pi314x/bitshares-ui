@@ -1,0 +1,210 @@
+// The swap dialog: two amount fields with an arrow between them, the details
+// under them. Tokens only - no raw colours.
+.swap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.field {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--field-bg);
+}
+
+.field:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.fieldHead {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--muted);
+}
+
+.balance {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    cursor: pointer;
+}
+
+.balance:hover {
+    color: var(--ink);
+}
+
+.max {
+    margin-left: 4px;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.balanceStatic {
+    color: var(--muted);
+}
+
+.fieldBody {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+// `.swap .fieldBody input.amount.amount`: the legacy form rules style every
+// input (`body[class][class] input[type=text]`, 0,3,2), this has to outrank them
+.swap .fieldBody input.amount.amount {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    outline: none;
+}
+
+.swap .fieldBody input.amount.amount:focus {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+}
+
+.asset {
+    flex: none;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: var(--raised);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.flipRow {
+    display: flex;
+    justify-content: center;
+    margin: -14px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.flip {
+    width: 36px;
+    height: 36px;
+    border: 4px solid var(--surface);
+    border-radius: var(--radius);
+    background: var(--raised);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.flip:hover {
+    color: var(--accent);
+}
+
+.note {
+    font-size: 12.5px;
+    color: var(--muted);
+}
+
+.details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 10px 0 0;
+    font-size: 13.5px;
+}
+
+.details dt {
+    color: var(--muted);
+}
+
+.details dd {
+    margin: 0;
+    text-align: right;
+}
+
+.warn {
+    color: var(--down);
+}
+
+.slippage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.chips {
+    display: flex;
+    gap: 6px;
+}
+
+.chip {
+    min-width: 52px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+input.chip {
+    width: 64px;
+    cursor: text;
+}
+
+.chipOn {
+    border-color: var(--accent);
+    background: var(--accent-wash);
+    color: var(--accent);
+}
+
+.venues {
+    margin-top: 8px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+}
+
+.venuePool {
+    background: var(--up-wash);
+}
+
+.venueBook {
+    background: var(--accent-wash);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.parts {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--muted);
+}

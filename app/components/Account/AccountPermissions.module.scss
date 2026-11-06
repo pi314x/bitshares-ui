@@ -1,0 +1,29 @@
+// The permissions of an account: the explanation of the chosen kind of permission (a help page:
+// 16px paragraphs in the primary ink) is set like the lead of every other page, and the threshold
+// is a label and its field on one line.
+body[class][class] .help p {
+    max-width: 68ch;
+    margin: 0 0 12px;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+body[class][class] .help h1,
+body[class][class] .help h2,
+body[class][class] .help h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+body[class][class] .help + form:global(.threshold) label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 16px;
+}
+
+body[class][class] .help + form:global(.threshold) input {
+    width: 120px;
+    margin: 0;
+}

@@ -7,11 +7,11 @@
         transform-style: preserve-3d;
     }
 
-    .ant-table-thead {
+    .ds-table-thead {
         transform: translate3d(0, 0, 1px);
     }
 
-    .ant-table-tbody {
+    .ds-table-tbody {
         transform: translate3d(0, 0, 0);
     }
 
@@ -40,39 +40,39 @@
         }
     }
 
-    &.collapsible-table-collapsed .ant-table-tbody {
+    &.collapsible-table-collapsed .ds-table-tbody {
         animation: collapse 0.15s ease-in-out forwards;
     }
 
-    &.collapsible-table-uncollapsed .ant-table-tbody {
+    &.collapsible-table-uncollapsed .ds-table-tbody {
         animation: uncollapse 0.15s ease-in-out forwards;
     }
 
-    &.collapsible-table-collapsed-animation-completed .ant-table-tbody {
+    &.collapsible-table-collapsed-animation-completed .ds-table-tbody {
         display: none;
     }
 
     &.collapsible-table-collapsed {
-        .ant-table-footer,
-        .ant-table-pagination {
+        .ds-table-footer,
+        .ds-table-pagination {
             opacity: 0;
             transition: 0.15s ease-in-out;
         }
     }
 
     &.collapsible-table-collapsed-animation-completed {
-        .ant-table-footer,
-        .ant-table-pagination {
+        .ds-table-footer,
+        .ds-table-pagination {
             display: none;
         }
     }
 
-    .ant-table-thead {
+    .ds-table-thead {
         opacity: 0.9;
         cursor: pointer;
     }
 
-    .ant-table-thead:hover {
+    .ds-table-thead:hover {
         opacity: 1;
     }
 }

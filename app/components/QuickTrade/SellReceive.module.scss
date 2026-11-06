@@ -1,0 +1,104 @@
+// Instant trade: two panels (sell, receive) with the swap button between them.
+// Wide: one row, the swap button vertically centred. Narrow: stacked, the swap
+// button between the panels turned to point up/down.
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 920px;
+}
+
+.panel {
+    flex: 1 1 340px;
+    min-width: 0;
+    padding: 16px 18px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.title {
+    display: block;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.body {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.icon {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: contain;
+}
+
+.field {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// The field's own bottom margin (legacy form item) would leave a gap under the
+// panel; the panel pads itself.
+.field :global(.amount-selector-field) {
+    margin-bottom: 8px;
+}
+
+.swap {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--raised);
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease),
+        transform 0.2s var(--ease);
+}
+
+.swap:hover:not(:disabled) {
+    background: var(--hover);
+    color: var(--ink);
+    transform: rotate(180deg);
+}
+
+.swap:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.swap:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+    .swap {
+        transform: rotate(90deg);
+    }
+
+    .swap:hover:not(:disabled) {
+        transform: rotate(270deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .swap,
+    .swap:hover:not(:disabled) {
+        transition: none;
+    }
+}

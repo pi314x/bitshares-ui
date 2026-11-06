@@ -1,0 +1,39 @@
+/*
+ * Exchange (market layout) input-addon overrides.
+ *
+ * Left over from the removed antd override sheet (docs/UI_MIGRATION_PLAN.md
+ * §7.3): the `.ant-*` rules that used to live next to these were dead once
+ * antd and the vendored stylesheet's antd widgets were removed, so only the
+ * rules that still target app-owned markup (`.inputAddon` in BuySell.tsx and
+ * CreatePoolModal.tsx) remain.
+ */
+
+.market-layout {
+    .inputAddon {
+        input {
+            text-align: right !important;
+        }
+        padding-bottom: 10px !important;
+    }
+
+    // One row: label, field, unit cell on the same centre line and the same
+    // height (the field is --control-h tall; the label used to be 1.75rem, so
+    // it sat above the field's middle).
+    .buy-sell-label {
+        display: flex;
+        align-items: center;
+        height: var(--control-h);
+        line-height: 1.2;
+    }
+
+    // A dropdown inside the unit cell (fee asset) is the cell itself, not a
+    // second bordered box inside it.
+    .inputAddon button[aria-haspopup="listbox"] {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        min-height: 0;
+        height: 100%;
+        padding: 0 8px;
+    }
+}

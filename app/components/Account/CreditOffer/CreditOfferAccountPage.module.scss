@@ -1,0 +1,11 @@
+// The credit views of the portfolio: the switch with the panel's 16px inset,
+// and the list under it scrolling sideways inside the panel when it is wider.
+.views {
+    padding: 0 16px 16px;
+}
+
+.list {
+    min-width: 0;
+    overflow-x: auto;
+    padding: 0 16px 8px;
+}

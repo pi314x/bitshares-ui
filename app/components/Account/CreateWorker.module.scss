@@ -1,0 +1,31 @@
+// The create-worker page: the page head, then one card with the form. It was a native form
+// in the legacy grid, with a 16px paragraph under every field and the two dates as
+// half-width inline blocks.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 720px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+// start and end side by side; one under the other when there is no room
+.dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+// the explanation of the two dates, under both
+body[class][class] .page .help {
+    margin: 0;
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}

@@ -1,4 +1,11 @@
-import alt from "alt-instance";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): plain singleton replacing the real
+// Alt `alt.createActions(SignedMessageAction)` wrapper - grep-confirmed
+// no store ever bound to this class, and no method here relied on Alt's
+// thunk (`dispatch => {...}`) convention, so this is a pure mechanical
+// drop of the Alt wrapping with zero logic changes. Security-sensitive
+// per AGENTS.md: `signMessage` calls `WalletDb.getPrivateKey` to sign
+// with the account's real memo private key - that call, and everything
+// else in this file, is byte-for-byte unchanged.
 import counterpart from "counterpart";
 import {Signature, ChainStore, PublicKey} from "bitsharesjs";
 import WalletUnlockActions from "actions/WalletUnlockActions";
@@ -257,4 +264,4 @@ class SignedMessageAction {
     }
 }
 
-export default alt.createActions(SignedMessageAction);
+export default new SignedMessageAction();

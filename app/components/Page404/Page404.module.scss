@@ -1,0 +1,20 @@
+// CSS Module (docs/UI_MIGRATION_PLAN.md, section 7.5): these classes were
+// only referenced by Page404.tsx. The empty `logo`/`button-back` rules and
+// the colour-notes comment of the old global partial are dropped.
+.page {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.title {
+    font-size: 28px;
+    margin: 18px 0;
+}
+
+.subtitle {
+    font-size: 16px;
+    margin: 18px 0;
+}

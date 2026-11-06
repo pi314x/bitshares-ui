@@ -1,0 +1,120 @@
+// Spotlight tiles. Tokens only (app/design-system/theme.scss); no raw colours.
+// `.page .x` (two classes) is deliberate: the legacy theme sheets style
+// `a`, `button`, `h1` and `h2` with selectors that a single class does not beat.
+
+.page {
+    // the whole width of the page: as many tiles to a row as fit
+    // the shell's content padding is the page's inset; no second one
+    padding: 0;
+}
+
+.notice {
+    margin-top: 16px;
+}
+
+.group {
+    margin-top: 28px;
+}
+
+.page .groupTitle {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.grid {
+    display: grid;
+    // as many columns as fit (a tile is at least 360px wide), one on a phone
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+    gap: 16px;
+}
+
+.page .card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease),
+        background-color 0.15s var(--ease);
+}
+
+.page .card:hover {
+    border-color: var(--accent);
+    background: var(--hover);
+}
+
+.page .card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.page .disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.page .disabled:hover {
+    border-color: var(--line);
+    background: var(--surface);
+}
+
+.chip {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--accent-wash);
+}
+
+.chip :global(.icon) {
+    top: 0;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.badge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--hover);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.description {
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.5;
+}

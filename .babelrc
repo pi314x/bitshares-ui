@@ -1,15 +1,15 @@
 {
     "presets": [
         ["@babel/preset-env", { "modules": false,"targets": { "node": "current"} }],
-        ["@babel/preset-react",{ "targets": { "node": "current"}}]
+        ["@babel/preset-react",{ "targets": { "node": "current"}}],
+        "@babel/preset-typescript"
     ],
     "plugins": [
-      "react-hot-loader/babel",
       "lodash"
     ],
     "env": {
         "test": {
-            "presets": ["@babel/preset-env","@babel/preset-react"],
+            "presets": ["@babel/preset-env","@babel/preset-react","@babel/preset-typescript"],
             "plugins": [
                 [ "babel-plugin-webpack-alias", { "config": "./conf/webpack.config.js" } ]
             ]

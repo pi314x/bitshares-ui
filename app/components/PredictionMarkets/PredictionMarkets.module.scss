@@ -1,0 +1,99 @@
+// Prediction markets: a heading with what it is and the one action, the long
+// explanation folded away, then the list under a toolbar; the offers of the
+// chosen market below it in the same structure. Tokens only.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+// the explanation, inside the folded panel, at a readable measure
+.help {
+    max-width: 72ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.section {
+    min-width: 0;
+}
+
+.sectionHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+.page .sectionTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 0 0 16px;
+}
+
+.switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    cursor: pointer;
+}
+
+.count {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+// a long text (the prediction, the description) in a table cell: two lines, the whole
+// text on hover; the rows of the list are then of one height
+.clamp {
+    display: -webkit-box;
+    max-width: 360px;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.4;
+}
+
+// a figure's second line (the prediction under the asset, the bid-ask range under the
+// likelihood)
+.sub {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+// the asset's prediction on a phone: its own lines under the name
+.under {
+    display: -webkit-box;
+    max-width: 180px;
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}

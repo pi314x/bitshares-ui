@@ -1,0 +1,70 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.input {
+    -webkit-appearance: none;
+    appearance: none;
+    // a flex box: the value is in the middle of the field's height and width
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    max-width: 100%;
+    text-align: center;
+    font: inherit;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    color: var(--ink);
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.input:hover:not(:disabled) {
+    border-color: var(--field-border-hover);
+}
+
+.input:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.input:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.input::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+}
+
+// iOS Safari gives the value no height of its own; it is in the middle of the field
+.input::-webkit-date-and-time-value {
+    flex: 1 1 auto;
+    min-height: 1.3em;
+    margin: 0;
+    text-align: center;
+}
+
+.input::-webkit-datetime-edit {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+// out of the flow, so the value is in the middle of the whole field
+.input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    margin: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

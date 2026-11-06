@@ -686,7 +686,7 @@ function BindToChainState(Component, options = {}) {
             }
             //return <span className={this.state.resolved ? "resolved":"notresolved"}><Component {...props} {...this.state}/></span>;
             return (
-                <Component ref="bound_component" {...props} {...this.state} />
+                <Component {...props} {...this.state} />
             );
         }
     }

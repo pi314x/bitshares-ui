@@ -4,7 +4,6 @@ import browser from "./browser";
 * https://stackoverflow.com/questions/2860879/detecting-if-a-browser-is-using-private-browsing-mode
 */
 export default function(cb) {
-    let ua = navigator.userAgent.toLowerCase();
     let name = browser();
     if (name === "firefox") {
         var db = indexedDB.open("test");
@@ -41,11 +40,11 @@ export default function(cb) {
         fs(
             window.TEMPORARY,
             100,
-            function(fs) {
+            function() {
                 //Not incognito mode
                 cb(false);
             },
-            function(err) {
+            function() {
                 //Incognito mode
                 cb(true);
             }

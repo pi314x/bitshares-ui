@@ -40,7 +40,7 @@ div.account-creation {
 
         label span {
             text-transform: none;
-            @include RobotoRegular;
+            @include PlexRegular;
             line-height: 1.2;
         }
     }
@@ -57,7 +57,7 @@ div.account-creation {
         }
     }
     h4 {
-        @include RobotoMedium;
+        @include PlexMedium;
         margin-top: 1rem;
         margin-bottom: 0;
     }
@@ -107,7 +107,7 @@ div.account-creation {
         padding-top: 1.5rem;
         text-transform: uppercase;
         font-size: 0.875rem;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
 
     p {

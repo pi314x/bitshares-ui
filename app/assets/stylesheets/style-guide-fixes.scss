@@ -1,17 +1,7 @@
+// Selector suffix used by _wallet.scss, _shame.scss and the theme template to
+// exclude elements carrying an antd class from the legacy form-control rules.
+// antd itself is gone (docs/UI_MIGRATION_PLAN.md §7.3), but a few markup
+// spots still carry `ant-*` class names (e.g. `ant-form-item-label`,
+// `ant-input`), so the exclusion is kept byte-for-byte to avoid changing
+// which elements those legacy rules match.
 $ant-fix: ':not([class*="ant-"])';
-
-.ant-form-item {
-    .ant-form-item-label {
-        label {
-            text-transform: none;
-            font-family: Roboto, sans-serif;
-            font-weight: 400;
-            display: inline;
-        }
-    }
-}
-
-.ant-select-dropdown-menu {
-    margin-left: 0;
-    font-size: 14px;
-}

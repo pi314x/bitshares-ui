@@ -1,4 +1,8 @@
-import alt from "alt-instance";
+// Phase 9 (docs/UI_MIGRATION_PLAN.md): plain singleton replacing the real
+// Alt `alt.createActions(LogsActions)` wrapper - grep-confirmed no store
+// ever bound to this class, both methods already return Promises (never
+// dispatched by Alt either way), so this is a pure mechanical drop of
+// the Alt wrapping with zero logic changes.
 import ls from "common/localStorage";
 
 const STORAGE_KEY = "__graphene__";
@@ -19,4 +23,4 @@ class LogsActions {
     }
 }
 
-export default alt.createActions(LogsActions);
+export default new LogsActions();

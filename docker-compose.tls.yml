@@ -1,0 +1,16 @@
+# The same image with TLS of its own: https://<host> (443), http only redirects to it (80).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build
+#
+# Put the certificate chain and the key in ./certs as fullchain.pem and privkey.pem (for
+# example from Let's Encrypt). They are mounted read-only; keep the key out of the repository.
+# The server runs as user 101: the key file must be readable by it (chown 101 certs/privkey.pem).
+services:
+    desk:
+        command:
+            ["nginx", "-c", "/etc/nginx/nginx.tls.conf", "-g", "daemon off;"]
+        ports: !override
+            - "80:8080"
+            - "443:8443"
+        volumes:
+            - ./certs:/certs:ro

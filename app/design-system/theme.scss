@@ -1,0 +1,188 @@
+// CSS custom properties for the new design system. Values must be kept in
+// sync with `tokens.ts` (the typed reference used by TS/JS code) until the
+// design system generates one from the other.
+//
+// Dark is the default theme (`:root`); light is opted into explicitly via
+// `[data-theme="light"]` on the root element, never derived from
+// `prefers-color-scheme`.
+
+@import "palette";
+
+// IBM Plex is the only type family: IBM Plex Sans for all text (headings
+// included), IBM Plex Mono for numbers/code. Self-hosted via @fontsource
+// (imported in app/design-system/fonts.ts from the app entry - SCSS
+// `@import` can't reliably resolve npm package paths the way JS imports can
+// through webpack) rather than a CDN link: the Electron build must not depend
+// on the network just to render its own UI font.
+
+:root {
+    --ground: #{$palette-dark-ground};
+    --surface: #{$palette-dark-surface};
+    --raised: #{$palette-dark-raised};
+    --hover: #{$palette-dark-hover};
+    --line: #{$palette-dark-line};
+    --line-soft: #{$palette-dark-line-soft};
+    --ink: #{$palette-dark-ink};
+    --ink-2: #{$palette-dark-ink-2};
+    --muted: #{$palette-dark-muted};
+    --faint: #{$palette-dark-faint};
+    --accent: #{$palette-dark-accent};
+    --accent-2: #{$palette-dark-accent-2};
+    --accent-wash: #{$palette-dark-accent-wash};
+    --up: #{$palette-dark-up};
+    --down: #{$palette-dark-down};
+    --up-wash: #{$palette-dark-up-wash};
+    --down-wash: #{$palette-dark-down-wash};
+    --warn: #{$palette-dark-warn};
+    --on-accent: #{$palette-dark-on-accent};
+    --cat-1: #{$palette-dark-cat-1};
+    --cat-2: #{$palette-dark-cat-2};
+    --cat-3: #{$palette-dark-cat-3};
+    --cat-4: #{$palette-dark-cat-4};
+    --cat-5: #{$palette-dark-cat-5};
+    --cat-6: #{$palette-dark-cat-6};
+    --cat-other: #{$palette-dark-cat-other};
+
+    // Form controls (buttons, inputs, selects). The field fill and border are
+    // translucent mixes of the ink colour so one definition looks right on
+    // every surface the controls sit on (ground, surface, raised and the
+    // legacy panels, which now take their colours from the same palette), in
+    // both themes.
+    --line-strong: #{mix($palette-dark-line, $palette-dark-muted, 65%)};
+    --focus-ring: #{rgba($palette-dark-accent, 0.38)};
+    --field-bg: #{rgba($palette-dark-ink, 0.055)};
+    --field-bg: color-mix(in srgb, var(--ink) 5.5%, transparent);
+    --field-bg-hover: #{rgba($palette-dark-ink, 0.09)};
+    --field-bg-hover: color-mix(in srgb, var(--ink) 9%, transparent);
+    --field-border: #{rgba($palette-dark-ink, 0.16)};
+    --field-border: color-mix(in srgb, var(--ink) 16%, transparent);
+    --field-border-hover: #{rgba($palette-dark-ink, 0.3)};
+    --field-border-hover: color-mix(in srgb, var(--ink) 30%, transparent);
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --control-h: 38px;
+    --control-h-sm: 30px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+    --overlay: rgba(5, 8, 12, 0.62);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+        "Segoe UI", sans-serif;
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+        "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root[data-theme="light"] {
+    --ground: #{$palette-light-ground};
+    --surface: #{$palette-light-surface};
+    --raised: #{$palette-light-raised};
+    --hover: #{$palette-light-hover};
+    --line: #{$palette-light-line};
+    --line-soft: #{$palette-light-line-soft};
+    --ink: #{$palette-light-ink};
+    --ink-2: #{$palette-light-ink-2};
+    --muted: #{$palette-light-muted};
+    --faint: #{$palette-light-faint};
+    --accent: #{$palette-light-accent};
+    --accent-2: #{$palette-light-accent-2};
+    --accent-wash: #{$palette-light-accent-wash};
+    --up: #{$palette-light-up};
+    --down: #{$palette-light-down};
+    --up-wash: #{$palette-light-up-wash};
+    --down-wash: #{$palette-light-down-wash};
+    --warn: #{$palette-light-warn};
+    --on-accent: #{$palette-light-on-accent};
+    --cat-1: #{$palette-light-cat-1};
+    --cat-2: #{$palette-light-cat-2};
+    --cat-3: #{$palette-light-cat-3};
+    --cat-4: #{$palette-light-cat-4};
+    --cat-5: #{$palette-light-cat-5};
+    --cat-6: #{$palette-light-cat-6};
+    --cat-other: #{$palette-light-cat-other};
+
+    --line-strong: #{mix($palette-light-line, $palette-light-muted, 70%)};
+    --focus-ring: #{rgba($palette-light-accent, 0.28)};
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.1);
+    --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.14);
+    --shadow-lg: 0 16px 48px rgba(16, 24, 40, 0.2);
+    --overlay: rgba(17, 24, 39, 0.42);
+}
+
+// Base styles shared by every screen that imports this file, so individual
+// components don't each re-declare body font/background/focus styling.
+body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0;
+}
+
+// Visible on keyboard focus only, not on mouse click — matches the
+// reference design and keeps the accent color meaningful as a focus
+// signal rather than decoration.
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+// During a window resize (lib/common/resizeGuard.js): no transitions, so
+// elements that cross a breakpoint jump to their new layout instead of
+// animating through it. Animations (spinners) are left alone.
+html.is-resizing,
+html.is-resizing *,
+html.is-resizing *::before,
+html.is-resizing *::after {
+    transition: none !important;
+}
+
+// The page scrolls as a document. The legacy top-level frame
+// (App.jsx: #content-wrapper > .grid-frame) was locked to the viewport height
+// with `overflow: hidden`; the new shell inside it is taller than that on every
+// screen with more than a screenful (Spotlight 2151px in an 844px frame), so the
+// rest was cut off and could not be scrolled to - and iOS Safari has no inner
+// scroller to fall back on. Panels that need their own scrolling (the exchange)
+// bring their own scroll containers.
+#content-wrapper > .grid-frame {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+}
+
+html {
+    // no font inflation after rotating a phone
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+// Native controls (a <select>'s popup, scrollbars, date pickers) are drawn by
+// the browser; without this they are always the light scheme, so the options of
+// a dark page were light text on a white list.
+:root {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+select option {
+    background-color: var(--raised);
+    color: var(--ink);
+}

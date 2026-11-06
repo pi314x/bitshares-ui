@@ -1,0 +1,21 @@
+.select {
+    min-width: 0;
+}
+
+// "Paired with" before the asset in the closed field; muted, so the asset reads first
+.chosen {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.label {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.any {
+    color: var(--muted);
+}

@@ -125,87 +125,8 @@
             border-left: 0 !important;
         }
     }
-    .showcases-grid {
-        margin: 32px 0;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .showcases-grid--wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        max-width: calc((450px + 32px) * 3); // 450px + 32px padding * 3 cells
-    }
-    .showcases-grid--wrapper--item {
-        color: $secondary-text-color;
-        padding: 1rem;
-        min-width: 380px;
-        width: 33.3%;
-        height: 320px;
-        h2.no-margin {
-            margin: 0;
-        }
-        span.icon {
-            margin: 0;
-            svg {
-                margin: 0;
-            }
-        }
-    }
-    .showcases-grid--wrapper--item--wrapper {
-        padding: 1rem;
-        height: calc(320px - 2rem);
-        transition: 0.3s;
-        border-radius: 10px;
-        cursor: pointer;
-        background-color: $header-color;
-        border: 1px solid $header-color;
-        &:hover {
-            background-color: $header-color;
-            border-color: $link-text-color;
-        }
-        &:focus {
-            border-color: transparentize($link-text-color, 0.95);
-            outline: none !important;
-            box-shadow: 0 0 0 2px transparentize($link-text-color, 0.85);
-        }
-    }
-    .showcases-grid--wrapper--item--wrapper--disabled {
-        padding: 1rem;
-        height: calc(320px - 2rem);
-        transition: 0.3s;
-        border-radius: 10px;
-        background-color: $header-color;
-        border: 1px solid $header-color;
-    }
-    .showcases-grid--wrapper--item--wrapper--content {
-        padding: 1rem;
-        display: flex;
-        height: calc(100% - 32px);
-        align-items: center;
-    }
-    .showcases-grid--wrapper--item--wrapper--content--description {
-        line-height: 1.5rem;
-    }
     .exchange--chart-control {
         background: $panel-bg-color;
-    }
-    @media (max-width: 1150px) {
-        .showcases-grid--wrapper {
-            width: 900px;
-        }
-        .showcases-grid--wrapper--item {
-            width: 50%;
-        }
-    }
-    @media (max-width: 750px) {
-        .showcases-grid--wrapper {
-            width: 450px;
-        }
-        .showcases-grid--wrapper--item {
-            width: 100%;
-        }
     }
     .exchange--price-alert--show-modal--active {
         color: $link-text-color;
@@ -546,13 +467,6 @@
             color: darken($secondary-text-color, 10%);
         }
     }
-    .node-access-popup {
-        @include color($secondary-text-color, $panel-bg-color);
-        border: 1px solid black;
-        .nodes-list .api-status {
-            border-bottom: 1px solid lighten($bg-color, 4%);
-        }
-    }
     .panel-left {
         @include color($light-text-color, $light-panel-bg-color);
         .block-list li > a {
@@ -809,7 +723,7 @@
                 color: $info-color;
             }
             > span {
-                @include RobotoMedium;
+                @include PlexMedium;
             }
         }
         svg path {
@@ -1226,11 +1140,11 @@
     }
     .value.negative {
         color: $ask-color !important;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .value.positive {
         color: $bid-color !important;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .active-bucket {
         background-color: lighten($light-panel-bg-color, 12%);
@@ -1256,7 +1170,7 @@
             color: $primary-text-color;
         }
         h6 {
-            @include RobotoMedium;
+            @include PlexMedium;
         }
         .bottom {
             border-top-color: $bg-color;
@@ -1275,7 +1189,7 @@
             background: transparent;
             border: 2px solid $button-bg-color;
             > a {
-                @include RobotoMedium;
+                @include PlexMedium;
                 color: $primary-text-color;
             }
         }
@@ -1303,7 +1217,7 @@
     .my-account h4,
     .my-account p,
     table.table > tbody > tr > td.my-account > span {
-        @include RobotoMedium;
+        @include PlexMedium;
         color: $info-color;
     }
     .account-left-menu {
@@ -1570,13 +1484,13 @@
     }
     // .block-content-header {
     // //text-transform: uppercase;
-    // @include RobotoLight;
+    // @include PlexLight;
     // }
     .orderHistoryBid {
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $bid-color;
         }
         > span.price-decimal,
@@ -1589,7 +1503,7 @@
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $ask-color;
         }
         > span.price-decimal,
@@ -1602,7 +1516,7 @@
         > span.price-integer,
         > span > span.price-integer,
         > span.formatted-price > span {
-            @include RobotoMedium;
+            @include PlexMedium;
             color: $call-color;
         }
         > span.price-decimal,
@@ -1710,7 +1624,7 @@
     .stat-text {
         margin-top: 3px;
         font-size: 11px;
-        color: gray;
+        color: $inactive-text-color;
     }
     .buy-sell-box {
         background-color: $header-color;
@@ -1747,7 +1661,7 @@
         background-color: $header-color;
         padding: 8px 35px;
         border-bottom: 1px solid grey;
-        @include RobotoMedium;
+        @include PlexMedium;
         text-transform: uppercase;
         cursor: pointer;
     }
@@ -1888,7 +1802,7 @@
     }
     .margin-ratio {
         padding: 6px;
-        @include RobotoMedium;
+        @include PlexMedium;
     }
     .margin-ratio.danger {
         background-color: darken($alert-color, 15%) !important;
@@ -1902,12 +1816,12 @@
         > td.danger {
             background-color: darken($alert-color, 15%) !important;
             color: $dark-text-color;
-            @include RobotoMedium;
+            @include PlexMedium;
         }
         > td.warning {
             background-color: darken($warning-color, 15%) !important;
             color: $dark-text-color;
-            @include RobotoMedium;
+            @include PlexMedium;
         }
     }
     .nodes-header {
@@ -1928,25 +1842,6 @@
             > div.clickable:hover {
                 background-color: lighten($panel-bg-color, 5%);
             }
-        }
-    }
-    .blocktrades-bridge input,
-    .blocktrades-bridge select {
-        color: $secondary-text-color;
-        border: 1px solid $secondary-text-color;
-        background-color: $panel-bg-color !important;
-        &.native-coin-types,
-        &.external-coin-types {
-            background-color: transparent !important;
-        }
-        > option {
-            color: $primary-text-color;
-            background-color: $panel-bg-color !important;
-        }
-        &:hover,
-        &:focus {
-            color: $primary-text-color; // box-shadow: 1px 2px 3px #000;
-            border: 2px solid $primary-text-color;
         }
     }
     .SimpleTrade__modal {
@@ -1988,7 +1883,7 @@
     }
     table.table > tbody > tr.in-use {
         > td:nth-child(2) {
-            @include RobotoMedium;
+            @include PlexMedium;
         }
     }
     .SimpleDepositBridge__info-row {
@@ -2002,7 +1897,7 @@
     }
     input.my-key,
     td.my-key a {
-        @include RobotoMedium;
+        @include PlexMedium;
         color: $info-color;
     }
     td.pub-key {
@@ -2156,19 +2051,6 @@
             color: $ask-color;
             > svg path {
                 fill: $ask-color;
-            }
-        }
-    }
-    .footer {
-        div.footer-status {
-            > span.testnet {
-                font-size: 0.85rem;
-            }
-            > span.success {
-                color: $success-color;
-            }
-            > span.warning {
-                color: $alert-color;
             }
         }
     }

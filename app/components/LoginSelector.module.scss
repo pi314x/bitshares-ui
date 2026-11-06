@@ -1,0 +1,213 @@
+// /create-account: inside the onboarding frame (Wallet/Onboarding.module.scss).
+// Two tiles (create / log in) with what each is for, the other ways as rows of
+// a list, the language in the card's foot, and the chosen form under a rule.
+
+// ----- the two ways forward
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--raised);
+}
+
+// the button is the last thing of a tile, at its foot and as wide as it
+.tile > button {
+    width: 100%;
+    margin: auto 0 0;
+}
+
+.tile .tileText {
+    flex: 1 0 auto;
+    margin: 0 0 8px;
+}
+
+body[class][class] .tileTitle {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+}
+
+body[class][class] .tileText {
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+// ----- the other ways: a list of rows, each a link
+.other {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body[class][class] .otherTitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.rows > li {
+    margin: 0;
+    padding: 0;
+}
+
+.rows > li + li {
+    border-top: 1px solid var(--line);
+}
+
+body[class][class] .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 10px 14px;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+body[class][class] .row:hover {
+    background: var(--hover);
+}
+
+body[class][class] .row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.row > :first-child {
+    color: var(--accent);
+}
+
+.rowText {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.rowTitle {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.rowSub {
+    color: var(--ink-2);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+// ----- the language, in the card's foot: its name left, the choice right
+.language {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+.languageLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+
+.languageLabel > :first-child {
+    color: var(--accent);
+}
+
+// ----- the form the buttons lead to: under a rule, at the card's width (the
+// legacy wrapper is a 300px strip with its own padding)
+.form {
+    min-width: 0;
+}
+
+// After the account is created the page is only what comes next (the backup, the first steps):
+// the create / log in tiles and the other ways to start above it are not needed any more
+.tiles:has(~ .form :global(.account-created)),
+.other:has(~ .form :global(.account-created)) {
+    display: none;
+}
+
+.form:empty {
+    display: none;
+}
+
+.form:not(:empty) {
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+}
+
+.form :global(.account-creation) {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+.form :global(.account-creation) h3,
+.form :global(.account-creation) h4,
+.form :global(.account-creation) h5 {
+    text-align: left;
+}
+
+.form :global(.account-creation) p {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+// the fields of either form are the width of the card (the design system's
+// inputs stop at 480px, so a password field and its confirmation differed)
+.form input[type="text"],
+.form input[type="password"],
+.form input:not([type]),
+.form textarea {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+@media (max-width: 560px) {
+    .tiles {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .language {
+        flex-wrap: wrap;
+    }
+}

@@ -1,0 +1,326 @@
+// The top of the market page: the pair (logos, name, the three small actions),
+// the figures that matter (latest price, 24 h change, volume, and for a bitAsset
+// the feed and the settlement price), and the settings button. One card, like
+// the rest of the app. The stat items are the legacy `li` markup of
+// `PriceStatWithLabel`, restyled here (`body[class][class]` beats the legacy sheet).
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 32px;
+    margin: 0 0 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+}
+
+.pair {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.logos {
+    display: inline-flex;
+    flex: none;
+}
+
+// the two logos overlap, each with a ring of the card's colour
+.logos > * {
+    box-shadow: 0 0 0 2px var(--surface);
+}
+
+.second {
+    margin-left: -10px;
+}
+
+.names {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 4px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+
+.asset {
+    padding: 0 6px;
+    margin: 0 -6px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.asset:hover {
+    background: var(--hover);
+}
+
+.selected {
+    color: var(--accent);
+}
+
+.slash {
+    color: var(--faint);
+    font-weight: 400;
+}
+
+// bell, swap sides, favourite: three quiet icon buttons, the line icons of the rail and the
+// top bar. A touch screen gets a larger target.
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+// `body[class][class]`: the legacy sheet colours every link (the swap button is one)
+body[class][class] .actions > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body[class][class] .actions > *:hover {
+    background: var(--hover);
+    color: var(--ink);
+}
+
+body[class][class] .actions > *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+// a price alert is set: the bell is in the accent colour; the pair is a favourite: gold
+body[class][class] .actions > .on {
+    color: var(--accent);
+}
+
+body[class][class] .actions > .starOn {
+    color: var(--warn);
+}
+
+@media (pointer: coarse) {
+    body[class][class] .actions > * {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+// ----- the figures
+body[class][class] .stats {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 32px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body[class][class] .stats > li {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+}
+
+// (the legacy sheet hides the 24 h change and the volume on a narrow screen:
+// here they are what the card is for)
+body[class][class] .stats.stats > li:global(.stressed-stat) {
+    display: flex;
+}
+
+// what the tooltip wrapper puts around a figure and its label
+body[class][class] .stats > li > span {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+}
+
+body[class][class] .stats :global(.stat-text) {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+body[class][class] .stats :global(.value) {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+// the latest price leads
+body[class][class] .stats > li:first-child :global(.value) {
+    font-size: 24px;
+    letter-spacing: -0.01em;
+}
+
+body[class][class] .stats :global(.symbol-text) {
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+// 24 h change: a chip in the colour of its direction
+body[class][class] .stats > li:global(.daily_change) {
+    flex-direction: column-reverse;
+}
+
+body[class][class] .stats > li:global(.daily_change) > span {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: baseline;
+    align-self: flex-start;
+    gap: 2px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    background: var(--hover);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+body[class][class] .stats > li:global(.daily_change.positive) > span {
+    background: var(--up-wash);
+    color: var(--up);
+}
+
+body[class][class] .stats > li:global(.daily_change.negative) > span {
+    background: var(--down-wash);
+    color: var(--down);
+}
+
+body[class][class] .stats > li:global(.daily_change) :global(.value) {
+    color: inherit;
+    font-size: inherit;
+}
+
+body[class][class] .stats > li:global(.clickable) {
+    cursor: pointer;
+}
+
+// ----- settings
+.settings {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--control-h, 36px);
+    margin-left: auto;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--raised);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.settings:hover {
+    border-color: var(--faint);
+}
+
+.settings:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.settingsLabel {
+    font-size: 13px;
+}
+
+// ----- narrower: the pair and the settings button on the first row, the
+// figures under them
+@media (max-width: 1100px) {
+    .stats {
+        order: 3;
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 860px) {
+    .header {
+        padding: 12px 14px;
+        gap: 12px 16px;
+    }
+
+    .pair {
+        flex: 1 1 auto;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    // icon only
+    .settingsLabel {
+        display: none;
+    }
+
+    .settings {
+        padding: 0 10px;
+    }
+
+    body[class][class] .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 16px;
+    }
+
+    // the latest price has the first row to itself
+    body[class][class] .stats > li:first-child {
+        grid-column: 1 / -1;
+    }
+
+    body[class][class] .stats > li:first-child :global(.value) {
+        font-size: 20px;
+    }
+}

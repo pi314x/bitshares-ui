@@ -1,0 +1,16 @@
+// The issued assets of an account: six columns (symbol, type, supply, maximum supply, issue,
+// update) in 340px ran into each other and wrapped their headers to three lines. The symbol, the
+// supply and the two actions carry a row; the type and the maximum supply come with room.
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+@media (max-width: 640px) {
+    body[class][class] .table th:nth-child(2),
+    body[class][class] .table td:nth-child(2),
+    body[class][class] .table th:nth-child(4),
+    body[class][class] .table td:nth-child(4) {
+        display: none;
+    }
+}

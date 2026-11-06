@@ -1,0 +1,35 @@
+.carousel {
+    position: relative;
+    width: 100%;
+}
+
+.slide {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+.dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dot {
+    width: 16px;
+    height: 3px;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    background: var(--line);
+    cursor: pointer;
+}
+
+.dotActive {
+    background: var(--accent);
+}

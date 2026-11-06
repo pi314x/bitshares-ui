@@ -1,0 +1,63 @@
+// The block half of the connection chip. Fixed-width characters, and every
+// part has the width of its longest value: the number ticking over and the age
+// counting up move nothing.
+.block {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.number {
+    display: inline-block;
+    min-width: 12ch; // "#115,209,838"
+    text-align: right;
+    font-weight: 600;
+    color: var(--ink);
+    animation: tick 0.7s ease-out;
+}
+
+.age {
+    display: inline-block;
+    min-width: 4ch; // "now", "59s", "23h"
+    text-align: right;
+    color: var(--muted);
+}
+
+// late blocks show in the age
+.slow .age {
+    color: var(--warn);
+}
+
+.stalled .age,
+.offline .age {
+    color: var(--down);
+}
+
+// the number flashes in accent when a new block replaces it (its `key` is the
+// block number, so every block restarts the animation)
+@keyframes tick {
+    from {
+        color: var(--accent);
+        opacity: 0.4;
+    }
+    to {
+        color: var(--ink);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .number {
+        animation: none;
+    }
+}
+
+// Phone: the same chip, a little tighter.
+@media (max-width: 640px) {
+    .block {
+        gap: 6px;
+    }
+}

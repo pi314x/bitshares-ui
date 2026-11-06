@@ -1,0 +1,524 @@
+// The trade page, desktop: panels are cards in a grid instead of one long
+// column. Everything is scoped to `.market-layout` (the trade page's own
+// container), so nothing else is touched.
+//
+//   chart                                     (full width)
+//   buy form          | sell form             (side by side when there is room)
+//   buy orders        | sell orders           (the order book, two halves)
+//   trades            | my orders
+//
+// The panels were laid out by Foundation width classes (`small-12`, `medium-6`)
+// and `order-N` classes in a wrapping flex row; the grid below takes over the
+// placement and keeps the `order-N` classes, so the user's panel settings
+// (which panel is shown, in which order) still apply.
+.market-layout {
+    #CenterContent > .grid-block.no-overflow.wrap.shrink {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 0 0;
+        // cards of one row are one height
+        align-items: stretch;
+        // a card that comes later may fill the gap an earlier one left (the
+        // trades card has no neighbour until "my orders", which follows the
+        // order book in the order of the panels)
+        grid-auto-flow: row dense;
+
+        // every panel: one card
+        > * {
+            box-sizing: border-box;
+            width: auto;
+            max-width: none;
+            min-width: 0;
+            margin: 0;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            overflow: hidden;
+        }
+
+        // the phone layout draws its own cards (PhoneTradeLayout); as a card
+        // itself it was a second rounded border around them
+        > .phone-trade {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            overflow: visible;
+        }
+
+        // the order book is two cards (bids, asks) inside one block
+        > .orderbook {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            overflow: visible;
+
+            > * {
+                box-sizing: border-box;
+                // the halves are Foundation `medium-6` columns (50% wide): in a
+                // grid cell they were half a cell
+                width: auto;
+                max-width: none;
+                min-width: 0;
+                margin: 0;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-lg);
+                background: var(--surface);
+                overflow: hidden;
+            }
+        }
+    }
+}
+
+// The side panel (markets) keeps its width: its controls wrapped to a wider
+// column than the content next to it can spare.
+.market-layout > .grid-block.left-column.shrink:last-child {
+    flex: 0 0 380px;
+    width: 380px;
+    max-width: 380px;
+}
+
+// Two columns of forms need ~320px each...
+@media (min-width: 1360px) {
+    .market-layout #CenterContent > .grid-block.no-overflow.wrap.shrink {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        // the order book spans both columns
+        > .orderbook {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+// ...and the order book's four number columns need ~480px each to sit side by
+// side; below that its halves are stacked.
+@media (min-width: 1560px) {
+    .market-layout
+        #CenterContent
+        > .grid-block.no-overflow.wrap.shrink
+        > .orderbook {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+// The order book's four number columns (total, base, quote, price) in half the
+// width: smaller figures that do not run into each other, kept on one line.
+body[class][class] .market-layout .orderbook table td,
+body[class][class] .market-layout .orderbook table th {
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+// The order book's rows: fixed-width figures (so a price that changes does not
+// move its neighbours), one row height, a header in the other tables' style.
+body[class][class] .market-layout .orderbook table td {
+    font-family: var(--font-mono);
+    height: 26px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+body[class][class] .market-layout .orderbook table th {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+// The market header (pair, price, 24h figures) had no air above it.
+body[class][class] .top-bar {
+    padding-top: 16px;
+    padding-bottom: 8px;
+}
+
+// The chart's frame: on a wide screen it is the chart's only border, so it is
+// drawn like the cards' (the theme's line colour) but with a small radius: the
+// frame clips the chart, and a card's 12px cut the gridlines and the first bars
+// off at the corners. On a phone the chart sits inside a card that already
+// frames it, and a box in a box is gone.
+body[class][class] .market-layout .exchange-bordered {
+    border-color: var(--line);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+body[class][class] .market-layout .phone-trade .exchange-bordered {
+    border: 0;
+    border-radius: 0;
+}
+
+// The order forms (limit and scaled), one design: the label above its field, the
+// field the width of the form, the figures that are data (lowest ask / highest
+// bid, balance) as a label and its value on one row, and the submit button as
+// wide as the form - Buy/Sell and Borrow (or Settle) half and half.
+body[class][class] .buy-sell-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+
+    > form.order-form {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .buy-sell-label {
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        color: var(--ink-2);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.3;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    // the field's own wrapper adds no space of its own
+    .inputAddon {
+        margin: 0;
+        padding: 0;
+    }
+
+    form.order-form {
+        padding: 12px 16px 16px;
+    }
+
+    // the expiration, the data and the buttons sit at the bottom of the card: in
+    // two cards side by side (one with a market fee row, one without) the
+    // buttons are on one line
+    form.order-form > .grid-block.wrap.shrink:nth-child(2) {
+        margin-top: auto;
+    }
+
+    // a field: its label, then the control
+    .grid-block.wrap.shrink {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 6px;
+        width: 100%;
+        margin: 0 0 16px;
+        padding: 0;
+    }
+
+    // the last field of the group has no margin of its own: the group's gap to
+    // the expiration is the same 16px as between fields (it was doubled)
+    form.order-form
+        > .grid-block.wrap.shrink:first-child
+        > div
+        > .grid-block.wrap.shrink:last-child {
+        margin-bottom: 0;
+    }
+
+    // the wrapper around the market fee row adds nothing of its own
+    .buy-sell-tooltip-row {
+        display: block;
+        margin: 0;
+        padding: 0;
+    }
+
+    .grid-block.wrap.shrink > .buy-sell-label,
+    .grid-block.wrap.shrink > .inputAddon,
+    .grid-block.wrap.shrink > .small-9,
+    .grid-block.wrap.shrink > .small-8,
+    .grid-block.wrap.shrink > .small-4,
+    .grid-block.wrap.shrink > .small-3 {
+        flex: none;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    // a figure that is data: "Lowest ask      0.014701 bitUSD/BTS" on one row
+    .grid-block.wrap.shrink:has(> .small-8.buy-sell-label) {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 2px 12px;
+        margin-bottom: 16px;
+    }
+
+    // the scaled form's data rows (a Form.Item of the design system) look the same
+    .order-data {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+    }
+
+    .order-data > label {
+        flex: 0 0 auto;
+    }
+
+    .order-data > div {
+        flex: 0 1 auto;
+        text-align: right;
+        font-size: 15px;
+        color: var(--ink);
+    }
+
+    .grid-block.wrap.shrink > .small-8.buy-sell-label {
+        width: auto;
+        flex: 0 1 auto;
+        min-width: 0;
+        margin-left: auto;
+        overflow-wrap: anywhere;
+        text-align: right;
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink);
+    }
+
+    .grid-block.wrap.shrink
+        > .small-4.buy-sell-label:has(+ .small-8.buy-sell-label) {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    // the expiration: its label above the select, the select the form's width.
+    // The date picker that "Specific time" opens takes no room of its own (a
+    // hidden 38px input above the select pushed the select a row down).
+    .grid-block:has(> .expiration-datetime-picker) {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        margin: 0 0 16px;
+    }
+
+    .grid-block:has(> .expiration-datetime-picker) > .buy-sell-label,
+    .grid-block:has(> .expiration-datetime-picker)
+        > .expiration-datetime-picker {
+        flex: none;
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+
+    .expiration-datetime-picker {
+        position: relative;
+    }
+
+    .expiration-datetime-picker .expiration-datetime-picker--hidden {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .expiration-datetime-picker select {
+        width: 100%;
+        margin: 0;
+    }
+
+    // Buy/Sell and Borrow (or Settle) share a row, half and half
+    .order-actions {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .order-actions > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .order-actions button {
+        width: 100%;
+    }
+
+    .order-submit-wrap {
+        display: block;
+        width: 100%;
+    }
+}
+
+// The order forms' tabs (Limit / Scaled) are the pill row, with what the form
+// is for ("Buy BTS") on the same line, inside the card at its inset.
+body[class][class] .exchange--buy-sell-form > div:first-child {
+    align-items: center;
+    padding: 12px 16px 0;
+}
+
+body[class][class]
+    .exchange--buy-sell-form
+    > div:first-child
+    > div:first-child {
+    margin-bottom: 0;
+}
+
+body[class][class] .exchange--buy-sell-form .exchange-content-header {
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+// The market list in the side panel: its menu has the panel's inset, and the
+// rows are tighter than a page's table so that the change column fits.
+body[class][class] .left-order-book .footer > div {
+    padding: 12px 12px 0;
+}
+
+// Buy and Sell carry the side's colour: green for a bid, red for an ask (the title of the
+// form too), not the accent for both. A disabled one is the same colour, faded.
+body[class][class] .buy-sell-container .order-submit.bid,
+body[class][class] .buy-sell-container .order-submit.bid:hover:not(:disabled) {
+    border-color: var(--up);
+    background: var(--up);
+    color: var(--on-accent);
+}
+
+body[class][class] .buy-sell-container .order-submit.ask,
+body[class][class] .buy-sell-container .order-submit.ask:hover:not(:disabled) {
+    border-color: var(--down);
+    background: var(--down);
+    color: var(--on-accent);
+}
+
+body[class][class] .buy-sell-container .order-submit:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+body[class][class] .exchange--buy-sell-form .buy-sell-title--bid {
+    color: var(--up);
+}
+
+body[class][class] .exchange--buy-sell-form .buy-sell-title--ask {
+    color: var(--down);
+}
+
+// An empty list (no trades, no open orders): a quiet line, not an italic block
+body[class][class] .exchange-empty {
+    padding: 28px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: normal;
+    line-height: 1.4;
+    text-align: center;
+}
+
+// The order tables (open orders, trades): every cell centred on its row line, with
+// the checkbox and the figures on one axis (a cell's content sat on the baseline, the
+// checkbox above it), and figures that do not change width as they change.
+body[class][class] .order-table > thead > tr > th,
+body[class][class] .order-table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+body[class][class] .order-table > tbody > tr > td {
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35;
+}
+
+// Four columns, in the half-width cards of the desktop as on a phone (five columns of
+// figures ran into each other in 340-370px): the checkbox, the price with its expiration
+// under it, and the two amounts, which have the width they need. The header and the rows
+// are two tables of fixed layout, so the same widths keep the columns on one line.
+body[class][class] .order-table .order-col-check {
+    width: 32px;
+    text-align: center;
+}
+
+body[class][class] .order-table .order-col-price {
+    width: 24%;
+}
+
+body[class][class] .order-table .order-col-expiry {
+    display: none;
+}
+
+body[class][class] .order-table > tbody > tr > td.order-col-price,
+body[class][class] .order-table > tbody > tr > td.order-col-amount {
+    padding: 10px 4px;
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+
+body[class][class] .order-table > thead > tr > th.order-col-price,
+body[class][class] .order-table > thead > tr > th.order-col-amount {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+body[class][class] .order-table .order-col-check label {
+    display: flex;
+    justify-content: center;
+}
+
+body[class][class] .order-table th.order-col-check,
+body[class][class] .order-table td.order-col-check {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+// a column's header, its asset icon and name, on one line
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-price
+    > .header-sub-title,
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-amount
+    > .header-sub-title,
+body[class][class]
+    .order-table
+    > thead
+    > tr
+    > th.order-col-expiry
+    > .header-sub-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+// the expiration, under the price
+body[class][class] .order-table .order-expiry-under {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+// The trades tables (market trades, my trades): the four columns of figures right-aligned
+// like their headers, the date on one line.
+body[class][class] .history-table > thead > tr > th,
+body[class][class] .history-table > tbody > tr > td:not(.exchange-empty) {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+body[class][class] .history-table > tbody > tr > td:not(.exchange-empty) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 11.5px;
+    text-align: right;
+    white-space: nowrap;
+}

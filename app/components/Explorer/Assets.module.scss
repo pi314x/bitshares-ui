@@ -1,0 +1,11 @@
+// The Exchange link at the end of a row of the assets table: the chart icon and the word on
+// one line; on a phone only the icon (the word wrapped to "Excha" at the edge of the table).
+.link {
+    white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+    .label {
+        display: none;
+    }
+}

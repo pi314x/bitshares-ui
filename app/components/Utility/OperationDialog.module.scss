@@ -1,0 +1,46 @@
+// The form of an operation dialog: fields one under the other, a label above each.
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.help {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.fieldError {
+    color: var(--down);
+    font-size: 12px;
+}
+
+.note {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    background: var(--accent-wash);
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}

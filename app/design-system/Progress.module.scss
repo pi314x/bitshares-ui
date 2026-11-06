@@ -1,0 +1,29 @@
+.wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.track {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.2s ease;
+}
+
+.info {
+    flex-shrink: 0;
+    color: var(--ink-2);
+    font-size: 12px;
+    min-width: 36px;
+    text-align: right;
+}

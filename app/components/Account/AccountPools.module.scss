@@ -1,0 +1,29 @@
+// The account's pools: the filters in one wrapping row (they were three fields and a
+// select with margins added one after the other, each indented further than the last).
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 4px 0 16px;
+}
+
+.filter {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.rows {
+    flex: 0 1 150px;
+    min-width: 120px;
+}
+
+.actions {
+    margin-top: 16px;
+}
+
+// the three action icons of a row, side by side
+.rowActions {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+}

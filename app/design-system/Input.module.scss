@@ -1,0 +1,150 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.input {
+    font: inherit;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    color: var(--ink);
+    transition: border-color 0.15s var(--ease),
+        background-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.input:hover:not(:disabled) {
+    border-color: var(--field-border-hover);
+}
+
+.input:focus,
+.input:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.input:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.input::placeholder {
+    color: var(--muted);
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 72px;
+    padding: 9px 12px;
+    line-height: 1.45;
+}
+
+.wrap {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.hasAddonBefore {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.hasAddonAfter {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+// The field takes the room, the unit label ("BITUSD / BTS") keeps its own
+// width on one line instead of wrapping into a two-line cell.
+.wrap > .input,
+.wrap > .withSuffix {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// A legacy global rule gives every `input` a 16px bottom margin, which made
+// the wrapper 16px taller than the field and the unit cell hang below it.
+.wrap > .input,
+.wrap > .withSuffix > .input {
+    margin: 0 !important;
+}
+
+.addonBefore {
+    display: flex;
+    align-items: center;
+    flex: none;
+    white-space: nowrap;
+    padding: 0 10px;
+    border: 1px solid var(--field-border);
+    border-right: none;
+    border-top-left-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    background: var(--field-bg-hover);
+    color: var(--muted);
+}
+
+.addonAfter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 0 12px;
+    border: 1px solid var(--field-border);
+    border-left: none;
+    border-top-right-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    background: var(--field-bg-hover);
+    color: var(--muted);
+}
+
+.withSuffix {
+    position: relative;
+    flex: 1;
+    display: flex;
+}
+
+.suffix {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+}
+
+.group {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+// `compact`: adjacent children read as one joined box - no gap, and
+// only the outermost corners stay rounded.
+.compact {
+    gap: 0;
+}
+
+.compact > :global(*):not(:first-child):not(:last-child) {
+    border-radius: 0;
+    margin-left: -1px;
+}
+
+.compact > :global(*):first-child:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.compact > :global(*):last-child:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+}
