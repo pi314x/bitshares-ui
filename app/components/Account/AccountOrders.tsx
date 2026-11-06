@@ -79,13 +79,27 @@ function AccountOrders(props: AccountOrdersCoreProps) {
             [];
 
         return orders.filter((item: any) => {
-            const order = ChainStore.getObject(item).toJS();
+            // (an order or an asset the chain store has not loaded yet is not listed until it has: the page renders first)
+            const loaded = ChainStore.getObject(item);
+            if (!loaded) return false;
+            const order = loaded.toJS();
             const base: any = ChainStore.getAsset(
-                order.sell_price.base.asset_id
+                type === "settle"
+                    ? order.balance.asset_id
+                    : order.sell_price.base.asset_id
             );
-            const quote: any = ChainStore.getAsset(
-                order.sell_price.quote.asset_id
-            );
+            const quote: any =
+                type === "settle"
+                    ? base &&
+                      ChainStore.getAsset(
+                          base.getIn([
+                              "bitasset",
+                              "options",
+                              "short_backing_asset"
+                          ])
+                      )
+                    : ChainStore.getAsset(order.sell_price.quote.asset_id);
+            if (!base || !quote) return false;
 
             const baseSymbol = base.get("symbol").toLowerCase();
             const quoteSymbol = quote.get("symbol").toLowerCase();
@@ -110,13 +124,16 @@ function AccountOrders(props: AccountOrdersCoreProps) {
             let feed_price: any = null;
             let bitasset_options = null;
 
+            // (an order or an asset the chain store has not loaded yet gets its row once it has: the page renders first)
+            const loaded = ChainStore.getObject(orderID);
+            if (!loaded) return;
+            order = loaded.toJS();
             if (!isSettle) {
-                order = ChainStore.getObject(orderID).toJS();
                 base = ChainStore.getAsset(order.sell_price.base.asset_id);
                 quote = ChainStore.getAsset(order.sell_price.quote.asset_id);
             } else {
-                order = ChainStore.getObject(orderID).toJS();
                 base = ChainStore.getAsset(order.balance.asset_id);
+                if (!base) return;
                 quote = ChainStore.getAsset(
                     base.getIn(["bitasset", "options", "short_backing_asset"])
                 );
