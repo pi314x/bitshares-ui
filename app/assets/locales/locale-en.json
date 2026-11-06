@@ -647,6 +647,7 @@
         "mortgage_assets": "Collateral",
         "my_debt": "My debt",
         "number_is_to_big": "You have used a big number which caused overflow",
+        "asset_not_loaded": "An asset of this offer has not loaded yet. Try again in a moment.",
         "operate": "Action",
         "operate_delete": "Delete",
         "operate_edit": "Modify",

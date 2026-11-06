@@ -128,6 +128,7 @@ import {useReduxState} from "../../../next/hooks/useReduxState";
 import {selectAccountState} from "../../../store/slices/accountSlice";
 import {selectCreditOffer} from "../../../store/slices/creditOfferSlice";
 import {selectIntlState} from "../../../store/slices/intlSlice";
+import {chainPrecision} from "../../../lib/chain/chainLookup";
 
 const getUninitializedFeeAmount = () =>
     new Asset({amount: 0, asset_id: "1.3.0"});
@@ -500,15 +501,19 @@ function CreditOfferPage() {
             if (index < 0) return;
             const base = info.acceptable_collateral[index][1].base;
             const quote = info.acceptable_collateral[index][1].quote;
+            // (an asset the chain store has not loaded yet: nothing to work out until it has)
+            const basePrecision = chainPrecision(base.asset_id);
+            const quotePrecision = chainPrecision(quote.asset_id);
+            if (basePrecision === null || quotePrecision === null) return;
             const baseAsset = new Asset({
                 asset_id: base.asset_id,
                 amount: base.amount,
-                precision: ChainStore.getAsset(base.asset_id).get("precision")
+                precision: basePrecision
             });
             const quoteAsset = new Asset({
                 asset_id: quote.asset_id,
                 amount: quote.amount,
-                precision: ChainStore.getAsset(quote.asset_id).get("precision")
+                precision: quotePrecision
             });
 
             const price = new Price({base: baseAsset, quote: quoteAsset});

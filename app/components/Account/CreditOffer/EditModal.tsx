@@ -134,7 +134,7 @@
 // bare `catch (err)` as `unknown`.
 import * as React from "react";
 import counterpart from "counterpart";
-import {ChainStore} from "bitsharesjs";
+import {ChainStore, FetchChain} from "bitsharesjs";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Table} from "../../../design-system/Table";
 import {Modal} from "../../../design-system/Modal";
@@ -162,6 +162,7 @@ import CreditOfferActions, {
 } from "../../../actions/CreditOfferActions";
 import {useReduxState} from "../../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../../store/slices/settingsSlice";
+import {chainAsset, chainPrecision} from "../../../lib/chain/chainLookup";
 
 const getUninitializedFeeAmount = () =>
     new (Asset as any)({amount: 0, asset_id: "1.3.0"});
@@ -220,10 +221,22 @@ function getInitialState(props: {account?: any}): EditModalState {
     };
 }
 
+/** The ids of the assets an offer's figures are in: what it lends and what it accepts as collateral. */
+function assetIdsOf(itemData: any): string[] {
+    const ids = new Set<string>([itemData.asset_type]);
+    (itemData.acceptable_collateral || []).forEach((v: any) => {
+        ids.add(v[0]);
+        ids.add(v[1].base.asset_id);
+        ids.add(v[1].quote.asset_id);
+    });
+    return Array.from(ids);
+}
+
+// (the assets are loaded before this is called - see `initModal`)
+const precisionOf = (id: string): number => chainPrecision(id) as number;
+
 function getDataState(itemData: any): EditModalState {
-    const asset_type_precision = ChainStore.getAsset(itemData.asset_type).get(
-        "precision"
-    );
+    const asset_type_precision = precisionOf(itemData.asset_type);
     const asset = new (Asset as any)({
         amount: itemData.current_balance,
         asset_id: itemData.asset_type,
@@ -235,8 +248,8 @@ function getDataState(itemData: any): EditModalState {
         precision: asset_type_precision
     });
     const pawn_assets = itemData.acceptable_collateral.map((v: any) => {
-        const bp = ChainStore.getAsset(v[1].base.asset_id).get("precision");
-        const qp = ChainStore.getAsset(v[1].quote.asset_id).get("precision");
+        const bp = precisionOf(v[1].base.asset_id);
+        const qp = precisionOf(v[1].quote.asset_id);
         const price = new (Price as any)({
             base: new (Asset as any)({
                 asset_id: v[1].base.asset_id,
@@ -253,7 +266,7 @@ function getDataState(itemData: any): EditModalState {
             // real: price.toReal(),
             real: 1 / price.toReal(), //Keeping it consistent with the App, this may violate Graphene's price representation convention.
             asset_id: v[0],
-            precision: ChainStore.getAsset(v[0]).get("precision")
+            precision: precisionOf(v[0])
         });
     });
 
@@ -326,9 +339,20 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
         };
 
         const initModal = (data: any, modal = 1) => {
-            const newState = getDataState(data);
-            newState.showModal = modal;
-            mergeState(newState);
+            const open = () => {
+                const newState = getDataState(data);
+                newState.showModal = modal;
+                mergeState(newState);
+            };
+            // The precisions come from the chain store: an asset it has not loaded yet is waited for (the lookup starts
+            // the fetch), instead of reading a precision of undefined.
+            const missing = assetIdsOf(data).filter(
+                id => chainPrecision(id) === null
+            );
+            if (!missing.length) return open();
+            FetchChain("getAsset", missing)
+                .then(open)
+                .catch((err: any) => console.error(err));
         };
 
         const hideModal = () => {
@@ -377,7 +401,9 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             if (!asset) return;
 
             if (typeof asset !== "object") {
-                asset = ChainStore.getAsset(asset);
+                asset = chainAsset(asset);
+                // (not loaded yet: the field is read again when the amount changes)
+                if (!asset) return;
             }
 
             const patch = {
@@ -407,7 +433,7 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             const balanceObject = ChainStore.getObject(balance_id);
             const transferAsset = ChainStore.getObject(asset_id);
 
-            if (balanceObject) {
+            if (balanceObject && transferAsset) {
                 const balance = new (Asset as any)({
                     amount: balanceObject.get("balance"),
                     asset_id: transferAsset.get("id"),
@@ -437,7 +463,8 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             const {pawn_price, pawn_assets} = stateRef.current;
             if (!!pawn_asset && !!pawn_price) {
                 if (typeof pawn_asset !== "object") {
-                    pawn_asset = ChainStore.getAsset(pawn_asset);
+                    pawn_asset = chainAsset(pawn_asset);
+                    if (!pawn_asset) return;
                 }
                 const found = pawn_assets.find(asset => {
                     return asset.asset_id === pawn_asset.get("id");
@@ -584,6 +611,9 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
             mergeState({validity_period: value});
         };
 
+        const notLoaded = () =>
+            counterpart.translate("credit_offer.asset_not_loaded");
+
         const _onSubmit = () => {
             const {
                 account,
@@ -624,9 +654,8 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                     );
                 }
 
-                const asset_precision = ChainStore.getAsset(asset_id).get(
-                    "precision"
-                );
+                const asset_precision = chainPrecision(asset_id);
+                if (asset_precision === null) throw new Error(notLoaded());
                 opData = {
                     owner_account: account.get("id"),
                     offer_id,
@@ -645,9 +674,8 @@ const EditModalCore = React.forwardRef<EditModalHandle, EditModalCoreProps>(
                     enabled: true,
                     auto_disable_time: validity_period,
                     acceptable_collateral: pawn_assets.map((v: any) => {
-                        const v_precision = ChainStore.getAsset(v.asset_id).get(
-                            "precision"
-                        );
+                        const v_precision = chainPrecision(v.asset_id);
+                        if (v_precision === null) throw new Error(notLoaded());
                         const p = new (Price as any)({
                             base: new (Asset as any)({
                                 asset_id,

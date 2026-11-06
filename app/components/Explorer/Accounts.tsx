@@ -35,6 +35,7 @@ import {ChainStore} from "bitsharesjs";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {chainField} from "../../lib/chain/chainLookup";
 
 const TypedSearchInput = SearchInput as React.ComponentType<any>;
 // Same @types/react-router-dom v5 + modern TS workaround as Blocks.tsx's
@@ -91,9 +92,9 @@ export default function Accounts() {
     function ensureBalanceObject(objectId: string | null) {
         if (objectId && typeof objectId === "string") {
             if (!balanceObjects.current[objectId]) {
-                balanceObjects.current[objectId] = parseFloat(
-                    ChainStore.getObject(objectId).get("balance")
-                );
+                // (an object the chain store has not loaded yet counts 0, which the next render reads again)
+                balanceObjects.current[objectId] =
+                    parseFloat(chainField(objectId, "balance")) || 0;
             }
         }
         if (!balanceObjects.current[objectId as string]) {

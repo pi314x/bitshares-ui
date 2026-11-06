@@ -78,11 +78,13 @@ jest.mock("../../../components/Utility/PriceText", () => ({
     __esModule: true,
     default: () => null
 }));
+// (the chain store answers nothing for an asset it has not loaded yet: a test turns this off after the form is filled)
+let mockChainLoaded = true;
 jest.mock("bitsharesjs", () => ({
     ...jest.requireActual("bitsharesjs"),
     ChainStore: {
         getAsset: (idOrSymbol: string) =>
-            idOrSymbol === "1.3.0" || idOrSymbol === "BTS"
+            mockChainLoaded && (idOrSymbol === "1.3.0" || idOrSymbol === "BTS")
                 ? {
                       get: (k: string) => (k === "symbol" ? "BTS" : "1.3.0")
                   }
@@ -255,6 +257,32 @@ describe("components/Exchange/ScaledOrderTab", () => {
             expect(order.to_receive.asset_id).toBe("1.3.100");
             expect(order.for_sale.asset_id).toBe("1.3.0");
         });
+    });
+
+    it("pays the fee in the chosen fee asset, and in the core asset when the chain store has not loaded it at submit", async () => {
+        const submitWith = async (loaded: boolean) => {
+            mockChainLoaded = true;
+            const {container, createScaledOrder} = renderTab();
+            await flushMicrotasks();
+            fillScaledOrderForm(container, {
+                priceLower: "1",
+                priceUpper: "2",
+                amount: "9",
+                orderCount: "3"
+            });
+            await flushMicrotasks();
+            mockChainLoaded = loaded;
+            fireEvent.click(getSubmitButton(container));
+            mockChainLoaded = true;
+            return createScaledOrder;
+        };
+        const loaded = await submitWith(true);
+        expect(loaded).toHaveBeenCalledTimes(1);
+        expect(loaded.mock.calls[0][1]).toBe("1.3.0");
+        // (the lookup used to be `getAsset(...).get("id")` on undefined: a TypeError in the click handler)
+        const notLoaded = await submitWith(false);
+        expect(notLoaded).toHaveBeenCalledTimes(1);
+        expect(notLoaded.mock.calls[0][1]).toBe("1.3.0");
     });
 
     it("sets priceLower from an external lastClickedPrice prop change", async () => {

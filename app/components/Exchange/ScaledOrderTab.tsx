@@ -142,6 +142,7 @@ import {
     preciseMinus
 } from "../../services/Math";
 import {DatePicker} from "../../design-system/DatePicker";
+import {chainAsset} from "../../lib/chain/chainLookup";
 
 interface ScaledOrderFieldRule {
     required?: boolean;
@@ -1198,10 +1199,9 @@ export default function ScaledOrderTab(props: ScaledOrderTabProps) {
             });
         }
 
-        createScaledOrder(
-            orders,
-            ChainStore.getAsset(values.feeCurrency).get("id")
-        );
+        // (a fee asset the chain store has not loaded pays in the core asset, which always can)
+        const feeAsset = chainAsset(values.feeCurrency);
+        createScaledOrder(orders, feeAsset ? feeAsset.get("id") : "1.3.0");
     };
 
     const handleSubmit = () => {

@@ -205,6 +205,7 @@ import Translate from "react-translate-component";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
 import {selectMarkets} from "../../store/slices/marketsSlice";
+import {chainField} from "../../lib/chain/chainLookup";
 
 // `LimitOrderCreate`'s constructor destructures some params without
 // default values mixed with others that do have them - TS's JS inference
@@ -1454,9 +1455,9 @@ function QuickTradeCore(props: QuickTradeProps) {
         if (!accountBalances[sellAssetId]) {
             return false;
         }
-        const balance = ChainStore.getObject(accountBalances[sellAssetId]).get(
-            "balance"
-        );
+        // (a balance object the chain store has not loaded yet is no balance to spend)
+        const balance = chainField(accountBalances[sellAssetId], "balance");
+        if (balance === null) return false;
         const transactionFee = getTransactionFee(undefined);
         return (
             (sellAmount as any) * 10 ** sellAssetPrecision +

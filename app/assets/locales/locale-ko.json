@@ -647,6 +647,7 @@
         "mortgage_assets": "Collateral",
         "my_debt": "My debt",
         "number_is_to_big": "You have used a big number which caused overflow",
+        "asset_not_loaded": "이 제안의 자산이 아직 로드되지 않았습니다. 잠시 후 다시 시도하세요.",
         "operate": "Action",
         "operate_delete": "Delete",
         "operate_edit": "Modify",
