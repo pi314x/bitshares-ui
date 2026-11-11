@@ -20,8 +20,11 @@
     position: sticky;
     top: 0;
     align-self: flex-start;
-    height: 100vh;
-    height: 100dvh;
+    // as tall as the window below where the shell starts (`--shell-top`, set by the shell: the
+    // warning banner above it is 60px until the page has scrolled past it): 100vh from there on
+    // ran past the window's bottom edge and took the language and theme row with it
+    height: calc(100vh - var(--shell-top, 0px));
+    height: calc(100dvh - var(--shell-top, 0px));
     min-height: 0;
     box-sizing: border-box;
     overflow-y: auto;

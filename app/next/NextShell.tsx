@@ -60,6 +60,61 @@ export interface NextShellProps {
     onThemeChange?: (theme: ThemeName) => void;
 }
 
+/**
+ * Where the shell's top edge is in the window: below the warning banner, 60px, until the page has scrolled past
+ * it, then 0. The rail is as tall as the window and sticks to its top, but it starts where the shell does, so
+ * its last row (language and theme) lay that far below the window's bottom edge until the page was scrolled -
+ * for good on a page too short to scroll. It is written as `--shell-top` on the shell, and the rail is as tall
+ * as the window less that.
+ */
+function useShellTop(ref: React.RefObject<HTMLDivElement>) {
+    React.useEffect(() => {
+        const shell = ref.current;
+        if (!shell) return undefined;
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            const top = Math.max(
+                0,
+                Math.round(shell.getBoundingClientRect().top)
+            );
+            shell.style.setProperty("--shell-top", `${top}px`);
+        };
+        const schedule = () => {
+            if (frame || typeof requestAnimationFrame === "undefined") return;
+            frame = requestAnimationFrame(update);
+        };
+        update();
+        window.addEventListener("scroll", schedule, {passive: true});
+        window.addEventListener("resize", schedule);
+        // (what is above the shell - the warning banner - can come after the shell is there, be closed, or change its
+        // height without a scroll: the shell's parent grows or shrinks with it, and so do the blocks above the shell.
+        // The body is not watched: its height does not follow the page's.)
+        const observer =
+            typeof ResizeObserver !== "undefined"
+                ? new ResizeObserver(schedule)
+                : null;
+        if (observer) {
+            if (shell.parentElement) observer.observe(shell.parentElement);
+            for (
+                let above = shell.previousElementSibling;
+                above;
+                above = above.previousElementSibling
+            ) {
+                observer.observe(above);
+            }
+        }
+        return () => {
+            window.removeEventListener("scroll", schedule);
+            window.removeEventListener("resize", schedule);
+            if (observer) observer.disconnect();
+            if (frame && typeof cancelAnimationFrame !== "undefined") {
+                cancelAnimationFrame(frame);
+            }
+        };
+    }, [ref]);
+}
+
 function ShellChrome({
     navGroups,
     crumb,
@@ -93,6 +148,8 @@ function ShellChrome({
     // when the backdrop is tapped, and the page behind it does not scroll.
     const [navOpen, setNavOpen] = React.useState(false);
     const {pathname} = useLocation();
+    const shellRef = React.useRef<HTMLDivElement>(null);
+    useShellTop(shellRef);
     const closeNav = React.useCallback(() => setNavOpen(false), []);
     React.useEffect(() => setNavOpen(false), [pathname]);
     React.useEffect(() => {
@@ -110,7 +167,7 @@ function ShellChrome({
     }, [navOpen]);
 
     return (
-        <div className={styles.shell}>
+        <div className={styles.shell} ref={shellRef}>
             {navOpen && (
                 <div
                     className={styles.scrim}
