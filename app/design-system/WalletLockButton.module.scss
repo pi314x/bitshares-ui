@@ -1,4 +1,6 @@
 .btn {
+    height: var(--chip-h, auto);
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 6px;

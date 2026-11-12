@@ -1,6 +1,8 @@
 // Same size and shape as the lock pill next to it (WalletLockButton), in the
 // accent so it reads as an offer, not as part of the status.
 .chip {
+    height: var(--chip-h, auto);
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 6px;

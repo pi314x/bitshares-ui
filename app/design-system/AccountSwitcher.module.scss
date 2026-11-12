@@ -1,10 +1,13 @@
 .wrap {
     position: relative;
+    display: flex;
     min-width: 0;
 }
 
 .trigger {
     max-width: 100%;
+    height: var(--chip-h, auto);
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 7px;

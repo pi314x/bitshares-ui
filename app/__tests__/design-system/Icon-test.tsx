@@ -56,6 +56,14 @@ describe("design-system/Icon", () => {
         );
     });
 
+    it("draws the eye with a slash through it as its own glyph", () => {
+        const {container: open} = render(<Icon type="eye" />);
+        const {container: shut} = render(<Icon type="eye-off" />);
+        expect(open.querySelector("circle")).toBeTruthy();
+        expect(shut.querySelector("path[d^='M2 2l20 20']")).toBeTruthy();
+        expect(open.innerHTML).not.toBe(shut.innerHTML);
+    });
+
     it("renders the copy and check glyphs of the copy button", () => {
         (["copy", "check"] as const).forEach(type => {
             const {container} = render(<Icon type={type} />);

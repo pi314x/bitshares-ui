@@ -1576,6 +1576,9 @@
         "account_value": "Valore dell'Account",
         "accounts_manage": "Gestisci account",
         "advanced": "Advanced",
+        "balance": "Saldo",
+        "balance_hide": "Nascondi saldo",
+        "balance_show": "Mostra saldo",
         "collateral_ratio": "Collateral ratio",
         "create_account": "Crea Account",
         "create_asset": "Crea Asset",
@@ -4429,7 +4432,11 @@
         "asset": "Asset",
         "asset_help": "Facoltativo. L'asset a cui si riferisce: un prelievo di esso va a questo account con questo memo (l'indirizzo di un gateway per quell'asset). Vuoto: qualsiasi asset.",
         "error_asset": "Questo non è un simbolo di asset (lettere maiuscole, cifre e punti, da 3 a 16 caratteri).",
-        "balance": "Saldo"
+        "balance": "Saldo",
+        "mine": "I miei conti",
+        "contacts": "Contatti",
+        "mine_wallet": "Wallet",
+        "mine_extension": "Estensione"
     },
     "day_recap": {
         "title": "Ultime 24 ore",

@@ -2,10 +2,12 @@
 // dropdown panel under it. Tokens only.
 .wrap {
     position: relative;
+    display: flex;
 }
 
 .bell {
     position: relative;
+    height: var(--chip-h, auto);
     display: inline-flex;
     align-items: center;
     justify-content: center;

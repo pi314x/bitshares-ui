@@ -137,11 +137,26 @@ function getAvailableAssets(from_account: any): {asset_types: string[]} {
     return {asset_types};
 }
 
+/**
+ * The assets the dialog offers: those the account holds, and the one that is selected even when it is not among them
+ * (an address book entry is for it: a withdrawal of it) - a selected asset the list does not hold shows as "Select
+ * asset", while the dialog is in fact set to it.
+ */
+function offeredAssets(held: string[], selected: any): string[] {
+    const id =
+        selected && typeof selected.get === "function"
+            ? selected.get("id")
+            : null;
+    return id && held.indexOf(id) < 0 ? [...held, id] : held;
+}
+
 interface SendModalProps {
     id?: string;
     from_name?: string | null;
     to_name?: string;
     asset_id?: string;
+    /** The address book entry the Send page was opened for (its "Send" button): the one the recipient helper starts on. */
+    entry_id?: string;
     tabIndex?: number;
     /** Called when the dialog has been closed (cancelled, or finished). The
      * Send page uses it to leave the page. */
@@ -154,6 +169,7 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             to_name: propToName,
             from_name: propFromName,
             asset_id: propAssetId,
+            entry_id: propEntryId,
             tabIndex: tabIndexProp = 0
         } = props;
 
@@ -224,6 +240,65 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             });
         };
 
+        // What the address book hands to the dialog from outside - the recipient ("Send" on an entry, a pick from its drop
+        // down) and the asset of an entry that is for one - is read from the chain store, which is asked for it and tells when
+        // it has it: the dialog looks again at each of its notices until the account / asset is there (a snapshot of the store
+        // alone was `undefined` for what it had not got yet, so the "To" field stayed empty and the asset was not set; a single
+        // request that fails while the connection is not ready would be lost the same way). An asset is set whether it is held
+        // or not: a withdrawal of it needs it, and the dialog then says what is available instead of sending something else.
+        const [pendingRecipient, setPendingRecipient] = React.useState<
+            string | null
+        >(null);
+        const [wantedAsset, setWantedAsset] = React.useState<string | null>(
+            null
+        );
+        const resolveRecipient = (name: string) =>
+            setPendingRecipient(name || null);
+        const selectAsset = (symbol: string) => setWantedAsset(symbol);
+        React.useEffect(() => {
+            if (!pendingRecipient && !wantedAsset) return undefined;
+            const look = () => {
+                if (pendingRecipient) {
+                    if (state.to_name !== pendingRecipient) {
+                        // another recipient was typed meanwhile
+                        setPendingRecipient(null);
+                    } else {
+                        const found = (ChainStore as any).getAccount(
+                            pendingRecipient
+                        );
+                        if (found && typeof found.get === "function") {
+                            setState(prev =>
+                                prev.to_name === pendingRecipient
+                                    ? {...prev, to_account: found}
+                                    : prev
+                            );
+                            setPendingRecipient(null);
+                        } else if (found === null) {
+                            // there is no such account
+                            setPendingRecipient(null);
+                        }
+                    }
+                }
+                if (wantedAsset) {
+                    const found = (ChainStore as any).getAsset(wantedAsset);
+                    if (found && typeof found.get === "function") {
+                        mergeState({
+                            asset: found,
+                            asset_id: found.get("id"),
+                            error: null,
+                            maxAmount: false
+                        });
+                        setWantedAsset(null);
+                    } else if (found === null) {
+                        setWantedAsset(null);
+                    }
+                }
+            };
+            look();
+            (ChainStore as any).subscribe(look);
+            return () => (ChainStore as any).unsubscribe(look);
+        }, [pendingRecipient, wantedAsset, state.to_name]);
+
         // Mirrors shouldComponentUpdate's two real side effects - see the
         // file header. Runs in the render body (before paint), comparing
         // this render's freshly-computed values against refs holding the
@@ -261,6 +336,7 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                         ? (ChainStore as any).getAccount(propToName)
                         : null
                 });
+                if (propToName) resolveRecipient(propToName);
             }
 
             if (propFromName) {
@@ -705,6 +781,7 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                         !!to_account &&
                                         typeof to_account.get === "function"
                                     }
+                                    entryId={propEntryId}
                                     onPick={entry => {
                                         mergeState({
                                             to_name: entry.name,
@@ -713,23 +790,10 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                             ),
                                             error: null
                                         });
-                                        // an entry for one asset is a withdrawal of it: that asset is sent, when it is held
-                                        const entryAsset: any = entry.asset
-                                            ? (ChainStore as any).getAsset(
-                                                  entry.asset
-                                              )
-                                            : null;
-                                        if (
-                                            entryAsset &&
-                                            asset_types.indexOf(
-                                                entryAsset.get("id")
-                                            ) >= 0
-                                        ) {
-                                            onAmountChanged({
-                                                amount: state.amount,
-                                                asset: entryAsset
-                                            });
-                                        }
+                                        resolveRecipient(entry.name);
+                                        // an entry for one asset is a withdrawal of it: that asset is the one sent
+                                        if (entry.asset)
+                                            selectAsset(entry.asset);
                                     }}
                                     onUseMemo={saved =>
                                         mergeState({memo: saved})
@@ -747,16 +811,11 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                             ? asset_id
                                             : asset_types[0]
                                     }
-                                    assets={asset_types}
+                                    assets={offeredAssets(asset_types, asset)}
                                     display_balance={balance}
                                     tabIndex={tabIndex++}
                                     allowNaN={true}
                                 />
-                                {memo && memo.length ? (
-                                    <label className="right-label">
-                                        {memo.length}
-                                    </label>
-                                ) : null}
                                 <Form.Item
                                     label={counterpart.translate(
                                         "transfer.memo"
@@ -773,13 +832,18 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                                     }
                                 >
                                     <Tooltip
+                                        style={{display: "block"}}
                                         placement="top"
                                         title={counterpart.translate(
                                             "tooltip.memo_tip"
                                         )}
                                     >
                                         <Input.TextArea
-                                            style={{marginBottom: 0}}
+                                            style={{
+                                                marginBottom: 0,
+                                                width: "100%",
+                                                boxSizing: "border-box"
+                                            }}
                                             rows={3}
                                             value={memo}
                                             tabIndex={tabIndex++}

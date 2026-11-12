@@ -1,7 +1,9 @@
 // /address-book: the accounts the user pays - who they are, what to know about them, the memo to send. A card for
 // each (a phone is the first screen) with its account, memo and asset in that order, a search over all of it, "Send" that opens the Send page with the
 // recipient (and its asset) in, and the book as a file (export, import). An entry for an asset also shows what
-// the account holds of that asset.
+// the account holds of that asset. Above the book stand the user's own accounts - those of the wallet, and the one
+// the wallet extension is connected as - so the book is linked to the wallet: to pay one's other account is one press.
+// They are not entries (they are not kept in the book, nor in its file): they are the wallet's.
 import * as React from "react";
 import {Link, useNavigate} from "react-router-dom";
 import counterpart from "counterpart";
@@ -17,8 +19,11 @@ import {
     useAddressBook
 } from "../../lib/common/addressBook";
 import {saveAs} from "file-saver";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
 import EntryDialog from "./EntryDialog";
 import HeldBalance from "./HeldBalance";
+import {useOwnAccounts} from "./useOwnAccounts";
 import styles from "./AddressBook.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -41,6 +46,10 @@ export function matches(entry: AddressEntry, query: string): boolean {
 
 export default function AddressBookPage(): JSX.Element {
     const book = useAddressBook();
+    const own = useOwnAccounts();
+    const current = useReduxState<{currentAccount: string | null}>(
+        selectAccountState
+    ).currentAccount;
     const navigate = useNavigate();
     const [query, setQuery] = React.useState("");
     const [editing, setEditing] = React.useState<AddressEntry | "new" | null>(
@@ -51,13 +60,23 @@ export default function AddressBookPage(): JSX.Element {
     const fileInput = React.useRef<HTMLInputElement>(null);
 
     const shown = book.filter(entry => matches(entry, query));
+    const q = query.trim().toLowerCase();
+    const ownShown = own.filter(
+        a =>
+            !q ||
+            a.name.includes(q) ||
+            t(`mine_${a.source}`)
+                .toLowerCase()
+                .includes(q)
+    );
 
-    // the Send page opens with the recipient and, for an entry that is for one asset, that asset
+    // the Send page opens with the recipient, the entry that was pressed (two entries can be for one account: it is the
+    // pressed one whose memo comes along) and, for an entry that is for one asset, that asset
     const send = (entry: AddressEntry) =>
         navigate("/send", {
             state: entry.asset
-                ? {toName: entry.name, asset: entry.asset}
-                : {toName: entry.name}
+                ? {toName: entry.name, asset: entry.asset, entryId: entry.id}
+                : {toName: entry.name, entryId: entry.id}
         });
 
     const exportBook = () => {
@@ -123,6 +142,43 @@ export default function AddressBookPage(): JSX.Element {
                     onChange={e => importFile(e.target.files?.[0])}
                 />
             </div>
+
+            {ownShown.length ? (
+                <>
+                    <h2 className={styles.section}>{t("mine")}</h2>
+                    <ul className={styles.list} data-testid="own-accounts">
+                        {ownShown.map(a => (
+                            <li
+                                key={a.name}
+                                className={styles.card}
+                                data-own={a.source}
+                            >
+                                <div className={styles.head}>
+                                    <span className={styles.who}>{a.name}</span>
+                                    <span className={styles.badge}>
+                                        {t(`mine_${a.source}`)}
+                                    </span>
+                                </div>
+                                {a.name !== current ? (
+                                    <div className={styles.actions}>
+                                        <Button
+                                            variant="accent"
+                                            onClick={() =>
+                                                navigate("/send", {
+                                                    state: {toName: a.name}
+                                                })
+                                            }
+                                        >
+                                            {t("send")}
+                                        </Button>
+                                    </div>
+                                ) : null}
+                            </li>
+                        ))}
+                    </ul>
+                    <h2 className={styles.section}>{t("contacts")}</h2>
+                </>
+            ) : null}
 
             {!book.length ? (
                 <p className={styles.empty}>{t("empty")}</p>

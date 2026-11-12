@@ -1576,6 +1576,9 @@
         "account_value": "アカウント値",
         "accounts_manage": "アカウントの管理",
         "advanced": "Advanced",
+        "balance": "残高",
+        "balance_hide": "残高を非表示",
+        "balance_show": "残高を表示",
         "collateral_ratio": "担保の比率",
         "create_account": "アカウント作成",
         "create_asset": "アセット作成",
@@ -4429,7 +4432,11 @@
         "asset": "アセット",
         "asset_help": "任意。対象のアセットです。そのアセットの出金は、このメモを付けてこのアカウントに送られます（そのアセット用のゲートウェイのアドレス）。空欄：どのアセットでも。",
         "error_asset": "アセットのシンボルではありません（大文字、数字、ドット、3～16文字）。",
-        "balance": "残高"
+        "balance": "残高",
+        "mine": "自分のアカウント",
+        "contacts": "連絡先",
+        "mine_wallet": "ウォレット",
+        "mine_extension": "拡張機能"
     },
     "day_recap": {
         "title": "過去 24 時間",

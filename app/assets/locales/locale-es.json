@@ -1576,6 +1576,9 @@
         "account_value": "Valor de la cuenta",
         "accounts_manage": "Cuentas de administración",
         "advanced": "Advanced",
+        "balance": "Saldo",
+        "balance_hide": "Ocultar saldo",
+        "balance_show": "Mostrar saldo",
         "collateral_ratio": "Collateral ratio",
         "create_account": "Crear Cuenta",
         "create_asset": "Crear Activo",
@@ -4429,7 +4432,11 @@
         "asset": "Activo",
         "asset_help": "Opcional. El activo al que corresponde: un retiro de él va a esta cuenta con este memo (la dirección de una pasarela para ese activo). Vacío: cualquier activo.",
         "error_asset": "Eso no es un símbolo de activo (mayúsculas, dígitos y puntos, de 3 a 16 caracteres).",
-        "balance": "Saldo"
+        "balance": "Saldo",
+        "mine": "Mis cuentas",
+        "contacts": "Contactos",
+        "mine_wallet": "Wallet",
+        "mine_extension": "Extensión"
     },
     "day_recap": {
         "title": "Últimas 24 horas",

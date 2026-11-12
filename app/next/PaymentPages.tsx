@@ -33,6 +33,11 @@ export function SendPage(): JSX.Element {
         location.state && typeof (location.state as any).toName === "string"
             ? (location.state as any).toName
             : undefined;
+    // the entry that was pressed (two can be for one account)
+    const entryId: string | undefined =
+        location.state && typeof (location.state as any).entryId === "string"
+            ? (location.state as any).entryId
+            : undefined;
     // and the asset of an entry that is for one (a withdrawal of it), found by its symbol once the chain store has it
     useChainStoreTick();
     const symbol: string | undefined =
@@ -61,6 +66,7 @@ export function SendPage(): JSX.Element {
             from_name={accountName}
             to_name={toName}
             asset_id={assetId}
+            entry_id={entryId}
             onHide={leave}
         />
     );

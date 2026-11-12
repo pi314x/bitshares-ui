@@ -1576,6 +1576,9 @@
         "account_value": "Kontowert",
         "accounts_manage": "Konten verwalten",
         "advanced": "Advanced",
+        "balance": "Guthaben",
+        "balance_hide": "Guthaben ausblenden",
+        "balance_show": "Guthaben anzeigen",
         "collateral_ratio": "Sicherheiten-Ratio",
         "create_account": "Konto erstellen",
         "create_asset": "Anlage erstellen",
@@ -4429,7 +4432,11 @@
         "asset": "Asset",
         "asset_help": "Optional. Das Asset, für das dies gilt: Eine Auszahlung davon geht mit diesem Memo an dieses Konto (die Adresse eines Gateways für dieses Asset). Leer: jedes Asset.",
         "error_asset": "Das ist kein Asset-Symbol (Großbuchstaben, Ziffern und Punkte, 3 bis 16 Zeichen).",
-        "balance": "Guthaben"
+        "balance": "Guthaben",
+        "mine": "Meine Konten",
+        "contacts": "Kontakte",
+        "mine_wallet": "Wallet",
+        "mine_extension": "Erweiterung"
     },
     "day_recap": {
         "title": "Letzte 24 Stunden",

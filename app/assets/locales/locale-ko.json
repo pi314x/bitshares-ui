@@ -1576,6 +1576,9 @@
         "account_value": "계정 값",
         "accounts_manage": "계정 관리",
         "advanced": "Advanced",
+        "balance": "잔액",
+        "balance_hide": "잔액 숨기기",
+        "balance_show": "잔액 표시",
         "collateral_ratio": "Collateral ratio",
         "create_account": "계정 생성",
         "create_asset": "자산 생성",
@@ -4429,7 +4432,11 @@
         "asset": "자산",
         "asset_help": "선택 사항. 이 항목이 해당하는 자산입니다. 그 자산의 출금은 이 메모와 함께 이 계정으로 갑니다(그 자산을 위한 게이트웨이 주소). 비우면 모든 자산.",
         "error_asset": "자산 기호가 아닙니다(대문자, 숫자, 점, 3~16자).",
-        "balance": "잔액"
+        "balance": "잔액",
+        "mine": "내 계정",
+        "contacts": "연락처",
+        "mine_wallet": "지갑",
+        "mine_extension": "확장 프로그램"
     },
     "day_recap": {
         "title": "최근 24시간",

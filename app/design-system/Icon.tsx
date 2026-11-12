@@ -112,6 +112,7 @@ export type IconType =
     | "key"
     | "global"
     | "eye"
+    | "eye-off"
     | "exclamation-circle"
     | "delete"
     | "caret-up"
@@ -197,6 +198,12 @@ const OUTLINE_PATHS: Record<IconType, React.ReactNode> = {
         <>
             <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
             <circle cx="12" cy="12" r="3" />
+        </>
+    ),
+    "eye-off": (
+        <>
+            <path d="M17.9 17.9A10.5 10.5 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 5.2A9.7 9.7 0 0 1 12 5c7 0 11 7 11 7a18.6 18.6 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2" />
+            <path d="M2 2l20 20" />
         </>
     ),
     "exclamation-circle": (

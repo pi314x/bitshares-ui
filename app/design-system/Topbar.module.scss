@@ -4,6 +4,8 @@
 // flex row into a vertical stack in the real app (the standalone preview
 // never loads that sheet, so it could not show it).
 .topbar.topbar {
+    // every chip in the bar (balance, account, lock, bell, the notices) is this high, and so they stand in one line
+    --chip-h: 32px;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -31,6 +33,12 @@
 .actions,
 .status {
     display: contents;
+}
+
+// A chip that has nothing to show (the view-mode notice is a wrapper that is empty for one's own account) is
+// still a flex item, and its two gaps would stand as one double gap between its neighbours: out of the row.
+.status > :empty {
+    display: none;
 }
 
 .menuBtn {
@@ -135,6 +143,21 @@
 
 .spacer {
     margin-left: auto;
+}
+
+// The balance chip, left of the account menu (see useFitsInRow). When it would not fit it leaves the row but stays laid
+// out, invisible and out of reach, so it can be measured again once the window has grown.
+.balance {
+    flex: none;
+}
+
+.balanceOut {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: max-content;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .chip {

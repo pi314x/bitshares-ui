@@ -1,6 +1,7 @@
 // The "view only mode" notice in the top bar: an eye in a chip of the same
 // shape as the lock and account chips beside it.
 .chip {
+    height: var(--chip-h, auto);
     display: inline-flex;
     align-items: center;
     justify-content: center;

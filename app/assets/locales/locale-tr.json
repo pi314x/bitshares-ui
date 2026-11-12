@@ -1576,6 +1576,9 @@
         "account_value": "Hesap değeri",
         "accounts_manage": "Hesapları yönet",
         "advanced": "ileri",
+        "balance": "Bakiye",
+        "balance_hide": "Bakiyeyi gizle",
+        "balance_show": "Bakiyeyi göster",
         "collateral_ratio": "Teminat oranı",
         "create_account": "Hesap Oluştur",
         "create_asset": "Dijital Varlık Oluştur",
@@ -4429,7 +4432,11 @@
         "asset": "Varlık",
         "asset_help": "İsteğe bağlı. Bunun ait olduğu varlık: o varlığın çekimi bu hesaba bu notla gider (o varlık için bir geçidin adresi). Boş: her varlık.",
         "error_asset": "Bu bir varlık sembolü değil (büyük harfler, rakamlar ve noktalar, 3 ila 16 karakter).",
-        "balance": "Bakiye"
+        "balance": "Bakiye",
+        "mine": "Hesaplarım",
+        "contacts": "Kişiler",
+        "mine_wallet": "Cüzdan",
+        "mine_extension": "Uzantı"
     },
     "day_recap": {
         "title": "Son 24 saat",

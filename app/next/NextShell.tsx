@@ -49,6 +49,8 @@ export interface NextShellProps {
     chips?: React.ReactNode;
     /** At the far right of the top bar, after the lock. */
     endChips?: React.ReactNode;
+    /** Beside the title in the top bar, while there is room (see TopbarProps.balance). */
+    balance?: React.ReactNode;
     content: React.ReactNode;
     /**
      * Controlled theme (mapped from the legacy SettingsStore's 3-theme
@@ -142,6 +144,7 @@ function ShellChrome({
     statusDock,
     chips,
     endChips,
+    balance,
     content
 }: Omit<NextShellProps, "themeValue" | "onThemeChange">) {
     // Phone width: the rail is a drawer. It closes on navigation, on Escape and
@@ -213,6 +216,7 @@ function ShellChrome({
                     extensionAction={extensionAction}
                     chips={chips}
                     endChips={endChips}
+                    balance={balance}
                     onOpenNav={() => setNavOpen(true)}
                     navOpen={navOpen}
                     navId="main-nav"

@@ -1,6 +1,8 @@
 // A reminder, not an error: the warning colour, no louder than the other chips
 // of the top bar.
 .chip {
+    height: var(--chip-h, auto);
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 7px;

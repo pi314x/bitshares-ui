@@ -1576,6 +1576,9 @@
         "account_value": "Account value",
         "accounts_manage": "Manage Accounts",
         "advanced": "Advanced",
+        "balance": "Balance",
+        "balance_hide": "Hide balance",
+        "balance_show": "Show balance",
         "collateral_ratio": "Collateral ratio",
         "create_account": "Create Account",
         "create_asset": "Create Asset",
@@ -4429,7 +4432,11 @@
         "asset": "Asset",
         "asset_help": "Optional. The asset this is for: a withdrawal of it goes to this account with this memo (a gateway's address for that asset). Empty: any asset.",
         "error_asset": "That is not an asset symbol (upper case letters, digits and dots, 3 to 16 characters).",
-        "balance": "Balance"
+        "balance": "Balance",
+        "mine": "My accounts",
+        "contacts": "Contacts",
+        "mine_wallet": "Wallet",
+        "mine_extension": "Extension"
     },
     "day_recap": {
         "title": "Last 24 hours",

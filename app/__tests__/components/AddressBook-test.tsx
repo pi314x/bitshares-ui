@@ -136,9 +136,14 @@ describe("the address book page", () => {
         saveEntry({name: "alice", label: "Landlord"});
         const {getByTestId} = page();
         fireEvent.click(button("Send"));
-        expect(getByTestId("where").textContent).toBe(
-            '/send|{"toName":"alice"}'
+        // (with the id of the entry that was pressed: two entries can be for one account)
+        const state = JSON.parse(
+            (getByTestId("where").textContent || "").split("|")[1]
         );
+        expect(state).toEqual({
+            toName: "alice",
+            entryId: getAddressBook()[0].id
+        });
     });
 
     it("changes an entry, and deletes one only on the second press", () => {
@@ -534,9 +539,13 @@ describe("the asset on the address book page", () => {
         saveEntry({name: "xbts-hive", asset: "XBTSX.HIVE"});
         const {getByTestId} = page();
         fireEvent.click(button("Send"));
-        expect(getByTestId("where").textContent).toBe(
-            '/send|{"toName":"xbts-hive","asset":"XBTSX.HIVE"}'
-        );
+        expect(
+            JSON.parse((getByTestId("where").textContent || "").split("|")[1])
+        ).toEqual({
+            toName: "xbts-hive",
+            asset: "XBTSX.HIVE",
+            entryId: getAddressBook()[0].id
+        });
     });
 });
 

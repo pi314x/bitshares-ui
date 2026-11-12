@@ -263,57 +263,78 @@ function AccountSelector({
         if (search_array.length > 0) {
             if (__DEV__)
                 console.log("Looked for " + search_array.length + " accounts");
-            (FetchChainObjects as any)(
-                ChainStore.getAccount,
-                search_array,
-                3000,
-                {}
-            ).then((accounts: any) => {
-                for (let i = 0; i < accounts.length; i++) {
-                    const account = accounts[i];
-                    if (account) {
-                        const objectIndex = getIndex(
-                            account.get("name"),
-                            accountIndex
-                        );
-                        const result = populateAccountIndex(account);
-
-                        if (result) {
-                            accountIndex[objectIndex] = result;
-                            search_array.splice(account.get("name"));
-                        }
-                    } else {
-                        const objectIndex = getIndex(
-                            search_array[i],
-                            accountIndex
-                        );
-                        const result = populateAccountIndexWithPublicKey(
-                            search_array[i]
-                        );
-
-                        if (result) {
-                            accountIndex[objectIndex] = result;
-                            search_array.splice(search_array[i]);
-                        }
-                    }
-                }
-                search_array.forEach((account_to_find: any) => {
-                    const objectIndex = getIndex(account_to_find, accountIndex);
-                    accountIndex[objectIndex].attempts++;
-                });
-                forceUpdate();
-
-                // Run another fetch of accounts if data is still missing
+            // (what is still missing after an attempt, or after one that failed, is looked for again)
+            const again = () => {
                 const isDataMissing = accountIndexRef.current.find(
                     a => !a.data && a.attempts < MAX_LOOKUP_ATTEMPTS
                 );
-
                 if (isDataMissing) {
                     setTimeout(() => {
                         fetchAccounts();
                     }, 500);
                 }
-            });
+            };
+            (FetchChainObjects as any)(
+                ChainStore.getAccount,
+                search_array,
+                3000,
+                {}
+            )
+                .catch(() => {
+                    // the chain was not ready (a cold start): it counts as an attempt, and there is another
+                    search_array.forEach((account_to_find: any) => {
+                        const objectIndex = getIndex(
+                            account_to_find,
+                            accountIndex
+                        );
+                        if (objectIndex >= 0)
+                            accountIndex[objectIndex].attempts++;
+                    });
+                    forceUpdate();
+                    again();
+                })
+                .then((accounts: any) => {
+                    if (!accounts) return;
+                    for (let i = 0; i < accounts.length; i++) {
+                        const account = accounts[i];
+                        if (account) {
+                            const objectIndex = getIndex(
+                                account.get("name"),
+                                accountIndex
+                            );
+                            const result = populateAccountIndex(account);
+
+                            if (result) {
+                                accountIndex[objectIndex] = result;
+                                search_array.splice(account.get("name"));
+                            }
+                        } else {
+                            const objectIndex = getIndex(
+                                search_array[i],
+                                accountIndex
+                            );
+                            const result = populateAccountIndexWithPublicKey(
+                                search_array[i]
+                            );
+
+                            if (result) {
+                                accountIndex[objectIndex] = result;
+                                search_array.splice(search_array[i]);
+                            }
+                        }
+                    }
+                    search_array.forEach((account_to_find: any) => {
+                        const objectIndex = getIndex(
+                            account_to_find,
+                            accountIndex
+                        );
+                        accountIndex[objectIndex].attempts++;
+                    });
+                    forceUpdate();
+
+                    // Run another fetch of accounts if data is still missing
+                    again();
+                });
         }
     };
 
@@ -500,6 +521,30 @@ function AccountSelector({
             if (!props.typeahead && accountName) onInputChanged(accountName);
         }
     }, []);
+
+    // A name that is set from outside after the mount (the Send dialog is given its recipient by the address book) is
+    // looked up like one that was typed: put in the search index and read from the chain, or the field has nothing to show.
+    const prevAccountNameRef = React.useRef(props.accountName);
+    React.useEffect(() => {
+        if (prevAccountNameRef.current === props.accountName) return;
+        prevAccountNameRef.current = props.accountName;
+        if (props.accountName) {
+            addThisToIndex(props.accountName);
+            fetchAccounts();
+        }
+    }, [props.accountName]);
+
+    // The account was handed over loaded, but the search index has nothing for it: the lookups gave up before it arrived
+    // (a slow start). Look again from the beginning, now that the chain store has it.
+    React.useEffect(() => {
+        const {account, accountName} = props;
+        if (!account || !accountName) return;
+        const entry = accountIndexRef.current.find(a => a.name === accountName);
+        if (entry && !entry.data) {
+            entry.attempts = 0;
+            fetchAccounts();
+        }
+    }, [props.account, props.accountName]);
 
     // Separate mount-flag ref from the mount-only effect above: effects
     // run in declaration order within the same commit, so sharing one

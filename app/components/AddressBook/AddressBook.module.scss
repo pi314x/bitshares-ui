@@ -60,6 +60,29 @@
     font-weight: 600;
 }
 
+// the titles of the two lists: my accounts, contacts (sentence case: the legacy sheet sets headings in its own way)
+// (`body[class][class]`: a legacy heading rule outranks a plain module class)
+body[class][class] .section {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// "Wallet" / "Extension": whose key signs for the account
+.badge {
+    padding: 1px 9px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 500;
+}
+
 .account {
     color: var(--accent);
     font-size: 14px;

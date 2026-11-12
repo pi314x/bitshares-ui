@@ -1576,6 +1576,9 @@
         "account_value": "账户价值",
         "accounts_manage": "管理帐户",
         "advanced": "进阶功能",
+        "balance": "余额",
+        "balance_hide": "隐藏余额",
+        "balance_show": "显示余额",
         "collateral_ratio": "抵押率",
         "create_account": "创建账户",
         "create_asset": "创建资产",
@@ -4429,7 +4432,11 @@
         "asset": "资产",
         "asset_help": "可选。此条目对应的资产：该资产的提现会带着这个备注发送到该账户（该资产的网关地址）。留空：任何资产。",
         "error_asset": "这不是资产符号（大写字母、数字和点，3 到 16 个字符）。",
-        "balance": "余额"
+        "balance": "余额",
+        "mine": "我的账户",
+        "contacts": "联系人",
+        "mine_wallet": "钱包",
+        "mine_extension": "扩展程序"
     },
     "day_recap": {
         "title": "最近 24 小时",

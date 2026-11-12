@@ -49,6 +49,7 @@ import {logoutSession} from "./logoutSession";
 import NodeSelector from "components/Utility/NodeSelector";
 import AccountBrowsingMode from "components/Account/AccountBrowsingMode";
 import BackupNotice from "./BackupNotice";
+import BalanceChip from "./BalanceChip";
 import NotificationBell from "../components/Notifications/NotificationBell";
 import AccountActivityNotifications, {
     TelegramActivity
@@ -381,6 +382,7 @@ export default function NextShellContainer({
                     </>
                 }
                 endChips={<NotificationBell />}
+                balance={<BalanceChip />}
                 content={
                     <>
                         {/* "Confirm this transaction" and "unlock your wallet" are popups (the global ones, in App.jsx) */}
