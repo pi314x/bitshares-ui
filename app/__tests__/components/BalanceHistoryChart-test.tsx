@@ -6,13 +6,16 @@ import localeEn from "../../assets/locales/locale-en.json";
 // lightweight-charts draws on a canvas, which this jsdom has not got
 const mockSetData = jest.fn();
 const mockSetLogical = jest.fn();
+const mockChartOptions: any[] = [];
+const mockSeriesOptions: any[] = [];
 jest.mock("lightweight-charts", () => ({
     __esModule: true,
     AreaSeries: {},
     LineSeries: {},
     LineType: {Simple: 0, WithSteps: 1, Curved: 2},
     ColorType: {Solid: "solid"},
-    createChart: () => {
+    createChart: (_host: any, options: any) => {
+        mockChartOptions.push(options);
         // the view as the chart reports it: bars 0 and 1 (times 1000 and 2000)
         const timeScale = {
             fitContent: () => {},
@@ -21,7 +24,10 @@ jest.mock("lightweight-charts", () => ({
             setVisibleLogicalRange: (range: any) => mockSetLogical(range)
         };
         return {
-            addSeries: () => ({setData: mockSetData, applyOptions: () => {}}),
+            addSeries: (_type: any, options: any) => {
+                mockSeriesOptions.push(options);
+                return {setData: mockSetData, applyOptions: () => {}};
+            },
             timeScale: () => timeScale,
             remove: () => {}
         };
@@ -62,6 +68,8 @@ beforeAll(() => {
 
 beforeEach(async () => {
     jest.clearAllMocks();
+    mockChartOptions.length = 0;
+    mockSeriesOptions.length = 0;
     // the history store outlives a screen: each test starts with an empty one
     await balanceHistory.reset();
     mockGetBalances.mockResolvedValue([
@@ -112,6 +120,26 @@ const flush = async () => {
 };
 
 describe("BalanceHistoryChart", () => {
+    it("keeps the value axis from going under zero, on every line, with no margin of its own that would", async () => {
+        render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        expect(mockChartOptions[0].rightPriceScale.scaleMargins).toEqual({
+            top: 0,
+            bottom: 0
+        });
+        // wallet, open orders, total
+        expect(mockSeriesOptions).toHaveLength(3);
+        mockSeriesOptions.forEach(options => {
+            const range = options.autoscaleInfoProvider(() => ({
+                priceRange: {minValue: -3, maxValue: 10}
+            }));
+            expect(range.priceRange.minValue).toBe(0);
+            expect(range.priceRange.maxValue).toBeGreaterThan(10);
+            // (nothing drawn yet: nothing to range)
+            expect(options.autoscaleInfoProvider(() => null)).toBeNull();
+        });
+    });
+
     it("shows the balance now, draws the line, and says what it could not read", async () => {
         const {container} = render(<BalanceHistoryChart accountId={ME} />);
         await flush();

@@ -399,8 +399,11 @@ export function buildBalanceSeries(
         lockedAfter[i] = runningLocked;
         running -= deltas[i].delta;
         runningLocked -= deltas[i].locked;
-        // history cannot make the locked amount negative; a gap (an order
-        // older than what was loaded) would otherwise show as one
+        // A balance is never below zero, so neither is the balance before an operation: what is worked out as less
+        // is an operation that could not be read or one older than what was loaded, and zero is the nearest value
+        // that can be true (everything older is then worked out from a real balance, not from a negative one).
+        if (running < BigInt(0)) running = BigInt(0);
+        // (the same for the amount locked in orders: a gap, an order older than what was loaded, would show as a negative)
         if (runningLocked < BigInt(0)) runningLocked = BigInt(0);
         if (deltas[i].unresolved) unresolved++;
         else if (deltas[i].delta !== BigInt(0)) applied++;
@@ -469,4 +472,39 @@ export function formatPercent(percent: number): string {
         maximumFractionDigits: digits
     });
     return `${percent > 0 ? "+" : percent < 0 ? "-" : ""}${text}%`;
+}
+
+/**
+ * The range the value axis of a balance chart shows for data from `min` to `max`: a tenth of the span above and below,
+ * and never below zero (a balance is not negative, and an axis that goes under zero reads as if it could be). A flat
+ * line, or one that is all zero, still gets a range to stand in.
+ */
+export function balanceAxisRange(
+    min: number,
+    max: number
+): {minValue: number; maxValue: number} {
+    const low = Math.max(0, min);
+    const high = Math.max(low, max);
+    const span = high - low || high || 1;
+    const pad = span * 0.1;
+    return {minValue: Math.max(0, low - pad), maxValue: high + pad};
+}
+
+/**
+ * An amount for the value axis and the crosshair of a balance chart: the digits grouped the way the reader's locale does
+ * it, no trailing zeros, and as many decimals as the size of the amount can use (two from a thousand up, else up to the
+ * asset's own, at most six).
+ */
+export function formatAxisAmount(
+    value: number,
+    precision: number,
+    locale?: string
+): string {
+    const abs = Math.abs(value);
+    const digits =
+        abs >= 1000 ? Math.min(2, precision) : Math.min(6, precision);
+    return value.toLocaleString(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits
+    });
 }

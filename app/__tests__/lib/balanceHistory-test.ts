@@ -1,6 +1,8 @@
 import {
     HistoryEntry,
+    balanceAxisRange,
     buildBalanceSeries,
+    formatAxisAmount,
     newOrderTracker,
     operationDelta,
     changePercent,
@@ -325,6 +327,101 @@ describe("buildBalanceSeries", () => {
         expect(series.points).toEqual([
             {time: 5000, balance: BigInt(7), locked: BigInt(0)}
         ]);
+    });
+});
+
+describe("a balance is never negative", () => {
+    it("floors the balance before an operation at zero, and works the older ones from there", () => {
+        // 100 is held now and the newest operation brought 300 in: 100 - 300 is -200, which no balance can be (an
+        // operation that could not be read, or history older than what was loaded); the older operation
+        // took 50 out, so before it the balance was 0 + 50, not -200 + 50
+        const series = buildBalanceSeries(
+            [
+                entry(
+                    "2",
+                    [
+                        0,
+                        {
+                            from: OTHER,
+                            to: ME,
+                            amount: asset(300),
+                            fee: asset(0)
+                        }
+                    ],
+                    20
+                ),
+                entry(
+                    "1",
+                    [
+                        0,
+                        {
+                            from: ME,
+                            to: OTHER,
+                            amount: asset(50),
+                            fee: asset(0)
+                        }
+                    ],
+                    10
+                )
+            ],
+            BigInt(100),
+            ME,
+            BTS,
+            {10: 1000, 20: 2000},
+            3000
+        );
+        expect(series.points.map(p => [p.time, Number(p.balance)])).toEqual([
+            [999, 50],
+            [1000, 0],
+            [2000, 100],
+            [3000, 100]
+        ]);
+        series.points.forEach(p => {
+            expect(p.balance >= BigInt(0)).toBe(true);
+            expect(p.locked >= BigInt(0)).toBe(true);
+        });
+    });
+});
+
+describe("balanceAxisRange", () => {
+    it("pads a tenth of the span each way", () => {
+        expect(balanceAxisRange(100, 200)).toEqual({
+            minValue: 90,
+            maxValue: 210
+        });
+    });
+
+    it("never goes under zero", () => {
+        expect(balanceAxisRange(0, 1000)).toEqual({
+            minValue: 0,
+            maxValue: 1100
+        });
+        // (data that is negative is read as zero)
+        expect(balanceAxisRange(-50, 100).minValue).toBe(0);
+        expect(balanceAxisRange(5, 1000).minValue).toBe(0);
+    });
+
+    it("gives a flat line, and a line of zeros, a range to stand in", () => {
+        const flat = balanceAxisRange(500, 500);
+        expect(flat.minValue).toBeLessThan(500);
+        expect(flat.maxValue).toBeGreaterThan(500);
+        expect(flat.minValue).toBeGreaterThanOrEqual(0);
+        expect(balanceAxisRange(0, 0)).toEqual({minValue: 0, maxValue: 0.1});
+    });
+});
+
+describe("formatAxisAmount", () => {
+    it("groups the digits and drops trailing zeros", () => {
+        expect(formatAxisAmount(1600000, 5, "en-US")).toBe("1,600,000");
+        expect(formatAxisAmount(83314.45787, 5, "en-US")).toBe("83,314.46");
+        expect(formatAxisAmount(0, 5, "en-US")).toBe("0");
+    });
+
+    it("keeps what a small amount needs, at most the asset's own digits and six", () => {
+        expect(formatAxisAmount(0.00123, 5, "en-US")).toBe("0.00123");
+        expect(formatAxisAmount(0.1234567, 8, "en-US")).toBe("0.123457");
+        expect(formatAxisAmount(2.5, 0, "en-US")).toBe("3");
+        expect(formatAxisAmount(1234.5678, 0, "en-US")).toBe("1,235");
     });
 });
 

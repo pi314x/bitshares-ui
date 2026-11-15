@@ -3,6 +3,7 @@ import {useRefreshOnEpoch} from "../../lib/common/accountEpoch";
 import counterpart from "counterpart";
 import {
     AreaSeries,
+    AutoscaleInfo,
     LineSeries,
     ColorType,
     IChartApi,
@@ -30,7 +31,12 @@ import {
     sameSpan,
     targetSpan
 } from "../../lib/common/rangeGlide";
-import {changePercent, formatPercent} from "../../lib/common/balanceHistory";
+import {
+    balanceAxisRange,
+    changePercent,
+    formatAxisAmount,
+    formatPercent
+} from "../../lib/common/balanceHistory";
 import {useUnitValue} from "../../next/hooks/useUnitValue";
 import styles from "./BalanceHistoryChart.module.scss";
 
@@ -115,6 +121,21 @@ function token(name: string, fallback: string): string {
         return fallback;
     }
 }
+
+/** The range the value axis shows for what is drawn: padded, and never under zero (a balance is not negative). */
+const axisRange = (
+    original: () => AutoscaleInfo | null
+): AutoscaleInfo | null => {
+    const info = original();
+    if (!info || !info.priceRange) return info;
+    return {
+        ...info,
+        priceRange: balanceAxisRange(
+            info.priceRange.minValue,
+            info.priceRange.maxValue
+        )
+    };
+};
 
 const toNumber = (units: bigint, precision: number) =>
     Number(units) / Math.pow(10, precision);
@@ -283,7 +304,11 @@ export default function BalanceHistoryChart({
                 vertLines: {visible: false},
                 horzLines: {color: token("--line", "#232d3a")}
             },
-            rightPriceScale: {borderVisible: false},
+            // the padding of the value axis is the range's own (`axisRange`): a margin of the scale would go under zero
+            rightPriceScale: {
+                borderVisible: false,
+                scaleMargins: {top: 0, bottom: 0}
+            },
             timeScale: {borderVisible: false, timeVisible: true},
             crosshair: {mode: 1}
         });
@@ -296,7 +321,8 @@ export default function BalanceHistoryChart({
             bottomColor: colors.wallet + "00",
             lineWidth: 2,
             lineType: LineType.WithSteps,
-            priceLineVisible: false
+            priceLineVisible: false,
+            autoscaleInfoProvider: axisRange
         });
         // what sits in open orders
         const orders = chart.addSeries(LineSeries, {
@@ -304,7 +330,8 @@ export default function BalanceHistoryChart({
             lineWidth: 2,
             lineType: LineType.WithSteps,
             priceLineVisible: false,
-            lastValueVisible: false
+            lastValueVisible: false,
+            autoscaleInfoProvider: axisRange
         });
         // the whole holding: wallet and open orders - a solid line of its own
         // colour, so that it reads as a series like the others, not a guide
@@ -313,7 +340,8 @@ export default function BalanceHistoryChart({
             lineWidth: 2,
             lineType: LineType.WithSteps,
             priceLineVisible: false,
-            lastValueVisible: false
+            lastValueVisible: false,
+            autoscaleInfoProvider: axisRange
         });
         chartRef.current = chart;
         walletRef.current = wallet;
@@ -339,10 +367,12 @@ export default function BalanceHistoryChart({
                 ? timeScale.getVisibleRange()
                 : null;
         const precision = Math.min(asset.precision, 6);
+        // (the axis and the crosshair say 1,600,000, not 1600000.00000: the legend above has every digit)
         const format = {
-            type: "price" as const,
-            precision,
-            minMove: 1 / Math.pow(10, precision)
+            type: "custom" as const,
+            minMove: 1 / Math.pow(10, precision),
+            formatter: (value: number) =>
+                formatAxisAmount(value, asset.precision, "en-US")
         };
         const at = (p: {time: number}) => p.time as UTCTimestamp;
         const units = (v: bigint) => toNumber(v, asset.precision);
