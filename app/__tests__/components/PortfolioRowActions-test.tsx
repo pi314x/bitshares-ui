@@ -48,6 +48,83 @@ describe("PortfolioRowActions", () => {
         expect(queryByRole("menu")).toBeNull();
     });
 
+    // Deposit and Withdraw are not links: the row's cell is an Icon (a span with its own onClick), so a click on the
+    // line - on its name, not on the little icon - found nothing to click and nothing opened.
+    it("runs the action of a row whose cell is an icon, not a link, when the line is pressed", () => {
+        const onDeposit = jest.fn();
+        const onWithdraw = jest.fn();
+        const {getByRole, getByText} = render(
+            <PortfolioRowActions
+                menuLabel="More actions"
+                inline={[]}
+                menu={[
+                    {
+                        key: "deposit",
+                        label: "Deposit",
+                        node: (
+                            <span>
+                                <span
+                                    className="icon deposit"
+                                    onClick={onDeposit}
+                                />
+                            </span>
+                        )
+                    },
+                    {
+                        key: "withdraw",
+                        label: "Withdraw",
+                        node: (
+                            <span>
+                                <span
+                                    className="icon withdraw"
+                                    onClick={onWithdraw}
+                                />
+                            </span>
+                        )
+                    }
+                ]}
+            />
+        );
+        fireEvent.click(getByRole("button", {name: "More actions"}));
+        fireEvent.click(getByText("Deposit"));
+        expect(onDeposit).toHaveBeenCalledTimes(1);
+        expect(onWithdraw).not.toHaveBeenCalled();
+        // the keyboard does the same
+        fireEvent.click(getByRole("button", {name: "More actions"}));
+        fireEvent.keyDown(getByText("Withdraw").closest("[role=menuitem]")!, {
+            key: "Enter"
+        });
+        expect(onWithdraw).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not run the icon twice when the click is already on it", () => {
+        const onDeposit = jest.fn();
+        const {getByRole} = render(
+            <PortfolioRowActions
+                menuLabel="More actions"
+                inline={[]}
+                menu={[
+                    {
+                        key: "deposit",
+                        label: "Deposit",
+                        node: (
+                            <span>
+                                <span
+                                    data-testid="glyph"
+                                    className="icon deposit"
+                                    onClick={onDeposit}
+                                />
+                            </span>
+                        )
+                    }
+                ]}
+            />
+        );
+        fireEvent.click(getByRole("button", {name: "More actions"}));
+        fireEvent.click(document.querySelector("[data-testid=glyph]")!);
+        expect(onDeposit).toHaveBeenCalledTimes(1);
+    });
+
     it("shows no menu button when the row has nothing for it", () => {
         const {queryByRole} = render(
             <PortfolioRowActions

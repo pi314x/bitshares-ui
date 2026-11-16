@@ -147,6 +147,12 @@ export function PortfolioRowActions({
 // anywhere on the line is a click on that link (its handler opens the modal).
 function MenuRow({action, onDone}: {action: RowAction; onDone: () => void}) {
     const ref = React.useRef<HTMLDivElement>(null);
+    // What the row's cell clicks: a link or a button, or, for Deposit and Withdraw, the icon itself (a span with
+    // its own onClick, no link around it: a line pressed anywhere but on the little icon did nothing)
+    const target = () =>
+        ref.current
+            ? ref.current.querySelector<HTMLElement>("a, button, .icon")
+            : null;
     return (
         <div
             ref={ref}
@@ -154,9 +160,7 @@ function MenuRow({action, onDone}: {action: RowAction; onDone: () => void}) {
             tabIndex={0}
             className={styles.item}
             onClick={e => {
-                const link = ref.current
-                    ? ref.current.querySelector<HTMLElement>("a, button")
-                    : null;
+                const link = target();
                 // a click that already is on the link goes through by itself
                 if (link && !link.contains(e.target as Node)) link.click();
                 onDone();
@@ -164,9 +168,7 @@ function MenuRow({action, onDone}: {action: RowAction; onDone: () => void}) {
             onKeyDown={e => {
                 if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    const link = ref.current
-                        ? ref.current.querySelector<HTMLElement>("a, button")
-                        : null;
+                    const link = target();
                     if (link) link.click();
                     onDone();
                 }
