@@ -178,6 +178,8 @@ import {Switch} from "../../design-system/Switch";
 import {Tooltip} from "../../design-system/Tooltip";
 import {Collapse} from "../../design-system/Collapse";
 import QuickTradeHelp from "./QuickTradeHelp";
+import {PaymentCard, PaymentPage, SummaryCard} from "../Payments/PaymentPage";
+import fieldStyles from "../Payments/PaymentFields.module.scss";
 import {fillOrKillReceive} from "./fillOrKill";
 import SellReceive from "components/QuickTrade/SellReceive";
 import MarketsActions from "actions/MarketsActions";
@@ -230,6 +232,9 @@ export interface QuickTradeProps {
     currentGroupOrderLimit?: any;
     feedPrice: any;
     marketLimitOrders?: any;
+    /** "page": the cards of a payment page (sell and receive, how it will be filled) and a summary with the Sell
+     * button beside them - the Payments menu's Instant trade; the default is one card */
+    layout?: "card" | "page";
 }
 
 interface QuickTradeState {
@@ -1480,6 +1485,122 @@ function QuickTradeCore(props: QuickTradeProps) {
     const {sellAssetId, receiveAssetId} = getAssetsDetails(state);
 
     const Details = showDetails() ? getDetails() : null;
+
+    if (props.layout === "page") {
+        const t = (key: string) =>
+            counterpart.translate(`instant_page.${key}`) as string;
+        const {
+            sellAssetPrecision,
+            receiveAssetPrecision,
+            sellAssetSymbol,
+            receiveAssetSymbol
+        } = getAssetsDetails(state);
+        const shown = showDetails();
+        const totalFee = shown ? getTotalPercentFee() : NaN;
+        const canSell = shown && !!sub && hasBalance();
+        const blocker = canSell
+            ? null
+            : !shown
+            ? t("blocker_amounts")
+            : !sub
+            ? t("blocker_market")
+            : counterpart.translate("exchange.no_balance");
+        return (
+            <PaymentPage
+                title={<Translate content="showcases.instant_trade.title" />}
+                lead={counterpart.translate("exchange.quick_trade_help.lead")}
+                aside={
+                    <SummaryCard
+                        title={t("sum_title")}
+                        emptyText={t("sum_empty")}
+                        rows={[
+                            {
+                                label: t("sum_sell"),
+                                big: true,
+                                value: shown
+                                    ? `${sellAmount} ${sellAssetSymbol}`
+                                    : undefined
+                            },
+                            {
+                                label: t("sum_receive"),
+                                value: shown
+                                    ? `${receiveAmount} ${receiveAssetSymbol}`
+                                    : undefined
+                            },
+                            {
+                                label: t("sum_price"),
+                                value: shown ? (
+                                    <FormattedPrice
+                                        base_asset={sellAssetId}
+                                        quote_asset={receiveAssetId}
+                                        base_amount={
+                                            (sellAmount as any) *
+                                            10 ** sellAssetPrecision
+                                        }
+                                        quote_amount={
+                                            (receiveAmount as any) *
+                                            10 ** receiveAssetPrecision
+                                        }
+                                        noPopOver
+                                        force_direction={receiveAssetSymbol}
+                                        noInvertTip
+                                    />
+                                ) : (
+                                    undefined
+                                )
+                            },
+                            {
+                                label: t("sum_fee"),
+                                // (a market with no recent price has no liquidity penalty, so the total is not a number)
+                                value:
+                                    shown && Number.isFinite(totalFee)
+                                        ? `${(totalFee * 100).toFixed(2)}%`
+                                        : undefined
+                            }
+                        ]}
+                        primary={{
+                            label: counterpart.translate("exchange.sell"),
+                            onClick: handleSell,
+                            disabled: !canSell
+                        }}
+                        blocker={blocker}
+                    />
+                }
+            >
+                <PaymentCard step={1} title={t("step_trade")} done={shown}>
+                    <SellReceive
+                        sellAssetInput={sellAssetInput}
+                        sellAsset={sellAssetId}
+                        sellAssets={sellAssets}
+                        sellAmount={sellAmount}
+                        sellImgName={sellImgName}
+                        onSellAssetInputChange={onSellAssetInputChange}
+                        onSellAmountChange={onSellAmountChange}
+                        receiveAssetInput={receiveAssetInput}
+                        receiveAsset={receiveAssetId}
+                        receiveAssets={receiveAssets}
+                        receiveAmount={receiveAmount}
+                        receiveImgName={receiveImgName}
+                        onReceiveAssetInputChange={onReceiveAssetInputChange}
+                        onReceiveAmountChange={onReceiveAmountChange}
+                        onReceiveAssetSearch={onReceiveAssetSearch}
+                        onSwap={onSwap}
+                        isSwappable={isSwappable()}
+                    />
+                </PaymentCard>
+                <PaymentCard step={2} title={t("step_details")} done={shown}>
+                    <div className={fieldStyles.fields}>
+                        {Details || (
+                            <p className={fieldStyles.hint}>
+                                {t("pick_first")}
+                            </p>
+                        )}
+                    </div>
+                </PaymentCard>
+                <QuickTradeHelp withLead={false} />
+            </PaymentPage>
+        );
+    }
 
     return (
         <Card

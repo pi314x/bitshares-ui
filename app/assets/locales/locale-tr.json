@@ -3430,6 +3430,19 @@
         "blocker_balance": "Tutar, ücret dahil hesabın bakiyesinden fazla.",
         "blocker_min": "Tutar, ağ geçidinin minimumunun altında."
     },
+    "instant_page": {
+        "step_trade": "Ne satılacak ve alınacak",
+        "step_details": "Nasıl doldurulacak",
+        "sum_title": "Özet",
+        "sum_empty": "Sattığınızı girin: ne alacağınız, hangi fiyattan ve maliyeti burada özetlenir.",
+        "sum_sell": "Satıyorsunuz",
+        "sum_receive": "Alıyorsunuz",
+        "sum_price": "Efektif fiyat",
+        "sum_fee": "Ücretler",
+        "pick_first": "Fiyatı, ücretleri ve dolduracağı emirleri görmek için bir tutar girin.",
+        "blocker_amounts": "İki varlığı da seçin ve bir tutar girin.",
+        "blocker_market": "Piyasa bekleniyor: fiyatlar okunuyor."
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

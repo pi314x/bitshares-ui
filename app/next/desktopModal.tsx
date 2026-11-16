@@ -62,14 +62,7 @@ export function ModalOrPage({
 }: ModalOrPageProps): JSX.Element {
     const asModal = useDesktopModal();
     const leave = useLeave();
-    // the page: one column of the same width as the Payments pages (a phone is narrower, so this is a desktop's)
-    if (!asModal) {
-        return (
-            <div style={{width: "100%", maxWidth: 760, minWidth: 0}}>
-                {children}
-            </div>
-        );
-    }
+    if (!asModal) return <>{children}</>;
     return (
         <Modal visible={true} title={title} width={width} onCancel={leave}>
             {children}

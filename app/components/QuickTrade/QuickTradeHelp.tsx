@@ -17,10 +17,15 @@ const POINTS = [
     "trade"
 ];
 
-export default function QuickTradeHelp() {
+export default function QuickTradeHelp({
+    withLead = true
+}: {
+    /** the short answer above the rest (the page shows it in its head instead) */
+    withLead?: boolean;
+}) {
     return (
         <div className={styles.help}>
-            <p className={styles.lead}>{t("lead")}</p>
+            {withLead ? <p className={styles.lead}>{t("lead")}</p> : null}
             <Collapse className={styles.more}>
                 <Collapse.Panel header={t("more")}>
                     <dl className={styles.points}>

@@ -3430,6 +3430,19 @@
         "blocker_balance": "Le montant dépasse le solde du compte, frais compris.",
         "blocker_min": "Le montant est inférieur au minimum de la passerelle."
     },
+    "instant_page": {
+        "step_trade": "Quoi vendre et recevoir",
+        "step_details": "Comment ce sera exécuté",
+        "sum_title": "Résumé",
+        "sum_empty": "Saisissez ce que vous vendez : ce que vous recevez, à quel prix et ce que cela coûte est résumé ici.",
+        "sum_sell": "Vous vendez",
+        "sum_receive": "Vous recevez",
+        "sum_price": "Prix effectif",
+        "sum_fee": "Frais",
+        "pick_first": "Saisissez un montant pour voir le prix, les frais et les ordres qu'il exécuterait.",
+        "blocker_amounts": "Choisissez les deux actifs et saisissez un montant.",
+        "blocker_market": "En attente du marché : les prix sont en cours de lecture."
+    },
     "transfer": {
         "again": "FAIRE UN AUTRE TRANSFERT",
         "amount": "Montant",

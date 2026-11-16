@@ -3430,6 +3430,19 @@
         "blocker_balance": "El importe es mayor que el saldo de la cuenta, con la comisión.",
         "blocker_min": "El importe está por debajo del mínimo de la pasarela."
     },
+    "instant_page": {
+        "step_trade": "Qué vender y recibir",
+        "step_details": "Cómo se completará",
+        "sum_title": "Resumen",
+        "sum_empty": "Introduce lo que vendes: aquí se resume lo que recibes, a qué precio y cuánto cuesta.",
+        "sum_sell": "Vendes",
+        "sum_receive": "Recibes",
+        "sum_price": "Precio efectivo",
+        "sum_fee": "Comisiones",
+        "pick_first": "Introduce un importe para ver el precio, las comisiones y las órdenes que ejecutaría.",
+        "blocker_amounts": "Elige ambos activos e introduce un importe.",
+        "blocker_market": "Esperando al mercado: se están leyendo los precios."
+    },
     "transfer": {
         "again": "HACER OTRA TRANSFERENCIA",
         "amount": "Monto",

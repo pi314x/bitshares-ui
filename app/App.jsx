@@ -344,7 +344,7 @@ const desktopModalRoutes = [
                 title={<Translate content="showcases.instant_trade.title" />}
                 width={680}
             >
-                <QuickTrade />
+                <QuickTrade layout="page" />
             </ModalOrPage>
         }
     />,
@@ -356,7 +356,7 @@ const desktopModalRoutes = [
                 title={<Translate content="showcases.instant_trade.title" />}
                 width={680}
             >
-                <QuickTrade />
+                <QuickTrade layout="page" />
             </ModalOrPage>
         }
     />,

@@ -3430,6 +3430,19 @@
         "blocker_balance": "金额超过账户余额（含手续费）。",
         "blocker_min": "金额低于网关的最低限额。"
     },
+    "instant_page": {
+        "step_trade": "卖什么、得到什么",
+        "step_details": "成交方式",
+        "sum_title": "摘要",
+        "sum_empty": "输入要卖出的数量：得到什么、什么价格和费用会汇总在这里。",
+        "sum_sell": "卖出",
+        "sum_receive": "得到",
+        "sum_price": "实际价格",
+        "sum_fee": "费用",
+        "pick_first": "输入数量即可查看价格、费用和会成交的订单。",
+        "blocker_amounts": "请选择两种资产并输入数量。",
+        "blocker_market": "正在等待市场：正在读取价格。"
+    },
     "transfer": {
         "again": "发起新的转账",
         "amount": "数量",

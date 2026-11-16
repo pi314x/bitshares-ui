@@ -3430,6 +3430,19 @@
         "blocker_balance": "The amount is more than the account holds, with the fee.",
         "blocker_min": "The amount is below the minimum of the gateway."
     },
+    "instant_page": {
+        "step_trade": "What to sell and receive",
+        "step_details": "How it will be filled",
+        "sum_title": "Summary",
+        "sum_empty": "Enter what you sell: what you get, at which price and what it costs is summed up here.",
+        "sum_sell": "You sell",
+        "sum_receive": "You get",
+        "sum_price": "Effective price",
+        "sum_fee": "Fees",
+        "pick_first": "Enter an amount to see the price, the fees and the orders it would fill.",
+        "blocker_amounts": "Choose both assets and enter an amount.",
+        "blocker_market": "Waiting for the market: the prices are being read."
+    },
     "transfer": {
         "again": "MAKE ANOTHER TRANSFER",
         "amount": "Amount",

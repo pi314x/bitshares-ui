@@ -28,4 +28,13 @@ describe("QuickTradeHelp", () => {
             "Not the same as Trade"
         ].forEach(part => expect(text).toContain(part));
     });
+
+    it("leaves out the short answer when the page already shows it in its head", () => {
+        render(<QuickTradeHelp withLead={false} />);
+        expect(document.body.textContent).not.toContain(
+            "Instant trade sells one asset for another right now"
+        );
+        // the rest is still one tap away
+        expect(screen.getByText("How it works")).toBeTruthy();
+    });
 });

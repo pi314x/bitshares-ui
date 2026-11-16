@@ -3430,6 +3430,19 @@
         "blocker_balance": "L'importo supera il saldo del conto, commissione inclusa.",
         "blocker_min": "L'importo è inferiore al minimo del gateway."
     },
+    "instant_page": {
+        "step_trade": "Cosa vendere e ricevere",
+        "step_details": "Come verrà eseguito",
+        "sum_title": "Riepilogo",
+        "sum_empty": "Inserisci cosa vendi: cosa ricevi, a quale prezzo e quanto costa è riassunto qui.",
+        "sum_sell": "Vendi",
+        "sum_receive": "Ricevi",
+        "sum_price": "Prezzo effettivo",
+        "sum_fee": "Commissioni",
+        "pick_first": "Inserisci un importo per vedere prezzo, commissioni e ordini che eseguirebbe.",
+        "blocker_amounts": "Scegli entrambi gli asset e inserisci un importo.",
+        "blocker_market": "In attesa del mercato: i prezzi vengono letti."
+    },
     "transfer": {
         "again": "EFFETTUA UN ALTRO TRASFERIMENTO",
         "amount": "Quantità",

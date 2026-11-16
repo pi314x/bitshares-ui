@@ -3430,6 +3430,19 @@
         "blocker_balance": "Der Betrag ist höher als das Guthaben des Kontos, mit der Gebühr.",
         "blocker_min": "Der Betrag liegt unter dem Minimum des Gateways."
     },
+    "instant_page": {
+        "step_trade": "Was verkauft und erhalten wird",
+        "step_details": "So wird gefüllt",
+        "sum_title": "Zusammenfassung",
+        "sum_empty": "Gib ein, was du verkaufst: Was du erhältst, zu welchem Preis und was es kostet, steht hier.",
+        "sum_sell": "Du verkaufst",
+        "sum_receive": "Du erhältst",
+        "sum_price": "Effektiver Preis",
+        "sum_fee": "Gebühren",
+        "pick_first": "Gib einen Betrag ein, um Preis, Gebühren und die Orders zu sehen, die er füllen würde.",
+        "blocker_amounts": "Wähle beide Vermögenswerte und gib einen Betrag ein.",
+        "blocker_market": "Warte auf den Markt: die Preise werden gelesen."
+    },
     "transfer": {
         "again": "WEITERE ÜBERWEISUNG",
         "amount": "Betrag",
