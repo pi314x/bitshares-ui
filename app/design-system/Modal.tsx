@@ -26,15 +26,27 @@ const PagePresentation = React.createContext<boolean>(false);
 // dialog over the page" that would push its parent out of the page.
 const NestedInPage = React.createContext<boolean>(false);
 
-// How many dialogs are open over the page right now (the ordinary ones, not
-// those shown in the page). A dialog that is asked to show in the page while
-// another one is open over it would end up hidden behind that one's backdrop
-// - "unlock your wallet" while the Send dialog is open - so it opens as an
-// overlay then.
-let overlaysOpen = 0;
+// The dialogs open over the page right now (the ordinary ones, not those shown
+// in the page), each by the number it was given when it opened. A dialog that
+// is asked to show in the page while another one is open over it would end up
+// hidden behind that one's backdrop - "unlock your wallet" while the Send
+// dialog is open - so it opens as an overlay then. A dialog opened AFTER the
+// one in the page does not count: it opens over it (the transaction to confirm,
+// over the Send screen) and the one in the page stays where it is.
+let dialogsOpened = 0;
+const overlaysOpen = new Set<number>();
 const overlayListeners = new Set<() => void>();
 
-function useOverlaysOpen(): number {
+/** The number of the oldest dialog open over the page; Infinity when there is none. */
+function earliestOverlay(): number {
+    let earliest = Infinity;
+    overlaysOpen.forEach(opened => {
+        if (opened < earliest) earliest = opened;
+    });
+    return earliest;
+}
+
+function useEarliestOverlay(): number {
     return React.useSyncExternalStore(
         listener => {
             overlayListeners.add(listener);
@@ -42,14 +54,19 @@ function useOverlaysOpen(): number {
                 overlayListeners.delete(listener);
             };
         },
-        () => overlaysOpen,
-        () => 0
+        earliestOverlay,
+        () => Infinity
     );
 }
 
-function setOverlaysOpen(delta: number) {
-    overlaysOpen += delta;
+/** Counts the dialog as open over the page; returns the function that takes it off again. */
+function registerOverlay(opened: number): () => void {
+    overlaysOpen.add(opened);
     overlayListeners.forEach(listener => listener());
+    return () => {
+        overlaysOpen.delete(opened);
+        overlayListeners.forEach(listener => listener());
+    };
 }
 
 export function ModalAsPage({
@@ -149,8 +166,17 @@ export function Modal({
 }: ModalProps): JSX.Element | null {
     const asPageRequested = React.useContext(PagePresentation);
     const nestedInPage = React.useContext(NestedInPage);
-    const overlays = useOverlaysOpen();
-    const asPage = asPageRequested && overlays === 0;
+    // The order in which dialogs were opened (taken when the dialog opens, again the next time). A dialog asked to
+    // show in the page gives way only to dialogs opened BEFORE it; what opens after it (the transaction to confirm,
+    // over the Send screen) opens over the page it is. Were the page to turn into an overlay then, that one would be
+    // drawn after (on top of) the confirmation, which would sit behind the screen it asks about.
+    const openedAs = React.useRef<number | null>(null);
+    if (!visible) openedAs.current = null;
+    else if (openedAs.current === null) openedAs.current = ++dialogsOpened;
+    const earliestOverlay = useEarliestOverlay();
+    const asPage =
+        asPageRequested &&
+        (openedAs.current === null || earliestOverlay > openedAs.current);
     const dialogRef = React.useRef<HTMLDivElement>(null);
     // Escape closes the dialog. A dropdown that is open (Select draws its list
     // on <body>, outside the dialog) takes the key first: it handles it in the
@@ -169,8 +195,7 @@ export function Modal({
     React.useEffect(() => {
         if (!visible || asPageRequested || nestedInPage) return;
         // an ordinary dialog: it counts as open over the page
-        setOverlaysOpen(1);
-        return () => setOverlaysOpen(-1);
+        return registerOverlay(openedAs.current as number);
     }, [visible, asPageRequested, nestedInPage]);
 
     React.useEffect(() => {

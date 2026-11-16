@@ -217,5 +217,60 @@ describe("design-system/Modal", () => {
             );
             expect(queryAllByRole("dialog")).toHaveLength(0);
         });
+
+        it("stays in the page when a dialog opens over it", () => {
+            // The Send screen on a phone is a page. Pressing Send opens the transaction to confirm over it; the
+            // screen must not turn into a dialog of its own then: that one is drawn after (on top of) the
+            // confirmation, which ends up behind the screen it is asking about.
+            const screen = (confirmOpen: boolean) => (
+                <div id="screen">
+                    <ModalAsPage>
+                        <Modal visible title="Send">
+                            <p>Form</p>
+                        </Modal>
+                    </ModalAsPage>
+                    <Modal visible={confirmOpen} title="Confirm">
+                        <p>Please confirm</p>
+                    </Modal>
+                </div>
+            );
+            const {queryAllByRole, rerender, container} = render(screen(false));
+            expect(queryAllByRole("dialog")).toHaveLength(0);
+            rerender(screen(true));
+            const dialogs = queryAllByRole("dialog");
+            expect(dialogs).toHaveLength(1);
+            expect(dialogs[0].textContent).toContain("Please confirm");
+            // the screen is where it was
+            expect(container.querySelector("#screen")!.textContent).toContain(
+                "Form"
+            );
+            // and when the confirmation is done it is still there, and still not a dialog
+            rerender(screen(false));
+            expect(queryAllByRole("dialog")).toHaveLength(0);
+            expect(container.querySelector("#screen")!.textContent).toContain(
+                "Form"
+            );
+        });
+
+        it("is decided again when the dialog is opened the next time", () => {
+            // a page that was closed and opens while another dialog is open is an overlay, as the first time
+            const screen = (pageOpen: boolean, otherOpen: boolean) => (
+                <div>
+                    <ModalAsPage>
+                        <Modal visible={pageOpen} title="Unlock">
+                            <p>Password</p>
+                        </Modal>
+                    </ModalAsPage>
+                    <Modal visible={otherOpen} title="Other">
+                        <p>Other</p>
+                    </Modal>
+                </div>
+            );
+            const {queryAllByRole, rerender} = render(screen(true, false));
+            expect(queryAllByRole("dialog")).toHaveLength(0);
+            rerender(screen(false, true));
+            rerender(screen(true, true));
+            expect(queryAllByRole("dialog")).toHaveLength(2);
+        });
     });
 });

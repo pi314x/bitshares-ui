@@ -12782,8 +12782,11 @@ What changed after §7.17, in the order a user meets it.
   instance stays out of the way while a host exists, so only one instance
   answers a request). A dialog asked to show in the page while an ordinary
   dialog is open over it opens as an overlay instead (it would hide behind the
-  backdrop); a dialog opened from inside a page-shown one stays an overlay
-  without pushing its parent out. An unlock request that was open when the user
+  backdrop); only a dialog opened BEFORE it counts: one that opens after it
+  (the transaction to confirm, over the Send screen on a phone) opens over the
+  page, and the page stays a page - turned into an overlay it would be drawn
+  after the confirmation, on top of it. A dialog opened from inside a
+  page-shown one stays an overlay without pushing its parent out. An unlock request that was open when the user
   chose another menu item is withdrawn with the page.
 - **Liquidity pools** (`/pools`, and the explorer's Pools tab, which is the same
   screen). `lib/common/poolMetrics.ts`: reserves, price both ways, pool value,
