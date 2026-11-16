@@ -9,7 +9,7 @@ import {selectGateway} from "../store/slices/gatewaySlice";
 import SendModal from "../components/Modal/SendModal";
 import DepositModal from "../components/Modal/DepositModal";
 import WithdrawModal from "../components/Modal/WithdrawModalNew";
-import {useDesktopModal, useLeave} from "./desktopModal";
+import {useLeave} from "./desktopModal";
 import styles from "./PaymentPages.module.scss";
 
 // Send, Deposit and Withdraw as pages of their own (menu: Payments). They are
@@ -56,7 +56,6 @@ export function SendPage(): JSX.Element {
     React.useEffect(() => {
         if (assetId) sendRef.current && sendRef.current.show();
     }, [assetId]);
-    const asModal = useDesktopModal();
     const dialog = (
         <SendModal
             id="send_page"
@@ -70,8 +69,6 @@ export function SendPage(): JSX.Element {
             onHide={leave}
         />
     );
-    // on a desktop the dialog opens over the page the user came from, like Deposit
-    if (asModal) return dialog;
     return (
         <div className={`send-page ${styles.page}`}>
             <ModalAsPage>{dialog}</ModalAsPage>
@@ -81,7 +78,6 @@ export function SendPage(): JSX.Element {
 
 export function DepositPage(): JSX.Element {
     const leave = useLeave();
-    const asModal = useDesktopModal();
     const accountName = useCurrentAccount();
     const gateway = useReduxState<any>(selectGateway);
     const dialog = (
@@ -94,8 +90,6 @@ export function DepositPage(): JSX.Element {
             backedCoins={gateway.backedCoins}
         />
     );
-    // on a desktop the dialog opens over the page the user came from
-    if (asModal) return dialog;
     return (
         <div className={styles.page}>
             <ModalAsPage>{dialog}</ModalAsPage>
@@ -105,7 +99,6 @@ export function DepositPage(): JSX.Element {
 
 export function WithdrawPage(): JSX.Element {
     const leave = useLeave();
-    const asModal = useDesktopModal();
     const gateway = useReduxState<any>(selectGateway);
     const dialog = (
         <WithdrawModal
@@ -116,7 +109,6 @@ export function WithdrawPage(): JSX.Element {
             backedCoins={gateway.backedCoins}
         />
     );
-    if (asModal) return dialog;
     return (
         <div className={styles.page}>
             <ModalAsPage>{dialog}</ModalAsPage>

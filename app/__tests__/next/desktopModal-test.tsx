@@ -16,11 +16,11 @@ describe("isDesktopModalPath", () => {
         expect(isDesktopModalPath("/instant-trade/BTS_USD")).toBe(true);
     });
 
-    // Send opened as a page of its own, and the page it was left from showed its dialog behind
-    // Deposit's: Send is a dialog over the page the user came from, like Deposit and Withdraw.
-    it("includes Send, Deposit and Withdraw (still dialogs on a desktop)", () => {
-        ["/send", "/deposit", "/withdraw"].forEach(path =>
-            expect(isDesktopModalPath(path)).toBe(true)
+    // The Payments menu opens pages, not popups: Send, Deposit and Withdraw are pages on a desktop as on a phone
+    // (the popups of the other screens, such as the portfolio's Send, are the dialogs themselves, not these routes).
+    it("does not include Send, Deposit and Withdraw: they are pages on a desktop as on a phone", () => {
+        ["/send", "/deposit", "/withdraw", "/send/x"].forEach(path =>
+            expect(isDesktopModalPath(path)).toBe(false)
         );
     });
 

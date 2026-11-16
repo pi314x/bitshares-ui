@@ -1,9 +1,11 @@
 // Small pages as a dialog on a desktop screen. A page whose whole content is one
-// short form (Deposit, Withdraw, Instant trade, an HTLC, a direct debit, a
-// borrow) is a lonely box in a wide empty page; on a desktop it opens over the page
-// the user was on instead, as a dialog. On a phone it stays a page. The address is
-// the same either way (the route does not change, it can be bookmarked), and
-// closing the dialog goes back to where the user came from.
+// short form (Instant trade, an HTLC, a direct debit, a borrow) is a lonely box in a
+// wide empty page; on a desktop it opens over the page the user was on instead, as a
+// dialog. On a phone it stays a page. The address is the same either way (the route
+// does not change, it can be bookmarked), and closing the dialog goes back to where
+// the user came from. Send, Deposit and Withdraw (the Payments menu) are pages on
+// every screen: the same dialogs shown in the page (`next/PaymentPages.tsx`), while
+// the buttons of the other screens (the portfolio's Send, ...) open them as popups.
 //
 // `App.jsx` keeps the last ordinary page as the background of such a route and
 // provides `DesktopModalContext`; `ModalOrPage` is what a route's element wraps its
@@ -14,9 +16,6 @@ import {Modal} from "../design-system/Modal";
 
 /** The routes shown as a dialog on a desktop screen. */
 export const DESKTOP_MODAL_PATHS = [
-    "/send",
-    "/deposit",
-    "/withdraw",
     "/instant-trade",
     "/htlc",
     "/direct-debit",
