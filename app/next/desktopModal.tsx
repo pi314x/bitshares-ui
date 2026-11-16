@@ -1,11 +1,11 @@
 // Small pages as a dialog on a desktop screen. A page whose whole content is one
-// short form (Instant trade, an HTLC, a direct debit, a borrow) is a lonely box in a
-// wide empty page; on a desktop it opens over the page the user was on instead, as a
-// dialog. On a phone it stays a page. The address is the same either way (the route
-// does not change, it can be bookmarked), and closing the dialog goes back to where
-// the user came from. Send, Deposit and Withdraw (the Payments menu) are pages on
-// every screen: the same dialogs shown in the page (`next/PaymentPages.tsx`), while
-// the buttons of the other screens (the portfolio's Send, ...) open them as popups.
+// short form (an HTLC, a direct debit, a borrow) is a lonely box in a wide empty
+// page; on a desktop it opens over the page the user was on instead, as a dialog.
+// On a phone it stays a page. The address is the same either way (the route does
+// not change, it can be bookmarked), and closing the dialog goes back to where the
+// user came from. Send, Deposit, Withdraw and Instant trade (the menu) are pages on
+// every screen, while the buttons of the other screens (the portfolio's Send, ...)
+// open the same dialogs as popups.
 //
 // `App.jsx` keeps the last ordinary page as the background of such a route and
 // provides `DesktopModalContext`; `ModalOrPage` is what a route's element wraps its
@@ -15,12 +15,7 @@ import {useNavigate} from "react-router-dom";
 import {Modal} from "../design-system/Modal";
 
 /** The routes shown as a dialog on a desktop screen. */
-export const DESKTOP_MODAL_PATHS = [
-    "/instant-trade",
-    "/htlc",
-    "/direct-debit",
-    "/borrow"
-];
+export const DESKTOP_MODAL_PATHS = ["/htlc", "/direct-debit", "/borrow"];
 
 /** Below this width the navigation is a drawer and a page is the whole screen. */
 export const DESKTOP_QUERY = "(min-width: 861px)";
@@ -67,7 +62,14 @@ export function ModalOrPage({
 }: ModalOrPageProps): JSX.Element {
     const asModal = useDesktopModal();
     const leave = useLeave();
-    if (!asModal) return <>{children}</>;
+    // the page: one column of the same width as the Payments pages (a phone is narrower, so this is a desktop's)
+    if (!asModal) {
+        return (
+            <div style={{width: "100%", maxWidth: 760, minWidth: 0}}>
+                {children}
+            </div>
+        );
+    }
     return (
         <Modal visible={true} title={title} width={width} onCancel={leave}>
             {children}
