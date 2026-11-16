@@ -28,6 +28,75 @@ describe("notification history", () => {
         expect(getNotifications().every(i => i.seen)).toBe(true);
     });
 
+    // an entry for something that happened earlier (a transaction found after a reconnect, an operation of an earlier
+    // block) is recorded after one for something newer: the newest event is on top, not the last one to arrive
+    it("keeps the newest event on top, whatever order the entries arrive in", () => {
+        recordNotification("info", "newest", "", 5000);
+        recordNotification("info", "oldest", "", 1000);
+        recordNotification("info", "middle", "", 3000);
+        expect(getNotifications().map(i => i.title)).toEqual([
+            "newest",
+            "middle",
+            "oldest"
+        ]);
+    });
+
+    it("puts the one that arrived later first when two have the same time", () => {
+        recordNotification("info", "first", "", 2000);
+        recordNotification("info", "second", "", 2000);
+        expect(getNotifications().map(i => i.title)).toEqual([
+            "second",
+            "first"
+        ]);
+    });
+
+    it("orders what was stored by an earlier version newest first when it is read", () => {
+        const stored = [
+            {
+                id: 1,
+                at: 1000,
+                kind: "info",
+                title: "a",
+                description: "",
+                seen: true
+            },
+            {
+                id: 3,
+                at: 3000,
+                kind: "info",
+                title: "c",
+                description: "",
+                seen: true
+            },
+            {
+                id: 2,
+                at: 2000,
+                kind: "info",
+                title: "b",
+                description: "",
+                seen: true
+            }
+        ];
+        window.localStorage.setItem(
+            "__graphene__notificationHistory",
+            JSON.stringify(stored)
+        );
+        reloadNotifications();
+        expect(getNotifications().map(i => i.title)).toEqual(["c", "b", "a"]);
+    });
+
+    it("drops the oldest event when it is full, not the one that arrived last", () => {
+        for (let i = 0; i < MAX_ITEMS; i++) {
+            recordNotification("info", `n${i}`, "", 10000 + i);
+        }
+        // older than all of them: it is the one to go
+        recordNotification("info", "ancient", "", 1);
+        const titles = getNotifications().map(i => i.title);
+        expect(titles).toHaveLength(MAX_ITEMS);
+        expect(titles).not.toContain("ancient");
+        expect(titles[0]).toBe(`n${MAX_ITEMS - 1}`);
+    });
+
     it("is kept in this browser", () => {
         recordNotification("info", "Hello", "world", 5);
         reloadNotifications();

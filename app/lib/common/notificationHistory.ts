@@ -32,11 +32,20 @@ export const MAX_ITEMS = 100;
 let items: HistoryItem[] = load();
 const listeners = new Set<() => void>();
 
+/**
+ * The newest event first. Not the order of arrival: an entry can be for something that happened earlier (a
+ * transaction found after a reconnect, an operation of an earlier block) and must not sit above newer ones. Of two
+ * with the same time the one recorded later is first.
+ */
+function newestFirst(list: HistoryItem[]): HistoryItem[] {
+    return [...list].sort((a, b) => b.at - a.at || b.id - a.id);
+}
+
 function load(): HistoryItem[] {
     try {
         const parsed = JSON.parse(window.localStorage.getItem(KEY) || "[]");
         if (!Array.isArray(parsed)) return [];
-        return parsed
+        const kept = parsed
             .map((x: any) =>
                 x && x.to !== undefined ? {...x, to: routeOnly(x.to)} : x
             )
@@ -50,8 +59,8 @@ function load(): HistoryItem[] {
                     (x.title.trim() !== "" ||
                         (typeof x.description === "string" &&
                             x.description.trim() !== ""))
-            )
-            .slice(0, MAX_ITEMS);
+            );
+        return newestFirst(kept).slice(0, MAX_ITEMS);
     } catch (e) {
         return [];
     }
@@ -69,7 +78,7 @@ function emit() {
     listeners.forEach(listener => listener());
 }
 
-/** Adds an entry (newest first); returns it. */
+/** Adds an entry (the list stays newest event first); returns it. */
 export function recordNotification(
     kind: NotificationKind,
     title: string,
@@ -89,7 +98,7 @@ export function recordNotification(
     };
     // nothing to say: not an entry (the bell listed a check mark and a time)
     if (!item.title.trim() && !item.description.trim()) return item;
-    items = [item, ...items].slice(0, MAX_ITEMS);
+    items = newestFirst([item, ...items]).slice(0, MAX_ITEMS);
     save();
     emit();
     return item;
