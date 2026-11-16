@@ -3395,6 +3395,19 @@
         "blocker_by": "Elige la cuenta que lo propone.",
         "blocker_other": "Completa el formulario."
     },
+    "deposit_page": {
+        "lead": "Elige qué quieres depositar; la página muestra entonces la dirección a la que enviarlo.",
+        "step_asset": "Qué depositar",
+        "step_address": "A dónde enviarlo",
+        "pick_first": "Elige primero un activo: su dirección se muestra aquí.",
+        "sum_title": "Resumen",
+        "sum_empty": "Elige un activo para depositar: aquí se resume qué enviar y a dónde.",
+        "sum_asset": "Activo",
+        "sum_via": "A través de",
+        "sum_direct": "Directamente en BitShares",
+        "sum_account": "A la cuenta",
+        "sum_minimum": "Mínimo"
+    },
     "transfer": {
         "again": "HACER OTRA TRANSFERENCIA",
         "amount": "Monto",

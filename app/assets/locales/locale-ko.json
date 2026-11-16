@@ -3395,6 +3395,19 @@
         "blocker_by": "제안하는 계정을 선택하세요.",
         "blocker_other": "양식을 완성하세요."
     },
+    "deposit_page": {
+        "lead": "입금할 항목을 선택하면 보낼 주소가 표시됩니다.",
+        "step_asset": "입금할 항목",
+        "step_address": "보낼 곳",
+        "pick_first": "먼저 자산을 선택하세요. 해당 주소가 여기에 표시됩니다.",
+        "sum_title": "요약",
+        "sum_empty": "입금할 자산을 선택하면 보낼 내용과 보낼 곳이 여기에 요약됩니다.",
+        "sum_asset": "자산",
+        "sum_via": "경유",
+        "sum_direct": "BitShares에 직접",
+        "sum_account": "받는 계정",
+        "sum_minimum": "최소 금액"
+    },
     "transfer": {
         "again": "추가 거래",
         "amount": "금액",

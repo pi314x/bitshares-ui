@@ -3395,6 +3395,19 @@
         "blocker_by": "请选择提出提案的账户。",
         "blocker_other": "请完成表单。"
     },
+    "deposit_page": {
+        "lead": "选择要充值的内容，页面会显示要发送到的地址。",
+        "step_asset": "充值什么",
+        "step_address": "发送到哪里",
+        "pick_first": "请先选择资产：其地址会显示在这里。",
+        "sum_title": "摘要",
+        "sum_empty": "选择要充值的资产：要发送什么、发送到哪里会汇总在这里。",
+        "sum_asset": "资产",
+        "sum_via": "通过",
+        "sum_direct": "直接在 BitShares 上",
+        "sum_account": "收款账户",
+        "sum_minimum": "最低金额"
+    },
     "transfer": {
         "again": "发起新的转账",
         "amount": "数量",

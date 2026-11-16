@@ -3395,6 +3395,19 @@
         "blocker_by": "Öneren hesabı seçin.",
         "blocker_other": "Formu tamamlayın."
     },
+    "deposit_page": {
+        "lead": "Neyi yatırmak istediğinizi seçin; sayfa gönderilecek adresi gösterir.",
+        "step_asset": "Ne yatırılacak",
+        "step_address": "Nereye gönderilecek",
+        "pick_first": "Önce bir varlık seçin: adresi burada gösterilir.",
+        "sum_title": "Özet",
+        "sum_empty": "Yatırılacak bir varlık seçin: ne göndereceğiniz ve nereye olduğu burada özetlenir.",
+        "sum_asset": "Varlık",
+        "sum_via": "Aracılığıyla",
+        "sum_direct": "Doğrudan BitShares'te",
+        "sum_account": "Hesaba",
+        "sum_minimum": "Minimum"
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

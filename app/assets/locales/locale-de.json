@@ -3395,6 +3395,19 @@
         "blocker_by": "Wähle das Konto, das es vorschlägt.",
         "blocker_other": "Fülle das Formular aus."
     },
+    "deposit_page": {
+        "lead": "Wähle, was du einzahlen möchtest; die Seite zeigt dann die Adresse, an die du es sendest.",
+        "step_asset": "Was eingezahlt wird",
+        "step_address": "Wohin senden",
+        "pick_first": "Wähle zuerst einen Vermögenswert: seine Adresse wird hier angezeigt.",
+        "sum_title": "Zusammenfassung",
+        "sum_empty": "Wähle einen Vermögenswert zum Einzahlen: Was du wohin sendest, steht hier.",
+        "sum_asset": "Vermögenswert",
+        "sum_via": "Über",
+        "sum_direct": "Direkt auf BitShares",
+        "sum_account": "An Konto",
+        "sum_minimum": "Minimum"
+    },
     "transfer": {
         "again": "WEITERE ÜBERWEISUNG",
         "amount": "Betrag",

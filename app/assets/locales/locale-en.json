@@ -3395,6 +3395,19 @@
         "blocker_by": "Choose the account that proposes it.",
         "blocker_other": "Complete the form."
     },
+    "deposit_page": {
+        "lead": "Choose what you want to deposit; the page then shows the address to send it to.",
+        "step_asset": "What to deposit",
+        "step_address": "Where to send it",
+        "pick_first": "Choose an asset first: its address is shown here.",
+        "sum_title": "Summary",
+        "sum_empty": "Choose an asset to deposit: what to send and where is summed up here.",
+        "sum_asset": "Asset",
+        "sum_via": "Through",
+        "sum_direct": "Directly on BitShares",
+        "sum_account": "To account",
+        "sum_minimum": "Minimum"
+    },
     "transfer": {
         "again": "MAKE ANOTHER TRANSFER",
         "amount": "Amount",

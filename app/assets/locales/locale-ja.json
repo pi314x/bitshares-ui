@@ -3395,6 +3395,19 @@
         "blocker_by": "提案するアカウントを選んでください。",
         "blocker_other": "フォームを完成させてください。"
     },
+    "deposit_page": {
+        "lead": "入金したいものを選ぶと、送り先のアドレスが表示されます。",
+        "step_asset": "入金するもの",
+        "step_address": "送り先",
+        "pick_first": "まず資産を選んでください。そのアドレスがここに表示されます。",
+        "sum_title": "概要",
+        "sum_empty": "入金する資産を選ぶと、送るものと送り先がここにまとめて表示されます。",
+        "sum_asset": "資産",
+        "sum_via": "経由",
+        "sum_direct": "BitShares に直接",
+        "sum_account": "入金先アカウント",
+        "sum_minimum": "最小額"
+    },
     "transfer": {
         "again": "他の転送をする",
         "amount": "金額",

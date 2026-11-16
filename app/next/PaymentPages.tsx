@@ -86,13 +86,11 @@ export function DepositPage(): JSX.Element {
             modalId="deposit_page"
             account={accountName}
             backedCoins={gateway.backedCoins}
+            layout="page"
         />
     );
-    return (
-        <div className={styles.page}>
-            <ModalAsPage>{dialog}</ModalAsPage>
-        </div>
-    );
+    // the cards of a payment page, with the summary beside them
+    return dialog;
 }
 
 export function WithdrawPage(): JSX.Element {

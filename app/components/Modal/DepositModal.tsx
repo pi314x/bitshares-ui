@@ -97,6 +97,8 @@ import CryptoLinkFormatterImpl from "../Utility/CryptoLinkFormatter";
 import counterpart from "counterpart";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
+import {PaymentCard, PaymentPage, SummaryCard} from "../Payments/PaymentPage";
+import fieldStyles from "../Payments/PaymentFields.module.scss";
 import styles from "../DepositWithdraw/DepositCopy.module.scss";
 
 // `CryptoLinkFormatter.tsx` (an earlier, separately-ported file) types
@@ -133,12 +135,18 @@ interface DepositModalContentProps {
     account: any;
     asset: any;
     backedCoins: any;
+    /** "page": two cards (what to deposit, where to send it) and a summary; the default is the dialog's body */
+    layout?: "dialog" | "page";
+    /** the page's Close button */
+    onClose?: () => void;
 }
 
 function DepositModalContent({
     account,
     asset,
-    backedCoins
+    backedCoins,
+    layout,
+    onClose
 }: DepositModalContentProps) {
     const [state, setState] = React.useState<DepositModalContentState>(
         getInitialDepositState
@@ -463,139 +471,238 @@ function DepositModalContent({
         </div>
     );
 
+    // The blocks, built once: the dialog stacks them in one body, the page lays them out in two cards.
+    const assetBlock = (
+        <div className="container-row">
+            <div className="no-margin no-padding">
+                <div className="inline-label input-wrapper">
+                    <DepositWithdrawAssetSelector
+                        defaultValue={state.selectedAsset}
+                        onSelect={onAssetSelected}
+                        selectOnBlur
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
+    const gatewayBlock =
+        usingGateway && selectedAsset
+            ? gatewaySelector({
+                  selectedGateway,
+                  gatewayStatus,
+                  nAvailableGateways,
+                  error: depositAddress && depositAddress.error,
+                  onGatewayChanged
+              })
+            : null;
+
+    const addressBlock = !fetchingAddress ? (
+        (!usingGateway ||
+            (usingGateway &&
+                selectedGateway &&
+                gatewayStatus[selectedGateway].options.enabled)) &&
+        isAddressValid &&
+        !depositAddress.memo ? (
+            <div className="container-row" style={{textAlign: "center"}}>
+                {QR}
+            </div>
+        ) : null
+    ) : (
+        <div
+            className="container-row"
+            style={{textAlign: "center", paddingTop: 15}}
+        >
+            <LoadingIndicator type="three-bounce" />
+        </div>
+    );
+
+    const detailsBlock =
+        selectedGateway &&
+        gatewayStatus[selectedGateway].options.enabled &&
+        isAddressValid ? (
+            <div className={`container-row ${styles.details}`}>
+                <Translate
+                    component="p"
+                    className={styles.minimum}
+                    content="gateway.min_deposit_warning_amount"
+                    minDeposit={minDeposit || 0}
+                    coin={selectedAsset}
+                />
+
+                <DepositField
+                    value={depositAddress.address}
+                    label={
+                        <Translate
+                            content="gateway.purchase_notice"
+                            inputAsset={selectedAsset}
+                            outputAsset={selectedGateway + "." + selectedAsset}
+                        />
+                    }
+                />
+                {depositAddress.memo ? (
+                    <DepositField
+                        value={depositAddress.memo}
+                        label={
+                            <Translate
+                                unsafe
+                                content="gateway.purchase_notice_memo"
+                            />
+                        }
+                    />
+                ) : null}
+                {depositAddress.tag ? (
+                    <DepositField
+                        value={depositAddress.tag}
+                        label={
+                            <Translate
+                                unsafe
+                                content="gateway.purchase_notice_tag"
+                            />
+                        }
+                    />
+                ) : null}
+                {depositConfirmation ? (
+                    <p className={styles.confirmation}>
+                        {depositConfirmation.type === "irreversible" ? (
+                            <Translate content="gateway.gateway_deposit.confirmations.last_irreversible" />
+                        ) : depositConfirmation.type === "blocks" ? (
+                            <Translate
+                                content="gateway.gateway_deposit.confirmations.n_blocks"
+                                blocks={depositConfirmation.value}
+                            />
+                        ) : null}
+                    </p>
+                ) : null}
+
+                <Translate
+                    component="p"
+                    className={styles.warning}
+                    content="gateway.min_deposit_warning_asset"
+                    minDeposit={minDeposit || 0}
+                    coin={selectedAsset}
+                />
+            </div>
+        ) : null;
+
+    const directBlock = !usingGateway ? (
+        <div className="container-row deposit-directly">
+            <h2 className="modal__highlight" style={{textAlign: "center"}}>
+                {/* a tap on the account name copies it */}
+                <CopyOnTap text={account} centered>
+                    {account}
+                </CopyOnTap>
+            </h2>
+            <Translate
+                component="p"
+                className={styles.note}
+                content="modal.deposit.bts_transfer_description"
+            />
+        </div>
+    ) : null;
+
+    if (layout === "page") {
+        const t = (key: string) =>
+            counterpart.translate(`deposit_page.${key}`) as string;
+        const gatewayName =
+            selectedGateway && gatewayStatus[selectedGateway]
+                ? gatewayStatus[selectedGateway].name || selectedGateway
+                : undefined;
+        const ready =
+            !!selectedAsset &&
+            (!usingGateway ||
+                (!!selectedGateway &&
+                    !!gatewayStatus[selectedGateway].options.enabled)) &&
+            isAddressValid &&
+            !fetchingAddress;
+        return (
+            <PaymentPage
+                title={
+                    account
+                        ? counterpart.translate("modal.deposit.header", {
+                              account_name: account
+                          })
+                        : counterpart.translate("modal.deposit.header_short")
+                }
+                lead={t("lead")}
+                aside={
+                    <SummaryCard
+                        title={t("sum_title")}
+                        emptyText={t("sum_empty")}
+                        rows={[
+                            {
+                                label: t("sum_asset"),
+                                big: true,
+                                value: selectedAsset || undefined
+                            },
+                            {
+                                label: t("sum_via"),
+                                value: usingGateway
+                                    ? gatewayName
+                                    : selectedAsset
+                                    ? t("sum_direct")
+                                    : undefined
+                            },
+                            {
+                                label: t("sum_account"),
+                                value: selectedAsset
+                                    ? String(account)
+                                    : undefined
+                            },
+                            {
+                                label: t("sum_minimum"),
+                                value:
+                                    ready && usingGateway && minDeposit
+                                        ? `${minDeposit} ${selectedAsset}`
+                                        : undefined
+                            }
+                        ]}
+                        primary={{
+                            label: counterpart.translate("modal.close"),
+                            onClick: () => onClose && onClose()
+                        }}
+                    />
+                }
+            >
+                <PaymentCard
+                    step={1}
+                    title={t("step_asset")}
+                    done={
+                        !!selectedAsset && (!usingGateway || !!selectedGateway)
+                    }
+                >
+                    <div className={fieldStyles.fields}>
+                        {assetBlock}
+                        {gatewayBlock}
+                    </div>
+                </PaymentCard>
+                <PaymentCard step={2} title={t("step_address")} done={ready}>
+                    <div className={fieldStyles.fields}>
+                        {selectedAsset ? (
+                            <>
+                                {addressBlock}
+                                {detailsBlock}
+                                {directBlock}
+                            </>
+                        ) : (
+                            <p className={fieldStyles.hint}>
+                                {t("pick_first")}
+                            </p>
+                        )}
+                    </div>
+                </PaymentCard>
+            </PaymentPage>
+        );
+    }
+
     return (
         <div className="grid-block vertical no-overflow">
             <div className={`modal__body ${styles.depositBody}`}>
-                <div className="container-row">
-                    <div className="no-margin no-padding">
-                        <div className="inline-label input-wrapper">
-                            <DepositWithdrawAssetSelector
-                                defaultValue={state.selectedAsset}
-                                onSelect={onAssetSelected}
-                                selectOnBlur
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {usingGateway && selectedAsset
-                    ? gatewaySelector({
-                          selectedGateway,
-                          gatewayStatus,
-                          nAvailableGateways,
-                          error: depositAddress && depositAddress.error,
-                          onGatewayChanged
-                      })
-                    : null}
-
-                {!fetchingAddress ? (
-                    (!usingGateway ||
-                        (usingGateway &&
-                            selectedGateway &&
-                            gatewayStatus[selectedGateway].options.enabled)) &&
-                    isAddressValid &&
-                    !depositAddress.memo ? (
-                        <div
-                            className="container-row"
-                            style={{textAlign: "center"}}
-                        >
-                            {QR}
-                        </div>
-                    ) : null
-                ) : (
-                    <div
-                        className="container-row"
-                        style={{textAlign: "center", paddingTop: 15}}
-                    >
-                        <LoadingIndicator type="three-bounce" />
-                    </div>
-                )}
-                {selectedGateway &&
-                gatewayStatus[selectedGateway].options.enabled &&
-                isAddressValid ? (
-                    <div className={`container-row ${styles.details}`}>
-                        <Translate
-                            component="p"
-                            className={styles.minimum}
-                            content="gateway.min_deposit_warning_amount"
-                            minDeposit={minDeposit || 0}
-                            coin={selectedAsset}
-                        />
-
-                        <DepositField
-                            value={depositAddress.address}
-                            label={
-                                <Translate
-                                    content="gateway.purchase_notice"
-                                    inputAsset={selectedAsset}
-                                    outputAsset={
-                                        selectedGateway + "." + selectedAsset
-                                    }
-                                />
-                            }
-                        />
-                        {depositAddress.memo ? (
-                            <DepositField
-                                value={depositAddress.memo}
-                                label={
-                                    <Translate
-                                        unsafe
-                                        content="gateway.purchase_notice_memo"
-                                    />
-                                }
-                            />
-                        ) : null}
-                        {depositAddress.tag ? (
-                            <DepositField
-                                value={depositAddress.tag}
-                                label={
-                                    <Translate
-                                        unsafe
-                                        content="gateway.purchase_notice_tag"
-                                    />
-                                }
-                            />
-                        ) : null}
-                        {depositConfirmation ? (
-                            <p className={styles.confirmation}>
-                                {depositConfirmation.type === "irreversible" ? (
-                                    <Translate content="gateway.gateway_deposit.confirmations.last_irreversible" />
-                                ) : depositConfirmation.type === "blocks" ? (
-                                    <Translate
-                                        content="gateway.gateway_deposit.confirmations.n_blocks"
-                                        blocks={depositConfirmation.value}
-                                    />
-                                ) : null}
-                            </p>
-                        ) : null}
-
-                        <Translate
-                            component="p"
-                            className={styles.warning}
-                            content="gateway.min_deposit_warning_asset"
-                            minDeposit={minDeposit || 0}
-                            coin={selectedAsset}
-                        />
-                    </div>
-                ) : null}
-                {!usingGateway ? (
-                    <div className="container-row deposit-directly">
-                        <h2
-                            className="modal__highlight"
-                            style={{textAlign: "center"}}
-                        >
-                            {/* a tap on the account name copies it */}
-                            <CopyOnTap text={account} centered>
-                                {account}
-                            </CopyOnTap>
-                        </h2>
-                        <Translate
-                            component="p"
-                            className={styles.note}
-                            content="modal.deposit.bts_transfer_description"
-                        />
-                    </div>
-                ) : null}
+                {assetBlock}
+                {gatewayBlock}
+                {addressBlock}
+                {detailsBlock}
+                {directBlock}
             </div>
         </div>
     );
@@ -609,6 +716,8 @@ interface DepositModalProps {
     visible?: boolean;
     hideModal?: () => void;
     showModal?: () => void;
+    /** "page": the Payments menu's Deposit, as the cards of a payment page; the default is the dialog */
+    layout?: "dialog" | "page";
 }
 
 interface DepositModalHandle {
@@ -635,6 +744,18 @@ const DepositModal = React.forwardRef<DepositModalHandle, DepositModalProps>(
         const onClose = () => {
             (props.hideModal as any)();
         };
+
+        if (props.layout === "page") {
+            return (
+                <DepositModalContent
+                    account={props.account}
+                    asset={props.asset}
+                    backedCoins={props.backedCoins}
+                    layout="page"
+                    onClose={onClose}
+                />
+            );
+        }
 
         return (
             <Modal
