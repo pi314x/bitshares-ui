@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "删除提款授权，从",
         "withdraw_permission_update": "更新提款授权，从"
     },
+    "send_page": {
+        "step_parties": "谁付给谁",
+        "step_what": "发送什么",
+        "step_fee": "手续费",
+        "sum_title": "摘要",
+        "sum_empty": "选择收款人和金额，付款摘要会显示在这里。",
+        "max": "最大",
+        "blocker_to": "请选择收款人。",
+        "blocker_amount": "请输入金额。",
+        "blocker_balance": "金额超过账户余额（含手续费）。",
+        "blocker_same": "付款人和收款人是同一个账户。",
+        "blocker_by": "请选择提出提案的账户。",
+        "blocker_other": "请完成表单。"
+    },
     "transfer": {
         "again": "发起新的转账",
         "amount": "数量",

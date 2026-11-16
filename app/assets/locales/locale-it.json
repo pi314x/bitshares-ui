@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "Ha rimosso il permesso di prelevare per l'account",
         "withdraw_permission_update": "Ha aggiornato il permesso di prelevare per l'account"
     },
+    "send_page": {
+        "step_parties": "Chi paga chi",
+        "step_what": "Cosa inviare",
+        "step_fee": "Commissione",
+        "sum_title": "Riepilogo",
+        "sum_empty": "Scegli chi lo riceve e quanto: il pagamento è riassunto qui.",
+        "max": "Max",
+        "blocker_to": "Scegli chi lo riceve.",
+        "blocker_amount": "Inserisci un importo.",
+        "blocker_balance": "L'importo supera il saldo del conto, commissione inclusa.",
+        "blocker_same": "Mittente e destinatario sono lo stesso conto.",
+        "blocker_by": "Scegli l'account che lo propone.",
+        "blocker_other": "Completa il modulo."
+    },
     "transfer": {
         "again": "EFFETTUA UN ALTRO TRASFERIMENTO",
         "amount": "Quantità",

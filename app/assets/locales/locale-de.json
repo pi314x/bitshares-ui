@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "Einzugsermächtigung wurde aufgehoben für Konto.",
         "withdraw_permission_update": "Einzugsermächtigung wurde aktualisiert für Konto."
     },
+    "send_page": {
+        "step_parties": "Wer an wen zahlt",
+        "step_what": "Was gesendet wird",
+        "step_fee": "Gebühr",
+        "sum_title": "Zusammenfassung",
+        "sum_empty": "Wähle, wer es erhält und wie viel: die Zahlung wird hier zusammengefasst.",
+        "max": "Max",
+        "blocker_to": "Wähle, wer es erhält.",
+        "blocker_amount": "Gib einen Betrag ein.",
+        "blocker_balance": "Der Betrag ist höher als das Guthaben des Kontos, mit der Gebühr.",
+        "blocker_same": "Absender und Empfänger sind dasselbe Konto.",
+        "blocker_by": "Wähle das Konto, das es vorschlägt.",
+        "blocker_other": "Fülle das Formular aus."
+    },
     "transfer": {
         "again": "WEITERE ÜBERWEISUNG",
         "amount": "Betrag",

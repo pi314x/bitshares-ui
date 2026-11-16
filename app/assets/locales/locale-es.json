@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "Ha eliminado los permisos de retiro para la cuenta",
         "withdraw_permission_update": "Ha actualizado los permisos de retiro para la cuenta"
     },
+    "send_page": {
+        "step_parties": "Quién paga a quién",
+        "step_what": "Qué enviar",
+        "step_fee": "Comisión",
+        "sum_title": "Resumen",
+        "sum_empty": "Elige quién lo recibe y cuánto: el pago se resume aquí.",
+        "max": "Máx.",
+        "blocker_to": "Elige quién lo recibe.",
+        "blocker_amount": "Introduce un importe.",
+        "blocker_balance": "El importe es mayor que el saldo de la cuenta, con la comisión.",
+        "blocker_same": "El remitente y el destinatario son la misma cuenta.",
+        "blocker_by": "Elige la cuenta que lo propone.",
+        "blocker_other": "Completa el formulario."
+    },
     "transfer": {
         "again": "HACER OTRA TRANSFERENCIA",
         "amount": "Monto",

@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "残高引き出し権限を削除",
         "withdraw_permission_update": "残高引き出し権限を更新"
     },
+    "send_page": {
+        "step_parties": "誰から誰へ",
+        "step_what": "送るもの",
+        "step_fee": "手数料",
+        "sum_title": "概要",
+        "sum_empty": "受取人と金額を選ぶと、ここに支払いの概要が表示されます。",
+        "max": "最大",
+        "blocker_to": "受取人を選んでください。",
+        "blocker_amount": "金額を入力してください。",
+        "blocker_balance": "金額が手数料を含めた口座の残高を超えています。",
+        "blocker_same": "送信者と受取人が同じアカウントです。",
+        "blocker_by": "提案するアカウントを選んでください。",
+        "blocker_other": "フォームを完成させてください。"
+    },
     "transfer": {
         "again": "他の転送をする",
         "amount": "金額",

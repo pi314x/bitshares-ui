@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "Deleted withdrawal permissions for account",
         "withdraw_permission_update": "Updated withdrawal permission for account"
     },
+    "send_page": {
+        "step_parties": "Who pays whom",
+        "step_what": "What to send",
+        "step_fee": "Fee",
+        "sum_title": "Summary",
+        "sum_empty": "Choose who gets it and how much: the payment is summed up here.",
+        "max": "Max",
+        "blocker_to": "Choose who gets it.",
+        "blocker_amount": "Enter an amount.",
+        "blocker_balance": "The amount is more than the account holds, with the fee.",
+        "blocker_same": "The sender and the recipient are the same account.",
+        "blocker_by": "Choose the account that proposes it.",
+        "blocker_other": "Complete the form."
+    },
     "transfer": {
         "again": "MAKE ANOTHER TRANSFER",
         "amount": "Amount",

@@ -67,13 +67,11 @@ export function SendPage(): JSX.Element {
             asset_id={assetId}
             entry_id={entryId}
             onHide={leave}
+            layout="page"
         />
     );
-    return (
-        <div className={`send-page ${styles.page}`}>
-            <ModalAsPage>{dialog}</ModalAsPage>
-        </div>
-    );
+    // the form as the cards of a payment page, with the summary and the button beside them
+    return dialog;
 }
 
 export function DepositPage(): JSX.Element {

@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "Hesaptan çekme izni silindi.",
         "withdraw_permission_update": "Hesaptan çekme iznini güncellendi."
     },
+    "send_page": {
+        "step_parties": "Kim kime ödüyor",
+        "step_what": "Ne gönderilecek",
+        "step_fee": "Ücret",
+        "sum_title": "Özet",
+        "sum_empty": "Kimin alacağını ve ne kadar olduğunu seçin: ödeme burada özetlenir.",
+        "max": "Maks.",
+        "blocker_to": "Kimin alacağını seçin.",
+        "blocker_amount": "Bir tutar girin.",
+        "blocker_balance": "Tutar, ücret dahil hesabın bakiyesinden fazla.",
+        "blocker_same": "Gönderen ve alıcı aynı hesap.",
+        "blocker_by": "Öneren hesabı seçin.",
+        "blocker_other": "Formu tamamlayın."
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

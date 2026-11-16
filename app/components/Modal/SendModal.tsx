@@ -70,6 +70,14 @@ import {Input} from "../../design-system/Input";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import {SubMenu} from "../../design-system/SubMenu";
+import {Alert} from "../../design-system/Alert";
+import {
+    PaymentCard,
+    PaymentPage,
+    Picks,
+    SummaryCard
+} from "../Payments/PaymentPage";
+import styles from "./SendPageLayout.module.scss";
 
 const getUninitializedFeeAmount = () =>
     new (Asset as any)({amount: 0, asset_id: "1.3.0"});
@@ -161,6 +169,9 @@ interface SendModalProps {
     /** Called when the dialog has been closed (cancelled, or finished). The
      * Send page uses it to leave the page. */
     onHide?: () => void;
+    /** "page": the form as the cards of a payment page with a summary beside them (the Payments menu's Send);
+     * the default is the dialog (the portfolio's Send, ...). Same fields and same transaction either way. */
+    layout?: "dialog" | "page";
 }
 
 const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
@@ -663,6 +674,384 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
             from_account.get("id") == to_account.get("id");
 
         let tabIndex = tabIndexProp;
+        // (the dialog's Cancel takes its number before the fields do, as it always has)
+        const cancelTabIndex = tabIndex++;
+
+        // The fields, built once: the dialog lays them out one under the other, the page in the cards of a payment
+        // page. They are built in the order they are laid out in, so the tab order is the same.
+        const proposerField = propose ? (
+            <AccountSelector
+                label="transfer.by"
+                accountName={currentAccount}
+                account={currentAccount}
+                typeahead={true}
+                tabIndex={tabIndex++}
+                locked={true}
+            />
+        ) : null;
+
+        const fromField = (
+            <AccountSelector
+                label="transfer.from"
+                accountName={from_name}
+                account={from_account}
+                onChange={fromChanged}
+                onAccountChanged={onFromAccountChanged}
+                typeahead={true}
+                tabIndex={tabIndex++}
+                locked={!!propose ? undefined : true}
+            />
+        );
+
+        const toField = (
+            <AccountSelector
+                label="transfer.to"
+                accountName={to_name}
+                account={to_account}
+                onChange={toChanged}
+                onAccountChanged={onToAccountChanged}
+                typeahead={true}
+                includeMyActiveAccounts={false}
+                tabIndex={tabIndex++}
+            />
+        );
+
+        // the address book: who to pay, who this is, the memo that goes with them
+        const recipientHelper = (
+            <RecipientHelper
+                toName={to_name}
+                memo={memo}
+                asset={asset && asset.get ? asset.get("symbol") : undefined}
+                known={!!to_account && typeof to_account.get === "function"}
+                entryId={propEntryId}
+                onPick={entry => {
+                    mergeState({
+                        to_name: entry.name,
+                        to_account: (ChainStore as any).getAccount(entry.name),
+                        error: null
+                    });
+                    resolveRecipient(entry.name);
+                    // an entry for one asset is a withdrawal of it: that asset is the one sent
+                    if (entry.asset) selectAsset(entry.asset);
+                }}
+                onUseMemo={saved => mergeState({memo: saved})}
+            />
+        );
+
+        const amountField = (
+            <AmountSelector
+                label="transfer.amount"
+                amount={amount}
+                onChange={onAmountChanged}
+                asset={
+                    asset_types.length > 0 && asset
+                        ? asset.get("id")
+                        : asset_id
+                        ? asset_id
+                        : asset_types[0]
+                }
+                assets={offeredAssets(asset_types, asset)}
+                display_balance={balance}
+                tabIndex={tabIndex++}
+                allowNaN={true}
+            />
+        );
+
+        const memoField = (
+            <Form.Item
+                label={counterpart.translate("transfer.memo")}
+                validateStatus={memo && propose ? "warning" : ""}
+                help={
+                    memo && propose
+                        ? counterpart.translate(
+                              "transfer.warn_name_unable_read_memo"
+                          )
+                        : ""
+                }
+            >
+                <Tooltip
+                    style={{display: "block"}}
+                    placement="top"
+                    title={counterpart.translate("tooltip.memo_tip")}
+                >
+                    <Input.TextArea
+                        style={{
+                            marginBottom: 0,
+                            width: "100%",
+                            boxSizing: "border-box"
+                        }}
+                        rows={3}
+                        value={memo}
+                        tabIndex={tabIndex++}
+                        onChange={onMemoChanged}
+                    />
+                </Tooltip>
+            </Form.Item>
+        );
+
+        const feeField = (
+            <FeeAssetSelector
+                account={from_account}
+                transaction={{
+                    type: "transfer",
+                    options: ["price_per_kbyte"],
+                    data: {
+                        type: "memo",
+                        content: memo
+                    }
+                }}
+                onChange={onFeeChanged}
+                tabIndex={tabIndex++}
+            />
+        );
+
+        const modeTabs = (
+            <SubMenu
+                aria-label={counterpart.translate("transfer.send")}
+                items={[
+                    {
+                        key: "send",
+                        label: counterpart.translate("transfer.send")
+                    },
+                    {
+                        key: "propose",
+                        label: counterpart.translate("propose")
+                    }
+                ]}
+                value={propose ? "propose" : "send"}
+                onChange={key => {
+                    if ((key === "propose") !== !!propose) {
+                        onPropose();
+                    }
+                }}
+            />
+        );
+
+        const subheader = (
+            <Translate
+                content={
+                    propose
+                        ? "transfer.header_subheader_propose"
+                        : "transfer.header_subheader"
+                }
+                wallet_name={getWalletName()}
+            />
+        );
+
+        const sendLabel = propose
+            ? counterpart.translate("propose")
+            : counterpart.translate("transfer.send");
+        const submit = !isSubmitNotValid ? onSubmit : undefined;
+
+        if (props.layout === "page") {
+            // a share of what the account holds of the asset (the whole of it leaves the fee, as the "Available" link does)
+            const pickAmount = (percent: number) => {
+                if (!asset || !asset.get || !from_account) return;
+                const balanceId = from_account.getIn([
+                    "balances",
+                    asset.get("id")
+                ]);
+                if (!balanceId) return;
+                if (percent >= 100) return setTotal(asset.get("id"), balanceId);
+                const balanceObject = (ChainStore as any).getObject(balanceId);
+                if (!balanceObject) return;
+                const units =
+                    (BigInt(balanceObject.get("balance")) * BigInt(percent)) /
+                    BigInt(100);
+                const share = new (Asset as any)({
+                    amount: Number(units),
+                    asset_id: asset.get("id"),
+                    precision: asset.get("precision")
+                });
+                mergeState({
+                    maxAmount: false,
+                    amount: share.getAmount({real: true}),
+                    error: null
+                });
+                _checkBalance();
+            };
+            const t = (key: string) =>
+                counterpart.translate(`send_page.${key}`) as string;
+            const recipient =
+                to_account && typeof to_account.get === "function"
+                    ? to_account
+                    : null;
+            const feeAsset =
+                state.feeAmount && state.feeAmount.asset_id
+                    ? (ChainStore as any).getAsset(state.feeAmount.asset_id)
+                    : null;
+            const feeText =
+                feeAsset &&
+                feeAsset.get &&
+                state.feeAmount.getAmount &&
+                state.feeAmount.getAmount() > 0
+                    ? `${state.feeAmount.getAmount({
+                          real: true
+                      })} ${feeAsset.get("symbol")}`
+                    : undefined;
+            const blocker = !isSubmitNotValid
+                ? null
+                : !from_account
+                ? t("blocker_other")
+                : propose_incomplete
+                ? t("blocker_by")
+                : !to_account
+                ? t("blocker_to")
+                : from_account.get("id") == to_account.get("id")
+                ? t("blocker_same")
+                : !asset || !isAmountValid
+                ? t("blocker_amount")
+                : balanceError
+                ? t("blocker_balance")
+                : t("blocker_other");
+            const canPick = !!asset && !!from_account && !from_error;
+
+            return !state.open ? null : (
+                <div id="send_modal_wrapper" className={hidden ? "hide" : ""}>
+                    <PaymentPage
+                        title={sendLabel}
+                        lead={subheader}
+                        aside={
+                            <SummaryCard
+                                title={t("sum_title")}
+                                emptyText={t("sum_empty")}
+                                rows={[
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.amount"
+                                        ),
+                                        big: true,
+                                        value:
+                                            isAmountValid && asset && asset.get
+                                                ? `${amount} ${asset.get(
+                                                      "symbol"
+                                                  )}`
+                                                : undefined
+                                    },
+                                    ...(propose
+                                        ? [
+                                              {
+                                                  label: counterpart.translate(
+                                                      "transfer.by"
+                                                  ),
+                                                  value: currentAccount
+                                                      ? String(currentAccount)
+                                                      : undefined
+                                              }
+                                          ]
+                                        : []),
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.from"
+                                        ),
+                                        value: from_name || undefined
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.to"
+                                        ),
+                                        value: recipient
+                                            ? recipient.get("name")
+                                            : undefined,
+                                        detail: recipient
+                                            ? recipient.get("id")
+                                            : undefined
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.fee"
+                                        ),
+                                        value: feeText
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.memo"
+                                        ),
+                                        value: memo ? String(memo) : undefined
+                                    }
+                                ]}
+                                notes={
+                                    state.error ? (
+                                        <Alert
+                                            type="error"
+                                            message={state.error}
+                                        />
+                                    ) : (
+                                        undefined
+                                    )
+                                }
+                                primary={{
+                                    label: sendLabel,
+                                    onClick: () =>
+                                        submit &&
+                                        submit({
+                                            preventDefault: () => undefined
+                                        }),
+                                    disabled: !!isSubmitNotValid
+                                }}
+                                secondary={{
+                                    label: counterpart.translate(
+                                        "transfer.cancel"
+                                    ),
+                                    onClick: () => onClose()
+                                }}
+                                blocker={blocker}
+                            />
+                        }
+                    >
+                        <PaymentCard
+                            step={1}
+                            title={t("step_parties")}
+                            done={
+                                !!from_account &&
+                                !!recipient &&
+                                !propose_incomplete
+                            }
+                        >
+                            {/* Send or Propose decides who pays: it is the first thing of the first card, so that the card
+                                starts where the summary beside it does */}
+                            <div className={styles.mode}>{modeTabs}</div>
+                            <Form className={styles.fields} layout="vertical">
+                                {proposerField}
+                                {fromField}
+                                {toField}
+                                {recipientHelper}
+                            </Form>
+                        </PaymentCard>
+                        <PaymentCard
+                            step={2}
+                            title={t("step_what")}
+                            done={!!isAmountValid && !!asset && !balanceError}
+                        >
+                            <Form className={styles.fields} layout="vertical">
+                                {amountField}
+                                <Picks
+                                    disabled={!canPick}
+                                    items={[25, 50, 75, 100].map(percent => ({
+                                        key: String(percent),
+                                        label:
+                                            percent === 100
+                                                ? t("max")
+                                                : `${percent}%`
+                                    }))}
+                                    onPick={key => pickAmount(Number(key))}
+                                />
+                                {memoField}
+                            </Form>
+                        </PaymentCard>
+                        <PaymentCard
+                            step={3}
+                            title={t("step_fee")}
+                            done={!!feeText}
+                        >
+                            <Form className={styles.fields} layout="vertical">
+                                {feeField}
+                            </Form>
+                        </PaymentCard>
+                    </PaymentPage>
+                </div>
+            );
+        }
 
         return !state.open ? null : (
             <div
@@ -676,15 +1065,13 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                         <Button
                             key={"send"}
                             disabled={isSubmitNotValid}
-                            onClick={!isSubmitNotValid ? onSubmit : undefined}
+                            onClick={submit}
                         >
-                            {propose
-                                ? counterpart.translate("propose")
-                                : counterpart.translate("transfer.send")}
+                            {sendLabel}
                         </Button>,
                         <Button
                             key="Cancel"
-                            tabIndex={tabIndex++}
+                            tabIndex={cancelTabIndex}
                             onClick={() => onClose()}
                         >
                             <Translate
@@ -695,176 +1082,22 @@ const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
                     ]}
                 >
                     <div className="grid-block vertical no-overflow">
-                        <div className="content-block">
-                            <SubMenu
-                                aria-label={counterpart.translate(
-                                    "transfer.send"
-                                )}
-                                items={[
-                                    {
-                                        key: "send",
-                                        label: counterpart.translate(
-                                            "transfer.send"
-                                        )
-                                    },
-                                    {
-                                        key: "propose",
-                                        label: counterpart.translate("propose")
-                                    }
-                                ]}
-                                value={propose ? "propose" : "send"}
-                                onChange={key => {
-                                    if ((key === "propose") !== !!propose) {
-                                        onPropose();
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div className="content-block">
-                            <Translate
-                                content={
-                                    propose
-                                        ? "transfer.header_subheader_propose"
-                                        : "transfer.header_subheader"
-                                }
-                                wallet_name={getWalletName()}
-                            />
-                        </div>
+                        <div className="content-block">{modeTabs}</div>
+                        <div className="content-block">{subheader}</div>
                         {state.open ? (
                             <Form className="full-width" layout="vertical">
                                 {!!propose && (
                                     <React.Fragment>
-                                        <AccountSelector
-                                            label="transfer.by"
-                                            accountName={currentAccount}
-                                            account={currentAccount}
-                                            typeahead={true}
-                                            tabIndex={tabIndex++}
-                                            locked={true}
-                                        />
+                                        {proposerField}
                                         <div className="modal-separator" />
                                     </React.Fragment>
                                 )}
-
-                                <AccountSelector
-                                    label="transfer.from"
-                                    accountName={from_name}
-                                    account={from_account}
-                                    onChange={fromChanged}
-                                    onAccountChanged={onFromAccountChanged}
-                                    typeahead={true}
-                                    tabIndex={tabIndex++}
-                                    locked={!!propose ? undefined : true}
-                                />
-
-                                <AccountSelector
-                                    label="transfer.to"
-                                    accountName={to_name}
-                                    account={to_account}
-                                    onChange={toChanged}
-                                    onAccountChanged={onToAccountChanged}
-                                    typeahead={true}
-                                    includeMyActiveAccounts={false}
-                                    tabIndex={tabIndex++}
-                                />
-
-                                {/* the address book: who to pay, who this is, the memo that goes with them */}
-                                <RecipientHelper
-                                    toName={to_name}
-                                    memo={memo}
-                                    asset={
-                                        asset && asset.get
-                                            ? asset.get("symbol")
-                                            : undefined
-                                    }
-                                    known={
-                                        !!to_account &&
-                                        typeof to_account.get === "function"
-                                    }
-                                    entryId={propEntryId}
-                                    onPick={entry => {
-                                        mergeState({
-                                            to_name: entry.name,
-                                            to_account: (ChainStore as any).getAccount(
-                                                entry.name
-                                            ),
-                                            error: null
-                                        });
-                                        resolveRecipient(entry.name);
-                                        // an entry for one asset is a withdrawal of it: that asset is the one sent
-                                        if (entry.asset)
-                                            selectAsset(entry.asset);
-                                    }}
-                                    onUseMemo={saved =>
-                                        mergeState({memo: saved})
-                                    }
-                                />
-
-                                <AmountSelector
-                                    label="transfer.amount"
-                                    amount={amount}
-                                    onChange={onAmountChanged}
-                                    asset={
-                                        asset_types.length > 0 && asset
-                                            ? asset.get("id")
-                                            : asset_id
-                                            ? asset_id
-                                            : asset_types[0]
-                                    }
-                                    assets={offeredAssets(asset_types, asset)}
-                                    display_balance={balance}
-                                    tabIndex={tabIndex++}
-                                    allowNaN={true}
-                                />
-                                <Form.Item
-                                    label={counterpart.translate(
-                                        "transfer.memo"
-                                    )}
-                                    validateStatus={
-                                        memo && propose ? "warning" : ""
-                                    }
-                                    help={
-                                        memo && propose
-                                            ? counterpart.translate(
-                                                  "transfer.warn_name_unable_read_memo"
-                                              )
-                                            : ""
-                                    }
-                                >
-                                    <Tooltip
-                                        style={{display: "block"}}
-                                        placement="top"
-                                        title={counterpart.translate(
-                                            "tooltip.memo_tip"
-                                        )}
-                                    >
-                                        <Input.TextArea
-                                            style={{
-                                                marginBottom: 0,
-                                                width: "100%",
-                                                boxSizing: "border-box"
-                                            }}
-                                            rows={3}
-                                            value={memo}
-                                            tabIndex={tabIndex++}
-                                            onChange={onMemoChanged}
-                                        />
-                                    </Tooltip>
-                                </Form.Item>
-
-                                <FeeAssetSelector
-                                    account={from_account}
-                                    transaction={{
-                                        type: "transfer",
-                                        options: ["price_per_kbyte"],
-                                        data: {
-                                            type: "memo",
-                                            content: memo
-                                        }
-                                    }}
-                                    onChange={onFeeChanged}
-                                    tabIndex={tabIndex++}
-                                />
+                                {fromField}
+                                {toField}
+                                {recipientHelper}
+                                {amountField}
+                                {memoField}
+                                {feeField}
                             </Form>
                         ) : null}
                     </div>

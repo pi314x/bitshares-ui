@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "A supprimé les permissions de retrait du compte",
         "withdraw_permission_update": "A mis à jour les permissions de retrait du compte"
     },
+    "send_page": {
+        "step_parties": "Qui paie qui",
+        "step_what": "Quoi envoyer",
+        "step_fee": "Frais",
+        "sum_title": "Résumé",
+        "sum_empty": "Choisissez qui le reçoit et combien : le paiement est résumé ici.",
+        "max": "Max",
+        "blocker_to": "Choisissez qui le reçoit.",
+        "blocker_amount": "Saisissez un montant.",
+        "blocker_balance": "Le montant dépasse le solde du compte, frais compris.",
+        "blocker_same": "L'expéditeur et le destinataire sont le même compte.",
+        "blocker_by": "Choisissez le compte qui le propose.",
+        "blocker_other": "Complétez le formulaire."
+    },
     "transfer": {
         "again": "FAIRE UN AUTRE TRANSFERT",
         "amount": "Montant",

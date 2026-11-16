@@ -3381,6 +3381,20 @@
         "withdraw_permission_delete": "다음 계정에 출금 권한을 삭제",
         "withdraw_permission_update": "다음 계정의 출금 권한을 업데이트"
     },
+    "send_page": {
+        "step_parties": "누가 누구에게",
+        "step_what": "보낼 내용",
+        "step_fee": "수수료",
+        "sum_title": "요약",
+        "sum_empty": "받는 사람과 금액을 선택하면 결제 내용이 여기에 요약됩니다.",
+        "max": "최대",
+        "blocker_to": "받는 사람을 선택하세요.",
+        "blocker_amount": "금액을 입력하세요.",
+        "blocker_balance": "금액이 수수료를 포함한 계정 잔액보다 큽니다.",
+        "blocker_same": "보내는 사람과 받는 사람이 같은 계정입니다.",
+        "blocker_by": "제안하는 계정을 선택하세요.",
+        "blocker_other": "양식을 완성하세요."
+    },
     "transfer": {
         "again": "추가 거래",
         "amount": "금액",
