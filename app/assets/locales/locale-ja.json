@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "価格が動きました：このトランザクションの注文が指定価格で全量約定できなかったため、ノードはトランザクション全体を拒否しました。何も消費されていません。相場を再読み込みして、もう一度お試しください。",
+        "explain_floor": "価格が動きました：あるステップが下限を下回る結果になるため、ノードはトランザクション全体を拒否しました。何も消費されていません。相場を再読み込みして、もう一度お試しください。",
+        "explain_balance": "このトランザクションまたはその手数料に必要な資産の残高が、アカウントに足りません。何も送信されていません。",
+        "explain_cancelled": "送信されませんでした：ロック解除または確認がキャンセルされました。",
+        "explain_expired": "時間内に送信されませんでした：ノードが受け取る前にトランザクションの有効期限が切れました。何も消費されていません。もう一度お試しください。",
+        "details_show": "詳細を表示",
+        "details_hide": "詳細を隠す"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

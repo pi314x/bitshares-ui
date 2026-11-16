@@ -100,3 +100,24 @@ body[class][class] .ops :global(.op-table) :global(.json-link) {
         align-items: baseline;
     }
 }
+
+// ---------------------------------------------------------------- a failed broadcast
+
+// the node's text is long and has no spaces to break at (ids, JSON): it wraps anywhere instead of
+// running out of the box, and the details are a block that scrolls by itself, not a page
+.failure {
+    overflow-wrap: anywhere;
+
+    pre {
+        margin: 8px 0 0;
+        max-width: 100%;
+        max-height: 40vh;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+}
+
+.explanation {
+    margin: 0 0 8px;
+}

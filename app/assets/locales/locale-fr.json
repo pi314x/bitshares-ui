@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "Le prix a bougé : un ordre de cette transaction n'a pas pu être exécuté entièrement à son prix, le nœud a donc refusé toute la transaction. Rien n'a été dépensé. Rechargez les cotations et réessayez.",
+        "explain_floor": "Le prix a bougé : une étape aurait rendu moins que son plancher, le nœud a donc refusé toute la transaction. Rien n'a été dépensé. Rechargez les cotations et réessayez.",
+        "explain_balance": "Le compte ne détient pas assez d'un actif pour cette transaction ou ses frais. Rien n'a été envoyé.",
+        "explain_cancelled": "Non envoyée : le déverrouillage ou la confirmation a été annulé.",
+        "explain_expired": "Non envoyée à temps : la transaction a expiré avant que le nœud ne la prenne. Rien n'a été dépensé. Réessayez.",
+        "details_show": "Afficher les détails",
+        "details_hide": "Masquer les détails"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

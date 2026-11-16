@@ -12788,6 +12788,27 @@ What changed after §7.17, in the order a user meets it.
   after the confirmation, on top of it. A dialog opened from inside a
   page-shown one stays an overlay without pushing its parent out. An unlock request that was open when the user
   chose another menu item is withdrawn with the page.
+- **Dialogs and the page behind them.** Everything that covers the page (every
+  `Modal` shown over it, the phone's menu drawer) takes one shared lock on its
+  scroll, `design-system/scrollLock.ts`: the first lock saves the body's
+  `overflow`, the last release puts it back. A lock per dialog that saved and
+  restored the value it found stayed at `hidden` when two dialogs closed in the
+  order they opened (the unlock prompt over the transaction to confirm), and
+  nothing on the page scrolled until it was reloaded. A dialog's height is
+  `100dvh`, not `100vh`, so its buttons are not below the edge of a phone's
+  screen.
+- **Failures in words** (`lib/common/txErrors.ts`, `Utility/TxFailure.tsx`): a
+  dialog that fails says in a sentence what the common cases mean (an order the
+  book could not fill whole, a floor that was missed, too little balance,
+  cancelled, expired) and that nothing was spent, with the node's own text under
+  "Show details", wrapped; the global transaction confirmation does the same, and
+  its text no longer runs out of the box. The unlock dialog's foot is one
+  wrapping row (it was floated: on a phone the switch sat under "Remember me" and
+  the auto-lock box lay over Login), what "Remember me" does is written under the
+  password (the account name and settings are kept in this browser; the wallet is
+  not kept unlocked), and every text field on a touch screen is 16px even against
+  the dialog's own `!important` rule (iOS zoomed the page on every tap in the
+  password field).
 - **Liquidity pools** (`/pools`, and the explorer's Pools tab, which is the same
   screen). `lib/common/poolMetrics.ts`: reserves, price both ways, pool value,
   24h volume and fees from the node's `with_statistics`, the holder's share.

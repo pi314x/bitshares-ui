@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "El precio se movió: una orden de esta transacción no pudo ejecutarse por completo a su precio, así que el nodo rechazó toda la transacción. No se gastó nada. Recarga las cotizaciones e inténtalo de nuevo.",
+        "explain_floor": "El precio se movió: un paso habría devuelto menos que su suelo, así que el nodo rechazó toda la transacción. No se gastó nada. Recarga las cotizaciones e inténtalo de nuevo.",
+        "explain_balance": "La cuenta no tiene suficiente de un activo para esta transacción o sus comisiones. No se envió nada.",
+        "explain_cancelled": "No enviada: se canceló el desbloqueo o la confirmación.",
+        "explain_expired": "No enviada a tiempo: la transacción caducó antes de que el nodo la tomara. No se gastó nada. Inténtalo de nuevo.",
+        "details_show": "Mostrar detalles",
+        "details_hide": "Ocultar detalles"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

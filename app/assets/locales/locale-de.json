@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "Der Preis hat sich bewegt: Eine Order dieser Transaktion konnte zu ihrem Preis nicht vollständig gefüllt werden, deshalb hat der Node die ganze Transaktion abgelehnt. Es wurde nichts ausgegeben. Lade die Kurse neu und versuche es noch einmal.",
+        "explain_floor": "Der Preis hat sich bewegt: Ein Schritt hätte weniger als seine Untergrenze zurückgegeben, deshalb hat der Node die ganze Transaktion abgelehnt. Es wurde nichts ausgegeben. Lade die Kurse neu und versuche es noch einmal.",
+        "explain_balance": "Das Konto hält nicht genug von einem Asset für diese Transaktion oder ihre Gebühren. Es wurde nichts gesendet.",
+        "explain_cancelled": "Nicht gesendet: Das Entsperren oder die Bestätigung wurde abgebrochen.",
+        "explain_expired": "Nicht rechtzeitig gesendet: Die Transaktion ist abgelaufen, bevor der Node sie annahm. Es wurde nichts ausgegeben. Versuche es noch einmal.",
+        "details_show": "Details anzeigen",
+        "details_hide": "Details ausblenden"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

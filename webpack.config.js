@@ -326,9 +326,15 @@ module.exports = function(env) {
     }
     var https = false;
     if (env.https) {
+        // (SSL_KEY_FILE / SSL_CERT_FILE name a certificate of your own - one that covers the address the
+        // page is opened on, kept outside the repository; the sample in ./ssl is for localhost only)
         https = {
-            key: fs.readFileSync("./ssl/server.key"),
-            cert: fs.readFileSync("./ssl/server.crt")
+            key: fs.readFileSync(
+                process.env.SSL_KEY_FILE || "./ssl/server.key"
+            ),
+            cert: fs.readFileSync(
+                process.env.SSL_CERT_FILE || "./ssl/server.crt"
+            )
         };
     }
     var config = {

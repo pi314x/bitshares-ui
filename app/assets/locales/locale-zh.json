@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "价格变动了：此交易中的一个订单无法按其价格完全成交，因此节点拒绝了整笔交易。没有花费任何东西。请重新加载报价后再试。",
+        "explain_floor": "价格变动了：某一步的返还会低于其下限，因此节点拒绝了整笔交易。没有花费任何东西。请重新加载报价后再试。",
+        "explain_balance": "账户中没有足够的某种资产来支付此交易或其手续费。没有发送任何东西。",
+        "explain_cancelled": "未发送：解锁或确认已被取消。",
+        "explain_expired": "未能及时发送：交易在节点接收之前已过期。没有花费任何东西。请重试。",
+        "details_show": "显示详情",
+        "details_hide": "隐藏详情"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

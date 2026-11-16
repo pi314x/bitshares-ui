@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "Il prezzo si è mosso: un ordine di questa transazione non ha potuto essere eseguito per intero al suo prezzo, quindi il nodo ha rifiutato l'intera transazione. Non è stato speso nulla. Ricarica le quotazioni e riprova.",
+        "explain_floor": "Il prezzo si è mosso: un passaggio avrebbe restituito meno del suo minimo, quindi il nodo ha rifiutato l'intera transazione. Non è stato speso nulla. Ricarica le quotazioni e riprova.",
+        "explain_balance": "L'account non ha abbastanza di un asset per questa transazione o per le sue commissioni. Non è stato inviato nulla.",
+        "explain_cancelled": "Non inviata: lo sblocco o la conferma è stato annullato.",
+        "explain_expired": "Non inviata in tempo: la transazione è scaduta prima che il nodo la prendesse. Non è stato speso nulla. Riprova.",
+        "details_show": "Mostra i dettagli",
+        "details_hide": "Nascondi i dettagli"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

@@ -9,6 +9,7 @@ import {ThemeProvider} from "../design-system/ThemeProvider";
 import {ThemeName} from "../design-system/tokens";
 import {Rail, RailNavGroup} from "../design-system/Rail";
 import {Topbar} from "../design-system/Topbar";
+import {lockPageScroll} from "../design-system/scrollLock";
 import styles from "./NextShell.module.scss";
 import "../design-system/theme.scss";
 import "../design-system/fonts";
@@ -161,11 +162,10 @@ function ShellChrome({
             if (e.key === "Escape") setNavOpen(false);
         };
         document.addEventListener("keydown", onKey);
-        const previous = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
+        const unlockScroll = lockPageScroll();
         return () => {
             document.removeEventListener("keydown", onKey);
-            document.body.style.overflow = previous;
+            unlockScroll();
         };
     }, [navOpen]);
 

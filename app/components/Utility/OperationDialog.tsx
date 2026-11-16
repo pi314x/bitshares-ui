@@ -6,8 +6,8 @@ import * as React from "react";
 import counterpart from "counterpart";
 import {Modal} from "../../design-system/Modal";
 import {Button} from "../../design-system/Button";
-import {Alert} from "../../design-system/Alert";
 import {Notification} from "../../design-system/Notification";
+import {TxFailure} from "./TxFailure";
 import styles from "./OperationDialog.module.scss";
 
 /** The reason a transaction failed, as text (strings, Errors and plain objects arrive). */
@@ -68,7 +68,7 @@ export function OperationDialog({
         >
             <div className={styles.form}>
                 {children}
-                {error ? <Alert type="error" showIcon message={error} /> : null}
+                {error ? <TxFailure error={error} /> : null}
             </div>
         </Modal>
     );

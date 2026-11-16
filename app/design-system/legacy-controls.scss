@@ -299,12 +299,14 @@ body[class][class] {
 // focused (a drop-down's search box, a filter), and does not zoom back out. On a touch
 // screen every text field, select and search box is 16px; the 38px height is kept.
 // (Not the viewport's `maximum-scale`: that would take pinch-zoom away from everyone.)
+// `!important`: the unlock dialog's own rule (`.unlock_wallet_modal2 input`, 14.4px !important) is
+// the one a password is typed in, and it zoomed the page every time.
 @media (hover: none) and (pointer: coarse) {
     body[class][class] {
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"]):not([type="image"]),
         select,
         textarea {
-            font-size: 16px;
+            font-size: 16px !important;
         }
     }
 }

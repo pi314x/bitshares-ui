@@ -1,5 +1,6 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
+import {lockPageScroll} from "./scrollLock";
 import styles from "./Modal.module.scss";
 
 // React 16 (this project's version, see AGENTS.md) has no `useId()`
@@ -203,10 +204,11 @@ export function Modal({
         triggerRef.current = document.activeElement;
         dialogRef.current?.focus();
 
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
+        // one shared lock: dialogs open and close in any order (the unlock prompt over the
+        // transaction to confirm), and the page scrolls again when the last one is gone
+        const unlockScroll = lockPageScroll();
         return () => {
-            document.body.style.overflow = previousOverflow;
+            unlockScroll();
             if (triggerRef.current instanceof HTMLElement) {
                 triggerRef.current.focus();
             }

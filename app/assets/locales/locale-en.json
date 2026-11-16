@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "The price moved: an order in this transaction could not be filled completely at its price, so the node refused the whole transaction. Nothing was spent. Reload the quotes and try again.",
+        "explain_floor": "The price moved: a step would have returned less than its floor, so the node refused the whole transaction. Nothing was spent. Reload the quotes and try again.",
+        "explain_balance": "The account does not hold enough of an asset for this transaction or its fees. Nothing was sent.",
+        "explain_cancelled": "Not sent: the unlock or the confirmation was cancelled.",
+        "explain_expired": "Not sent in time: the transaction expired before the node took it. Nothing was spent. Try again.",
+        "details_show": "Show details",
+        "details_hide": "Hide details"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

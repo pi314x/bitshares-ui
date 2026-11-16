@@ -18,6 +18,10 @@
     flex-direction: column;
     max-width: calc(100vw - 48px);
     max-height: calc(100vh - 48px);
+    // On a phone 100vh is the page with the browser's toolbars pulled in: taller than what is on
+    // screen, so the buttons at the foot of a tall dialog sat below the edge, out of reach, with the
+    // page behind locked. 100dvh is what is visible now.
+    max-height: calc(100dvh - 48px);
     width: 480px;
     background: var(--surface);
     border: 1px solid var(--line);

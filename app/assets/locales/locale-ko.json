@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "가격이 움직였습니다: 이 트랜잭션의 주문이 지정 가격에서 전량 체결되지 못해 노드가 트랜잭션 전체를 거부했습니다. 아무것도 소모되지 않았습니다. 시세를 새로 불러온 뒤 다시 시도하세요.",
+        "explain_floor": "가격이 움직였습니다: 한 단계가 하한보다 적게 돌려주게 되어 노드가 트랜잭션 전체를 거부했습니다. 아무것도 소모되지 않았습니다. 시세를 새로 불러온 뒤 다시 시도하세요.",
+        "explain_balance": "이 트랜잭션이나 수수료에 필요한 자산이 계정에 충분하지 않습니다. 아무것도 전송되지 않았습니다.",
+        "explain_cancelled": "전송되지 않음: 잠금 해제 또는 확인이 취소되었습니다.",
+        "explain_expired": "제때 전송되지 않음: 노드가 받기 전에 트랜잭션이 만료되었습니다. 아무것도 소모되지 않았습니다. 다시 시도하세요.",
+        "details_show": "자세히 보기",
+        "details_hide": "자세히 숨기기"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",

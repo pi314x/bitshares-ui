@@ -44,3 +44,42 @@
     justify-content: flex-end;
     gap: 12px;
 }
+
+// ---------------------------------------------------------------- a failed transaction
+
+// the node's text is long and has no spaces to break at (ids, JSON): it wraps anywhere, so that it
+// never runs out of the box
+.wrap {
+    overflow-wrap: anywhere;
+}
+
+.failureDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.linkButton {
+    font: inherit;
+    font-size: 13px;
+    padding: 4px 0;
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.raw {
+    margin: 0;
+    max-width: 100%;
+    max-height: 12rem;
+    overflow: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--ink-2);
+}

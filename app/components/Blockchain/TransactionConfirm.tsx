@@ -94,6 +94,7 @@
 import * as React from "react";
 import Transaction from "./Transaction";
 import cards from "./OperationCards.module.scss";
+import {txErrorExplanationKey} from "../../lib/common/txErrors";
 import counterpart from "counterpart";
 import Translate from "react-translate-component";
 import TransactionConfirmActions from "actions/TransactionConfirmActions";
@@ -341,6 +342,27 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                 <pre>{error_data}</pre>
             </div>
         );
+        // an order the book could not fill whole, a floor that was missed: one sentence first,
+        // the node's text after it
+        const explanationKey = props.error
+            ? txErrorExplanationKey(
+                  `${error_message} ${
+                      typeof props.error_data === "string"
+                          ? props.error_data
+                          : ""
+                  }`
+              )
+            : null;
+        if (explanationKey) {
+            error_message = (
+                <div>
+                    <p className={cards.explanation}>
+                        {counterpart.translate(explanationKey)}
+                    </p>
+                    {error_message}
+                </div>
+            );
+        }
         if (error_data) {
             error_message = (
                 <div>
@@ -425,7 +447,14 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
             >
                 <div className="grid-block vertical no-padding no-margin">
                     {props.error ? (
-                        <Alert type="error" message={error_message} />
+                        <Alert
+                            type="error"
+                            message={
+                                <div className={cards.failure}>
+                                    {error_message}
+                                </div>
+                            }
+                        />
                     ) : null}
 
                     {props.included ? (
@@ -442,7 +471,11 @@ function TransactionConfirmCore(props: TransactionConfirmCoreProps) {
                         <Alert
                             type="error"
                             style={{fontSize: "0.7rem"}}
-                            message={error_data}
+                            message={
+                                <div className={cards.failure}>
+                                    {error_data}
+                                </div>
+                            }
                         />
                     ) : null}
 

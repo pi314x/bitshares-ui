@@ -3998,7 +3998,14 @@
     },
     "operation_dialog": {
         "cancel": "Cancel",
-        "failed": "The transaction failed."
+        "failed": "The transaction failed.",
+        "explain_unfilled": "Fiyat oynadı: bu işlemdeki bir emir, fiyatından tamamen gerçekleşemedi; bu yüzden düğüm işlemin tamamını reddetti. Hiçbir şey harcanmadı. Fiyatları yeniden yükleyip tekrar deneyin.",
+        "explain_floor": "Fiyat oynadı: bir adım alt sınırından daha azını geri verecekti; bu yüzden düğüm işlemin tamamını reddetti. Hiçbir şey harcanmadı. Fiyatları yeniden yükleyip tekrar deneyin.",
+        "explain_balance": "Hesapta bu işlem veya komisyonları için yeterli varlık yok. Hiçbir şey gönderilmedi.",
+        "explain_cancelled": "Gönderilmedi: kilit açma veya onay iptal edildi.",
+        "explain_expired": "Zamanında gönderilmedi: işlem, düğüm onu almadan önce süresi doldu. Hiçbir şey harcanmadı. Tekrar deneyin.",
+        "details_show": "Ayrıntıları göster",
+        "details_hide": "Ayrıntıları gizle"
     },
     "pool_fees": {
         "title": "Fees of liquidity pool %(id)s",
