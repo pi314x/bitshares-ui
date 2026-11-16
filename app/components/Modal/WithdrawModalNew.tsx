@@ -77,6 +77,8 @@ import {selectAsset} from "../../store/slices/assetSlice";
 import {selectGateway} from "../../store/slices/gatewaySlice";
 import {selectMarkets} from "../../store/slices/marketsSlice";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
+import {PaymentCard, PaymentPage, SummaryCard} from "../Payments/PaymentPage";
+import fieldStyles from "../Payments/PaymentFields.module.scss";
 import styles from "../DepositWithdraw/DepositCopy.module.scss";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
 
@@ -437,6 +439,8 @@ interface WithdrawModalCoreProps {
     modalId?: string;
     hideModal?: () => void;
     close?: () => void;
+    /** "page": three cards and a summary (the Payments menu's Withdraw); the default is the dialog */
+    layout?: "dialog" | "page";
 }
 
 function WithdrawModalCore({
@@ -449,7 +453,8 @@ function WithdrawModalCore({
     visible,
     modalId,
     hideModal,
-    close
+    close,
+    layout
 }: WithdrawModalCoreProps) {
     const gatewayState = useReduxState<any>(selectGateway);
     useReduxState<any>(selectAsset);
@@ -1091,6 +1096,486 @@ function WithdrawModalCore({
         maxAvailable.minus(state.feeAmount);
     }
 
+    // The blocks, built once: the dialog stacks them in one body, the page lays them out in three cards. (The dialog
+    // spaces its blocks by a margin of its own, a card by a gap, and its error lines run in the flow.)
+    const onPage = layout === "page";
+    const gap = onPage ? undefined : {marginBottom: "1em"};
+    const errorLine: React.CSSProperties = onPage
+        ? {fontSize: 13}
+        : {
+              position: "absolute",
+              right: 0,
+              textTransform: "uppercase",
+              fontSize: 13
+          };
+
+    const assetBlock = (
+        <div style={gap}>
+            {/*ASSET SELECTION*/}
+            <DepositWithdrawAssetSelector
+                onSelect={onAssetSelected}
+                onChange={onAssetChanged}
+                include={symbolsToInclude}
+                selectOnBlur
+                defaultValue={selectedAsset}
+                includeBTS={false}
+                usageContext="withdraw"
+            />
+        </div>
+    );
+
+    const noGatewayBlock =
+        !isBTS && selectedAsset && !selectedGateway ? (
+            <Translate content="modal.withdraw.no_gateways" />
+        ) : null;
+
+    const gatewayBlock = (
+        <div style={gap}>
+            {/*GATEWAY SELECTION*/}
+            {selectedGateway
+                ? (gatewaySelector as any).call(
+                      {props: {backedCoins}},
+                      {
+                          selectedGateway,
+                          gatewayStatus,
+                          nAvailableGateways,
+                          availableGateways:
+                              coinToGatewayMapping[selectedAsset],
+                          error: false,
+                          onGatewayChanged,
+                          selectedAsset,
+                          balances,
+                          assets
+                      }
+                  )
+                : null}
+        </div>
+    );
+
+    const quantityBlock =
+        assetAndGateway || isBTS ? (
+            <div style={gap}>
+                {/*QUANTITY*/}
+                {preferredCurrency ? (
+                    <div
+                        style={{
+                            fontSize: "0.8em",
+                            float: "right"
+                        }}
+                    >
+                        <Translate content="modal.withdraw.available" />
+                        <span
+                            style={{
+                                color: canCoverWithdrawal ? undefined : "red",
+                                cursor: "pointer",
+                                textDecoration: "underline"
+                            }}
+                            onClick={() =>
+                                onClickAvailableBalance(
+                                    maxAvailable.getAmount({
+                                        real: true
+                                    })
+                                )
+                            }
+                        >
+                            {/*Some currencies do not appear in balances, display zero balance if not found*/}
+                            {withdrawalCurrencyBalanceId ? (
+                                <BalanceComponent
+                                    balance={withdrawalCurrencyBalanceId}
+                                />
+                            ) : (
+                                <span>
+                                    0.00{" "}
+                                    <FormattedAsset
+                                        hide_amount
+                                        amount={0}
+                                        asset={maxAvailable.asset_id}
+                                    />
+                                </span>
+                            )}
+                        </span>
+                    </div>
+                ) : null}
+                <label className="left-label">
+                    <Translate content="modal.withdraw.quantity" />
+                </label>
+                <ExchangeInput
+                    value={quantity ? quantity : ""}
+                    onChange={onQuantityChanged}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                    allowNaN={true}
+                    placeholder={counterpart.translate(
+                        "gateway.limit_withdraw_asset",
+                        {
+                            min: !minWithdraw ? 0 : minWithdraw,
+                            max: !maxWithdraw
+                                ? counterpart.translate(
+                                      "gateway.limit_withdraw_asset_none"
+                                  )
+                                : maxWithdraw
+                        }
+                    )}
+                />
+                {canCoverWithdrawal &&
+                minWithdraw &&
+                quantity &&
+                +quantity < +minWithdraw ? (
+                    <Translate
+                        component="div"
+                        className="error-msg"
+                        style={errorLine}
+                        content="gateway.limit_withdraw_asset_min"
+                        min={minWithdraw}
+                        coin={selectedGateway + "." + selectedAsset}
+                    />
+                ) : null}
+                {canCoverWithdrawal &&
+                maxWithdraw &&
+                quantity &&
+                +quantity > +maxWithdraw ? (
+                    <Translate
+                        component="div"
+                        className="error-msg"
+                        style={errorLine}
+                        content="gateway.limit_withdraw_asset_max"
+                        max={maxWithdraw}
+                        coin={selectedGateway + "." + selectedAsset}
+                    />
+                ) : null}
+                {(assetAndGateway || isBTS) && !canCoverWithdrawal ? (
+                    <Translate
+                        content="modal.withdraw.cannot_cover"
+                        component="div"
+                        className="error-msg"
+                        style={errorLine}
+                    />
+                ) : null}
+            </div>
+        ) : null;
+
+    const addressBlock =
+        assetAndGateway && !isBTS ? (
+            <div style={gap}>
+                {/*WITHDRAW ADDRESS*/}
+                <label className="left-label">
+                    <Translate
+                        component="span"
+                        content="modal.withdraw.address"
+                    />
+                </label>
+                {addressError ? (
+                    <div
+                        className="has-error"
+                        style={
+                            onPage
+                                ? undefined
+                                : {
+                                      position: "absolute",
+                                      right: "1em",
+                                      marginTop: "-30px"
+                                  }
+                        }
+                    >
+                        <Translate content="modal.withdraw.address_not_valid" />
+                    </div>
+                ) : null}
+                <div>
+                    <div className="inline-label">
+                        <Select
+                            showSearch
+                            style={{width: "100%"}}
+                            value={address}
+                            onSearch={onAddressChanged}
+                            onSelect={value =>
+                                onAddressSelected(value as string)
+                            }
+                        >
+                            {address &&
+                            storedAddresses.indexOf(address) == -1 ? (
+                                <Select.Option value={address}>
+                                    {address}
+                                </Select.Option>
+                            ) : null}
+                            {storedAddresses.map((addr: string) => (
+                                <Select.Option key={addr} value={addr}>
+                                    {addr}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                        <span>
+                            <QRScanner
+                                label="Scan"
+                                onSuccess={handleQrScanSuccess}
+                                submitBtnText={counterpart.translate(
+                                    "qr_address_scanner.use_address"
+                                )}
+                                dataFoundText={
+                                    counterpart.translate(
+                                        "qr_address_scanner.address_found"
+                                    ) + ":"
+                                }
+                            />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        ) : null;
+
+    const btsBlock = isBTS ? (
+        <div style={gap}>
+            <AccountSelector
+                label="transfer.to"
+                accountName={state.btsAccountName}
+                onChange={onBTSAccountNameChanged}
+                onAccountChanged={onBTSAccountChanged}
+                account={state.btsAccountName}
+                size={60}
+                error={state.btsAccountError}
+            />
+        </div>
+    ) : null;
+
+    const publicKeyBlock =
+        backingAsset && backingAsset.supportsPublicKey !== undefined ? (
+            <div style={gap}>
+                {/*PUBLIC key - custom field (PRIZM) */}
+                <label className="left-label">
+                    <Translate content="modal.withdraw.public_key" />
+                </label>
+                {
+                    <Input.TextArea
+                        value={state.withdraw_publicKey}
+                        onChange={onWithdrawPublicKeyChanged}
+                        onInput={onWithdrawPublicKeyChanged}
+                    />
+                }
+            </div>
+        ) : null;
+
+    const tagBlock =
+        isBTS || (backingAsset && backingAsset.memoType === "tagid") ? (
+            <div style={gap}>
+                {/*TAG*/}
+                <label className="left-label">
+                    <Translate content="modal.withdraw.tag" />
+                </label>
+                <Input.TextArea value={state.tag} onChange={onTagChanged} />
+            </div>
+        ) : null;
+
+    const memoBlock =
+        isBTS || (backingAsset && backingAsset.supportsMemos) ? (
+            <div style={gap}>
+                {/*MEMO*/}
+                <label className="left-label">
+                    <Translate content="modal.withdraw.memo" />
+                </label>
+                <Input.TextArea value={state.memo} onChange={onMemoChanged} />
+            </div>
+        ) : null;
+
+    const feeBlock =
+        assetAndGateway || isBTS ? (
+            <div className="grid-block no-overflow wrap shrink">
+                {/*FEE & GATEWAY FEE*/}
+                <div
+                    className="small-12 medium-6 withdraw-fee-selector"
+                    style={{paddingRight: 5}}
+                >
+                    <FeeAssetSelector
+                        account={account}
+                        transaction={{
+                            type: "transfer",
+                            options: ["price_per_kbyte"],
+                            data: {
+                                type: "memo",
+                                content:
+                                    state.selectedAsset.toLowerCase() +
+                                    ":" +
+                                    state.address +
+                                    (state.tag ? ":" + state.tag : "") +
+                                    (state.memo ? ":" + state.memo : "")
+                            }
+                        }}
+                        onChange={onFeeChanged}
+                    />
+                </div>
+                <div className="small-12 medium-6 ant-form-item-label withdraw-fee-selector">
+                    <label className="amount-selector-field--label">
+                        <Translate content="gateway.fee" />
+                    </label>
+                    <div className="grid-block no-overflow wrap shrink">
+                        <ExchangeInput
+                            placeholder="0.0"
+                            id="baseMarketFee"
+                            value={
+                                !!backingAsset && "gateFee" in backingAsset
+                                    ? backingAsset.gateFee
+                                    : 0
+                            }
+                            disabled
+                            addonAfter={
+                                <span>
+                                    <AssetName
+                                        noTip
+                                        name={backingAsset.symbol}
+                                    />
+                                </span>
+                            }
+                        />
+                    </div>
+                </div>
+            </div>
+        ) : null;
+
+    if (onPage) {
+        const t = (key: string) =>
+            counterpart.translate(`withdraw_page.${key}`) as string;
+        const feeAsset =
+            state.feeAmount && state.feeAmount.asset_id
+                ? (ChainStore as any).getAsset(state.feeAmount.asset_id)
+                : null;
+        const feeText =
+            feeAsset &&
+            feeAsset.get &&
+            state.feeAmount.getAmount &&
+            state.feeAmount.getAmount() > 0
+                ? `${state.feeAmount.getAmount({real: true})} ${feeAsset.get(
+                      "symbol"
+                  )}`
+                : undefined;
+        const gateFeeText =
+            !isBTS && backingAsset && "gateFee" in backingAsset
+                ? `${backingAsset.gateFee} ${backingAsset.symbol}`
+                : undefined;
+        const blocker = !shouldDisable
+            ? null
+            : !selectedAsset
+            ? t("blocker_asset")
+            : !isBTS && !selectedGateway
+            ? t("blocker_gateway")
+            : isBTS && !btsAccount
+            ? t("blocker_account")
+            : !isBTS && !address
+            ? t("blocker_address")
+            : !isBTS && addressError
+            ? t("blocker_address_invalid")
+            : !quantity
+            ? t("blocker_amount")
+            : !canCoverWithdrawal
+            ? t("blocker_balance")
+            : t("blocker_min");
+        const ready = !!assetAndGateway || isBTS;
+        return (
+            <PaymentPage
+                title={counterpart.translate("modal.withdraw.header")}
+                lead={t("lead")}
+                aside={
+                    <SummaryCard
+                        title={t("sum_title")}
+                        emptyText={t("sum_empty")}
+                        rows={[
+                            {
+                                label: t("sum_amount"),
+                                big: true,
+                                value:
+                                    quantity && selectedAsset
+                                        ? `${quantity} ${selectedAsset}`
+                                        : undefined
+                            },
+                            {
+                                label: t("sum_asset"),
+                                value: selectedAsset || undefined,
+                                detail:
+                                    !isBTS && selectedGateway
+                                        ? selectedGateway
+                                        : undefined
+                            },
+                            {
+                                label: t("sum_to"),
+                                value: isBTS
+                                    ? state.btsAccountName || undefined
+                                    : address || undefined
+                            },
+                            {label: t("sum_fee"), value: feeText},
+                            {label: t("sum_gate_fee"), value: gateFeeText}
+                        ]}
+                        primary={{
+                            label: counterpart.translate(
+                                "modal.withdraw.withdraw"
+                            ),
+                            onClick: onSubmit,
+                            disabled: !!shouldDisable
+                        }}
+                        secondary={{
+                            label: counterpart.translate(
+                                "modal.withdraw.cancel"
+                            ),
+                            onClick: () => close && close()
+                        }}
+                        blocker={blocker}
+                    />
+                }
+            >
+                <PaymentCard
+                    step={1}
+                    title={t("step_what")}
+                    done={!!selectedAsset && (isBTS || !!selectedGateway)}
+                >
+                    <div className={fieldStyles.fields}>
+                        {assetBlock}
+                        {noGatewayBlock}
+                        {gatewayBlock}
+                    </div>
+                </PaymentCard>
+                <PaymentCard
+                    step={2}
+                    title={t("step_where")}
+                    done={
+                        isBTS
+                            ? !!btsAccount
+                            : !!address && !addressError && ready
+                    }
+                >
+                    <div className={fieldStyles.fields}>
+                        {ready ? (
+                            <>
+                                {addressBlock}
+                                {btsBlock}
+                                {publicKeyBlock}
+                                {tagBlock}
+                                {memoBlock}
+                            </>
+                        ) : (
+                            <p className={fieldStyles.hint}>
+                                {t("pick_first")}
+                            </p>
+                        )}
+                    </div>
+                </PaymentCard>
+                <PaymentCard
+                    step={3}
+                    title={t("step_amount")}
+                    done={ready && !!quantity && !!canCoverWithdrawal}
+                >
+                    <div className={fieldStyles.fields}>
+                        {ready ? (
+                            <>
+                                {quantityBlock}
+                                {feeBlock}
+                            </>
+                        ) : (
+                            <p className={fieldStyles.hint}>
+                                {t("pick_first")}
+                            </p>
+                        )}
+                    </div>
+                </PaymentCard>
+            </PaymentPage>
+        );
+    }
+
     return (
         <Modal
             title={counterpart.translate("modal.withdraw.header")}
@@ -1112,359 +1597,16 @@ function WithdrawModalCore({
         >
             <div className="grid-block vertical no-overflow">
                 <div className={`modal__body ${styles.depositBody}`}>
-                    <div style={{marginBottom: "1em"}}>
-                        {/*ASSET SELECTION*/}
-                        <DepositWithdrawAssetSelector
-                            onSelect={onAssetSelected}
-                            onChange={onAssetChanged}
-                            include={symbolsToInclude}
-                            selectOnBlur
-                            defaultValue={selectedAsset}
-                            includeBTS={false}
-                            usageContext="withdraw"
-                        />
-                    </div>
-
-                    {!isBTS && selectedAsset && !selectedGateway ? (
-                        <Translate content="modal.withdraw.no_gateways" />
-                    ) : null}
-
-                    {/*GATEWAY SELECTION*/}
-                    <div style={{marginBottom: "1em"}}>
-                        {selectedGateway
-                            ? (gatewaySelector as any).call(
-                                  {props: {backedCoins}},
-                                  {
-                                      selectedGateway,
-                                      gatewayStatus,
-                                      nAvailableGateways,
-                                      availableGateways:
-                                          coinToGatewayMapping[selectedAsset],
-                                      error: false,
-                                      onGatewayChanged,
-                                      selectedAsset,
-                                      balances,
-                                      assets
-                                  }
-                              )
-                            : null}
-                    </div>
-
-                    {/*QUANTITY*/}
-                    {assetAndGateway || isBTS ? (
-                        <div style={{marginBottom: "1em"}}>
-                            {preferredCurrency ? (
-                                <div
-                                    style={{
-                                        fontSize: "0.8em",
-                                        float: "right"
-                                    }}
-                                >
-                                    <Translate content="modal.withdraw.available" />
-                                    <span
-                                        style={{
-                                            color: canCoverWithdrawal
-                                                ? undefined
-                                                : "red",
-                                            cursor: "pointer",
-                                            textDecoration: "underline"
-                                        }}
-                                        onClick={() =>
-                                            onClickAvailableBalance(
-                                                maxAvailable.getAmount({
-                                                    real: true
-                                                })
-                                            )
-                                        }
-                                    >
-                                        {/*Some currencies do not appear in balances, display zero balance if not found*/}
-                                        {withdrawalCurrencyBalanceId ? (
-                                            <BalanceComponent
-                                                balance={
-                                                    withdrawalCurrencyBalanceId
-                                                }
-                                            />
-                                        ) : (
-                                            <span>
-                                                0.00{" "}
-                                                <FormattedAsset
-                                                    hide_amount
-                                                    amount={0}
-                                                    asset={
-                                                        maxAvailable.asset_id
-                                                    }
-                                                />
-                                            </span>
-                                        )}
-                                    </span>
-                                </div>
-                            ) : null}
-                            <label className="left-label">
-                                <Translate content="modal.withdraw.quantity" />
-                            </label>
-                            <ExchangeInput
-                                value={quantity ? quantity : ""}
-                                onChange={onQuantityChanged}
-                                onFocus={onFocus}
-                                onBlur={onBlur}
-                                allowNaN={true}
-                                placeholder={counterpart.translate(
-                                    "gateway.limit_withdraw_asset",
-                                    {
-                                        min: !minWithdraw ? 0 : minWithdraw,
-                                        max: !maxWithdraw
-                                            ? counterpart.translate(
-                                                  "gateway.limit_withdraw_asset_none"
-                                              )
-                                            : maxWithdraw
-                                    }
-                                )}
-                            />
-                            {canCoverWithdrawal &&
-                            minWithdraw &&
-                            quantity &&
-                            +quantity < +minWithdraw ? (
-                                <Translate
-                                    component="div"
-                                    className="error-msg"
-                                    style={{
-                                        position: "absolute",
-                                        right: 0,
-                                        textTransform: "uppercase",
-                                        fontSize: 13
-                                    }}
-                                    content="gateway.limit_withdraw_asset_min"
-                                    min={minWithdraw}
-                                    coin={selectedGateway + "." + selectedAsset}
-                                />
-                            ) : null}
-                            {canCoverWithdrawal &&
-                            maxWithdraw &&
-                            quantity &&
-                            +quantity > +maxWithdraw ? (
-                                <Translate
-                                    component="div"
-                                    className="error-msg"
-                                    style={{
-                                        position: "absolute",
-                                        right: 0,
-                                        textTransform: "uppercase",
-                                        fontSize: 13
-                                    }}
-                                    content="gateway.limit_withdraw_asset_max"
-                                    max={maxWithdraw}
-                                    coin={selectedGateway + "." + selectedAsset}
-                                />
-                            ) : null}
-                            {(assetAndGateway || isBTS) &&
-                            !canCoverWithdrawal ? (
-                                <Translate
-                                    content="modal.withdraw.cannot_cover"
-                                    component="div"
-                                    className="error-msg"
-                                    style={{
-                                        position: "absolute",
-                                        right: 0,
-                                        textTransform: "uppercase",
-                                        fontSize: 13
-                                    }}
-                                />
-                            ) : null}
-                        </div>
-                    ) : null}
-
-                    {/*ESTIMATED VALUE*/}
-                    {/*
-                (assetAndGateway || quantity) && !isBTS ?
-                <div>
-                <label className="left-label"><Translate content="modal.withdraw.estimated_value" /> ({preferredCurrency})</label>
-                <ExchangeInput value={userEstimate != null ? userEstimate : estimatedValue} onChange={this.onEstimateChanged.bind(this)} onFocus={onFocus} onBlur={onBlur} />
-                </div> :
-                null
-            */}
-
-                    {/*WITHDRAW ADDRESS*/}
-                    {assetAndGateway && !isBTS ? (
-                        <div style={{marginBottom: "1em"}}>
-                            <label className="left-label">
-                                <Translate
-                                    component="span"
-                                    content="modal.withdraw.address"
-                                />
-                            </label>
-                            {addressError ? (
-                                <div
-                                    className="has-error"
-                                    style={{
-                                        position: "absolute",
-                                        right: "1em",
-                                        marginTop: "-30px"
-                                    }}
-                                >
-                                    <Translate content="modal.withdraw.address_not_valid" />
-                                </div>
-                            ) : null}
-                            <div>
-                                <div className="inline-label">
-                                    <Select
-                                        showSearch
-                                        style={{width: "100%"}}
-                                        value={address}
-                                        onSearch={onAddressChanged}
-                                        onSelect={value =>
-                                            onAddressSelected(value as string)
-                                        }
-                                    >
-                                        {address &&
-                                        storedAddresses.indexOf(address) ==
-                                            -1 ? (
-                                            <Select.Option value={address}>
-                                                {address}
-                                            </Select.Option>
-                                        ) : null}
-                                        {storedAddresses.map((addr: string) => (
-                                            <Select.Option
-                                                key={addr}
-                                                value={addr}
-                                            >
-                                                {addr}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
-                                    <span>
-                                        <QRScanner
-                                            label="Scan"
-                                            onSuccess={handleQrScanSuccess}
-                                            submitBtnText={counterpart.translate(
-                                                "qr_address_scanner.use_address"
-                                            )}
-                                            dataFoundText={
-                                                counterpart.translate(
-                                                    "qr_address_scanner.address_found"
-                                                ) + ":"
-                                            }
-                                        />
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-
-                    {isBTS ? (
-                        <div style={{marginBottom: "1em"}}>
-                            <AccountSelector
-                                label="transfer.to"
-                                accountName={state.btsAccountName}
-                                onChange={onBTSAccountNameChanged}
-                                onAccountChanged={onBTSAccountChanged}
-                                account={state.btsAccountName}
-                                size={60}
-                                error={state.btsAccountError}
-                            />
-                        </div>
-                    ) : null}
-
-                    {/*PUBLIC key - custom field (PRIZM) */}
-                    {backingAsset &&
-                    backingAsset.supportsPublicKey !== undefined ? (
-                        <div style={{marginBottom: "1em"}}>
-                            <label className="left-label">
-                                <Translate content="modal.withdraw.public_key" />
-                            </label>
-                            {
-                                <Input.TextArea
-                                    value={state.withdraw_publicKey}
-                                    onChange={onWithdrawPublicKeyChanged}
-                                    onInput={onWithdrawPublicKeyChanged}
-                                />
-                            }
-                        </div>
-                    ) : null}
-
-                    {/*TAG*/}
-                    {isBTS ||
-                    (backingAsset && backingAsset.memoType === "tagid") ? (
-                        <div style={{marginBottom: "1em"}}>
-                            <label className="left-label">
-                                <Translate content="modal.withdraw.tag" />
-                            </label>
-                            <Input.TextArea
-                                value={state.tag}
-                                onChange={onTagChanged}
-                            />
-                        </div>
-                    ) : null}
-
-                    {/*MEMO*/}
-                    {isBTS || (backingAsset && backingAsset.supportsMemos) ? (
-                        <div style={{marginBottom: "1em"}}>
-                            <label className="left-label">
-                                <Translate content="modal.withdraw.memo" />
-                            </label>
-                            <Input.TextArea
-                                value={state.memo}
-                                onChange={onMemoChanged}
-                            />
-                        </div>
-                    ) : null}
-
-                    {/*FEE & GATEWAY FEE*/}
-                    {assetAndGateway || isBTS ? (
-                        <div className="grid-block no-overflow wrap shrink">
-                            <div
-                                className="small-12 medium-6 withdraw-fee-selector"
-                                style={{paddingRight: 5}}
-                            >
-                                <FeeAssetSelector
-                                    account={account}
-                                    transaction={{
-                                        type: "transfer",
-                                        options: ["price_per_kbyte"],
-                                        data: {
-                                            type: "memo",
-                                            content:
-                                                state.selectedAsset.toLowerCase() +
-                                                ":" +
-                                                state.address +
-                                                (state.tag
-                                                    ? ":" + state.tag
-                                                    : "") +
-                                                (state.memo
-                                                    ? ":" + state.memo
-                                                    : "")
-                                        }
-                                    }}
-                                    onChange={onFeeChanged}
-                                />
-                            </div>
-                            <div className="small-12 medium-6 ant-form-item-label withdraw-fee-selector">
-                                <label className="amount-selector-field--label">
-                                    <Translate content="gateway.fee" />
-                                </label>
-                                <div className="grid-block no-overflow wrap shrink">
-                                    <ExchangeInput
-                                        placeholder="0.0"
-                                        id="baseMarketFee"
-                                        value={
-                                            !!backingAsset &&
-                                            "gateFee" in backingAsset
-                                                ? backingAsset.gateFee
-                                                : 0
-                                        }
-                                        disabled
-                                        addonAfter={
-                                            <span>
-                                                <AssetName
-                                                    noTip
-                                                    name={backingAsset.symbol}
-                                                />
-                                            </span>
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
+                    {assetBlock}
+                    {noGatewayBlock}
+                    {gatewayBlock}
+                    {quantityBlock}
+                    {addressBlock}
+                    {btsBlock}
+                    {publicKeyBlock}
+                    {tagBlock}
+                    {memoBlock}
+                    {feeBlock}
                 </div>
             </div>
         </Modal>
@@ -1479,6 +1621,7 @@ interface WithdrawModalAccountContainerProps {
     modalId?: string;
     hideModal?: () => void;
     close?: () => void;
+    layout?: "dialog" | "page";
 }
 
 function WithdrawModalAccountContainer(
@@ -1539,6 +1682,7 @@ function WithdrawModalAccountContainer(
             modalId={props.modalId}
             hideModal={props.hideModal}
             close={props.close}
+            layout={props.layout}
         />
     );
 }
@@ -1548,11 +1692,14 @@ export default function WithdrawModal({
     modalId,
     hideModal,
     visible,
-    initialSymbol
+    initialSymbol,
+    layout
 }: {
     backedCoins: any;
     modalId?: string;
     hideModal?: () => void;
+    /** "page": the Payments menu's Withdraw as the cards of a payment page; the default is the dialog */
+    layout?: "dialog" | "page";
     // Accepted but unused, matching the original: `showModal` is never
     // read anywhere in WithdrawModalNew.jsx (grepped), even though
     // NextShellContainer.tsx passes one (mirroring the sibling
@@ -1602,6 +1749,7 @@ export default function WithdrawModal({
             modalId={modalId}
             hideModal={hideModal}
             close={hideModal}
+            layout={layout}
         />
     );
 }

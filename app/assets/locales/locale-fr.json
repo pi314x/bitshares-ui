@@ -3408,6 +3408,28 @@
         "sum_account": "Vers le compte",
         "sum_minimum": "Minimum"
     },
+    "withdraw_page": {
+        "lead": "Choisissez ce que vous retirez et où cela va ; le résumé montre ce qui quitte votre compte et ce que cela coûte.",
+        "step_what": "Quoi retirer",
+        "step_where": "Où cela va",
+        "step_amount": "Montant et frais",
+        "pick_first": "Choisissez d'abord un actif et une passerelle.",
+        "sum_title": "Résumé",
+        "sum_empty": "Choisissez un actif à retirer : ce qui quitte votre compte, où cela va et ce que cela coûte est résumé ici.",
+        "sum_amount": "Montant",
+        "sum_asset": "Actif",
+        "sum_to": "Vers",
+        "sum_fee": "Frais de réseau",
+        "sum_gate_fee": "Frais de la passerelle",
+        "blocker_asset": "Choisissez un actif à retirer.",
+        "blocker_gateway": "Choisissez une passerelle.",
+        "blocker_account": "Choisissez le compte BitShares qui le reçoit.",
+        "blocker_address": "Saisissez l'adresse de destination.",
+        "blocker_address_invalid": "L'adresse n'est pas valide.",
+        "blocker_amount": "Saisissez un montant.",
+        "blocker_balance": "Le montant dépasse le solde du compte, frais compris.",
+        "blocker_min": "Le montant est inférieur au minimum de la passerelle."
+    },
     "transfer": {
         "again": "FAIRE UN AUTRE TRANSFERT",
         "amount": "Montant",

@@ -1,6 +1,5 @@
 import * as React from "react";
 import {useLocation} from "react-router-dom";
-import {ModalAsPage} from "../design-system/Modal";
 import {ChainStore} from "bitsharesjs";
 import {useReduxState} from "./hooks/useReduxState";
 import {useChainStoreTick} from "./hooks/useChainStoreTick";
@@ -10,13 +9,13 @@ import SendModal from "../components/Modal/SendModal";
 import DepositModal from "../components/Modal/DepositModal";
 import WithdrawModal from "../components/Modal/WithdrawModalNew";
 import {useLeave} from "./desktopModal";
-import styles from "./PaymentPages.module.scss";
 
 // Send, Deposit and Withdraw as pages of their own (menu: Payments). They are
-// the same dialogs as before - same forms, same transaction flow - shown in the
-// page instead of over it (`ModalAsPage`), so they can be reached, bookmarked
-// and left like any other screen. Cancelling or finishing returns to where the
-// user came from.
+// the same components as the popups of the other screens - same fields, same
+// transaction flow - laid out with `layout="page"`: the cards of a payment page
+// (`Payments/PaymentPage`) with a summary and the one button beside them, so
+// they can be reached, bookmarked and left like any other screen. Cancelling or
+// finishing returns to where the user came from.
 
 function useCurrentAccount(): string | null {
     const account = useReduxState<any>(selectAccountState);
@@ -103,11 +102,9 @@ export function WithdrawPage(): JSX.Element {
             showModal={() => undefined}
             modalId="withdraw_page"
             backedCoins={gateway.backedCoins}
+            layout="page"
         />
     );
-    return (
-        <div className={styles.page}>
-            <ModalAsPage>{dialog}</ModalAsPage>
-        </div>
-    );
+    // the cards of a payment page, with the summary beside them
+    return dialog;
 }

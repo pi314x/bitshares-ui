@@ -3408,6 +3408,28 @@
         "sum_account": "Sul conto",
         "sum_minimum": "Minimo"
     },
+    "withdraw_page": {
+        "lead": "Scegli cosa prelevare e dove va; il riepilogo mostra cosa esce dal tuo conto e quanto costa.",
+        "step_what": "Cosa prelevare",
+        "step_where": "Dove va",
+        "step_amount": "Importo e commissioni",
+        "pick_first": "Scegli prima un asset e un gateway.",
+        "sum_title": "Riepilogo",
+        "sum_empty": "Scegli un asset da prelevare: cosa esce dal tuo conto, dove va e quanto costa è riassunto qui.",
+        "sum_amount": "Importo",
+        "sum_asset": "Asset",
+        "sum_to": "A",
+        "sum_fee": "Commissione di rete",
+        "sum_gate_fee": "Commissione del gateway",
+        "blocker_asset": "Scegli un asset da prelevare.",
+        "blocker_gateway": "Scegli un gateway.",
+        "blocker_account": "Scegli l'account BitShares che lo riceve.",
+        "blocker_address": "Inserisci l'indirizzo di destinazione.",
+        "blocker_address_invalid": "L'indirizzo non è valido.",
+        "blocker_amount": "Inserisci un importo.",
+        "blocker_balance": "L'importo supera il saldo del conto, commissione inclusa.",
+        "blocker_min": "L'importo è inferiore al minimo del gateway."
+    },
     "transfer": {
         "again": "EFFETTUA UN ALTRO TRASFERIMENTO",
         "amount": "Quantità",

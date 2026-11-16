@@ -3408,6 +3408,28 @@
         "sum_account": "To account",
         "sum_minimum": "Minimum"
     },
+    "withdraw_page": {
+        "lead": "Choose what to withdraw and where it goes; the summary shows what leaves your account and what it costs.",
+        "step_what": "What to withdraw",
+        "step_where": "Where it goes",
+        "step_amount": "Amount and fees",
+        "pick_first": "Choose an asset and a gateway first.",
+        "sum_title": "Summary",
+        "sum_empty": "Choose an asset to withdraw: what leaves your account, where it goes and what it costs is summed up here.",
+        "sum_amount": "Amount",
+        "sum_asset": "Asset",
+        "sum_to": "To",
+        "sum_fee": "Network fee",
+        "sum_gate_fee": "Gateway fee",
+        "blocker_asset": "Choose an asset to withdraw.",
+        "blocker_gateway": "Choose a gateway.",
+        "blocker_account": "Choose the BitShares account that receives it.",
+        "blocker_address": "Enter the address it goes to.",
+        "blocker_address_invalid": "The address is not valid.",
+        "blocker_amount": "Enter an amount.",
+        "blocker_balance": "The amount is more than the account holds, with the fee.",
+        "blocker_min": "The amount is below the minimum of the gateway."
+    },
     "transfer": {
         "again": "MAKE ANOTHER TRANSFER",
         "amount": "Amount",

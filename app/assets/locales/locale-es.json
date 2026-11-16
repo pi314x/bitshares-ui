@@ -3408,6 +3408,28 @@
         "sum_account": "A la cuenta",
         "sum_minimum": "Mínimo"
     },
+    "withdraw_page": {
+        "lead": "Elige qué retirar y a dónde va; el resumen muestra qué sale de tu cuenta y cuánto cuesta.",
+        "step_what": "Qué retirar",
+        "step_where": "A dónde va",
+        "step_amount": "Importe y comisiones",
+        "pick_first": "Elige primero un activo y una pasarela.",
+        "sum_title": "Resumen",
+        "sum_empty": "Elige un activo para retirar: aquí se resume qué sale de tu cuenta, a dónde va y cuánto cuesta.",
+        "sum_amount": "Importe",
+        "sum_asset": "Activo",
+        "sum_to": "A",
+        "sum_fee": "Comisión de red",
+        "sum_gate_fee": "Comisión de la pasarela",
+        "blocker_asset": "Elige un activo para retirar.",
+        "blocker_gateway": "Elige una pasarela.",
+        "blocker_account": "Elige la cuenta de BitShares que lo recibe.",
+        "blocker_address": "Introduce la dirección a la que va.",
+        "blocker_address_invalid": "La dirección no es válida.",
+        "blocker_amount": "Introduce un importe.",
+        "blocker_balance": "El importe es mayor que el saldo de la cuenta, con la comisión.",
+        "blocker_min": "El importe está por debajo del mínimo de la pasarela."
+    },
     "transfer": {
         "again": "HACER OTRA TRANSFERENCIA",
         "amount": "Monto",

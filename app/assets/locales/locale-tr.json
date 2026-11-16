@@ -3408,6 +3408,28 @@
         "sum_account": "Hesaba",
         "sum_minimum": "Minimum"
     },
+    "withdraw_page": {
+        "lead": "Neyi çekeceğinizi ve nereye gideceğini seçin; özet hesabınızdan çıkanı ve maliyetini gösterir.",
+        "step_what": "Ne çekilecek",
+        "step_where": "Nereye gidecek",
+        "step_amount": "Tutar ve ücretler",
+        "pick_first": "Önce bir varlık ve bir ağ geçidi seçin.",
+        "sum_title": "Özet",
+        "sum_empty": "Çekilecek bir varlık seçin: hesabınızdan çıkan, gittiği yer ve maliyeti burada özetlenir.",
+        "sum_amount": "Tutar",
+        "sum_asset": "Varlık",
+        "sum_to": "Alıcı",
+        "sum_fee": "Ağ ücreti",
+        "sum_gate_fee": "Ağ geçidi ücreti",
+        "blocker_asset": "Çekilecek bir varlık seçin.",
+        "blocker_gateway": "Bir ağ geçidi seçin.",
+        "blocker_account": "Alacak BitShares hesabını seçin.",
+        "blocker_address": "Gideceği adresi girin.",
+        "blocker_address_invalid": "Adres geçerli değil.",
+        "blocker_amount": "Bir tutar girin.",
+        "blocker_balance": "Tutar, ücret dahil hesabın bakiyesinden fazla.",
+        "blocker_min": "Tutar, ağ geçidinin minimumunun altında."
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

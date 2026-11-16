@@ -3408,6 +3408,28 @@
         "sum_account": "받는 계정",
         "sum_minimum": "최소 금액"
     },
+    "withdraw_page": {
+        "lead": "출금할 항목과 보낼 곳을 선택하면 계정에서 나가는 금액과 비용이 요약에 표시됩니다.",
+        "step_what": "출금할 항목",
+        "step_where": "보낼 곳",
+        "step_amount": "금액과 수수료",
+        "pick_first": "먼저 자산과 게이트웨이를 선택하세요.",
+        "sum_title": "요약",
+        "sum_empty": "출금할 자산을 선택하면 계정에서 나가는 금액, 보낼 곳, 비용이 여기에 요약됩니다.",
+        "sum_amount": "금액",
+        "sum_asset": "자산",
+        "sum_to": "받는 곳",
+        "sum_fee": "네트워크 수수료",
+        "sum_gate_fee": "게이트웨이 수수료",
+        "blocker_asset": "출금할 자산을 선택하세요.",
+        "blocker_gateway": "게이트웨이를 선택하세요.",
+        "blocker_account": "받을 BitShares 계정을 선택하세요.",
+        "blocker_address": "보낼 주소를 입력하세요.",
+        "blocker_address_invalid": "주소가 올바르지 않습니다.",
+        "blocker_amount": "금액을 입력하세요.",
+        "blocker_balance": "금액이 수수료를 포함한 계정 잔액보다 큽니다.",
+        "blocker_min": "금액이 게이트웨이 최소 금액보다 적습니다."
+    },
     "transfer": {
         "again": "추가 거래",
         "amount": "금액",

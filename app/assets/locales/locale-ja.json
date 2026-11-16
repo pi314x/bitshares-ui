@@ -3408,6 +3408,28 @@
         "sum_account": "入金先アカウント",
         "sum_minimum": "最小額"
     },
+    "withdraw_page": {
+        "lead": "出金するものと送り先を選ぶと、口座から出ていくものと費用が概要に表示されます。",
+        "step_what": "出金するもの",
+        "step_where": "送り先",
+        "step_amount": "金額と手数料",
+        "pick_first": "まず資産とゲートウェイを選んでください。",
+        "sum_title": "概要",
+        "sum_empty": "出金する資産を選ぶと、口座から出ていくもの、送り先、費用がここにまとめて表示されます。",
+        "sum_amount": "金額",
+        "sum_asset": "資産",
+        "sum_to": "送り先",
+        "sum_fee": "ネットワーク手数料",
+        "sum_gate_fee": "ゲートウェイ手数料",
+        "blocker_asset": "出金する資産を選んでください。",
+        "blocker_gateway": "ゲートウェイを選んでください。",
+        "blocker_account": "受け取る BitShares アカウントを選んでください。",
+        "blocker_address": "送り先のアドレスを入力してください。",
+        "blocker_address_invalid": "アドレスが正しくありません。",
+        "blocker_amount": "金額を入力してください。",
+        "blocker_balance": "金額が手数料を含めた口座の残高を超えています。",
+        "blocker_min": "金額がゲートウェイの最小額を下回っています。"
+    },
     "transfer": {
         "again": "他の転送をする",
         "amount": "金額",

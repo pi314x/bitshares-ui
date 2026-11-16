@@ -3408,6 +3408,28 @@
         "sum_account": "An Konto",
         "sum_minimum": "Minimum"
     },
+    "withdraw_page": {
+        "lead": "Wähle, was du auszahlen möchtest und wohin; die Zusammenfassung zeigt, was dein Konto verlässt und was es kostet.",
+        "step_what": "Was ausgezahlt wird",
+        "step_where": "Wohin es geht",
+        "step_amount": "Betrag und Gebühren",
+        "pick_first": "Wähle zuerst einen Vermögenswert und ein Gateway.",
+        "sum_title": "Zusammenfassung",
+        "sum_empty": "Wähle einen Vermögenswert zum Auszahlen: Was dein Konto verlässt, wohin es geht und was es kostet, steht hier.",
+        "sum_amount": "Betrag",
+        "sum_asset": "Vermögenswert",
+        "sum_to": "An",
+        "sum_fee": "Netzwerkgebühr",
+        "sum_gate_fee": "Gateway-Gebühr",
+        "blocker_asset": "Wähle einen Vermögenswert zum Auszahlen.",
+        "blocker_gateway": "Wähle ein Gateway.",
+        "blocker_account": "Wähle das BitShares-Konto, das es erhält.",
+        "blocker_address": "Gib die Adresse ein, an die es geht.",
+        "blocker_address_invalid": "Die Adresse ist nicht gültig.",
+        "blocker_amount": "Gib einen Betrag ein.",
+        "blocker_balance": "Der Betrag ist höher als das Guthaben des Kontos, mit der Gebühr.",
+        "blocker_min": "Der Betrag liegt unter dem Minimum des Gateways."
+    },
     "transfer": {
         "again": "WEITERE ÜBERWEISUNG",
         "amount": "Betrag",
