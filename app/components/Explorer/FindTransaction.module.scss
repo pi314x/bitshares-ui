@@ -1,0 +1,80 @@
+// The card above the Blockchain tab's figures: the id field and a button in a row, the answer under it.
+.find {
+    margin-bottom: 12px;
+}
+
+.title {
+    margin: 0 0 4px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.hint {
+    margin: 0 0 12px;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.result {
+    margin-top: 12px;
+    min-height: 0;
+}
+
+.result:empty {
+    display: none;
+}
+
+.searching {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+
+.found {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+}
+
+// a phone: the button under the field, the width of it
+@media (max-width: 720px) {
+    .form {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .actions > * {
+        flex: 1;
+    }
+}

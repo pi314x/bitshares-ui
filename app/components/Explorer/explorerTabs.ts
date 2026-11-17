@@ -4,6 +4,7 @@
 
 export const EXPLORER_TAB_LINKS = {
     blocks: "/explorer/blocks",
+    transaction: "/explorer/transaction",
     assets: "/explorer/assets",
     accounts: "/explorer/accounts",
     witnesses: "/explorer/witnesses",

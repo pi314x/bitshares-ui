@@ -18,6 +18,15 @@ describe("explorerTabFor", () => {
         );
     });
 
+    it("has a tab of its own for finding a transaction", () => {
+        expect(explorerTabFor("/explorer/transaction", null)).toBe(
+            "/explorer/transaction"
+        );
+        expect(explorerTabFor("/explorer", "/explorer/transaction")).toBe(
+            "/explorer/transaction"
+        );
+    });
+
     it("falls back to the blockchain for an address that is not a tab", () => {
         expect(explorerTabFor("/explorer/nonsense", null)).toBe(
             "/explorer/blocks"

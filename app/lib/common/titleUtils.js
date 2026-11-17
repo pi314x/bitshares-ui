@@ -79,6 +79,8 @@ export default class TitleUtils {
                 return "settings.restore";
             case "signedmessages":
                 return "account.signedmessages.title";
+            case "transaction":
+                return "find_transaction.tab";
             case "voting":
                 return "account.voting";
             case "wallet":

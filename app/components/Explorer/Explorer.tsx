@@ -23,6 +23,7 @@ import Witnesses from "./Witnesses";
 import CommitteeMembers from "./CommitteeMembers";
 import FeesContainer from "../Blockchain/FeesContainer";
 import BlocksContainer from "./BlocksContainer";
+import FindTransaction from "./FindTransaction";
 import Assets from "./Assets";
 import Accounts from "./Accounts";
 import counterpart from "counterpart";
@@ -37,6 +38,12 @@ const tabs = [
         link: EXPLORER_TAB_LINKS.blocks,
         translate: "explorer.blocks.title",
         content: BlocksContainer
+    },
+    {
+        name: "transaction",
+        link: EXPLORER_TAB_LINKS.transaction,
+        translate: "find_transaction.tab",
+        content: FindTransaction
     },
     {
         name: "assets",

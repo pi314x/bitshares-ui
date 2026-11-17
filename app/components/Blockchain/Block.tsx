@@ -192,13 +192,13 @@ function BlockCore({
         const parsedHeight = parseInt(height as any, 10);
         const currentBlock = blocks.get(parsedHeight);
 
+        // (the page scrolls as a document: a container id would scroll an element that does not scroll)
         if (scrollToIndex && !state.scrollEnded && currentBlock) {
             scroller.scrollTo(`tx_${scrollToIndex}`, {
                 duration: 1500,
                 delay: 100,
                 smooth: true,
-                offset: -100,
-                containerId: "blockContainer"
+                offset: -100
             });
         }
     });
@@ -207,8 +207,7 @@ function BlockCore({
         scroll.scrollToTop({
             duration: 1500,
             delay: 100,
-            smooth: true,
-            containerId: "blockContainer"
+            smooth: true
         });
     }
 
