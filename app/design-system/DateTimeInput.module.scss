@@ -1,0 +1,52 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+// the date takes what the two times leave; on a phone the three still fit in one row
+.root {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+.date {
+    flex: 1 1 130px;
+}
+
+.part {
+    flex: 0 0 74px;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: var(--control-h);
+    padding: 0 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: center;
+    text-align-last: center;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.part:hover:not(:disabled) {
+    border-color: var(--field-border-hover);
+}
+
+.part:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.part:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.colon {
+    color: var(--muted);
+}

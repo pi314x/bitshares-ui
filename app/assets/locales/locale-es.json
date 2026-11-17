@@ -3443,6 +3443,11 @@
         "blocker_amounts": "Elige ambos activos e introduce un importe.",
         "blocker_market": "Esperando al mercado: se están leyendo los precios."
     },
+    "datetime_input": {
+        "date": "Fecha",
+        "hour": "Hora (00-23)",
+        "minute": "Minuto"
+    },
     "transfer": {
         "again": "HACER OTRA TRANSFERENCIA",
         "amount": "Monto",

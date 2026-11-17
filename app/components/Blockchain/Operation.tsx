@@ -89,6 +89,7 @@ import {Tooltip} from "../../design-system/Tooltip";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
 import {useChainStoreTick} from "../../next/hooks/useChainStoreTick";
+import {formatDateTime} from "../../lib/common/dateTime";
 
 const {operations} = grapheneChainTypes;
 import opComponents from "./operations";
@@ -317,7 +318,7 @@ function OperationCore(props: OperationCoreProps) {
         );
         return (
             <div>
-                <div>{block_time ? block_time.toLocaleString() : ""}</div>
+                <div>{block_time ? formatDateTime(block_time) : ""}</div>
                 <div>{ops[op[0]]}</div>
                 <div>{column}</div>
                 <div>

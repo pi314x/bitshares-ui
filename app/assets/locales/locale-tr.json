@@ -3443,6 +3443,11 @@
         "blocker_amounts": "İki varlığı da seçin ve bir tutar girin.",
         "blocker_market": "Piyasa bekleniyor: fiyatlar okunuyor."
     },
+    "datetime_input": {
+        "date": "Tarih",
+        "hour": "Saat (00-23)",
+        "minute": "Dakika"
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

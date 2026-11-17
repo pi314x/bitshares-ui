@@ -3,6 +3,7 @@
 // transaction); it is only a page now: nothing opens over anything.
 import * as React from "react";
 import counterpart from "counterpart";
+import {DateTimeInput} from "../../design-system/DateTimeInput";
 import {Input} from "../../design-system/Input";
 import {Select} from "../../design-system/Select";
 import {Alert} from "../../design-system/Alert";
@@ -14,6 +15,7 @@ import SametFundActions, {
 } from "../../actions/SametFundActions";
 import TimedTransferActions from "../../actions/TimedTransferActions";
 import {formatAmount, parseAmount} from "../../lib/common/sametFunds";
+import {formatDateTime} from "../../lib/common/dateTime";
 import {
     checkRelease,
     parseLocalDateTime,
@@ -286,7 +288,7 @@ export default function TimedTransferForm({
                             {
                                 label: t("sum_when"),
                                 value: releaseDate
-                                    ? releaseDate.toLocaleString()
+                                    ? formatDateTime(releaseDate)
                                     : undefined,
                                 detail: releaseDate
                                     ? relativeFromNow(
@@ -437,11 +439,10 @@ export default function TimedTransferForm({
                     error={releaseError}
                     help={t("release_help")}
                 >
-                    <Input
-                        type="datetime-local"
+                    <DateTimeInput
                         value={releaseText}
                         aria-label={t("release")}
-                        onChange={e => setReleaseText(e.target.value)}
+                        onChange={setReleaseText}
                     />
                 </Field>
                 <Picks

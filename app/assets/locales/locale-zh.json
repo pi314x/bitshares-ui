@@ -3443,6 +3443,11 @@
         "blocker_amounts": "请选择两种资产并输入数量。",
         "blocker_market": "正在等待市场：正在读取价格。"
     },
+    "datetime_input": {
+        "date": "日期",
+        "hour": "小时 (00-23)",
+        "minute": "分钟"
+    },
     "transfer": {
         "again": "发起新的转账",
         "amount": "数量",

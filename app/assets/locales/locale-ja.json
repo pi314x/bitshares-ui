@@ -3443,6 +3443,11 @@
         "blocker_amounts": "両方の資産を選び、数量を入力してください。",
         "blocker_market": "市場の価格を読み込み中です。"
     },
+    "datetime_input": {
+        "date": "日付",
+        "hour": "時 (00-23)",
+        "minute": "分"
+    },
     "transfer": {
         "again": "他の転送をする",
         "amount": "金額",

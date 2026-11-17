@@ -3443,6 +3443,11 @@
         "blocker_amounts": "Choose both assets and enter an amount.",
         "blocker_market": "Waiting for the market: the prices are being read."
     },
+    "datetime_input": {
+        "date": "Date",
+        "hour": "Hour (00-23)",
+        "minute": "Minute"
+    },
     "transfer": {
         "again": "MAKE ANOTHER TRANSFER",
         "amount": "Amount",

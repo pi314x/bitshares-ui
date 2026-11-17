@@ -333,6 +333,8 @@ function TradingViewPriceChartCore(props: TradingViewPriceChartProps) {
             const widget = tvWidgetRef.current;
             if (__DEV__) console.log("*** Chart Ready ***");
             if (__DEV__) console.timeEnd("*** Chart load time: ");
+            // the time axis and the crosshair on a 24-hour clock, whatever the browser's language would choose
+            widget.timeHoursFormat().setValue("24-hours");
             if (!instanceProps.mobile && instanceProps.chartTools) {
                 widget.headerReady().then(() => {
                     if (__DEV__) console.log("*** Header Ready ***");

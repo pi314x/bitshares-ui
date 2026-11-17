@@ -14,6 +14,7 @@ import {OrderReview, reviewOrders} from "../../lib/chain/strategyChain";
 import {loadLastPrice} from "../../lib/chain/marketCandles";
 import {AssetRef} from "../../lib/common/marketCandles";
 import {StrategySpec} from "../../lib/common/strategies";
+import {formatDateTime} from "../../lib/common/dateTime";
 import {
     MAX_ORDERS,
     PlannedOrder,
@@ -165,7 +166,7 @@ function ReviewDialog(props: {
                     : t("place_fee_unknown")}
             </DialogNote>
             <DialogNote>
-                {t("place_stay", {until: review.expiration.toLocaleString()})}
+                {t("place_stay", {until: formatDateTime(review.expiration)})}
             </DialogNote>
             <Alert type="warning" showIcon message={t("place_once")} />
         </OperationDialog>
@@ -279,7 +280,7 @@ export default function PlaceOrders(props: PlaceOrdersProps): JSX.Element {
                     <p className={styles.about}>
                         {t("place_done", {
                             count: phase.count,
-                            when: new Date(phase.at).toLocaleString()
+                            when: formatDateTime(phase.at)
                         })}
                     </p>
                 ) : null}

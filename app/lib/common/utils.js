@@ -1,5 +1,6 @@
 import sanitize from "xss";
 import asset_utils from "./asset_utils";
+import {formatDateTime} from "./dateTime";
 
 var numeral = require("numeral");
 let id_regex = /\b\d+\.\d+\.(\d+)\b/;
@@ -292,7 +293,7 @@ var Utils = {
     format_time: function(time_str) {
         time_str = this.makeISODateString(time_str);
         let date = new Date(time_str);
-        return date.toLocaleString();
+        return formatDateTime(date);
     },
 
     limitByPrecision: function(value, assetPrecision) {

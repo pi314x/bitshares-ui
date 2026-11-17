@@ -1,6 +1,7 @@
 import * as React from "react";
 import moment from "moment";
 import styles from "./DatePicker.module.scss";
+import {DateTimeInput} from "./DateTimeInput";
 
 // Twenty-fourth component of the design system's bitshares-ui-style-guide
 // replacement (docs/UI_MIGRATION_PLAN.md). Replaces `bitshares-ui-style-
@@ -21,11 +22,12 @@ import styles from "./DatePicker.module.scss";
 // directly or explicitly checks `event instanceof moment`
 // (`CreateMarketModal.tsx`'s `handleChange`), never antd's second
 // `dateString` argument, so this component's `onChange` only ever passes
-// the one argument. Rendered as a native `<input type="datetime-local">`
-// (or `type="date"` when `showTime` is false) rather than a custom
-// calendar grid - the same "native form element over a from-scratch
-// recreation" choice as `InputNumber`/`Slider`, trading antd's popup
-// calendar UI for the browser's own native date/time picker.
+// the one argument. Rendered as a native `<input type="date">` (and, with
+// `showTime`, hour and minute selects beside it: see `DateTimeInput`, a 24-hour
+// clock on every browser, which `type="datetime-local"` cannot give) rather
+// than a custom calendar grid - the same "native form element over a
+// from-scratch recreation" choice as `InputNumber`/`Slider`, trading antd's
+// popup calendar UI for the browser's own native date picker.
 //
 // Real-but-unsupportable props, accepted for API compatibility and
 // documented as no-ops rather than silently dropped at the call site:
@@ -51,9 +53,8 @@ import styles from "./DatePicker.module.scss";
 // antd's internal DOM - `el.picker.input.readOnly = false`, forcing
 // antd's own DatePicker, read-only by default, to accept direct typing)
 // has no counterpart here and was dropped at that one call site: a
-// native `<input type="datetime-local">` is never read-only to begin
-// with, so the workaround's entire purpose is already satisfied by
-// construction.
+// native date input is never read-only to begin with, so the workaround's
+// entire purpose is already satisfied by construction.
 //
 // UPDATE (`Exchange/ScaledOrderTab.tsx`'s managed-form-API rewrite):
 // forwards its ref to the native `<input>` element (`React.forwardRef`,
@@ -113,8 +114,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
         const displayValue =
             value && value.isValid() ? value.format(format) : "";
 
-        function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-            const raw = e.target.value;
+        function handleRaw(raw: string) {
             if (!raw) {
                 if (onChange) onChange(null);
                 if (onOk) onOk(null);
@@ -127,17 +127,31 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
             if (onOk) onOk(next);
         }
 
+        if (showTime) {
+            return (
+                <DateTimeInput
+                    ref={ref}
+                    className={className}
+                    style={style}
+                    value={displayValue}
+                    disabled={disabled}
+                    tabIndex={tabIndex}
+                    onChange={handleRaw}
+                />
+            );
+        }
+
         return (
             <input
                 ref={ref}
-                type={showTime ? "datetime-local" : "date"}
+                type="date"
                 className={[styles.input, className].filter(Boolean).join(" ")}
                 style={style}
                 value={displayValue}
                 placeholder={placeholder}
                 disabled={disabled}
                 tabIndex={tabIndex}
-                onChange={handleChange}
+                onChange={e => handleRaw(e.target.value)}
             />
         );
     }

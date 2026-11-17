@@ -3443,6 +3443,11 @@
         "blocker_amounts": "Wähle beide Vermögenswerte und gib einen Betrag ein.",
         "blocker_market": "Warte auf den Markt: die Preise werden gelesen."
     },
+    "datetime_input": {
+        "date": "Datum",
+        "hour": "Stunde (00-23)",
+        "minute": "Minute"
+    },
     "transfer": {
         "again": "WEITERE ÜBERWEISUNG",
         "amount": "Betrag",

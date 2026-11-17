@@ -71,6 +71,7 @@ import {ChainStore, ChainTypes as grapheneChainTypes} from "bitsharesjs";
 import opComponents from "./operations";
 import TranslateWithLinks from "../Utility/TranslateWithLinks";
 import {Icon as AntIcon} from "../../design-system/Icon";
+import {formatDateTime} from "../../lib/common/dateTime";
 
 import "./operations.scss";
 
@@ -299,7 +300,7 @@ function ProposedOperation({
         );
         return (
             <div>
-                <div>{block_time ? block_time.toLocaleString() : ""}</div>
+                <div>{block_time ? formatDateTime(block_time) : ""}</div>
                 <div>{ops[op[0]]}</div>
                 <div>{column}</div>
                 <div>

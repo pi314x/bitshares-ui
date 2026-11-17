@@ -32,6 +32,7 @@ import PriceText from "../../Utility/PriceText";
 import AssetName from "../../Utility/AssetName";
 import {Tooltip} from "../../../design-system/Tooltip";
 import {Checkbox} from "../../../design-system/Checkbox";
+import {formatDateTime} from "../../../lib/common/dateTime";
 
 const rightAlign = {textAlign: "right" as const};
 
@@ -160,7 +161,7 @@ function MarketOrdersRowView({
                 )}{" "}
             </td>
             <td className="order-col-expiry">
-                <Tooltip title={order.expiration.toLocaleString()}>
+                <Tooltip title={formatDateTime(order.expiration)}>
                     <div
                         style={{
                             textAlign: "right",

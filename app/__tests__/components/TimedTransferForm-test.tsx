@@ -59,6 +59,28 @@ beforeEach(() => {
     mockCreate.mockResolvedValue({});
 });
 
+// the release time is a date and an hour and a minute of a 24-hour clock (not a datetime-local box, which writes
+// AM/PM in some browsers)
+const releaseParts = (container: HTMLElement) => {
+    const doc = container.ownerDocument;
+    const date = doc.querySelector('input[type="date"]') as HTMLInputElement;
+    const [hour, minute] = Array.from(
+        doc.querySelectorAll("select[aria-label]")
+    ) as HTMLSelectElement[];
+    return {date, hour, minute};
+};
+const releaseValue = (container: HTMLElement) => {
+    const {date, hour, minute} = releaseParts(container);
+    return `${date.value}T${hour.value}:${minute.value}`;
+};
+const setRelease = (container: HTMLElement, value: string) => {
+    const [day, time] = value.split("T");
+    const [h, m] = time.split(":");
+    fireEvent.change(releaseParts(container).date, {target: {value: day}});
+    fireEvent.change(releaseParts(container).hour, {target: {value: h}});
+    fireEvent.change(releaseParts(container).minute, {target: {value: m}});
+};
+
 const submitButton = (container: HTMLElement) =>
     Array.from(container.ownerDocument.querySelectorAll("button")).find(b =>
         /Create timed transfer/.test(b.textContent || "")
@@ -97,9 +119,6 @@ describe("TimedTransferForm", () => {
         ) as HTMLInputElement;
         fireEvent.change(amount, {target: {value: "2.5"}});
 
-        const release = container.ownerDocument.querySelector(
-            'input[type="datetime-local"]'
-        ) as HTMLInputElement;
         const target = new Date(Date.now() + 3 * 86400 * 1000);
         const pad = (n: number) => String(n).padStart(2, "0");
         const value = `${target.getFullYear()}-${pad(
@@ -107,7 +126,8 @@ describe("TimedTransferForm", () => {
         )}-${pad(target.getDate())}T${pad(target.getHours())}:${pad(
             target.getMinutes()
         )}`;
-        fireEvent.change(release, {target: {value}});
+        setRelease(container, value);
+        expect(releaseValue(container)).toBe(value);
 
         await waitFor(() =>
             expect(submitButton(container).disabled).toBe(false)
@@ -298,19 +318,18 @@ describe("TimedTransferForm as a page", () => {
             />
         );
         await waitFor(() => expect(mockGetBalances).toHaveBeenCalled());
-        const release = view.container.querySelector(
-            'input[type="datetime-local"]'
-        ) as HTMLInputElement;
-        const before = release.value;
+        const before = releaseValue(view.container);
         fireEvent.click(buttonOf(view, "1 month"));
-        expect(release.value).not.toBe(before);
+        expect(releaseValue(view.container)).not.toBe(before);
         const days =
-            (new Date(release.value).getTime() - Date.now()) / 86400000;
+            (new Date(releaseValue(view.container)).getTime() - Date.now()) /
+            86400000;
         expect(days).toBeGreaterThan(28);
         expect(days).toBeLessThan(31);
         fireEvent.click(buttonOf(view, "1 year"));
         expect(
-            (new Date(release.value).getTime() - Date.now()) / 86400000
+            (new Date(releaseValue(view.container)).getTime() - Date.now()) /
+                86400000
         ).toBeGreaterThan(360);
     });
 

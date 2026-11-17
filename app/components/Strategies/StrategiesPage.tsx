@@ -54,6 +54,7 @@ import {
     toSpec
 } from "./fields";
 import {amountText, percentText, priceText, signed} from "./format";
+import {formatDateTime} from "../../lib/common/dateTime";
 import styles from "./StrategiesPage.module.scss";
 import {t} from "./text";
 import {useStrategyBots} from "./useStrategyBots";
@@ -94,7 +95,7 @@ type Test =
 
 const [DEFAULT_TRADE, DEFAULT_PRICED] = String(getDefaultMarket()).split("_");
 
-const clock = (ms: number) => new Date(ms).toLocaleString();
+const clock = (ms: number) => formatDateTime(ms);
 
 const Stat = ({
     label,

@@ -5,6 +5,7 @@
 // authorities on (the main network) refuses a new one, which the dialog says first.
 import * as React from "react";
 import {Checkbox} from "../../design-system/Checkbox";
+import {DateTimeInput} from "../../design-system/DateTimeInput";
 import {Input} from "../../design-system/Input";
 import {Select} from "../../design-system/Select";
 import {
@@ -320,19 +321,17 @@ export default function CustomAuthorityForm(props: {
             </Checkbox>
             <div className={styles.row}>
                 <DialogField label={t("authority.valid_from")}>
-                    <Input
-                        type="datetime-local"
+                    <DateTimeInput
                         value={from}
                         aria-label={t("authority.valid_from")}
-                        onChange={e => setFrom(e.target.value)}
+                        onChange={setFrom}
                     />
                 </DialogField>
                 <DialogField label={t("authority.valid_to")}>
-                    <Input
-                        type="datetime-local"
+                    <DateTimeInput
                         value={to}
                         aria-label={t("authority.valid_to")}
-                        onChange={e => setTo(e.target.value)}
+                        onChange={setTo}
                     />
                 </DialogField>
             </div>
