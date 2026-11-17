@@ -187,3 +187,27 @@ body[class][class] .list {
     align-items: center;
     gap: 8px;
 }
+
+// the filter leaves nothing to show: the way on to the markets of the whole chain
+.noMatch {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px 4px;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+
+body[class][class] .noMatchButton {
+    min-height: var(--control-h-sm, 30px);
+    padding: 0 14px;
+    border: 1px solid var(--accent);
+    border-radius: 99px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}

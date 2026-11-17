@@ -3448,6 +3448,10 @@
         "hour": "時 (00-23)",
         "minute": "分"
     },
+    "markets_search": {
+        "none": "リストにここで %(name)s に一致するものはありません。",
+        "search_all": "すべての市場を検索"
+    },
     "transfer": {
         "again": "他の転送をする",
         "amount": "金額",

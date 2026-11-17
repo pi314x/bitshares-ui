@@ -3448,6 +3448,10 @@
         "hour": "Saat (00-23)",
         "minute": "Dakika"
     },
+    "markets_search": {
+        "none": "Listenizde burada %(name)s ile eşleşen bir şey yok.",
+        "search_all": "Tüm piyasalarda ara"
+    },
     "transfer": {
         "again": "BAŞKA BİR TRANSFER GERÇEKLEŞTİR",
         "amount": "Miktar",

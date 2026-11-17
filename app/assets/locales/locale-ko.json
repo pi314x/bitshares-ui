@@ -3448,6 +3448,10 @@
         "hour": "시 (00-23)",
         "minute": "분"
     },
+    "markets_search": {
+        "none": "목록에 여기서 %(name)s와(과) 일치하는 항목이 없습니다.",
+        "search_all": "모든 마켓 검색"
+    },
     "transfer": {
         "again": "추가 거래",
         "amount": "금액",

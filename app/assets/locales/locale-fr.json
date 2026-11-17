@@ -3448,6 +3448,10 @@
         "hour": "Heure (00-23)",
         "minute": "Minute"
     },
+    "markets_search": {
+        "none": "Rien dans votre liste ne correspond ici à %(name)s.",
+        "search_all": "Chercher dans tous les marchés"
+    },
     "transfer": {
         "again": "FAIRE UN AUTRE TRANSFERT",
         "amount": "Montant",

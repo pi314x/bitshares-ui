@@ -139,6 +139,7 @@ import QuoteSelectionModal from "./QuoteSelectionModal";
 import {SubMenu} from "../../design-system/SubMenu";
 import AssetLogo from "../Utility/AssetLogo";
 import styles from "./MyMarkets.module.scss";
+import {isHiddenAsIlliquid, withOwnMarkets} from "../../lib/common/myMarkets";
 import SearchInputUntyped from "../Utility/SearchInput";
 
 // SearchInput.jsx declares its optional props only via a separate
@@ -327,9 +328,12 @@ function MarketGroupInner(props: MarketGroupProps) {
     const marketRows = markets
         .map(market => {
             if (
-                onlyLiquid &&
-                marketStats.get(market.id) &&
-                marketStats.get(market.id).volumeBase == 0
+                isHiddenAsIlliquid(
+                    onlyLiquid,
+                    marketStats.get(market.id),
+                    market.id,
+                    current
+                )
             ) {
                 return null;
             }
@@ -784,6 +788,15 @@ function MyMarketsInner(props: MyMarketsProps) {
             });
         }
 
+        if (myMarketTab) {
+            // a market that is starred, or open, is in your own list
+            activeMarkets = withOwnMarkets(
+                activeMarkets,
+                starredMarkets,
+                current
+            );
+        }
+
         function filterAndSeparateMarkets(
             base: any,
             matchBases: any[],
@@ -912,6 +925,30 @@ function MyMarketsInner(props: MyMarketsProps) {
 
     const {baseGroups, otherMarkets} = getMarkets();
     const hasOthers = otherMarkets && otherMarkets.length;
+
+    // the filter leaves nothing to show: the market may be one the list never had, so the chain is one tap away
+    const showingOthers = effectiveActiveMarketTab === preferredBases.size + 1;
+    const listed: any[] = showingOthers
+        ? otherMarkets
+        : baseGroups[preferredBases.get(effectiveActiveMarketTab)] || [];
+    const nothingShown =
+        myMarketTab &&
+        !!myMarketFilter &&
+        !assetsLoading &&
+        listed.every((m: any) =>
+            isHiddenAsIlliquid(
+                !showingOthers && onlyLiquid,
+                marketStats.get(m.id),
+                m.id,
+                current
+            )
+        );
+    const searchAllMarkets = () => {
+        const name = myMarketFilter || "";
+        changeTab("find-market");
+        setInputValue(name);
+        lookupAssets(name);
+    };
 
     const listStyle: any = {
         minWidth: minWidth,
@@ -1176,6 +1213,22 @@ function MyMarketsInner(props: MyMarketsProps) {
                         findMarketTab={!myMarketTab}
                         flush={!!autoHeight}
                     />
+                ) : null}
+                {nothingShown ? (
+                    <div className={styles.noMatch}>
+                        <span>
+                            {counterpart.translate("markets_search.none", {
+                                name: myMarketFilter
+                            })}
+                        </span>
+                        <button
+                            type="button"
+                            className={styles.noMatchButton}
+                            onClick={searchAllMarkets}
+                        >
+                            {counterpart.translate("markets_search.search_all")}
+                        </button>
+                    </div>
                 ) : null}
             </div>
             <QuoteSelectionModal

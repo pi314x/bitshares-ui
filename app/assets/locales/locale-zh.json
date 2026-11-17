@@ -3448,6 +3448,10 @@
         "hour": "小时 (00-23)",
         "minute": "分钟"
     },
+    "markets_search": {
+        "none": "你的列表中这里没有与 %(name)s 匹配的内容。",
+        "search_all": "搜索所有市场"
+    },
     "transfer": {
         "again": "发起新的转账",
         "amount": "数量",
