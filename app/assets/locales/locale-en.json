@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Filter by asset owner",
             "find_by_asset": "Find by asset",
+            "recent": "Recent",
+            "remove_recent": "Remove from the recent list",
             "results": "Results (%(total_assets)s)",
             "search": "Asset name",
             "search_for_asset": "Search for asset",

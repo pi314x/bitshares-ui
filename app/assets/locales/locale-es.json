@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Filtrar por proveedor",
             "find_by_asset": "Encontrar por activo",
+            "recent": "Recientes",
+            "remove_recent": "Quitar de la lista de recientes",
             "results": "Establecer un proxy aquí (%(total_assets)s)",
             "search": "Nombre de activo",
             "search_for_asset": "Buscar para activo",

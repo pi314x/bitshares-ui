@@ -1,0 +1,41 @@
+// the assets picked last, listed above the results of the market picker while the search box is empty
+.recentTitle {
+    margin: 0 0 4px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.recentRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recentLink {
+    flex: 1;
+    min-width: 0;
+}
+
+.remove {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.remove:hover,
+.remove:focus-visible {
+    background: var(--hover);
+    color: var(--ink);
+}

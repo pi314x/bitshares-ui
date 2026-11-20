@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "按资产所有者过滤",
             "find_by_asset": "按资产查找",
+            "recent": "最近选择",
+            "remove_recent": "从最近列表中移除",
             "results": "结果 (%(total_assets)s)",
             "search": "资产名称",
             "search_for_asset": "资产查找",

@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Durch Herausgeber filtern",
             "find_by_asset": "Anlagen Eingabe",
+            "recent": "Zuletzt gewählt",
+            "remove_recent": "Aus der Liste entfernen",
             "results": "Ergebnis (%(total_assets)s)",
             "search": "Anlagenname",
             "search_for_asset": "Suchen nach Anlage",

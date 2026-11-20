@@ -80,6 +80,12 @@ import {
 } from "./MarketPickerHelpers";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAsset} from "../../store/slices/assetSlice";
+import {
+    addRecentPick,
+    removeRecentPick,
+    useRecentPicks
+} from "../../lib/common/recentMarketPicks";
+import styles from "./MarketPicker.module.scss";
 
 const TypedLink = Link as React.ComponentType<LinkProps>;
 
@@ -90,6 +96,8 @@ interface MarketListItemProps {
     market: any;
     marketPickerAsset: string;
     tabIndex: number;
+    /** a row of the recent list: the x that takes it out of the list */
+    onRemove?: () => void;
 }
 
 function MarketListItem({
@@ -98,7 +106,8 @@ function MarketListItem({
     baseSymbol,
     market,
     marketPickerAsset,
-    tabIndex
+    tabIndex,
+    onRemove
 }: MarketListItemProps) {
     const navigate = useNavigate();
     const marketSymbol = market[1]["quote"];
@@ -107,8 +116,15 @@ function MarketListItem({
             ? `/market/${marketSymbol}_${baseSymbol}`
             : `/market/${quoteSymbol}_${marketSymbol}`;
 
+    // the asset that is picked goes to the front of the recent list
+    function remember() {
+        const issuer = market[1].issuer;
+        addRecentPick(marketSymbol, typeof issuer === "string" ? issuer : "");
+    }
+
     function onKeyPress(e: any) {
         if (e.key == "Enter") {
+            remember();
             navigate(linkTo);
         }
     }
@@ -117,15 +133,41 @@ function MarketListItem({
         <li
             key={market[0]}
             style={{height: 40}}
+            className={onRemove ? styles.recentRow : undefined}
             onKeyPress={onKeyPress}
             tabIndex={tabIndex}
         >
-            <TypedLink style={{display: "flex"}} onClick={onClose} to={linkTo}>
+            <TypedLink
+                style={{display: "flex"}}
+                className={onRemove ? styles.recentLink : undefined}
+                onClick={() => {
+                    remember();
+                    onClose();
+                }}
+                to={linkTo}
+            >
                 <div style={{flex: 2}}>
                     <AssetName name={market[1]["quote"]} />
                 </div>
                 <div style={{flex: 3}}>{market[1].issuer}</div>
             </TypedLink>
+            {onRemove ? (
+                <button
+                    type="button"
+                    className={styles.remove}
+                    title={counterpart.translate(
+                        "exchange.market_picker.remove_recent"
+                    )}
+                    aria-label={counterpart.translate(
+                        "exchange.market_picker.remove_recent"
+                    )}
+                    // (Enter on the x is not Enter on the row: it must not open the market)
+                    onKeyPress={e => e.stopPropagation()}
+                    onClick={() => onRemove()}
+                >
+                    ×
+                </button>
+            ) : null}
         </li>
     );
 }
@@ -155,6 +197,7 @@ function MarketPickerWrapperInner({
     onClose
 }: MarketPickerWrapperProps) {
     const [state, setState] = React.useState<any>(initialWrapperState());
+    const recentPicks = useRecentPicks();
     const inputRef = React.useRef<any>(null);
     const timerRef = React.useRef<any>(null);
     const intervalIdRef = React.useRef<any>(null);
@@ -318,9 +361,50 @@ function MarketPickerWrapperInner({
         const baseSymbol = baseAsset.get("symbol");
         const quoteSymbol = quoteAsset.get("symbol");
 
+        // the assets picked last: while nothing is typed (not the ones that are in this market already)
+        const recent =
+            inputValue.length === 0
+                ? recentPicks.filter(
+                      pick =>
+                          pick.symbol !== baseSymbol &&
+                          pick.symbol !== quoteSymbol
+                  )
+                : [];
+
         if (!loading)
             return (
                 <div className="results">
+                    {recent.length ? (
+                        <>
+                            <div className={styles.recentTitle}>
+                                {counterpart.translate(
+                                    "exchange.market_picker.recent"
+                                )}
+                            </div>
+                            <ul style={{marginLeft: 0}}>
+                                {recent.map((pick, index) => (
+                                    <MarketListItem
+                                        key={`recent-${pick.symbol}`}
+                                        tabIndex={index + 50}
+                                        baseSymbol={baseSymbol}
+                                        quoteSymbol={quoteSymbol}
+                                        market={[
+                                            pick.symbol,
+                                            {
+                                                quote: pick.symbol,
+                                                issuer: pick.issuer
+                                            }
+                                        ]}
+                                        marketPickerAsset={marketPickerAsset}
+                                        onClose={onClose}
+                                        onRemove={() =>
+                                            removeRecentPick(pick.symbol)
+                                        }
+                                    />
+                                ))}
+                            </ul>
+                        </>
+                    ) : null}
                     <ul style={{marginLeft: 0, minHeight: "20px"}}>
                         {marketsList.map((market: any, index: number) => {
                             return (

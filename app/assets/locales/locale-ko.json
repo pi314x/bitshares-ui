@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Filter by asset owner",
             "find_by_asset": "Find by asset",
+            "recent": "최근 선택",
+            "remove_recent": "최근 목록에서 삭제",
             "results": "Results (%(total_assets)s)",
             "search": "Asset name",
             "search_for_asset": "Search for asset",

@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Öğe sahibine göre filtrele",
             "find_by_asset": "Varlığa göre bul",
+            "recent": "Son seçilenler",
+            "remove_recent": "Son seçilenler listesinden kaldır",
             "results": "Results (%(total_assets)s)",
             "search": "Varlık adı",
             "search_for_asset": "Varlık ara",

@@ -857,6 +857,8 @@
         "market_picker": {
             "filter_by_issuer": "Фильтровать по владельцу актива",
             "find_by_asset": "Найти по активу",
+            "recent": "Недавние",
+            "remove_recent": "Убрать из списка недавних",
             "results": "Результаты (%(total_assets)s)",
             "search": "Имя актива",
             "search_for_asset": "Искать актив",
