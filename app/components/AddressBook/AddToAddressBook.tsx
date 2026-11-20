@@ -2,7 +2,8 @@
 // saves who it went to in the address book, for the asset that was paid (a withdrawal of it), with the memo that went
 // along (a deposit tag, an address) when it can be read - it is encrypted, so a locked wallet is asked to unlock
 // first, and if that is cancelled the form simply opens without it. Where the book has the account for that asset
-// already, it says so instead.
+// already, it says so instead - and when the payment's memo is readable (the wallet is open, nobody is asked) and is not
+// the saved memo, it says that too, with a button that saves the memo of the payment.
 import * as React from "react";
 import counterpart from "counterpart";
 import {ChainStore} from "bitsharesjs";
@@ -58,9 +59,17 @@ export default function AddToAddressBook({
     const name: string | null = account ? account.get("name") : null;
     const paid: any = assetId ? ChainStore.getAsset(assetId) : null;
     const asset: string = paid ? paid.get("symbol") : "";
+    // The memo of the payment, to set against the saved one: only read while the wallet is open (it is never asked to
+    // unlock for this), and only a payment that had a memo has one.
+    const locked = !!(WalletDb as any).isLocked();
+    const paidMemo = React.useMemo(
+        () => (memo && !locked ? readMemo(memo) : ""),
+        [memo, locked]
+    );
     // (the account and the asset are shown by the row itself, so they are there at once)
     if (!name || (assetId && !asset)) return null;
-    if (findEntry(name, book, asset)) {
+    const saved = findEntry(name, book, asset);
+    if (saved && (!paidMemo || paidMemo === saved.memo)) {
         return <span className={styles.saved}>{t("in_book")}</span>;
     }
 
@@ -77,6 +86,36 @@ export default function AddToAddressBook({
         }
         setForm({name, memo: text, asset});
     };
+
+    if (saved) {
+        // Same account and asset, another memo: the saved entry takes the memo of the payment - except an entry for any
+        // asset, which a payment of one asset must not change for all: that asset gets an entry of its own.
+        const own = !!saved.asset || !asset;
+        return (
+            <div className={styles.activityAction}>
+                <span className={styles.saved}>{t("in_book_other_memo")}</span>
+                <Button
+                    size="small"
+                    onClick={() => setForm({name, memo: paidMemo, asset})}
+                >
+                    {t("update_memo")}
+                </Button>
+                {form ? (
+                    own ? (
+                        <EntryDialog
+                            entry={{...saved, memo: paidMemo}}
+                            onClose={() => setForm(null)}
+                        />
+                    ) : (
+                        <EntryDialog
+                            initial={form}
+                            onClose={() => setForm(null)}
+                        />
+                    )
+                ) : null}
+            </div>
+        );
+    }
 
     return (
         <div className={styles.activityAction}>

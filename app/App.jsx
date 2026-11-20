@@ -31,6 +31,7 @@ import {toastFromNotification} from "./lib/common/toastFromNotification";
 import {DEFAULT_NOTIFICATION_DURATION} from "services/Notification";
 import Loadable from "react-loadable";
 import NewsHeadline from "components/Layout/NewsHeadline";
+import ScrollToTop from "./components/Utility/ScrollToTop";
 
 import {Routes, Route, Navigate} from "react-router-dom";
 import {withLegacyRouterProps} from "./components/Utility/withLegacyRouterProps";
@@ -691,12 +692,18 @@ class App extends React.Component {
                 accountName && accountName !== "null"
                     ? accountName
                     : "committee-account";
+            // the page that is on screen: a dialog (a desktop's small page) leaves the page behind it open
+            const shown = this.props.backgroundLocation || this.props.location;
             content = (
                 <div className="grid-frame vertical">
                     <NewsHeadline />
                     <AppShell
                         content={
                             <>
+                                <ScrollToTop
+                                    pathname={shown.pathname}
+                                    hash={shown.hash}
+                                />
                                 <Routes
                                     location={
                                         this.props.backgroundLocation ||

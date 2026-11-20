@@ -4531,6 +4531,8 @@
         "save_recipient": "Enregistrer ce destinataire dans le carnet d'adresses",
         "add_from_activity": "Ajouter au carnet d'adresses",
         "in_book": "Dans le carnet d'adresses",
+        "in_book_other_memo": "Dans le carnet d'adresses, mais pas avec ce mémo",
+        "update_memo": "Enregistrer ce mémo",
         "asset": "Actif",
         "asset_help": "Facultatif. L'actif concerné : un retrait de cet actif va à ce compte avec ce mémo (l'adresse d'une passerelle pour cet actif). Vide : n'importe quel actif.",
         "error_asset": "Ce n'est pas un symbole d'actif (majuscules, chiffres et points, de 3 à 16 caractères).",

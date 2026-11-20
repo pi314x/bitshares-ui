@@ -4531,6 +4531,8 @@
         "save_recipient": "Diesen Empfänger im Adressbuch speichern",
         "add_from_activity": "Zum Adressbuch hinzufügen",
         "in_book": "Im Adressbuch",
+        "in_book_other_memo": "Im Adressbuch, aber nicht mit diesem Memo",
+        "update_memo": "Dieses Memo speichern",
         "asset": "Asset",
         "asset_help": "Optional. Das Asset, für das dies gilt: Eine Auszahlung davon geht mit diesem Memo an dieses Konto (die Adresse eines Gateways für dieses Asset). Leer: jedes Asset.",
         "error_asset": "Das ist kein Asset-Symbol (Großbuchstaben, Ziffern und Punkte, 3 bis 16 Zeichen).",
