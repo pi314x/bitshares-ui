@@ -1,5 +1,8 @@
 import * as React from "react";
-import {useRefreshOnEpoch} from "../../lib/common/accountEpoch";
+import {
+    getAccountEpochReason,
+    useRefreshOnEpoch
+} from "../../lib/common/accountEpoch";
 import counterpart from "counterpart";
 import {
     AreaSeries,
@@ -229,23 +232,33 @@ export default function BalanceHistoryChart({
         };
     }, [accountId]);
 
-    // what the account holds and has locked in orders changes with every trade and transfer: read again by itself
-    // (the chart stays as it is until the new figures are there; a failure leaves what is shown)
+    // What the account holds and has locked in orders changes with every trade and transfer: read again by itself
+    // (the chart stays as it is until the new figures are there; a failure leaves what is shown). The line is worked
+    // out backwards from the balance through the operations, so the operations are read again too (a deposit that is
+    // in the balance and not in the operations would lift the whole line by its amount), and the figures are put on
+    // the chart together, once the operations are in. A look with no operation behind it (the clock) needs no new list.
     useRefreshOnEpoch(() => {
-        BalanceHistoryActions.getLockedInOrders(accountId)
-            .then(locked => setLockedNow(locked || {}))
-            .catch(() => undefined);
-        BalanceHistoryActions.getBalances(accountId)
+        const operations =
+            getAccountEpochReason() === "interval"
+                ? Promise.resolve()
+                : balanceHistory.refresh(accountId).catch(() => undefined);
+        const locked = BalanceHistoryActions.getLockedInOrders(accountId).catch(
+            () => null
+        );
+        const held = BalanceHistoryActions.getBalances(accountId)
             .then(rows =>
-                BalanceHistoryActions.getAssets(rows.map(r => r.asset_id)).then(
-                    infos => {
-                        const usable = rows.filter(r => infos[r.asset_id]);
-                        setBalances(usable);
-                        setAssets(infos);
-                    }
-                )
+                BalanceHistoryActions.getAssets(
+                    rows.map(r => r.asset_id)
+                ).then(infos => ({rows, infos}))
             )
-            .catch(() => undefined);
+            .catch(() => null);
+        Promise.all([locked, held, operations]).then(([lockedNow, now]) => {
+            if (lockedNow) setLockedNow(lockedNow);
+            if (now) {
+                setBalances(now.rows.filter(r => now.infos[r.asset_id]));
+                setAssets(now.infos);
+            }
+        });
     });
 
     const asset = assetId ? assets[assetId] : undefined;

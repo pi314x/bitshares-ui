@@ -58,6 +58,7 @@ jest.mock("../../actions/BalanceHistoryActions", () => ({
 
 import BalanceHistoryChart from "../../components/Account/BalanceHistoryChart";
 import {balanceHistory} from "../../lib/chain/balanceHistoryLoader";
+import {bumpAccountEpoch} from "../../lib/common/accountEpoch";
 
 const ME = "1.2.10";
 
@@ -169,6 +170,58 @@ describe("BalanceHistoryChart", () => {
         expect(lastValues.some(v => Math.abs(v - 1.5) < 1e-5)).toBe(true);
         expect(lastValues.some(v => Math.abs(v - 1.75) < 1e-5)).toBe(true);
         expect(mockGetHistory).toHaveBeenCalledWith(ME, null);
+    });
+
+    // The line is worked out backwards from the balance now through the account's operations: a deposit that is in
+    // the balance but not in the operations lifted the whole line by its amount, until the screen was opened again.
+    it("draws a deposit where it happened: the operations are read again with the balance", async () => {
+        render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        const deposit = {
+            id: "1.11.3",
+            block_num: 30,
+            op: [
+                0,
+                {
+                    from: "1.2.77",
+                    to: ME,
+                    amount: {amount: "100000", asset_id: "1.3.0"},
+                    fee: {amount: "0", asset_id: "1.3.0"}
+                }
+            ]
+        };
+        const older = await mockGetHistory();
+        mockGetBalances.mockResolvedValue([
+            {asset_id: "1.3.0", amount: "250000"},
+            {asset_id: "1.3.121", amount: "5000"}
+        ]);
+        mockGetHistory.mockResolvedValue([deposit, ...older]);
+        mockGetBlockTimes.mockResolvedValue({10: 1000, 20: 2000, 30: 3000});
+        mockSetData.mockClear();
+        act(() => bumpAccountEpoch("activity"));
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 600));
+        });
+        // the last draw: wallet, open orders, total
+        const wallet = mockSetData.mock.calls.slice(-3)[0][0];
+        const at = (time: number) =>
+            wallet.find((p: {time: number}) => p.time === time);
+        expect(at(2000).value).toBeCloseTo(1.5, 5); // before the deposit
+        expect(at(3000).value).toBeCloseTo(2.5, 5); // with it
+        expect(wallet[wallet.length - 1].value).toBeCloseTo(2.5, 5);
+    });
+
+    it("does not ask for the operations again when the account only had a look (no operation behind it)", async () => {
+        render(<BalanceHistoryChart accountId={ME} />);
+        await flush();
+        mockGetHistory.mockClear();
+        mockGetBalances.mockClear();
+        act(() => bumpAccountEpoch("interval"));
+        await act(async () => {
+            await new Promise(resolve => setTimeout(resolve, 600));
+        });
+        expect(mockGetBalances).toHaveBeenCalled();
+        expect(mockGetHistory).not.toHaveBeenCalled();
     });
 
     it("lets the user choose which lines are drawn, and keeps the choice", async () => {

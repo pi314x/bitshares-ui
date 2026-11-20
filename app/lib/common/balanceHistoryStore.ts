@@ -85,6 +85,7 @@ export class BalanceHistoryStore {
     private states = new Map<string, HistoryState>();
     private listeners = new Map<string, Set<() => void>>();
     private tasks = new Map<string, Promise<void>>();
+    private queued = new Map<string, Promise<void>>();
     private hydrated = new Set<string>();
     private refreshedAt = new Map<string, number>();
     private persistTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -136,6 +137,31 @@ export class BalanceHistoryStore {
         ) {
             return Promise.resolve();
         }
+        return this.begin(accountId);
+    }
+
+    /**
+     * Look for what is new, now. `start` leaves a finished account alone for a while, which is right for a screen
+     * that opens; a screen that knows the account has a new operation (a deposit) must not wait: the line is worked
+     * out backwards from the balance now through the operations, so a balance that has the deposit and a list that
+     * has not lifts the whole line by its amount. A load that is on its way asked the node before the operation was
+     * there, so one more look follows it (everyone who asks meanwhile shares that look).
+     */
+    refresh(accountId: string): Promise<void> {
+        const running = this.tasks.get(accountId);
+        if (!running) return this.begin(accountId);
+        let next = this.queued.get(accountId);
+        if (!next) {
+            next = running.then(() => {
+                this.queued.delete(accountId);
+                return this.refresh(accountId);
+            });
+            this.queued.set(accountId, next);
+        }
+        return next;
+    }
+
+    private begin(accountId: string): Promise<void> {
         const task = this.run(accountId).then(() => {
             this.tasks.delete(accountId);
         });
@@ -151,6 +177,7 @@ export class BalanceHistoryStore {
         this.notifyTimers.clear();
         this.states.clear();
         this.tasks.clear();
+        this.queued.clear();
         this.hydrated.clear();
         this.refreshedAt.clear();
         if (this.cache.clear) await this.cache.clear();
@@ -201,6 +228,8 @@ export class BalanceHistoryStore {
                 return;
             }
             const newer = rows.filter(row => idNumber(row.id) > known);
+            // nothing new: the list stays as it is (a new list would be drawn again for nothing)
+            if (!newer.length && existing.length) return;
             const times = await this.timesFor(accountId, newer);
             fresh = fresh.concat(newer);
             this.update(accountId, {

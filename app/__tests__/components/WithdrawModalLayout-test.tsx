@@ -2,7 +2,7 @@
 // selection, address, amount and fee blocks, stacked in one popup body or laid out as three cards with a summary
 // whose button says what is missing. The blocks' own components are stubs; what is looked at is the layout.
 import * as React from "react";
-import {render} from "@testing-library/react";
+import {render, act} from "@testing-library/react";
 import Immutable from "immutable";
 import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
@@ -57,11 +57,16 @@ jest.mock("lib/common/gatewayMethods", () => ({
         getLast: () => ""
     }
 }));
+// (the selector's props are kept: a test picks an asset the way the selector does)
+let mockSelectorProps: any = {};
 jest.mock(
     "../../components/DepositWithdraw/DepositWithdrawAssetSelector",
     () => ({
         __esModule: true,
-        default: () => <div data-field="asset-selector">asset selector</div>
+        default: (props: any) => {
+            mockSelectorProps = props;
+            return <div data-field="asset-selector">asset selector</div>;
+        }
     })
 );
 jest.mock("components/Exchange/ExchangeInput", () => ({
@@ -156,5 +161,27 @@ describe("Withdraw, as a dialog", () => {
                 b => b.textContent
             )
         ).toEqual(expect.arrayContaining(["Withdraw", "Cancel"]));
+    });
+});
+
+describe("Withdraw, an asset that no gateway takes", () => {
+    // An asset the gateways do not take (XBTS lists ETH with withdrawals off) was picked with no gateway: the screen
+    // asked the missing gateway's name in capitals and crashed ("reading 'toUpperCase'" of null).
+    it("says that no gateway takes it instead of failing (page and dialog)", () => {
+        [true, false].forEach(page => {
+            const {getByText, unmount} = render(
+                <WithdrawModal
+                    visible
+                    layout={page ? "page" : undefined}
+                    backedCoins={BACKED}
+                    hideModal={() => undefined}
+                />
+            );
+            act(() => {
+                mockSelectorProps.onSelect({id: "ETH", gateFee: 0});
+            });
+            expect(getByText(localeEn.modal.withdraw.no_gateways)).toBeTruthy();
+            unmount();
+        });
     });
 });

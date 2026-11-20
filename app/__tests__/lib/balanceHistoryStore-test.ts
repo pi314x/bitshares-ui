@@ -183,4 +183,57 @@ describe("BalanceHistoryStore", () => {
         expect(s.getState("1.2.10").entries).toHaveLength(5);
         expect(s.getState("1.2.10").cached).toBe(false);
     });
+    it("looks for what is new at once when asked to refresh, which start does not for a finished account", async () => {
+        const node = fakeNode(150);
+        const s = store(node);
+        await s.start(ME);
+        // a deposit: one more operation on the account
+        node.grow(1);
+        await s.start(ME); // finished a moment ago: left alone
+        expect(s.getState(ME).entries).toHaveLength(150);
+        await s.refresh(ME);
+        const state = s.getState(ME);
+        expect(state.entries).toHaveLength(151);
+        expect(state.entries[0].id).toBe("1.11.151");
+        expect(state.times[1510]).toBeDefined();
+        expect(state.complete).toBe(true);
+        expect(state.loading).toBe(false);
+    });
+
+    it("looks once more after a load that is on its way, which asked the node before the operation was there", async () => {
+        const node = fakeNode(250);
+        // the account gets an operation after the first page was handed out
+        const original = node.source.getHistoryPage;
+        let grown = false;
+        node.source.getHistoryPage = (id, start) =>
+            original(id, start).then(page => {
+                if (!grown) {
+                    grown = true;
+                    node.grow(2);
+                }
+                return page;
+            });
+        const s = store(node);
+        const loading = s.start(ME);
+        const refreshed = s.refresh(ME);
+        // everyone who asks while one is waiting shares it
+        expect(s.refresh(ME)).toBe(refreshed);
+        await loading;
+        expect(s.getState(ME).entries).toHaveLength(250);
+        await refreshed;
+        const ids = s.getState(ME).entries.map(e => Number(e.id.split(".")[2]));
+        expect(ids).toHaveLength(252);
+        expect(ids[0]).toBe(252);
+        expect(new Set(ids).size).toBe(252);
+        expect(s.getState(ME).complete).toBe(true);
+    });
+
+    it("leaves the list as it is when there is nothing new, so that nothing is drawn again", async () => {
+        const s = store(fakeNode(150));
+        await s.start(ME);
+        const before = s.getState(ME);
+        await s.refresh(ME);
+        expect(s.getState(ME).entries).toBe(before.entries);
+        expect(s.getState(ME).times).toBe(before.times);
+    });
 });

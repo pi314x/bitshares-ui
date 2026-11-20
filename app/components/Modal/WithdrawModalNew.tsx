@@ -412,11 +412,14 @@ function getAssetPairVariables(
 
 function getBackingAssetProps(
     backedCoins: any,
-    selectedGateway: string,
+    selectedGateway: string | null | undefined,
     selectedAsset: string
 ) {
+    // no gateway takes the asset (it is not listed, or its withdrawals are off): nothing backs it
+    if (!selectedGateway) return undefined;
     return backedCoins.get(selectedGateway.toUpperCase(), []).find((c: any) => {
         let backingCoin = c.backingCoinType || c.backingCoin;
+        if (!backingCoin) return false;
 
         // Gateway has EOS.* asset names
         if (backingCoin.toUpperCase().indexOf("EOS.") !== -1) {
@@ -520,6 +523,11 @@ function WithdrawModalCore({
             selectedGateway,
             state.selectedAsset
         );
+        // no gateway (or none that backs the asset) to check the address with: it is not a valid one
+        if (!selectedGateway || !backingAsset) {
+            mergeState({addressError: true});
+            return;
+        }
 
         (blocktradesValidateAddress as any)({
             url: gatewayStatus[selectedGateway].baseAPI.BASE,
