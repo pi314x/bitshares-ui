@@ -110,19 +110,37 @@ function getMarketSortComponents(market: any) {
     return weight;
 }
 
+/**
+ * The order of what a search found: the symbol that was typed first (the whole symbol, or the asset after its
+ * gateway's dot: "USDT" finds XBTSX.USDT, GDEX.USDT, ...), then the symbols that start with the text, then the
+ * ones that only contain it - each group A to Z, as the node lists them (the text may be a whole symbol with its
+ * gateway, "XBTSX.USDT", which the asset part alone never equals). Of one asset name the committee's comes first,
+ * then the known gateways', then by gateway.
+ */
 function sortMarketsList(allMarkets: any[], inputValue: string) {
     if (inputValue.startsWith("BIT") && inputValue.length >= 6) {
         inputValue = inputValue.substr(3, inputValue.length - 1);
     }
+    const typed = inputValue.trim().toUpperCase();
+    const rank = (market: any): number => {
+        const symbol = String(market.quote).toUpperCase();
+        const asset = String(
+            getMarketSortComponents(market).asset
+        ).toUpperCase();
+        if (symbol === typed || asset === typed) return 0;
+        if (symbol.startsWith(typed) || asset.startsWith(typed)) return 1;
+        return 2;
+    };
     return allMarkets.sort(([, marketA]: any, [, marketB]: any) => {
+        const rankA = rank(marketA);
+        const rankB = rank(marketB);
+        if (rankA !== rankB) return rankA - rankB;
+
         const weightA = getMarketSortComponents(marketA);
         const weightB = getMarketSortComponents(marketB);
 
         if (weightA.asset !== weightB.asset) {
-            if (weightA.asset === inputValue) return -1;
-            if (weightB.asset === inputValue) return 1;
-            if (weightA.asset > weightB.asset) return -1;
-            if (weightA.asset < weightB.asset) return 1;
+            return weightA.asset > weightB.asset ? 1 : -1;
         }
 
         if (weightA.isCommittee ^ weightB.isCommittee) {
@@ -150,4 +168,4 @@ function fetchIssuerName(issuerId: string) {
     }
 }
 
-export {lookupAssets, assetFilter, fetchIssuerName};
+export {lookupAssets, assetFilter, fetchIssuerName, sortMarketsList};
