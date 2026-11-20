@@ -3,6 +3,7 @@
 // by the Send dialog ("save this recipient") and by the recent activity (a payment that was sent).
 import * as React from "react";
 import counterpart from "counterpart";
+import {Alert} from "../../design-system/Alert";
 import {Button} from "../../design-system/Button";
 import {Input} from "../../design-system/Input";
 import {Modal} from "../../design-system/Modal";
@@ -52,6 +53,9 @@ export default function EntryDialog({
 
     const typed = name.trim().toLowerCase();
     const nameOk = validAccountName(typed);
+    // another account on an entry that is kept: its memo, asset, label and info were made for the old one
+    const was = entry ? entry.name : "";
+    const accountChanged = !!was && !!typed && typed !== was;
     // the asset is optional: empty is any asset; what is typed must be a symbol
     const typedAsset = asset.trim().toUpperCase();
     const assetOk = !typedAsset || validAssetSymbol(typedAsset);
@@ -108,6 +112,13 @@ export default function EntryDialog({
                         }}
                     />
                     <span className={styles.help}>{t("name_help")}</span>
+                    {accountChanged ? (
+                        <Alert
+                            type="warning"
+                            showIcon
+                            description={t("name_changed", {old: was})}
+                        />
+                    ) : null}
                 </div>
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="address-memo">

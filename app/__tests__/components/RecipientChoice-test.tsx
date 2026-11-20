@@ -122,7 +122,7 @@ describe("the entry the dialog was opened for", () => {
         expect(memoOf(container)).toBe("xrp-memo");
     });
 
-    it("holds while the dialog's asset is put on the entry's asset, and lets go when the asset moves on", () => {
+    it("holds while the dialog's asset is put on the entry's asset, and when the asset moves on: the drop-down keeps the entry", () => {
         const view = render(
             <Dialog toName="ioxbank-gateway" entryId={xlm} asset="BTS" />
         );
@@ -132,11 +132,13 @@ describe("the entry the dialog was opened for", () => {
             <Dialog toName="ioxbank-gateway" entryId={xlm} asset="IOB.XLM" />
         );
         expect(shown(view.container)).toContain("IOB.XLM");
-        // and the user changes to the other asset: the entry for that asset counts, and its memo comes along
+        // and the user changes to the other asset, which has an entry of its own: the drop-down stays on the one it had
         view.rerender(
             <Dialog toName="ioxbank-gateway" entryId={xlm} asset="IOB.XRP" />
         );
-        expect(shown(view.container)).toContain("IOB.XRP");
+        expect(shown(view.container)).toContain("IOB.XLM");
+        expect(shown(view.container)).not.toContain("IOB.XRP");
+        expect(memoOf(view.container)).toBe("xlm-memo");
     });
 
     it("lets go when another recipient is typed", () => {
@@ -152,6 +154,164 @@ describe("the entry the dialog was opened for", () => {
     it("is not lost while the recipient is still empty (the dialog sets itself up)", () => {
         const view = render(<Dialog toName="" entryId={xrp} asset="BTS" />);
         expect(memoOf(view.container)).toBe("xrp-memo");
+    });
+});
+
+describe("changing the asset of the dialog after an entry was picked", () => {
+    it("keeps the picked entry and its memo, to an asset the account has no entry for as well", () => {
+        const view = render(<Dialog asset="BTS" />);
+        pick(view.container, "(IOB.XRP)");
+        expect(shown(view.container)).toContain("IOB.XRP");
+        expect(memoOf(view.container)).toBe("xrp-memo");
+        view.rerender(<Dialog asset="IOB.XLM" />);
+        expect(shown(view.container)).toContain("IOB.XRP");
+        view.rerender(<Dialog asset="USD" />);
+        expect(shown(view.container)).toContain("IOB.XRP");
+        expect(memoOf(view.container)).toBe("xrp-memo");
+        view.rerender(<Dialog asset="IOB.XRP" />);
+        expect(shown(view.container)).toContain("IOB.XRP");
+    });
+
+    it("keeps an entry for any asset, too", () => {
+        saveEntry({name: "friend", label: "Friend", memo: "hi"});
+        const view = render(<Dialog asset="BTS" />);
+        pick(view.container, "Friend - friend");
+        view.rerender(<Dialog asset="USD" />);
+        expect(shown(view.container)).toContain("Friend - friend");
+        view.rerender(<Dialog asset="BTS" />);
+        expect(shown(view.container)).toContain("Friend - friend");
+    });
+
+    it("says that the entry is for another asset than the one sent, and not otherwise", () => {
+        saveEntry({name: "friend", label: "Friend", memo: "hi"});
+        const view = render(<Dialog asset="BTS" />);
+        pick(view.container, "(IOB.XRP)");
+        // (picking an entry for an asset: the dialog puts that asset in, the entry is for the one sent)
+        view.rerender(<Dialog asset="IOB.XRP" />);
+        expect(view.container.textContent).not.toContain("This entry is for");
+        view.rerender(<Dialog asset="USD" />);
+        expect(view.container.textContent).toContain(
+            "This entry is for IOB.XRP, but you are sending USD."
+        );
+        // an entry for any asset fits every asset
+        pick(view.container, "Friend - friend");
+        view.rerender(<Dialog asset="BTS" />);
+        expect(view.container.textContent).not.toContain("This entry is for");
+    });
+
+    it("still follows the asset when the account was only typed (nothing was picked)", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" asset="IOB.XLM" />
+        );
+        expect(shown(view.container)).toContain("IOB.XLM");
+        view.rerender(<Dialog toName="ioxbank-gateway" asset="IOB.XRP" />);
+        expect(shown(view.container)).toContain("IOB.XRP");
+    });
+});
+
+describe("saving the recipient as a new entry", () => {
+    const open = (container: HTMLElement) =>
+        fireEvent.click(
+            Array.from(container.querySelectorAll("button")).find(b =>
+                (b.textContent || "").includes(
+                    "Save as a new address book entry"
+                )
+            ) as HTMLElement
+        );
+    const field = (label: string) =>
+        document.body.querySelector(
+            `[aria-label="${label}"]`
+        ) as HTMLInputElement;
+    const typeIn = (label: string, text: string) =>
+        fireEvent.change(field(label), {target: {value: text}});
+    const press = (name: string) =>
+        fireEvent.click(
+            Array.from(document.body.querySelectorAll("button")).find(
+                b => (b.textContent || "").trim() === name
+            ) as HTMLElement
+        );
+
+    it("is offered with an entry shown, and not offered for an account that is not there or a name that is no account", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="IOB.XLM" />
+        );
+        expect(view.container.textContent).toContain(
+            "Save as a new address book entry"
+        );
+        expect(view.container.textContent).not.toContain(
+            "Save this recipient in the address book"
+        );
+        view.unmount();
+        // nothing in the book for this one: the old wording
+        const fresh = render(<Dialog toName="newcomer" asset="BTS" />);
+        expect(fresh.container.textContent).toContain(
+            "Save this recipient in the address book"
+        );
+        expect(fresh.container.textContent).not.toContain(
+            "Save as a new address book entry"
+        );
+        fresh.unmount();
+        const bad = render(<Dialog toName="NOT AN ACCOUNT!" asset="BTS" />);
+        expect(bad.container.textContent).not.toContain("Save");
+    });
+
+    it("opens with the recipient, the memo that is in the box and the asset that is sent, and keeps the others", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="USD" />
+        );
+        fireEvent.click(view.getByText("type memo"));
+        open(view.container);
+        expect(field("Account name").value).toBe("ioxbank-gateway");
+        expect(field("Memo").value).toBe("typed by hand");
+        expect(field("Asset").value).toBe("USD");
+        press("Save");
+        expect(getAddressBook()).toHaveLength(3);
+        const added = getAddressBook().find(e => e.asset === "USD")!;
+        expect(added.memo).toBe("typed by hand");
+        expect(added.id).not.toBe(xlm);
+        expect(getAddressBook().find(e => e.id === xlm)!.memo).toBe("xlm-memo");
+    });
+
+    it("shows the new entry in the drop-down once it is saved, and keeps it", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="USD" />
+        );
+        expect(shown(view.container)).toContain("IOB.XLM");
+        open(view.container);
+        press("Save");
+        expect(shown(view.container)).toContain("(USD)");
+        expect(shown(view.container)).not.toContain("IOB.XLM");
+        view.rerender(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="BTS" />
+        );
+        expect(shown(view.container)).toContain("(USD)");
+    });
+
+    it("has no warning about the account when it is changed in the form that opened from here (the entry is new)", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="USD" />
+        );
+        open(view.container);
+        typeIn("Account name", "someone-else");
+        expect(document.body.querySelector("[role='alert']")).toBeNull();
+    });
+
+    it("refuses the account and the asset that are in the book already, and takes it with another asset", () => {
+        const view = render(
+            <Dialog toName="ioxbank-gateway" entryId={xlm} asset="IOB.XLM" />
+        );
+        open(view.container);
+        press("Save");
+        expect(document.body.textContent).toContain(
+            "That account is in the address book already for this asset."
+        );
+        expect(getAddressBook()).toHaveLength(2);
+        typeIn("Asset", "");
+        press("Save");
+        expect(getAddressBook()).toHaveLength(3);
+        expect(
+            getAddressBook().filter(e => e.name === "ioxbank-gateway")
+        ).toHaveLength(3);
     });
 });
 

@@ -6,9 +6,11 @@
 // An entry that was PICKED (here, or by "Send" on the address book page, which hands its id over as `entryId`) is the
 // entry, by its id: two entries can be for one account (an exchange takes a tag for each asset) or carry one label, and
 // the account and the asset alone cannot say which of them was meant - the first would always win. The choice is let
-// go when another account is typed, and when the dialog's asset moves away from the one the choice was made for
-// (then the entry for the new asset counts again, and its memo comes along). The user's own accounts (the wallet's, and the one the extension is connected as) are offered after the book: they
-// are the wallet's, so nothing in them is saved.
+// go only when another account is typed: changing the asset of the dialog does not move it (the drop-down keeps the
+// entry, and its memo stays; a note says when the entry is for another asset than the one sent). An entry that was
+// only FOUND for the typed account, nothing picked, still follows the asset. A recipient can be saved as a new entry
+// whether or not the book has the account. The user's own accounts (the wallet's, and the one the extension is
+// connected as) are offered after the book: they are the wallet's, so nothing in them is saved.
 import * as React from "react";
 import counterpart from "counterpart";
 import {Select} from "../../design-system/Select";
@@ -69,32 +71,10 @@ export default function RecipientHelper({
     const holds = !!chosen && (!typed || chosen.name === typed);
     const entry = holds ? chosen : findEntry(toName, book, asset);
 
-    // another account was typed: the choice is let go
+    // another account was typed: the choice is let go (the asset moving does not let it go)
     React.useEffect(() => {
         if (chosen && typed && chosen.name !== typed) setChosenId(null);
     }, [typed, chosenId]);
-    // the asset of the dialog moved away from the one the choice was made for: let go too. An entry for one asset is
-    // "reached" once the dialog is on that asset (it is put there by the pick); one for any asset is left as soon as the
-    // asset changes from what it was.
-    const baseAsset = React.useRef<string | undefined>(undefined);
-    const reached = React.useRef(false);
-    React.useEffect(() => {
-        if (!chosen) {
-            baseAsset.current = undefined;
-            reached.current = false;
-            return;
-        }
-        if (baseAsset.current === undefined && asset !== undefined) {
-            baseAsset.current = asset;
-        }
-        const onItsAsset = !!chosen.asset && asset === chosen.asset;
-        if (onItsAsset) reached.current = true;
-        const unchanged =
-            asset === undefined || asset === baseAsset.current || onItsAsset;
-        if (!unchanged && (!chosen.asset || reached.current)) {
-            setChosenId(null);
-        }
-    }, [asset, chosenId]);
 
     // The memo of an entry comes with it, once for each entry, when the memo box is empty or still holds the memo
     // an entry put there (the asset was changed): a memo that was typed is never replaced.
@@ -116,7 +96,12 @@ export default function RecipientHelper({
     }, [entry && entry.id]);
 
     const mine = own.find(a => a.name === typed);
-    const canSave = !entry && !mine && known && validAccountName(typed);
+    // the recipient can be saved as an entry of its own (for the asset that is sent, with the memo as typed), also when the
+    // book has the account already: another asset or another memo is another entry
+    const canSave = !mine && known && validAccountName(typed);
+    // the picked entry is for another asset than the one being sent: its memo may not fit
+    const otherAsset =
+        !!entry && !!entry.asset && !!asset && entry.asset !== asset;
     if (!book.length && !own.length && !canSave) return null;
 
     return (
@@ -136,8 +121,6 @@ export default function RecipientHelper({
                         const key = String(id);
                         const picked = book.find(e => e.id === key);
                         if (picked) {
-                            baseAsset.current = asset;
-                            reached.current = false;
                             setChosenId(picked.id);
                             onPick(picked);
                         }
@@ -189,19 +172,29 @@ export default function RecipientHelper({
                     {t("use_memo", {memo: entry.memo})}
                 </button>
             ) : null}
+            {otherAsset ? (
+                <span className={styles.help}>
+                    {t("entry_other_asset", {
+                        entry: entry ? entry.asset : "",
+                        sent: asset
+                    })}
+                </span>
+            ) : null}
             {canSave ? (
                 <button
                     type="button"
                     className={styles.linkButton}
                     onClick={() => setSaving(true)}
                 >
-                    {t("save_recipient")}
+                    {t(entry ? "save_as_new" : "save_recipient")}
                 </button>
             ) : null}
             {saving ? (
                 <EntryDialog
                     initial={{name: typed, memo, asset: asset || ""}}
                     onClose={() => setSaving(false)}
+                    // the new entry is the one the drop-down shows from now on
+                    onSaved={saved => setChosenId(saved.id)}
                 />
             ) : null}
         </div>

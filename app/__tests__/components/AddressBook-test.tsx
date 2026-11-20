@@ -646,3 +646,68 @@ describe("the asset in the Send dialog", () => {
         );
     });
 });
+
+describe("changing the account of an entry", () => {
+    const WARN =
+        "You are changing the account of this entry (it was exchange-gw).";
+    const open = () => {
+        saveEntry({
+            name: "exchange-gw",
+            label: "Exchange",
+            memo: "tag-4711",
+            asset: "USD"
+        });
+        page();
+        fireEvent.click(button("Edit"));
+    };
+    const alerts = () =>
+        Array.from(document.body.querySelectorAll("[role='alert']")).map(
+            a => a.textContent || ""
+        );
+
+    it("says nothing when the dialog opens, or while anything but the account is changed", () => {
+        open();
+        expect(alerts()).toEqual([]);
+        type("Memo", "tag-1");
+        type("Asset", "BTS");
+        type("Who is it?", "Other");
+        expect(alerts()).toEqual([]);
+    });
+
+    it("warns, with the old account, to look at the memo, the asset, the label and the info; and stops when the account is the old one again", () => {
+        open();
+        type("Account name", "exchange-two");
+        expect(alerts()).toHaveLength(1);
+        expect(alerts()[0]).toContain(WARN);
+        for (const part of ["memo", "asset", "label", "info"]) {
+            expect(alerts()[0]).toContain(`${part}`);
+        }
+        type("Account name", "exchange-gw");
+        expect(alerts()).toEqual([]);
+    });
+
+    it("does not count capitals or spaces around the account as another account, nor an empty box", () => {
+        open();
+        type("Account name", "  EXCHANGE-GW ");
+        expect(alerts()).toEqual([]);
+        type("Account name", "");
+        expect(alerts()).toEqual([]);
+    });
+
+    it("lets the entry be saved on the other account, with what it had", () => {
+        open();
+        type("Account name", "exchange-two");
+        fireEvent.click(button("Save"));
+        const moved = getAddressBook().find(e => e.name === "exchange-two")!;
+        expect(moved.memo).toBe("tag-4711");
+        expect(moved.asset).toBe("USD");
+        expect(findEntry("exchange-gw", undefined, "USD")).toBeUndefined();
+    });
+
+    it("has nothing to warn about for a new entry", () => {
+        page();
+        fireEvent.click(button("Add"));
+        type("Account name", "someone");
+        expect(alerts()).toEqual([]);
+    });
+});
