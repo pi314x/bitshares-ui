@@ -85,6 +85,7 @@
             "__MCP_TRADING__": false,
             "DEFAULT_SYMBOL": "BTS",
             "__GIT_BRANCH__": "test",
+            "__GIT_REV__": "test",
             "__DEV__": true
         },
         "transform": {

@@ -30,10 +30,25 @@ const fromGit = (read, fallback) => {
 let branch = !!process.env.BRANCH
     ? process.env.BRANCH
     : fromGit(() => git.branch(), "unknown");
+// the commit the build is of: shown in the footer of the left menu (__GIT_REV__), and the version of a `develop` build.
+// git-rev-sync cannot read it in a git worktree (its `.git` is a pointer file): git itself is asked then.
+const rev =
+    process.env.GIT_REV ||
+    fromGit(() => {
+        try {
+            return git.short();
+        } catch (e) {
+            return require("child_process")
+                .execFileSync("git", ["rev-parse", "--short", "HEAD"], {
+                    cwd: __dirname,
+                    stdio: ["ignore", "pipe", "ignore"]
+                })
+                .toString()
+                .trim();
+        }
+    }, "unknown");
 var __VERSION__ =
-    branch === "develop"
-        ? process.env.GIT_REV || fromGit(() => git.short(), "unknown")
-        : require("./package.json").version;
+    branch === "develop" ? rev : require("./package.json").version;
 
 // BASE APP DIR
 var root_dir = path.resolve(__dirname);
@@ -139,6 +154,7 @@ module.exports = function(env) {
             __CHART_ENGINE__: JSON.stringify(env.chartEngine || "auto"),
             DEFAULT_SYMBOL: "BTS",
             __GIT_BRANCH__: JSON.stringify(branch),
+            __GIT_REV__: JSON.stringify(rev),
             __MCP_ENABLED__: MCP.enabled,
             __MCP_TRADING__: MCP.trading
         }),

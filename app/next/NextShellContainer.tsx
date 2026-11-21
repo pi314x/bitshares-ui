@@ -34,6 +34,7 @@ import {
     selectExternalSigningActive
 } from "../store/slices/externalSignerSlice";
 import {connectFromChip} from "./extensionChip";
+import BuildInfo from "./BuildInfo";
 import {selectIntlState} from "../store/slices/intlSlice";
 // Untyped legacy Alt.js stores/actions/components (no .d.ts yet) —
 // resolved via tsconfig's baseUrl the same way webpack resolves them via
@@ -310,26 +311,30 @@ export default function NextShellContainer({
                 navGroups={navGroups}
                 crumb={crumbFromPath(location.pathname)}
                 railFooter={
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8
-                        }}
-                    >
-                        <div style={{flex: "1 1 auto", minWidth: 0}}>
-                            <LocaleSwitcher
-                                block
-                                placement="top"
-                                currentLocale={intl.currentLocale}
-                                locales={settings.defaults.locale}
-                                onSelect={locale =>
-                                    IntlActions.switchLocale(locale)
-                                }
-                            />
+                    <>
+                        {/* which code this is: the version, the commit and the git branch of the build */}
+                        <BuildInfo />
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8
+                            }}
+                        >
+                            <div style={{flex: "1 1 auto", minWidth: 0}}>
+                                <LocaleSwitcher
+                                    block
+                                    placement="top"
+                                    currentLocale={intl.currentLocale}
+                                    locales={settings.defaults.locale}
+                                    onSelect={locale =>
+                                        IntlActions.switchLocale(locale)
+                                    }
+                                />
+                            </div>
+                            <RailThemeToggle />
                         </div>
-                        <RailThemeToggle />
-                    </div>
+                    </>
                 }
                 currentAccount={currentAccount}
                 accounts={accounts}

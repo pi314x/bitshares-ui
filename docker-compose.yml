@@ -6,7 +6,12 @@
 # See docs/DEPLOYMENT.md.
 services:
     desk:
-        build: .
+        build:
+            context: .
+            # shown in the footer of the left menu; a build that is not told them shows neither (docs/DEPLOYMENT.md)
+            args:
+                BRANCH: ${BRANCH:-container}
+                GIT_REV: ${GIT_REV:-unknown}
         image: bitshares-desk:local
         ports:
             - "8080:8080"
