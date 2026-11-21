@@ -5,6 +5,8 @@ import * as React from "react";
 import {fireEvent, render} from "@testing-library/react";
 import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
+import {reduxStore} from "../../store/reduxStore";
+import {patchState as patchWalletUnlock} from "../../store/slices/walletUnlockSlice";
 
 jest.mock("../../components/AddressBook/useOwnAccounts", () => ({
     __esModule: true,
@@ -26,6 +28,8 @@ beforeAll(() => {
 let xlm: string;
 let xrp: string;
 beforeEach(() => {
+    // the memos come along only while the wallet is unlocked
+    reduxStore.dispatch(patchWalletUnlock({locked: false}));
     window.localStorage.clear();
     reloadAddressBook();
     // one label, one account, two assets (the entries of the report)

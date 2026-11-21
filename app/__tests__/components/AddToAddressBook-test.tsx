@@ -6,6 +6,8 @@ import {act, fireEvent, render} from "@testing-library/react";
 import counterpart from "counterpart";
 import Immutable from "immutable";
 import localeEn from "../../assets/locales/locale-en.json";
+import {reduxStore} from "../../store/reduxStore";
+import {patchState as patchWalletUnlock} from "../../store/slices/walletUnlockSlice";
 
 let mockAccounts: Record<string, any> = {};
 let mockAssets: Record<string, any> = {};
@@ -52,6 +54,8 @@ beforeEach(() => {
     reloadAddressBook();
     jest.clearAllMocks();
     mockLocked = false;
+    // the wallet is open (the entry form hides a saved memo while it is locked)
+    reduxStore.dispatch(patchWalletUnlock({locked: false}));
     mockAccounts = {
         "1.2.50": Immutable.fromJS({id: "1.2.50", name: "mexc-deposit"})
     };

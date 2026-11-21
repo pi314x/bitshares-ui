@@ -21,6 +21,7 @@ import {
     validAccountName
 } from "../../lib/common/addressBook";
 import EntryDialog from "./EntryDialog";
+import {useMemosVisible} from "./useMemosVisible";
 import {useOwnAccounts} from "./useOwnAccounts";
 import styles from "./AddressBook.module.scss";
 
@@ -56,6 +57,7 @@ export default function RecipientHelper({
 }: RecipientHelperProps): JSX.Element | null {
     const book = useAddressBook();
     const own = useOwnAccounts();
+    const memosVisible = useMemosVisible();
     const [saving, setSaving] = React.useState(false);
     const typed = toName.trim().toLowerCase();
 
@@ -77,7 +79,8 @@ export default function RecipientHelper({
     }, [typed, chosenId]);
 
     // The memo of an entry comes with it, once for each entry, when the memo box is empty or still holds the memo
-    // an entry put there (the asset was changed): a memo that was typed is never replaced.
+    // an entry put there (the asset was changed): a memo that was typed is never replaced. While the wallet is locked
+    // it does not come (the memo box would show it): it comes when the wallet is unlocked.
     const filledFor = React.useRef<string | null>(null);
     const filledMemo = React.useRef<string | null>(null);
     React.useEffect(() => {
@@ -85,6 +88,7 @@ export default function RecipientHelper({
             filledFor.current = null;
             return;
         }
+        if (!memosVisible) return;
         if (filledFor.current === entry.id) return;
         filledFor.current = entry.id;
         const ours = filledMemo.current !== null && memo === filledMemo.current;
@@ -92,8 +96,8 @@ export default function RecipientHelper({
             filledMemo.current = entry.memo;
             onUseMemo(entry.memo);
         }
-        // (only when the entry changes)
-    }, [entry && entry.id]);
+        // (only when the entry changes, or the memos can be shown)
+    }, [entry && entry.id, memosVisible]);
 
     const mine = own.find(a => a.name === typed);
     // the recipient can be saved as an entry of its own (for the asset that is sent, with the memo as typed), also when the
@@ -164,13 +168,17 @@ export default function RecipientHelper({
                 </div>
             ) : null}
             {entry && entry.memo && memo !== entry.memo ? (
-                <button
-                    type="button"
-                    className={styles.linkButton}
-                    onClick={() => onUseMemo(entry.memo)}
-                >
-                    {t("use_memo", {memo: entry.memo})}
-                </button>
+                memosVisible ? (
+                    <button
+                        type="button"
+                        className={styles.linkButton}
+                        onClick={() => onUseMemo(entry.memo)}
+                    >
+                        {t("use_memo", {memo: entry.memo})}
+                    </button>
+                ) : (
+                    <span className={styles.help}>{t("memo_locked")}</span>
+                )
             ) : null}
             {otherAsset ? (
                 <span className={styles.help}>

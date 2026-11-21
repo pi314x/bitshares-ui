@@ -3,6 +3,10 @@ import {act, fireEvent, render} from "@testing-library/react";
 import {MemoryRouter, Route, Routes, useLocation} from "react-router-dom";
 import counterpart from "counterpart";
 import localeEn from "../../assets/locales/locale-en.json";
+import {reduxStore} from "../../store/reduxStore";
+import {patchState as patchWalletUnlock} from "../../store/slices/walletUnlockSlice";
+import {patchExternalSigner} from "../../store/slices/externalSignerSlice";
+import {patchState as patchAccount} from "../../store/slices/accountSlice";
 
 const mockSaveAs = jest.fn();
 jest.mock("file-saver", () => ({
@@ -41,6 +45,8 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+    // the memos are shown only while the wallet is unlocked
+    reduxStore.dispatch(patchWalletUnlock({locked: false}));
     window.localStorage.clear();
     reloadAddressBook();
     mockSaveAs.mockClear();
@@ -650,6 +656,8 @@ describe("the asset in the Send dialog", () => {
 describe("changing the account of an entry", () => {
     const WARN =
         "You are changing the account of this entry (it was exchange-gw).";
+    const LOCKED =
+        "hidden while the wallet is locked: unlock the wallet to check it";
     const open = () => {
         saveEntry({
             name: "exchange-gw",
@@ -682,6 +690,7 @@ describe("changing the account of an entry", () => {
         for (const part of ["memo", "asset", "label", "info"]) {
             expect(alerts()[0]).toContain(`${part}`);
         }
+        expect(alerts()[0]).not.toContain(LOCKED);
         type("Account name", "exchange-gw");
         expect(alerts()).toEqual([]);
     });
@@ -709,5 +718,235 @@ describe("changing the account of an entry", () => {
         fireEvent.click(button("Add"));
         type("Account name", "someone");
         expect(alerts()).toEqual([]);
+    });
+
+    it("says that the memo is kept and hidden while the wallet is locked, and shows it the other way when it is unlocked", () => {
+        act(() => {
+            reduxStore.dispatch(patchWalletUnlock({locked: true}));
+        });
+        open();
+        type("Account name", "exchange-two");
+        expect(alerts()[0]).toContain(WARN);
+        expect(alerts()[0]).toContain(LOCKED);
+        act(() => {
+            reduxStore.dispatch(patchWalletUnlock({locked: false}));
+        });
+        expect(alerts()[0]).toContain(WARN);
+        expect(alerts()[0]).not.toContain(LOCKED);
+    });
+});
+
+describe("memos while the wallet is locked", () => {
+    const setLocked = (locked: boolean) =>
+        act(() => {
+            reduxStore.dispatch(patchWalletUnlock({locked}));
+        });
+    const MASK = "••••••";
+    const HINT = "Unlock the wallet to see the memo.";
+
+    beforeEach(() => {
+        saveEntry({name: "exchange-gw", label: "Exchange", memo: "tag-4711"});
+        saveEntry({name: "bob", label: "Plumber", memo: ""});
+        setLocked(true);
+    });
+
+    it("shows a fixed mask and says why, never the memo; an entry without a memo has none", () => {
+        const {container} = page();
+        expect(container.textContent).toContain("Exchange");
+        expect(container.textContent).not.toContain("tag-4711");
+        expect(container.textContent).toContain(MASK);
+        expect(container.textContent).toContain(HINT);
+        // one memo only: Plumber's has none to hide
+        expect(container.textContent!.split(MASK)).toHaveLength(2);
+    });
+
+    it("shows the memo when the wallet is unlocked, as it is unlocked, and hides it again when it locks", () => {
+        const {container} = page();
+        expect(container.textContent).not.toContain("tag-4711");
+        setLocked(false);
+        expect(container.textContent).toContain("tag-4711");
+        expect(container.textContent).not.toContain(MASK);
+        setLocked(true);
+        expect(container.textContent).not.toContain("tag-4711");
+        expect(container.textContent).toContain(MASK);
+    });
+
+    it("does not search the memo while locked (the search must not tell what it says), and does when unlocked", () => {
+        const {container} = page();
+        type("Search the address book", "tag-4711");
+        expect(container.textContent).toContain("Nobody matches that.");
+        // the rest of an entry is still searched
+        type("Search the address book", "exchange");
+        expect(container.textContent).toContain("Exchange");
+        setLocked(false);
+        type("Search the address book", "tag-4711");
+        expect(container.textContent).toContain("Exchange");
+        expect(container.textContent).not.toContain("Plumber");
+    });
+
+    it("leaves the memo out of the match unless the memos are shown", () => {
+        const entry = getAddressBook().find(e => e.name === "exchange-gw")!;
+        expect(matches(entry, entry.memo, false)).toBe(false);
+        expect(matches(entry, entry.memo, true)).toBe(true);
+        expect(matches(entry, entry.memo)).toBe(true);
+        expect(matches(entry, entry.name, false)).toBe(true);
+    });
+
+    it("does not export the book (its file has the memos), and says why", () => {
+        page();
+        const exporter = button("Export");
+        expect(exporter.disabled).toBe(true);
+        expect(exporter.title).toBe(
+            "Unlock the wallet to export the book: the file has its memos."
+        );
+        fireEvent.click(exporter);
+        expect(mockSaveAs).not.toHaveBeenCalled();
+        setLocked(false);
+        expect(button("Export").disabled).toBe(false);
+        expect(button("Export").title).toBe("");
+        fireEvent.click(button("Export"));
+        expect(mockSaveAs).toHaveBeenCalledTimes(1);
+    });
+
+    describe("the entry dialog", () => {
+        // the Edit button of the Exchange card
+        const edit = () => {
+            const view = page();
+            const card = Array.from(
+                view.container.querySelectorAll("li")
+            ).find(li => (li.textContent || "").includes("Exchange"))!;
+            fireEvent.click(
+                Array.from(card.querySelectorAll("button")).find(
+                    b => (b.textContent || "").trim() === "Edit"
+                )!
+            );
+        };
+        const memoField = () =>
+            document.body.querySelector(
+                '[aria-label="Memo"]'
+            ) as HTMLInputElement | null;
+
+        it("has no memo field for a saved entry while locked, and saving it leaves the memo as it was", () => {
+            // (the first card is Exchange: the book is by name)
+            edit();
+            expect(memoField()).toBeNull();
+            expect(document.body.textContent).toContain(HINT);
+            expect(document.body.textContent).not.toContain("tag-4711");
+            type("Who is it?", "Exchange 2");
+            fireEvent.click(button("Save"));
+            const saved = getAddressBook().find(e => e.name === "exchange-gw")!;
+            expect(saved.label).toBe("Exchange 2");
+            expect(saved.memo).toBe("tag-4711");
+        });
+
+        it("shows the memo field with the memo once the wallet is unlocked, and changes it", () => {
+            edit();
+            expect(memoField()).toBeNull();
+            setLocked(false);
+            expect(memoField()!.value).toBe("tag-4711");
+            type("Memo", "tag-9");
+            fireEvent.click(button("Save"));
+            expect(
+                getAddressBook().find(e => e.name === "exchange-gw")!.memo
+            ).toBe("tag-9");
+        });
+
+        it("lets a new entry take a memo: nothing saved is shown by it", () => {
+            page();
+            fireEvent.click(button("Add"));
+            expect(memoField()).not.toBeNull();
+            // (the card of the book has the hint once: the dialog adds none)
+            expect(document.body.textContent!.split(HINT)).toHaveLength(2);
+        });
+    });
+
+    describe("in the Send dialog", () => {
+        const mount = (props: any = {}) => {
+            const memo = jest.fn();
+            const view = render(
+                <RecipientHelper
+                    toName="exchange-gw"
+                    memo=""
+                    known={true}
+                    onPick={jest.fn()}
+                    onUseMemo={memo}
+                    {...props}
+                />
+            );
+            return {view, memo};
+        };
+
+        it("does not put the memo in the memo box, nor offer it by its text, while locked", () => {
+            const {view, memo} = mount();
+            expect(memo).not.toHaveBeenCalled();
+            expect(view.container.textContent).not.toContain("tag-4711");
+            expect(view.container.textContent).toContain(HINT);
+            expect(
+                Array.from(view.container.querySelectorAll("button")).some(b =>
+                    (b.textContent || "").includes("Use the saved memo")
+                )
+            ).toBe(false);
+        });
+
+        it("puts it there, once, when the wallet is unlocked", () => {
+            const {view, memo} = mount();
+            expect(memo).not.toHaveBeenCalled();
+            setLocked(false);
+            expect(memo).toHaveBeenCalledTimes(1);
+            expect(memo).toHaveBeenCalledWith("tag-4711");
+            expect(view.container.textContent).not.toContain(HINT);
+            // locking and unlocking again does not fill it a second time
+            setLocked(true);
+            setLocked(false);
+            expect(memo).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("where the extension signs", () => {
+        const ACCOUNT = {accountName: "alice"} as any;
+        afterEach(() => {
+            act(() => {
+                reduxStore.dispatch(
+                    patchExternalSigner({status: "unknown", account: null})
+                );
+                reduxStore.dispatch(patchAccount({currentAccount: null}));
+            });
+        });
+
+        it("shows the memos as the top bar does not call the wallet locked then", () => {
+            const {container} = page();
+            expect(container.textContent).not.toContain("tag-4711");
+            act(() => {
+                reduxStore.dispatch(
+                    patchExternalSigner({
+                        status: "connected",
+                        account: ACCOUNT
+                    })
+                );
+                reduxStore.dispatch(patchAccount({currentAccount: "alice"}));
+            });
+            expect(container.textContent).toContain("tag-4711");
+        });
+
+        it("keeps them hidden while another account is the chosen one, or the extension is not connected", () => {
+            const {container} = page();
+            act(() => {
+                reduxStore.dispatch(
+                    patchExternalSigner({
+                        status: "connected",
+                        account: ACCOUNT
+                    })
+                );
+                reduxStore.dispatch(patchAccount({currentAccount: "carol"}));
+            });
+            expect(container.textContent).not.toContain("tag-4711");
+            act(() => {
+                reduxStore.dispatch(
+                    patchExternalSigner({status: "disconnected"})
+                );
+                reduxStore.dispatch(patchAccount({currentAccount: "alice"}));
+            });
+            expect(container.textContent).not.toContain("tag-4711");
+        });
     });
 });

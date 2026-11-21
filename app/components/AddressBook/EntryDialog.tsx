@@ -18,6 +18,7 @@ import {
     validAccountName,
     validAssetSymbol
 } from "../../lib/common/addressBook";
+import {useMemosVisible} from "./useMemosVisible";
 import styles from "./AddressBook.module.scss";
 
 const t = (key: string, params?: Record<string, any>) =>
@@ -50,6 +51,9 @@ export default function EntryDialog({
         entry ? entry.asset : (initial && initial.asset) || ""
     );
     const [error, setError] = React.useState<string | null>(null);
+    // A saved memo is not shown, nor editable, while the wallet is locked (it stays in `memo`, so saving keeps it).
+    const memosVisible = useMemosVisible();
+    const memoHidden = !!entry && !memosVisible;
 
     const typed = name.trim().toLowerCase();
     const nameOk = validAccountName(typed);
@@ -116,7 +120,12 @@ export default function EntryDialog({
                         <Alert
                             type="warning"
                             showIcon
-                            description={t("name_changed", {old: was})}
+                            description={t(
+                                memoHidden
+                                    ? "name_changed_locked"
+                                    : "name_changed",
+                                {old: was}
+                            )}
                         />
                     ) : null}
                 </div>
@@ -124,15 +133,23 @@ export default function EntryDialog({
                     <label className={styles.label} htmlFor="address-memo">
                         {t("memo")}
                     </label>
-                    <Input
-                        id="address-memo"
-                        value={memo}
-                        maxLength={MAX_MEMO}
-                        autoComplete="off"
-                        aria-label={t("memo")}
-                        onChange={(e: any) => setMemo(e.target.value)}
-                    />
-                    <span className={styles.help}>{t("memo_help")}</span>
+                    {memoHidden ? (
+                        <span className={styles.help}>{t("memo_locked")}</span>
+                    ) : (
+                        <>
+                            <Input
+                                id="address-memo"
+                                value={memo}
+                                maxLength={MAX_MEMO}
+                                autoComplete="off"
+                                aria-label={t("memo")}
+                                onChange={(e: any) => setMemo(e.target.value)}
+                            />
+                            <span className={styles.help}>
+                                {t("memo_help")}
+                            </span>
+                        </>
+                    )}
                 </div>
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="address-asset">

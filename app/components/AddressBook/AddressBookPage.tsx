@@ -23,6 +23,7 @@ import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectAccountState} from "../../store/slices/accountSlice";
 import EntryDialog from "./EntryDialog";
 import HeldBalance from "./HeldBalance";
+import {useMemosVisible} from "./useMemosVisible";
 import {useOwnAccounts} from "./useOwnAccounts";
 import styles from "./AddressBook.module.scss";
 
@@ -31,8 +32,15 @@ const t = (key: string, params?: Record<string, any>) =>
 
 const TypedLink = Link as React.ComponentType<any>;
 
-/** Whether an entry matches what was typed in the search (any part of what it says). */
-export function matches(entry: AddressEntry, query: string): boolean {
+/**
+ * Whether an entry matches what was typed in the search (any part of what it says). The memo is part of it only while the
+ * memos are shown: a search must not tell a locked screen what a memo says.
+ */
+export function matches(
+    entry: AddressEntry,
+    query: string,
+    memosVisible = true
+): boolean {
     const q = query.trim().toLowerCase();
     if (!q) return true;
     return [
@@ -40,13 +48,14 @@ export function matches(entry: AddressEntry, query: string): boolean {
         entry.asset,
         entry.label,
         entry.note,
-        entry.memo
+        memosVisible ? entry.memo : ""
     ].some(text => text.toLowerCase().includes(q));
 }
 
 export default function AddressBookPage(): JSX.Element {
     const book = useAddressBook();
     const own = useOwnAccounts();
+    const memosVisible = useMemosVisible();
     const current = useReduxState<{currentAccount: string | null}>(
         selectAccountState
     ).currentAccount;
@@ -59,7 +68,7 @@ export default function AddressBookPage(): JSX.Element {
     const [asked, setAsked] = React.useState<string | null>(null);
     const fileInput = React.useRef<HTMLInputElement>(null);
 
-    const shown = book.filter(entry => matches(entry, query));
+    const shown = book.filter(entry => matches(entry, query, memosVisible));
     const q = query.trim().toLowerCase();
     const ownShown = own.filter(
         a =>
@@ -80,6 +89,8 @@ export default function AddressBookPage(): JSX.Element {
         });
 
     const exportBook = () => {
+        // the file has the memos
+        if (!memosVisible) return;
         saveAs(
             new Blob([exportAddressBook()], {type: "application/json"}),
             "address-book.json"
@@ -127,7 +138,11 @@ export default function AddressBookPage(): JSX.Element {
                     aria-label={t("search")}
                     onChange={(e: any) => setQuery(e.target.value)}
                 />
-                <Button onClick={exportBook} disabled={!book.length}>
+                <Button
+                    onClick={exportBook}
+                    disabled={!book.length || !memosVisible}
+                    title={memosVisible ? undefined : t("export_locked")}
+                >
                     {t("export")}
                 </Button>
                 <Button onClick={() => fileInput.current?.click()}>
@@ -204,7 +219,17 @@ export default function AddressBookPage(): JSX.Element {
                                     <span className={styles.memoLabel}>
                                         {t("memo")}
                                     </span>{" "}
-                                    <code>{entry.memo}</code>
+                                    {memosVisible ? (
+                                        <code>{entry.memo}</code>
+                                    ) : (
+                                        <>
+                                            {/* a fixed mask: not the memo's length */}
+                                            <code>••••••</code>{" "}
+                                            <span className={styles.help}>
+                                                {t("memo_locked")}
+                                            </span>
+                                        </>
+                                    )}
                                 </p>
                             ) : null}
                             {entry.asset ? (

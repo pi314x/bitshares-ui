@@ -23,6 +23,11 @@ jest.mock("../../next/hooks/useReduxState", () => ({
     __esModule: true,
     useReduxState: (selector: any) => selector({})
 }));
+// (no lock state in the stubbed store: the memos are shown, this test is not about them)
+jest.mock("../../components/AddressBook/useMemosVisible", () => ({
+    __esModule: true,
+    useMemosVisible: () => true
+}));
 jest.mock("file-saver", () => ({saveAs: () => undefined}));
 jest.mock("../../components/AddressBook/HeldBalance", () => ({
     __esModule: true,
