@@ -1,0 +1,45 @@
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin: 0 0 16px;
+    min-width: 0;
+}
+
+.flush {
+    margin-bottom: 0;
+}
+
+// A search field: as wide as the row allows up to a comfortable length, and
+// the whole row on a phone.
+.grow {
+    flex: 1 1 220px;
+    min-width: 0;
+    max-width: 360px;
+
+    // the search input carries a fixed inline width of its own
+    > * {
+        width: 100% !important;
+        max-width: 100%;
+    }
+}
+
+.end {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .grow {
+        flex-basis: 100%;
+        max-width: none;
+    }
+
+    .end {
+        margin-left: 0;
+    }
+}

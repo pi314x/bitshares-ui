@@ -1,0 +1,56 @@
+// The foot of the unlock dialog: "Remember me", the auto-lock time and the Login button in one row
+// that wraps. They were floated, so on a phone the switch sat under its label, and the auto-lock
+// box that opens beside the clock lay over the Login button.
+
+.footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    width: 100%;
+}
+
+// Login is at the end of the row, also when it wraps onto a row of its own
+.footer > :last-child {
+    margin-left: auto;
+}
+
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    min-width: 0;
+}
+
+.remember {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.autoLock {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.autoLockIcon {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+// room for what is typed in it (three digits and the arrows), not a stub that shows "00"
+.autoLockInput.autoLockInput {
+    width: 96px;
+}
+
+.hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}

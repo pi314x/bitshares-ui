@@ -110,7 +110,7 @@ export default (idb_helper = {
 });
 
 class ChainEvent {
-    constructor(existing_on_event, callback, request) {
+    constructor(existing_on_event, callback) {
         // Assigning the constructor arguments to work around hot-reload
         // rewriting breaking the scope of this.event
         this.existing_on_event = existing_on_event;

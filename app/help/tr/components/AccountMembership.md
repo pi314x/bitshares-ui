@@ -1,31 +1,24 @@
 [# lifetime]
-### Ücretlerde {feesCashback}% iade alın.
+### Ücretlerde %{feesCashback} iade alın
 
-Ömür-boyu Üyeler ödedikleri her ücretten {feesCashback}% iade alırlar ve kaydını 
-yaptıkları ya da ağa yönlendirdikleri kullanıcılardan gelir elde ederler. Ömür-boyu ücret 
-sadece {price}dir.
+BitShares ağındaki her işlem, ağ ile yönlendirenler arasında paylaştırılır. Ömür Boyu Üyeliğe kaydolan hesap, ödediği her işlem ücretinden %{feesCashback} iade alır. Bonus olarak, kaydını yaptığı veya ağa yönlendirdiği kullanıcılardan yönlendirme geliri elde etmeye de hak kazanır.
 
-[# annual]
-
-Eğer ömür-boyu üyelik fazla geliyorsa,  {price} miktarında bir ücret karşılığında bir  
-yıllığına abone olarak gelecek yıl için {feesCashback}% para iadesi alabilirsiniz.
+Ömür Boyu Üyelik fiyatı zamanla değişir, şu anda yalnızca {price}.
 
 [# fee-division]
 #### Ücret Paylaşımı
-{account} adlı hesap her işlem ücreti ödediğinde, o ücret birçok farklı hesaplar arasında 
-paylaştırılır. Ağımız {networkFee}% pay alırken, {account} adlı hesabı  getiren Ömür-boyu Üye de  {lifetimeFee}% pay alır.
+{account} her işlem ücreti ödediğinde bu ücret birkaç farklı hesap arasında paylaştırılır. Ağ %{networkFee} pay alır, {account} hesabını yönlendiren Ömür Boyu Üye ise %{lifetimeFee} pay alır.
 
-{account} adlı hesabın kayıt işlem ücretini ödeyen hesabın adı _kayıtçı_dır. Kayıtçı geri kalan
-{referrerTotalFee}% miktarı kendileri ve _Bağlı Getirici_ arasında nasıl pay edileceğini kendi belirler.
+Kayıtçı, {account} hesabını ağa kaydetmek için işlem ücretini ödeyen hesaptır. Kayıtçı, kalan %{referrerTotalFee} oranının kendisi ile kendi Bağlı Yönlendiren programı arasında nasıl bölüşüleceğine karar verir.
 
-{account} adlı hesabın kayıtçısı toplam ücretin {referrerFee}% kadarki kısmını _Bağlı Getirici_ yle paylaşmayı ve {registrarFee}% kadarki kısmını kendine bırakmayı tercih etti.
-                            
-                            
+{account} hesabının kayıtçısı, toplam ücretin %{referrerFee} kadarını Bağlı Yönlendiren ile paylaşmayı ve toplam ücretin %{registrarFee} kadarını kendine bırakmayı seçti.
+
+
 #### Bekleyen Ücretler
-{account} adlı hesabın ödediği ücretler her bakım periodu ({maintenanceInterval} seconds) nda sadece ağ, getiriciler ve kayıtçılar arasında paylaştırılır.
-Bir sonraki bakım vakti  {nextMaintenanceTime}dır.
-                 
-#### Hacizdeki Ücretler
+{account} tarafından ödenen ücretler, her bakım aralığında ({maintenanceInterval} saniye) bir kez ağ, yönlendirenler ve kayıtçılar arasında paylaştırılır. Bir sonraki bakım zamanı {nextMaintenanceTime}.
 
-Çoğu ücretler anında ödendiği halde {vestingThreshold} miktarını aşan bazı ücretler 
-(üyeliğinizi yükseltmek için yada paralı hesap adı kaydı yaptırmak için ödenen) toplam {vestingPeriod} gün hacizde tutulmak zorundadır. 
+#### Vesting Ücretleri
+
+Çoğu ücret hemen kullanıma sunulur, ancak {vestingThreshold} üzerindeki ücretler
+(üyeliğinizi yükseltmek veya premium bir hesap adı kaydetmek için ödenenler gibi) toplam {vestingPeriod} gün boyunca kademeli olarak serbest bırakılır (vesting).
+

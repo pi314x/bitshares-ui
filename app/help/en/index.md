@@ -1,37 +1,32 @@
 # Help
 
-This is the reference wallet of BitShares Blockchain which connects to BitShares Blockchain nodes (bitshares-core).
+BitShares is a decentralized exchange and wallet on a public blockchain. This help follows the menu on the left: for each entry, what it is for and where to read more.
 
-This help section gives a brief overview and describes the most basic concepts
-of this application.
+## Account
+ * [Dashboard](/): your balances over time, your favourite markets and your recent activity.
+ * [Accounts](/accounts): the accounts you hold and your contacts. [More](accounts/general.md)
+ * [Voting](/voting): vote for witnesses, committee members and workers, or choose a proxy. [More](voting.md)
+ * [Settings](/settings): language, units, nodes, backups and how transactions are signed. [Wallet](introduction/wallets.md), [Backups](introduction/backups.md)
 
-## Introduction 
- * [Disclaimer](disclaimer.md)
- * [BitShares](introduction/bitshares.md)
- * [Wallet](introduction/wallets.md)
- * [Backups](introduction/backups.md)
- * [Blockchain](introduction/blockchain.md)
- * [Witnesses](introduction/witness.md)
- * [Workers](introduction/workers.md)
- * [Committe Members](introduction/committee.md)
+## Payments
+ * [Send](/send): send an asset to another account, with a memo if you like.
+ * [Deposit](/deposit) and [Withdraw](/withdraw): move assets between BitShares and other blockchains through [gateways](gateways/introduction.md).
+ * [Timed transfer](/timed-transfer): send an asset that can be claimed only after a date. [More](payments/timed_transfer.md)
 
-## Accounts
- * [Introduction](accounts/general.md)
- * [Permissions](accounts/permissions.md)
- * [Memberships](accounts/membership.md)
+## Markets
+ * Trade: buy and sell on the order book. [More](dex/trading.md)
+ * [Liquidity pools](/pools): swap against a pool, or provide liquidity and earn its fees. [More](markets/pools.md)
+ * [Instant trade](/instant-trade): a simple form for buying and selling at the market.
+ * [Prediction markets](/prediction): trade on the outcome of future events.
 
-## Assets
- * [Market Pegged Assets](assets/mpa.md) (BitUSD, BitEUR, BitGOLD, Bit\*,...)
- * [User Issued Assets](assets/uia.md)
- * [Privatized BitAssets](assets/privbitassets.md)
+## Lending
+ * [Credit offers](/credit-offer): borrow against collateral at the rate of an offer, or make an offer.
+ * [SameT funds](/samet-funds): pools of one asset that can be borrowed within a single transaction.
 
-## Decentralized Exchange
- * [Introduction](dex/introduction.md)
- * [Trading](dex/trading.md)
- * [Short Selling BitAssets](dex/shorting.md)
+## Network
+ * [Explorer](/explorer): blocks, assets, pools, accounts, witnesses, the committee, markets and fees of the chain. [Blockchain](introduction/blockchain.md), [Witnesses](introduction/witness.md)
 
-## Development
- * [Bitshares UI Github](https://github.com/bitshares/bitshares-ui)
-
-----------
-[Glossary](glossary.md)
+## More
+ * [Spotlight](/spotlight): barter, HTLCs, direct debits, borrowing and other features.
+ * [Advanced](/advanced): the chain's operations that have no screen of their own - custom authorities, custom data, assertions, flash loans, committee proposals, blind transfers - and any operation as JSON.
+ * [Assets](assets/mpa.md), [Glossary](glossary.md), [Disclaimer](disclaimer.md)

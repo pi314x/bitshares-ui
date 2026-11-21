@@ -1,0 +1,104 @@
+# BitShares Desk behind HTTPS: an nginx server block with the security headers the page
+# should be served with. Copy it, set the server name, the certificate paths and the root
+# (the folder `yarn build` made), and test it with `nginx -t`.
+#
+# What each header is for is in docs/DEPLOYMENT.md. The Content-Security-Policy below is the
+# policy of the page's own <meta> tag (app/assets/index.hbs) plus `frame-ancestors 'none'`,
+# which a <meta> tag cannot carry; app/__tests__/security/headers-test.ts keeps the two in step.
+#
+# Do not host anything else on this origin: the wallet's keys are stored per origin, and a
+# script of another page of the same origin could read them. Use a domain of its own.
+
+worker_processes  auto;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    server_tokens   off;
+
+    gzip  on;
+    gzip_comp_level 6;
+    gzip_min_length 1100;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        image/svg+xml;
+
+    # Plain HTTP only sends the visitor on to HTTPS.
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name desk.example.org;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+        server_name desk.example.org;
+        root /var/www/desk;
+
+        # --- TLS: the certificate (for example from Let's Encrypt) ---------------------
+        ssl_certificate     /etc/letsencrypt/live/desk.example.org/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/desk.example.org/privkey.pem;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers off;
+        ssl_session_timeout 1d;
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_tickets off;
+
+        # --- Headers on every answer ---------------------------------------------------
+        # Browsers use HTTPS for this domain for a year, without asking the network first.
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        # A file is what its type says it is.
+        add_header X-Content-Type-Options "nosniff" always;
+        # No page address (it holds account names) is sent to another site.
+        add_header Referrer-Policy "no-referrer" always;
+        # No other site frames the wallet (clickjacking). CSP's frame-ancestors says it too.
+        add_header X-Frame-Options "DENY" always;
+        # The camera is for the QR scanner; nothing else of the device is asked for.
+        add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=()" always;
+        add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
+
+        # --- The page itself -----------------------------------------------------------
+        # Never cached: a new release is read at the next visit. Also the fallback of the
+        # router (every address of the app is this page). The policy goes on the page only.
+        location = /index.html {
+            add_header Cache-Control "no-cache" always;
+            add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "no-referrer" always;
+            add_header X-Frame-Options "DENY" always;
+            add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=()" always;
+            add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
+            add_header Content-Security-Policy "default-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https: ws://127.0.0.1:* ws://localhost:*; font-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        }
+
+        # Files with a hash in their name never change: kept for a year.
+        location ~ "^/[A-Za-z0-9._-]+\.[0-9a-f]{16,}\.(js|css|woff2?|png|svg|ico)$" {
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+            add_header Referrer-Policy "no-referrer" always;
+            try_files $uri =404;
+        }
+
+        location / {
+            try_files $uri /index.html;
+        }
+
+        # Nothing of a map or a hidden file is served.
+        location ~ /\. { return 404; }
+        location ~ \.map$ { return 404; }
+    }
+}

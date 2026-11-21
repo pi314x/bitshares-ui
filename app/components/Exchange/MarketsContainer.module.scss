@@ -1,0 +1,11 @@
+// The explorer's Markets tab. On a phone the table keeps what a market is read
+// by (star, market, price, change); the supply and the volume are the two
+// columns after the market's name.
+@media (max-width: 640px) {
+    .markets table th:nth-child(3),
+    .markets table td:nth-child(3),
+    .markets table th:nth-child(4),
+    .markets table td:nth-child(4) {
+        display: none;
+    }
+}

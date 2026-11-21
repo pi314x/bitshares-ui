@@ -1,0 +1,97 @@
+// Settings -> Notifications (Telegram). Tokens only (see app/design-system/theme.scss).
+.panel {
+    max-width: 640px;
+}
+
+.intro,
+.step {
+    margin: 0 0 12px;
+    color: var(--ink-2);
+    line-height: 1.55;
+}
+
+.step {
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 18px 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.row > :first-child {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 4px 0 18px;
+}
+
+.switchRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 0 14px;
+    color: var(--ink);
+}
+
+.topics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.heading {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.note {
+    margin: 0 0 10px;
+    color: var(--ink-2);
+    font-size: 14px;
+}
+
+.ok {
+    color: var(--up);
+}
+
+.bad {
+    color: var(--down);
+}
+
+.privacy {
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}

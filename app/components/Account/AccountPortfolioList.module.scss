@@ -1,0 +1,13 @@
+// A balance row on a phone: the quantity, and the value in the number's
+// currency under it (the two columns would not fit side by side).
+.qtyValue {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.3;
+}
+
+.sub {
+    color: var(--muted);
+    font-size: 12px;
+}

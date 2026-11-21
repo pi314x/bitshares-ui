@@ -1,0 +1,9 @@
+// The barter page: the head, then the panels (peers, offers, escrow, fees), each its own card, and
+// the propose button under them. The panels were cards (10px corners each) inside one more card
+// with its own padding, under a centred 28px heading in a card of its own.
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}

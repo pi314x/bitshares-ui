@@ -6,8 +6,20 @@ import {
     ChainTypes,
     ops
 } from "bitsharesjs";
+import {ChainConfig} from "bitsharesjs-ws";
 import {Price, Asset} from "common/MarketClasses";
 const {operations} = ChainTypes;
+
+/**
+ * A public key string in the address prefix of the chain this app is on. The
+ * checksum of a key string covers the key's bytes, not the prefix, so changing
+ * the prefix gives a valid key for another chain (the fee estimate encrypts a
+ * dummy memo with fixed keys: bitsharesjs refuses a "BTS8..." key on the
+ * testnet, "TEST", and the fee of any transfer with a memo was "Unknown").
+ */
+function withChainPrefix(key) {
+    return (ChainConfig.address_prefix || "BTS") + key.substring(3);
+}
 
 function estimateFeeAsync(type, options = null, data = {}) {
     return new Promise((res, rej) => {
@@ -122,7 +134,9 @@ function checkFeeStatusAsync({
                     return;
                 }
 
-                Promise.all([
+                // returned: a failure of these fetches reaches the `catch`
+                // below instead of being an unhandled rejection
+                return Promise.all([
                     coreBalanceID
                         ? FetchChain("getObject", coreBalanceID)
                         : null,
@@ -265,12 +279,14 @@ function estimateFee(op_type, options, globalObject, data = {}) {
                     /* Dummy priv key */
                     let pKey = _privKey || PrivateKey.fromWif(privKey);
                     if (_privKey) _privKey = pKey;
-                    let memoFromKey =
-                        "BTS6B1taKXkDojuC1qECjvC7g186d8AdeGtz8wnqWAsoRGC6RY8Rp";
+                    let memoFromKey = withChainPrefix(
+                        "BTS6B1taKXkDojuC1qECjvC7g186d8AdeGtz8wnqWAsoRGC6RY8Rp"
+                    );
 
                     // Memos are optional, but if you have one you need to encrypt it
-                    let memoToKey =
-                        "BTS8eLeqSZZtB1YHdw7KjQxRSRmaKAseCxhUSqaLxUdqvdGpp6nck";
+                    let memoToKey = withChainPrefix(
+                        "BTS8eLeqSZZtB1YHdw7KjQxRSRmaKAseCxhUSqaLxUdqvdGpp6nck"
+                    );
 
                     /* Encryption is very expensive so we cache the result for reuse */
                     let message;

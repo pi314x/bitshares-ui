@@ -1,65 +1,53 @@
 /* ***** declarations ****** */
 @import "./../style-guide-fixes";
 
-@mixin font-face($font-family, $file-path, $font-weight, $font-style) {
-    @font-face {
-        font-family: $font-family;
-        src: url("#{$file-path}.woff") format("woff");
-        font-weight: $font-weight;
-        font-style: $font-style;
-    }
-}
+// IBM Plex is the app's only type family (see design-system/fonts.ts, which
+// loads it from @fontsource). Mixins that used to select the Roboto faces
+// (RobotoLight/Regular/Medium/Condensed, renamed Plex* here) resolve to IBM
+// Plex Sans at the weight the old face stood for; the Roboto @font-face rules
+// and woff files are gone.
+$font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+$font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-@include font-face(Roboto-Light, "vendors/Roboto-Light", 300, normal);
-@mixin RobotoLight {
-    font-family: "Roboto-Light", arial, sans-serif;
-    font-weight: lighter;
+@mixin PlexLight {
+    font-family: $font-sans;
+    font-weight: 300;
     font-style: normal;
 }
 
-@include font-face(Roboto-Medium, "vendors/Roboto-Medium", normal, normal);
-@mixin RobotoMedium {
-    font-family: "Roboto-Medium", arial, sans-serif;
-    font-weight: normal;
+@mixin PlexMedium {
+    font-family: $font-sans;
+    font-weight: 500;
     font-style: normal;
 }
 
-@include font-face(Roboto-Regular, "vendors/Roboto-Regular", normal, normal);
-@mixin RobotoRegular {
-    font-family: "Roboto-Regular", arial, sans-serif;
-    font-weight: normal;
+@mixin PlexRegular {
+    font-family: $font-sans;
+    font-weight: 400;
     font-style: normal;
 }
 
-@include font-face(
-    RobotoCondensed-Regular,
-    "vendors/RobotoCondensed-Regular",
-    normal,
-    normal
-);
-@mixin RobotoCondensed {
-    font-family: "RobotoCondensed-Regular", arial, sans-serif;
-    font-weight: normal;
+@mixin PlexCondensed {
+    font-family: $font-sans;
+    font-weight: 400;
     font-style: normal;
 }
 
 @mixin SegoeUILight {
-    font-family: "wf_SegoeUILight", "Segoe UI Light", "Segoe WP Light",
-        "wf_SegoeUI", "Segoe UI", "Segoe", "Segoe WP", "Tahoma", "Verdana",
-        arial, sans-serif;
+    font-family: $font-sans;
     font-size: 90%;
-    font-weight: lighter;
+    font-weight: 300;
 }
 
 @mixin SegoeUIRegular {
-    font-family: "wf_SegoeUI", "Segoe UI", "Segoe", "Segoe WP", "Tahoma",
-        "Verdana", arial, sans-serif;
+    font-family: $font-sans;
     font-size: 90%;
-    font-weight: normal;
+    font-weight: 400;
 }
 
 @mixin MonospaceFont {
-    font-family: "Lucida Console", Monaco, monospace !important;
+    font-family: $font-mono !important;
 }
 
 /* ***** styles ****** */
@@ -71,7 +59,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Roboto-Regular", arial, sans-serif;
+    font-family: $font-sans;
 }
 
 .monospace {
@@ -81,7 +69,7 @@ h6 {
 *#{$ant-fix} > {
     label,
     label > span {
-        @include RobotoMedium;
+        @include PlexMedium;
         text-transform: uppercase;
     }
 }
@@ -98,51 +86,51 @@ h6 {
 
 button,
 .button {
-    @include RobotoCondensed;
+    @include PlexCondensed;
     text-transform: uppercase;
     font-size: 0.875rem;
 }
 
 // .content-block > h3 {
-//   @include RobotoLight;
+//   @include PlexLight;
 // }
 //
 // .page-header > h3 {
-//   @include RobotoLight;
+//   @include PlexLight;
 // }
 //
 // a.currency, span.currency {
-//   @include RobotoLight;
+//   @include PlexLight;
 //   font-variant: small-caps;
 // }
 
 .txtann {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .txtlabel {
-    @include RobotoRegular;
+    @include PlexRegular;
     text-transform: uppercase;
 }
 
 // span.time {
-//   @include RobotoLight;
+//   @include PlexLight;
 // }
 
 .account-drop-down a.button {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .button {
-    @include RobotoCondensed;
+    @include PlexCondensed;
 }
 
 .footer .logo {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .tabs > .tab-item {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .label,
@@ -151,33 +139,33 @@ button,
 .label.info,
 .label.cancel,
 .label.alert {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .table > thead > tr > th {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .vertical-order-table-cell {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .table.dashboard-table {
     > thead > tr > th {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     > tbody > tr > td {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 }
 
 // .key-value-table tr > td:first-child {
-//   @include RobotoLight;
+//   @include PlexLight;
 // }
 
 .win32 {
-    @include RobotoRegular;
+    @include PlexRegular;
 }
 
 .win32 {
@@ -187,50 +175,50 @@ button,
     h4,
     h5,
     h6 {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     label,
     label > span {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     button,
     .button {
-        @include RobotoLight;
+        @include PlexLight;
     }
 
     .content-block > h3 {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .page-header > h3 {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     a.currency,
     span.currency {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .txtlabel {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     span.time {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .account-drop-down a.button {
-        @include RobotoCondensed;
+        @include PlexCondensed;
     }
 
     .footer .logo {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .tabs > .tab-item {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .label,
@@ -239,15 +227,15 @@ button,
     .label.info,
     .label.cancel,
     .label.alert {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 
     .key-value-table tr > td:first-child {
-        @include RobotoRegular;
+        @include PlexRegular;
     }
 }
 
 strong,
 b {
-    @include RobotoMedium;
+    @include PlexMedium;
 }

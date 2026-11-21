@@ -1,0 +1,131 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.zoom {
+    display: flex;
+    gap: 6px;
+}
+
+.hint {
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.empty {
+    padding: 36px 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+.svg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 10 / 7;
+    max-height: 72vh;
+    min-height: 320px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+}
+
+.edge {
+    stroke: var(--line-strong, var(--faint));
+    opacity: 0.7;
+}
+
+.edgeLit {
+    stroke: var(--accent);
+    opacity: 1;
+}
+
+.dim {
+    opacity: 0.18;
+}
+
+.node circle {
+    fill: var(--raised);
+    stroke: var(--muted);
+    stroke-width: 1.5;
+    cursor: pointer;
+}
+
+.node:hover circle {
+    stroke: var(--accent);
+}
+
+.node text {
+    fill: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--surface);
+    stroke-width: 3px;
+}
+
+.core circle {
+    fill: var(--accent);
+    stroke: var(--accent);
+}
+
+.picked circle {
+    fill: var(--warn);
+    stroke: var(--warn);
+}
+
+.panel {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.panelHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+
+    > :last-child {
+        margin-left: auto;
+    }
+}
+
+.pairs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 6px 16px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+}
+
+.pairLink {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+}

@@ -1,0 +1,76 @@
+// Reads CSS custom properties defined globally in `theme.scss` (imported
+// once by the app shell) — no `@import` needed here, `var(--x)` resolves
+// from the cascade at runtime, not at Sass-compile time.
+
+.btn {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--control-h);
+    // vertical padding as well: a label that wraps to two lines (a narrow
+    // column, a long translation) must not touch the button's edges. One line
+    // is still `--control-h` tall (line + 16px is under it).
+    padding: 8px 16px;
+    text-align: center;
+    border-radius: var(--radius);
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease),
+        border-color 0.15s var(--ease), box-shadow 0.15s var(--ease),
+        transform 0.06s var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--field-bg-hover);
+    border-color: var(--field-border-hover);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+// A soft glow instead of the hard outline from theme.scss's global
+// `:focus-visible`, still only on keyboard focus.
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.accent {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.accent:hover:not(:disabled) {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+}
+
+.icon {
+    margin-right: 6px;
+    vertical-align: -2px;
+}
+
+.small {
+    min-height: var(--control-h-sm);
+    padding: 5px 10px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+}
+
+.small .icon {
+    margin-right: 0;
+}

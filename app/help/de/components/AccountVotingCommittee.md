@@ -1,0 +1,1 @@
+[Komiteemitglieder](introduction/committee) können Änderungen an den dynamischen Parametern der Blockchain vorschlagen, etwa an Gebühren, der Blockzeit und vielem mehr. Es ist eine Position mit großer Verantwortung, die ein gutes Verständnis der Funktionsweise von BitShares voraussetzt.

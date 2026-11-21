@@ -1,6 +1,7 @@
 [# connection-error]
-Ful noda websocket bağlantısı kuramadık.
+Bir tam düğüme websocket bağlantısı kuramadık.
 
-Olası sebepler: TODO
-- sebep #1
-- sebep #2
+Olası nedenler:
+- Seçilen düğüm çevrimdışı, aşırı yüklü veya senkronize değil. Başka bir düğüm seçin.
+- İnternet bağlantınız kesik ya da bir güvenlik duvarı, proxy veya VPN websocket bağlantılarını engelliyor.
+- Bir tarayıcı eklentisi veya gizlilik aracı bağlantıyı engelliyor.

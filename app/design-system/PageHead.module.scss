@@ -1,0 +1,54 @@
+// The head of a page (see PageHead.tsx). `body[class][class]`: the legacy sheet sizes
+// every h1 (`body.darkTheme h1 {margin: 24px 0}`) and caps every paragraph of the
+// content at 82ch.
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin: 0 0 16px;
+}
+
+.head.flush {
+    margin-bottom: 0;
+}
+
+.text {
+    flex: 1 1 360px;
+    min-width: 0;
+}
+
+body[class][class] .head .title {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+body[class][class] .head .title.withLead {
+    margin-bottom: 6px;
+}
+
+body[class][class] .head .lead {
+    margin: 0;
+    max-width: 68ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+body[class][class] .head .note {
+    margin: 8px 0 0;
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.action {
+    flex: none;
+}

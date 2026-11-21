@@ -1,4 +1,5 @@
-import {hasGatewayPrefix} from "common/gatewayUtils";
+// (the order of a search's results is shared with the market picker)
+import {sortMarketsList} from "../Exchange/MarketPickerHelpers";
 import {ChainStore} from "bitsharesjs";
 
 function lookupAssets(value, gatewayAssets = false, getAssetList, setState) {
@@ -31,6 +32,8 @@ function lookupAccountAssets(
 }
 
 function assetFilter(
+    // marketPickerAsset stays: callers pass it and TypeScript checks them against this shape
+    // eslint-disable-next-line no-unused-vars
     {searchAssets, marketPickerAsset /*, baseAsset, quoteAsset*/},
     {inputValue, lookupQuote},
     setState,
@@ -76,51 +79,6 @@ function assetFilter(
 
     const marketsList = sortMarketsList(allMarkets, inputValue);
     checkAndUpdateMarketList(marketsList);
-}
-
-function getMarketSortComponents(market) {
-    const weight = {};
-    const quote = market.quote;
-    if (quote.indexOf(".") !== -1) {
-        const [gateway, asset] = quote.split(".");
-        weight.gateway = gateway;
-        weight.asset = asset;
-    } else {
-        weight.asset = quote;
-    }
-    if (market.issuerId === "1.2.0") weight.isCommittee = true;
-    return weight;
-}
-
-function sortMarketsList(allMarkets, inputValue) {
-    if (inputValue.startsWith("BIT") && inputValue.length >= 6) {
-        inputValue = inputValue.substr(3, inputValue.length - 1);
-    }
-    return allMarkets.sort(([, marketA], [, marketB]) => {
-        const weightA = getMarketSortComponents(marketA);
-        const weightB = getMarketSortComponents(marketB);
-
-        if (weightA.asset !== weightB.asset) {
-            if (weightA.asset === inputValue) return -1;
-            if (weightB.asset === inputValue) return 1;
-            if (weightA.asset > weightB.asset) return -1;
-            if (weightA.asset < weightB.asset) return 1;
-        }
-
-        if (weightA.isCommittee ^ weightB.isCommittee) {
-            if (weightA.isCommittee) return -1;
-            if (weightB.isCommittee) return 1;
-        }
-
-        const aIsKnownGateway = hasGatewayPrefix(marketA.quote);
-        const bIsKnownGateway = hasGatewayPrefix(marketB.quote);
-        if (aIsKnownGateway && !bIsKnownGateway) return -1;
-        if (bIsKnownGateway && !aIsKnownGateway) return 1;
-
-        if (weightA.gateway > weightB.gateway) return 1;
-        if (weightA.gateway < weightB.gateway) return -1;
-        return 0;
-    });
 }
 
 function fetchIssuerName(issuerId) {

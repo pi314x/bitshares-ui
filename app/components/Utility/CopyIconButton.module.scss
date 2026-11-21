@@ -1,0 +1,46 @@
+// `.button.button`: the legacy sheet styles every `button` (and `body.<theme>
+// button`), which a single class does not outrank.
+.button.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: 0 0 0 4px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.button.button:hover {
+    background: var(--raised);
+    color: var(--ink);
+}
+
+.button.button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.button.copied {
+    color: var(--up);
+}
+
+.button.failed {
+    color: var(--warn);
+}
+
+// a thumb is bigger than a pointer
+@media (pointer: coarse) {
+    .button.button {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+}

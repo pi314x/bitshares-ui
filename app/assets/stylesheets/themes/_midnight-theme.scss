@@ -1,68 +1,69 @@
 @import "theme-template";
+@import "../../../design-system/palette";
 
 // variables
 
-$light-text-color: #fff;
+$light-text-color: $palette-dark-ink;
 $dark-text-color: #444;
-$primary-text-color: #e0e0e0;
-$secondary-text-color: darken($primary-text-color, 20%);
-$inactive-text-color: darken($primary-text-color, 40%);
-$link-text-color: #049cce;
-$error-text-color: #e3745b;
+$primary-text-color: $palette-dark-ink;
+$secondary-text-color: $palette-dark-ink-2;
+$inactive-text-color: $palette-dark-muted;
+$link-text-color: $palette-dark-accent;
+$error-text-color: $palette-dark-down;
 
-$settings-select-bg: #1e1f25;
-$settings-select-color: #737373;
-$settings-api-node-border-color: #2a2b34;
-$main-content-margin-block-bg-color: #151619;
-$bg-color: #191a1f;
-$panel-bg-color: #2c2e37;
-$light-panel-bg-color: #353742;
+$settings-select-bg: $palette-midnight-raised;
+$settings-select-color: $palette-dark-muted;
+$settings-api-node-border-color: $palette-midnight-line;
+$main-content-margin-block-bg-color: $palette-midnight-ground;
+$bg-color: $palette-midnight-surface;
+$panel-bg-color: $palette-midnight-raised;
+$light-panel-bg-color: $palette-midnight-hover;
 $super-light-panel-bg-color: lighten($light-panel-bg-color, 8%);
 $settings-menu-hover-bg: darken($light-panel-bg-color, 5%);
 $settings-menu-active-bg: darken($light-panel-bg-color, 5%);
-$button-bg-color: #049cce;
-$secondary-button-bg-color: #546979;
+$button-bg-color: $palette-dark-accent;
+$secondary-button-bg-color: $palette-dark-muted;
 $input-background: lighten($bg-color, 1%);
 
 $alert-color: $error-text-color;
-$info-color: #4a90e2;
-$success-color: #18bc9c;
-$warning-color: #fcab53;
+$info-color: mix($palette-dark-accent, $palette-dark-ink, 60%);
+$success-color: $palette-dark-up;
+$warning-color: $palette-dark-warn;
 $fee-color: $secondary-text-color;
 
 // Exchange colors
-$bid-color: #50d2c2;
-$ask-color: #e3745b;
-$call-color: #bbbf2b;
-$positive-color: #6ec105;
-$negative-color: #e1424a;
-$row-accent-color: #3c3c3c;
-$header-color: #484848;
+$bid-color: $palette-dark-up;
+$ask-color: $palette-dark-down;
+$call-color: #c9c04a;
+$positive-color: $palette-dark-up;
+$negative-color: $palette-dark-down;
+$row-accent-color: $palette-midnight-raised;
+$header-color: $palette-midnight-hover;
 
 // Account table view colors
-$account-header: #1a242f;
-$account-cells: #27384b;
-$account-green: #7ed321;
-$account-primarytext: white;
-$account-dimmed: #606060;
-$account-border: #323131;
-$account-background: black;
+$account-header: $palette-midnight-raised;
+$account-cells: $palette-midnight-hover;
+$account-green: $palette-dark-up;
+$account-primarytext: $palette-dark-ink;
+$account-dimmed: $palette-dark-muted;
+$account-border: $palette-midnight-line;
+$account-background: $palette-midnight-ground;
 $account-tabs-background: inherit;
 
 $pulsate-green-start: $account-green;
-$pulsate-green-end: #b4f271;
+$pulsate-green-end: lighten($palette-dark-up, 12%);
 $pulsate-red-start: $negative-color;
-$pulsate-red-end: #ef7c82;
+$pulsate-red-end: lighten($palette-dark-down, 8%);
 
-$modal-bg-color: #27384b;
+$modal-bg-color: $palette-midnight-hover;
 
-$mobile-input-bg: #1b1c22;
+$mobile-input-bg: $palette-midnight-surface;
 
-$incognito-bg: #e3745b;
+$incognito-bg: $palette-dark-down;
 
-$positive-color-alternative: #22d173;
-$negative-color-alternative: #ff276d;
-$medium-color: #ff9900;
+$positive-color-alternative: $palette-dark-up;
+$negative-color-alternative: $palette-dark-down;
+$medium-color: $palette-dark-warn;
 $dark-help-text: #171a25;
 $separator-line: rgba(23, 26, 37, 0.3);
 
@@ -76,7 +77,7 @@ $explorer-tab-content-background-color: $tab-content-background-color;
 $explorer--witnesses--info-bg: $account-cells;
 $explorer--witnesses--info-border: $header-color;
 $explorer--witnesses--info-table-title-color: darken(#fff, 50%);
-$explorer--witnesses--info-table-text-color: #fff;
+$explorer--witnesses--info-table-text-color: $palette-dark-ink;
 
 // * * * * * Assets
 
@@ -88,17 +89,17 @@ $explorer--assets--bg: $bg-color;
 
 // * * * * Settings
 
-$settings-label-color: rgba(255, 255, 255, 0.5);
+$settings-label-color: $palette-dark-muted;
 
 //
 
 // color palette
 
 // branding colors
-$primary-color: #337ab7;
+$primary-color: $palette-dark-accent;
 
 // help colors
-$primary-dark: #191a1f;
+$primary-dark: $palette-midnight-surface;
 $white: #fff;
 $dark: rgba(0, 0, 0, 0.6);
 $dark-1: lighten($dark, 30%);

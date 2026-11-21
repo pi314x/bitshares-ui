@@ -1,0 +1,33 @@
+// The Send page's cards hold the dialog's own fields (account selectors, the amount and the fee), which are legacy
+// markup: one rhythm for them, the memo at the width of its card, and nothing of the dialog's separators.
+.mode {
+    display: flex;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.fields > * {
+    margin: 0;
+    min-width: 0;
+}
+
+body[class][class] .fields textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 92px;
+}
+
+body[class][class] .fields span:has(> textarea) {
+    display: block;
+    width: 100%;
+}
+
+body[class][class] .fields :global(.modal-separator) {
+    display: none;
+}

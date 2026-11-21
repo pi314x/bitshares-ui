@@ -1,0 +1,1117 @@
+// TypeScript/functional-component port of the legacy SendModal.jsx
+// (Phase 5, docs/UI_MIGRATION_PLAN.md). Mechanical, no logic changes.
+//
+// Security-sensitive per AGENTS.md: this is the real-money transfer
+// modal, calling `AccountActions.transfer(...)` with the amount/asset/fee
+// exactly as before, reading them from current component state at submit
+// time (not from anything stale) - the careful state-timing replication
+// below affects which asset/balance the UI *shows*, not what actually
+// gets submitted.
+//
+// External callers hold an imperative ref to call `.show()` (see
+// `AccountPortfolioList.jsx`'s `this.send_modal.show()` and
+// `NextShellContainer.tsx`'s `sendModalRef.current.show()`, both typed as
+// `{show: () => void}`) - a function component can't be given a ref to
+// call instance methods, so this is `React.forwardRef` +
+// `useImperativeHandle` exposing exactly that one method, matching the
+// existing consumers' expectations.
+//
+// `shouldComponentUpdate` here is NOT a pure performance guard (unlike
+// e.g. WalletUnlockModal.tsx's, which was) - it has two real side
+// effects that matter: (1) when the from-account's available asset types
+// are about to become exactly one (down from some other count), it
+// auto-selects that asset via `onAmountChanged`; (2) when the modal is
+// about to open, it runs a balance check. Both are replicated by
+// comparing this render's freshly-computed values against refs holding
+// the previous render's values (the same mapping shouldComponentUpdate's
+// `ns`/`this.state` distinction makes, just expressed as "this render" vs
+// "the ref from last render"), executed in the render body so they fire
+// before paint like the original. The original's third rule - returning
+// `false` to skip re-rendering while the modal stays closed - is not
+// replicated: `render()` already returns `null` whenever the modal is
+// closed regardless, so skipping that render produces the exact same
+// visible output either way; not replicating it only means a few extra
+// no-op renders, not a behavior change.
+//
+// Preserved verbatim (not "fixed"): `UNSAFE_componentWillReceiveProps`
+// compares the incoming `np.currentAccount` against *both* the current
+// `state.from_name` *and* the previous (stale) `this.props.currentAccount`
+// - replicated with a ref holding the previous render's `currentAccount`
+// prop. Also: `_getAvailableAssets` reads a `state.from_error` field that
+// is never actually part of this component's state anywhere (`getInitialState`
+// doesn't include it, and nothing ever sets it - `from_error` only exists
+// as a `render()`-local variable, a different, unrelated binding) - so
+// that read is always `undefined`, and `!from_error` is therefore always
+// `true`. Reproduced by simply not threading a `from_error` parameter
+// through at all, since the real runtime behavior never depended on it.
+import * as React from "react";
+import ZfApi from "common/zfApi";
+import Translate from "react-translate-component";
+import {ChainStore} from "bitsharesjs";
+import AmountSelector from "../Utility/AmountSelectorStyleGuide";
+import FeeAssetSelector from "../Utility/FeeAssetSelector";
+import AccountStore from "stores/AccountStore";
+import AccountSelector from "../Account/AccountSelector";
+import RecipientHelper from "../AddressBook/RecipientHelper";
+import TransactionConfirmStore from "stores/TransactionConfirmStore";
+import {Asset} from "common/MarketClasses";
+import {isNaN} from "lodash-es";
+import {checkBalance} from "common/trxHelper";
+import BalanceComponent from "../Utility/BalanceComponent";
+import AccountActions from "actions/AccountActions";
+import utils from "common/utils";
+import counterpart from "counterpart";
+import {getWalletName} from "branding";
+import {Form} from "../../design-system/Form";
+import {Modal} from "../../design-system/Modal";
+import {Button} from "../../design-system/Button";
+import {Tooltip} from "../../design-system/Tooltip";
+import {Input} from "../../design-system/Input";
+import {useReduxState} from "../../next/hooks/useReduxState";
+import {selectAccountState} from "../../store/slices/accountSlice";
+import {SubMenu} from "../../design-system/SubMenu";
+import {Alert} from "../../design-system/Alert";
+import {
+    PaymentCard,
+    PaymentPage,
+    Picks,
+    SummaryCard
+} from "../Payments/PaymentPage";
+import styles from "./SendPageLayout.module.scss";
+
+const getUninitializedFeeAmount = () =>
+    new (Asset as any)({amount: 0, asset_id: "1.3.0"});
+
+interface SendModalState {
+    isModalVisible: boolean;
+    open?: boolean;
+    from_name: string;
+    to_name: string;
+    from_account: any;
+    to_account: any;
+    orig_account: any;
+    amount: string;
+    asset_id: string | null;
+    asset: any;
+    memo: string;
+    error: string | null;
+    knownScammer: any;
+    propose: boolean;
+    propose_account: any;
+    feeAmount: any;
+    maxAmount: boolean;
+    hidden: boolean;
+    balanceError?: boolean;
+}
+
+function getInitialState(): SendModalState {
+    return {
+        isModalVisible: false,
+        from_name: "",
+        to_name: "",
+        from_account: null,
+        to_account: null,
+        orig_account: null,
+        amount: "",
+        asset_id: null,
+        asset: null,
+        memo: "",
+        error: null,
+        knownScammer: null,
+        propose: false,
+        propose_account: "",
+        feeAmount: getUninitializedFeeAmount(),
+        maxAmount: false,
+        hidden: false
+    };
+}
+
+function getAvailableAssets(from_account: any): {asset_types: string[]} {
+    let asset_types: string[] = [];
+    if (!(from_account && from_account.get("balances"))) {
+        return {asset_types};
+    }
+    const account_balances = from_account.get("balances").toJS();
+    asset_types = Object.keys(account_balances).sort((utils as any).sortID);
+    for (const key in account_balances) {
+        const balanceObject = (ChainStore as any).getObject(
+            account_balances[key]
+        );
+        if (balanceObject && balanceObject.get("balance") === 0) {
+            asset_types.splice(asset_types.indexOf(key), 1);
+        }
+    }
+
+    return {asset_types};
+}
+
+/**
+ * The assets the dialog offers: those the account holds, and the one that is selected even when it is not among them
+ * (an address book entry is for it: a withdrawal of it) - a selected asset the list does not hold shows as "Select
+ * asset", while the dialog is in fact set to it.
+ */
+function offeredAssets(held: string[], selected: any): string[] {
+    const id =
+        selected && typeof selected.get === "function"
+            ? selected.get("id")
+            : null;
+    return id && held.indexOf(id) < 0 ? [...held, id] : held;
+}
+
+interface SendModalProps {
+    id?: string;
+    from_name?: string | null;
+    to_name?: string;
+    asset_id?: string;
+    /** The address book entry the Send page was opened for (its "Send" button): the one the recipient helper starts on. */
+    entry_id?: string;
+    tabIndex?: number;
+    /** Called when the dialog has been closed (cancelled, or finished). The
+     * Send page uses it to leave the page. */
+    onHide?: () => void;
+    /** "page": the form as the cards of a payment page with a summary beside them (the Payments menu's Send);
+     * the default is the dialog (the portfolio's Send, ...). Same fields and same transaction either way. */
+    layout?: "dialog" | "page";
+}
+
+const SendModal = React.forwardRef<{show: () => void}, SendModalProps>(
+    (props, ref) => {
+        const {
+            to_name: propToName,
+            from_name: propFromName,
+            asset_id: propAssetId,
+            entry_id: propEntryId,
+            tabIndex: tabIndexProp = 0
+        } = props;
+
+        const accountState = useReduxState<any>(selectAccountState);
+        const currentAccount = accountState.currentAccount;
+        const passwordAccount = accountState.passwordAccount;
+
+        const [state, setState] = React.useState<SendModalState>(() =>
+            getInitialState()
+        );
+        const mergeState = (patch: Partial<SendModalState>) =>
+            setState(prev => ({...prev, ...patch}));
+
+        const showModal = () => mergeState({isModalVisible: true});
+        const hideModal = () => {
+            mergeState({isModalVisible: false});
+            if (props.onHide) props.onHide();
+        };
+
+        const _checkBalance = () => {
+            const {feeAmount, amount, from_account, asset} = state;
+            if (!asset || !from_account) return;
+            const balanceID = from_account.getIn(["balances", asset.get("id")]);
+            const feeBalanceID = from_account.getIn([
+                "balances",
+                feeAmount.asset_id
+            ]);
+            if (!asset || !from_account) return;
+            if (!balanceID) return mergeState({balanceError: true});
+            const balanceObject = (ChainStore as any).getObject(balanceID);
+            const feeBalanceObject = feeBalanceID
+                ? (ChainStore as any).getObject(feeBalanceID)
+                : null;
+            if (!feeBalanceObject || feeBalanceObject.get("balance") === 0) {
+                mergeState({feeAmount: getUninitializedFeeAmount()});
+            }
+            if (!balanceObject || !feeAmount) return;
+            if (!amount) return mergeState({balanceError: false});
+            const hasBalance = (checkBalance as any)(
+                amount,
+                asset,
+                feeAmount,
+                balanceObject
+            );
+            if (hasBalance === null) return;
+            mergeState({balanceError: !hasBalance});
+        };
+
+        const onAmountChanged = ({
+            amount,
+            asset
+        }: {
+            amount?: any;
+            asset: any;
+        }) => {
+            if (!asset) return;
+
+            if (typeof asset !== "object") {
+                asset = (ChainStore as any).getAsset(asset);
+            }
+
+            mergeState({
+                amount,
+                asset,
+                asset_id: asset.get("id"),
+                error: null,
+                maxAmount: false
+            });
+        };
+
+        // What the address book hands to the dialog from outside - the recipient ("Send" on an entry, a pick from its drop
+        // down) and the asset of an entry that is for one - is read from the chain store, which is asked for it and tells when
+        // it has it: the dialog looks again at each of its notices until the account / asset is there (a snapshot of the store
+        // alone was `undefined` for what it had not got yet, so the "To" field stayed empty and the asset was not set; a single
+        // request that fails while the connection is not ready would be lost the same way). An asset is set whether it is held
+        // or not: a withdrawal of it needs it, and the dialog then says what is available instead of sending something else.
+        const [pendingRecipient, setPendingRecipient] = React.useState<
+            string | null
+        >(null);
+        const [wantedAsset, setWantedAsset] = React.useState<string | null>(
+            null
+        );
+        const resolveRecipient = (name: string) =>
+            setPendingRecipient(name || null);
+        const selectAsset = (symbol: string) => setWantedAsset(symbol);
+        React.useEffect(() => {
+            if (!pendingRecipient && !wantedAsset) return undefined;
+            const look = () => {
+                if (pendingRecipient) {
+                    if (state.to_name !== pendingRecipient) {
+                        // another recipient was typed meanwhile
+                        setPendingRecipient(null);
+                    } else {
+                        const found = (ChainStore as any).getAccount(
+                            pendingRecipient
+                        );
+                        if (found && typeof found.get === "function") {
+                            setState(prev =>
+                                prev.to_name === pendingRecipient
+                                    ? {...prev, to_account: found}
+                                    : prev
+                            );
+                            setPendingRecipient(null);
+                        } else if (found === null) {
+                            // there is no such account
+                            setPendingRecipient(null);
+                        }
+                    }
+                }
+                if (wantedAsset) {
+                    const found = (ChainStore as any).getAsset(wantedAsset);
+                    if (found && typeof found.get === "function") {
+                        mergeState({
+                            asset: found,
+                            asset_id: found.get("id"),
+                            error: null,
+                            maxAmount: false
+                        });
+                        setWantedAsset(null);
+                    } else if (found === null) {
+                        setWantedAsset(null);
+                    }
+                }
+            };
+            look();
+            (ChainStore as any).subscribe(look);
+            return () => (ChainStore as any).unsubscribe(look);
+        }, [pendingRecipient, wantedAsset, state.to_name]);
+
+        // Mirrors shouldComponentUpdate's two real side effects - see the
+        // file header. Runs in the render body (before paint), comparing
+        // this render's freshly-computed values against refs holding the
+        // previous render's.
+        const {asset_types: current_render_asset_types} = getAvailableAssets(
+            state.from_account
+        );
+        const prevAssetTypesCountRef = React.useRef<number | null>(null);
+        const prevOpenRef = React.useRef<boolean | undefined>(undefined);
+        const isFirstRenderRef = React.useRef(true);
+        if (isFirstRenderRef.current) {
+            isFirstRenderRef.current = false;
+        } else {
+            if (
+                current_render_asset_types.length === 1 &&
+                prevAssetTypesCountRef.current !== 1
+            ) {
+                const autoAsset = (ChainStore as any).getAsset(
+                    current_render_asset_types[0]
+                );
+                onAmountChanged({amount: state.amount, asset: autoAsset});
+            }
+            if (state.open && !prevOpenRef.current) {
+                _checkBalance();
+            }
+        }
+        prevAssetTypesCountRef.current = current_render_asset_types.length;
+        prevOpenRef.current = state.open;
+
+        const _initForm = () => {
+            if (propToName != propFromName) {
+                mergeState({
+                    to_name: propToName || "",
+                    to_account: propToName
+                        ? (ChainStore as any).getAccount(propToName)
+                        : null
+                });
+                if (propToName) resolveRecipient(propToName);
+            }
+
+            if (propFromName) {
+                mergeState({
+                    from_name: propFromName,
+                    from_account: (ChainStore as any).getAccount(propFromName)
+                });
+            }
+
+            if (!state.from_name) {
+                mergeState({from_name: currentAccount});
+            }
+
+            if (propAssetId && state.asset_id !== propAssetId) {
+                const asset = (ChainStore as any).getAsset(propAssetId);
+                if (asset) {
+                    mergeState({
+                        asset_id: propAssetId,
+                        asset
+                    });
+                }
+            }
+        };
+
+        const onTrxIncluded = React.useCallback((confirm_store_state: any) => {
+            if (
+                confirm_store_state.included &&
+                confirm_store_state.broadcasted_transaction
+            ) {
+                (TransactionConfirmStore as any).unlisten(onTrxIncluded);
+                (TransactionConfirmStore as any).reset();
+            } else if (confirm_store_state.closed) {
+                (TransactionConfirmStore as any).unlisten(onTrxIncluded);
+                (TransactionConfirmStore as any).reset();
+            }
+            // eslint-disable-next-line
+        }, []);
+
+        const onClose = (publishClose = true) => {
+            (ZfApi as any).unsubscribe("transaction_confirm_actions");
+            setState(getInitialState());
+            if (publishClose) hideModal();
+        };
+
+        const show = () => {
+            mergeState({open: true, hidden: false} as any);
+            showModal();
+            _initForm();
+        };
+
+        // Exposes exactly the imperative API existing callers rely on.
+        React.useImperativeHandle(ref, () => ({show}));
+
+        // Mount-only: matches the constructor's one-time ZfApi.subscribe.
+        React.useEffect(() => {
+            (ZfApi as any).subscribe(
+                "transaction_confirm_actions",
+                (name: string, msg: string) => {
+                    if (msg == "close") {
+                        mergeState({hidden: false});
+                        hideModal();
+                    }
+                }
+            );
+            // eslint-disable-next-line
+        }, []);
+
+        // Mirrors UNSAFE_componentWillReceiveProps, comparing against the
+        // *previous* render's currentAccount prop (see file header).
+        const prevCurrentAccountPropRef = React.useRef(currentAccount);
+        const isFirstPropsRenderRef = React.useRef(true);
+        if (isFirstPropsRenderRef.current) {
+            isFirstPropsRenderRef.current = false;
+        } else if (
+            currentAccount !== state.from_name &&
+            currentAccount !== prevCurrentAccountPropRef.current
+        ) {
+            mergeState({
+                from_name: propFromName || "",
+                from_account: (ChainStore as any).getAccount(propFromName),
+                to_name: propToName ? propToName : "",
+                to_account: propToName
+                    ? (ChainStore as any).getAccount(propToName)
+                    : null,
+                feeAmount: getUninitializedFeeAmount()
+            });
+        }
+        prevCurrentAccountPropRef.current = currentAccount;
+
+        const setTotal = (asset_id: string, balance_id: string) => {
+            const {feeAmount} = state;
+            const balanceObject = (ChainStore as any).getObject(balance_id);
+            const transferAsset = (ChainStore as any).getObject(asset_id);
+
+            if (balanceObject) {
+                const balance = new (Asset as any)({
+                    amount: balanceObject.get("balance"),
+                    asset_id: transferAsset.get("id"),
+                    precision: transferAsset.get("precision")
+                });
+                if (feeAmount.asset_id === balance.asset_id) {
+                    balance.minus(feeAmount);
+                }
+                mergeState({
+                    maxAmount: true,
+                    amount: balance.getAmount({real: true})
+                });
+                _checkBalance();
+            }
+        };
+
+        const toChanged = (to_name: string) => {
+            mergeState({to_name, error: null});
+        };
+
+        const fromChanged = (from_name: string) => {
+            mergeState({from_name});
+        };
+
+        const onFromAccountChanged = (from_account: any) => {
+            mergeState({from_account});
+        };
+
+        const onToAccountChanged = (to_account: any) => {
+            mergeState({to_account, error: null});
+        };
+
+        const onFeeChanged = (fee: any) => {
+            if (!fee) return;
+
+            mergeState({
+                feeAmount: fee,
+                error: null
+            });
+            _checkBalance();
+        };
+
+        const onMemoChanged = (e: any) => {
+            const {asset_types} = getAvailableAssets(state.from_account);
+            const {from_account, maxAmount} = state;
+            if (from_account && from_account.get("balances") && maxAmount) {
+                const account_balances = from_account.get("balances").toJS();
+                const current_asset_id = asset_types[0];
+                setTotal(current_asset_id, account_balances[current_asset_id]);
+            }
+            mergeState({memo: e.target.value});
+            _checkBalance();
+        };
+
+        const onPropose = () => {
+            // `to_account`/`to_name` are destructured (matching the
+            // original) but never used here either - harmless. `let` is
+            // required for the whole destructure since `propose`/
+            // `from_account`/`from_name` are reassigned below.
+            /* eslint-disable prefer-const, @typescript-eslint/no-unused-vars */
+            let {
+                propose,
+                orig_account,
+                to_account,
+                to_name,
+                from_account,
+                from_name
+            } = state;
+            /* eslint-enable prefer-const, @typescript-eslint/no-unused-vars */
+
+            // Store Original Account
+            if (!propose) {
+                mergeState({orig_account: from_account});
+            }
+
+            // ReStore Original Account
+            if (propose) {
+                from_account = orig_account;
+                from_name = orig_account.get("name");
+            }
+
+            // toggle switch
+            propose = propose ? false : true;
+
+            mergeState({
+                propose,
+                propose_account: propose ? from_account : null,
+                from_account: propose ? null : from_account,
+                from_name: propose ? "" : from_name
+            });
+        };
+
+        const onSubmit = (e: any) => {
+            e.preventDefault();
+            mergeState({error: null});
+
+            const {asset} = state;
+            const {amount} = state;
+            const sendAmount = new (Asset as any)({
+                real: amount,
+                asset_id: asset.get("id"),
+                precision: asset.get("precision")
+            });
+
+            mergeState({hidden: true});
+
+            (AccountActions as any)
+                .transfer(
+                    state.from_account.get("id"),
+                    state.to_account.get("id"),
+                    sendAmount.getAmount(),
+                    asset.get("id"),
+                    state.memo ? new Buffer(state.memo, "utf-8") : state.memo,
+                    state.propose ? state.propose_account : null,
+                    state.feeAmount.asset_id
+                )
+                .then(() => {
+                    onClose();
+                    (TransactionConfirmStore as any).unlisten(onTrxIncluded);
+                    (TransactionConfirmStore as any).listen(onTrxIncluded);
+                })
+                .catch((e: any) => {
+                    const msg = e.message
+                        ? e.message.split("\n")[1] || e.message
+                        : null;
+                    console.log("error: ", e, msg);
+                    // The dialog was hidden on submit (the confirmation takes over). When the
+                    // signing fails (the extension's user said no, a locked wallet, the unlock
+                    // dialog closed) it is shown again with what was typed, so that the person
+                    // can try again; before, it stayed hidden and the form was gone.
+                    mergeState({error: msg, hidden: false});
+                });
+        };
+
+        // `feeAmount` is not destructured here (unlike the original) since
+        // it's no longer referenced in this render body: the original's
+        // only use of it here was inside `_setTotal.bind(this, ...,
+        // feeAmount.getAmount({real: true}), feeAmount.asset_id)` - two
+        // extra bound arguments `_setTotal(asset_id, balance_id)` never
+        // actually reads (see `setTotal`'s definition above), so dropping
+        // them (and this now-unused destructure) changes nothing observable.
+        // `let` is required for the whole destructure since `asset` is
+        // reassigned below (when there's exactly one available asset type).
+        /* eslint-disable prefer-const */
+        let {
+            propose,
+            from_account,
+            to_account,
+            asset,
+            asset_id,
+            propose_account,
+            amount,
+            to_name,
+            from_name,
+            memo,
+            balanceError,
+            hidden
+        } = state;
+        /* eslint-enable prefer-const */
+        const from_my_account =
+            (AccountStore as any).isMyAccount(from_account) ||
+            from_name === passwordAccount;
+        const from_error =
+            from_account && !from_my_account && !propose ? true : false;
+
+        const {asset_types} = getAvailableAssets(from_account);
+        let balance = null;
+
+        if (from_account && from_account.get("balances") && !from_error) {
+            const account_balances = from_account.get("balances").toJS();
+            const _error = state.balanceError ? "has-error" : "";
+            if (asset_types.length === 1)
+                asset = (ChainStore as any).getAsset(asset_types[0]);
+            if (asset_types.length > 0) {
+                const current_asset_id = asset
+                    ? asset.get("id")
+                    : asset_types[0];
+
+                balance = (
+                    <span>
+                        <Translate
+                            component="span"
+                            content="transfer.available"
+                        />
+                        :{" "}
+                        <span
+                            className={_error}
+                            style={{
+                                borderBottom: "#A09F9F 1px dotted",
+                                cursor: "pointer"
+                            }}
+                            onClick={() =>
+                                setTotal(
+                                    current_asset_id,
+                                    account_balances[current_asset_id]
+                                )
+                            }
+                        >
+                            <BalanceComponent
+                                balance={account_balances[current_asset_id]}
+                            />
+                        </span>
+                    </span>
+                );
+            } else {
+                balance = (
+                    <span>
+                        <span className={_error}>
+                            <Translate content="transfer.errors.noFunds" />
+                        </span>
+                    </span>
+                );
+            }
+        }
+
+        const propose_incomplete = propose && !propose_account;
+        const amountValue = parseFloat(
+            (String.prototype.replace as any).call(amount, /,/g, "")
+        );
+        const isAmountValid = amountValue && !(isNaN as any)(amountValue);
+        const isSubmitNotValid =
+            !from_account ||
+            !to_account ||
+            !isAmountValid ||
+            !asset ||
+            from_error ||
+            propose_incomplete ||
+            balanceError ||
+            from_account.get("id") == to_account.get("id");
+
+        let tabIndex = tabIndexProp;
+        // (the dialog's Cancel takes its number before the fields do, as it always has)
+        const cancelTabIndex = tabIndex++;
+
+        // The fields, built once: the dialog lays them out one under the other, the page in the cards of a payment
+        // page. They are built in the order they are laid out in, so the tab order is the same.
+        const proposerField = propose ? (
+            <AccountSelector
+                label="transfer.by"
+                accountName={currentAccount}
+                account={currentAccount}
+                typeahead={true}
+                tabIndex={tabIndex++}
+                locked={true}
+            />
+        ) : null;
+
+        const fromField = (
+            <AccountSelector
+                label="transfer.from"
+                accountName={from_name}
+                account={from_account}
+                onChange={fromChanged}
+                onAccountChanged={onFromAccountChanged}
+                typeahead={true}
+                tabIndex={tabIndex++}
+                locked={!!propose ? undefined : true}
+            />
+        );
+
+        const toField = (
+            <AccountSelector
+                label="transfer.to"
+                accountName={to_name}
+                account={to_account}
+                onChange={toChanged}
+                onAccountChanged={onToAccountChanged}
+                typeahead={true}
+                includeMyActiveAccounts={false}
+                tabIndex={tabIndex++}
+            />
+        );
+
+        // the address book: who to pay, who this is, the memo that goes with them
+        const recipientHelper = (
+            <RecipientHelper
+                toName={to_name}
+                memo={memo}
+                asset={asset && asset.get ? asset.get("symbol") : undefined}
+                known={!!to_account && typeof to_account.get === "function"}
+                entryId={propEntryId}
+                onPick={entry => {
+                    mergeState({
+                        to_name: entry.name,
+                        to_account: (ChainStore as any).getAccount(entry.name),
+                        error: null
+                    });
+                    resolveRecipient(entry.name);
+                    // an entry for one asset is a withdrawal of it: that asset is the one sent
+                    if (entry.asset) selectAsset(entry.asset);
+                }}
+                onUseMemo={saved => mergeState({memo: saved})}
+            />
+        );
+
+        const amountField = (
+            <AmountSelector
+                label="transfer.amount"
+                amount={amount}
+                onChange={onAmountChanged}
+                asset={
+                    asset_types.length > 0 && asset
+                        ? asset.get("id")
+                        : asset_id
+                        ? asset_id
+                        : asset_types[0]
+                }
+                assets={offeredAssets(asset_types, asset)}
+                display_balance={balance}
+                tabIndex={tabIndex++}
+                allowNaN={true}
+            />
+        );
+
+        const memoField = (
+            <Form.Item
+                label={counterpart.translate("transfer.memo")}
+                validateStatus={memo && propose ? "warning" : ""}
+                help={
+                    memo && propose
+                        ? counterpart.translate(
+                              "transfer.warn_name_unable_read_memo"
+                          )
+                        : ""
+                }
+            >
+                <Tooltip
+                    style={{display: "block"}}
+                    placement="top"
+                    title={counterpart.translate("tooltip.memo_tip")}
+                >
+                    <Input.TextArea
+                        style={{
+                            marginBottom: 0,
+                            width: "100%",
+                            boxSizing: "border-box"
+                        }}
+                        rows={3}
+                        value={memo}
+                        tabIndex={tabIndex++}
+                        onChange={onMemoChanged}
+                    />
+                </Tooltip>
+            </Form.Item>
+        );
+
+        const feeField = (
+            <FeeAssetSelector
+                account={from_account}
+                transaction={{
+                    type: "transfer",
+                    options: ["price_per_kbyte"],
+                    data: {
+                        type: "memo",
+                        content: memo
+                    }
+                }}
+                onChange={onFeeChanged}
+                tabIndex={tabIndex++}
+            />
+        );
+
+        const modeTabs = (
+            <SubMenu
+                aria-label={counterpart.translate("transfer.send")}
+                items={[
+                    {
+                        key: "send",
+                        label: counterpart.translate("transfer.send")
+                    },
+                    {
+                        key: "propose",
+                        label: counterpart.translate("propose")
+                    }
+                ]}
+                value={propose ? "propose" : "send"}
+                onChange={key => {
+                    if ((key === "propose") !== !!propose) {
+                        onPropose();
+                    }
+                }}
+            />
+        );
+
+        const subheader = (
+            <Translate
+                content={
+                    propose
+                        ? "transfer.header_subheader_propose"
+                        : "transfer.header_subheader"
+                }
+                wallet_name={getWalletName()}
+            />
+        );
+
+        const sendLabel = propose
+            ? counterpart.translate("propose")
+            : counterpart.translate("transfer.send");
+        const submit = !isSubmitNotValid ? onSubmit : undefined;
+
+        if (props.layout === "page") {
+            // a share of what the account holds of the asset (the whole of it leaves the fee, as the "Available" link does)
+            const pickAmount = (percent: number) => {
+                if (!asset || !asset.get || !from_account) return;
+                const balanceId = from_account.getIn([
+                    "balances",
+                    asset.get("id")
+                ]);
+                if (!balanceId) return;
+                if (percent >= 100) return setTotal(asset.get("id"), balanceId);
+                const balanceObject = (ChainStore as any).getObject(balanceId);
+                if (!balanceObject) return;
+                const units =
+                    (BigInt(balanceObject.get("balance")) * BigInt(percent)) /
+                    BigInt(100);
+                const share = new (Asset as any)({
+                    amount: Number(units),
+                    asset_id: asset.get("id"),
+                    precision: asset.get("precision")
+                });
+                mergeState({
+                    maxAmount: false,
+                    amount: share.getAmount({real: true}),
+                    error: null
+                });
+                _checkBalance();
+            };
+            const t = (key: string) =>
+                counterpart.translate(`send_page.${key}`) as string;
+            const recipient =
+                to_account && typeof to_account.get === "function"
+                    ? to_account
+                    : null;
+            const feeAsset =
+                state.feeAmount && state.feeAmount.asset_id
+                    ? (ChainStore as any).getAsset(state.feeAmount.asset_id)
+                    : null;
+            const feeText =
+                feeAsset &&
+                feeAsset.get &&
+                state.feeAmount.getAmount &&
+                state.feeAmount.getAmount() > 0
+                    ? `${state.feeAmount.getAmount({
+                          real: true
+                      })} ${feeAsset.get("symbol")}`
+                    : undefined;
+            const blocker = !isSubmitNotValid
+                ? null
+                : !from_account
+                ? t("blocker_other")
+                : propose_incomplete
+                ? t("blocker_by")
+                : !to_account
+                ? t("blocker_to")
+                : from_account.get("id") == to_account.get("id")
+                ? t("blocker_same")
+                : !asset || !isAmountValid
+                ? t("blocker_amount")
+                : balanceError
+                ? t("blocker_balance")
+                : t("blocker_other");
+            const canPick = !!asset && !!from_account && !from_error;
+
+            return !state.open ? null : (
+                <div id="send_modal_wrapper" className={hidden ? "hide" : ""}>
+                    <PaymentPage
+                        title={sendLabel}
+                        lead={subheader}
+                        aside={
+                            <SummaryCard
+                                title={t("sum_title")}
+                                emptyText={t("sum_empty")}
+                                rows={[
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.amount"
+                                        ),
+                                        big: true,
+                                        value:
+                                            isAmountValid && asset && asset.get
+                                                ? `${amount} ${asset.get(
+                                                      "symbol"
+                                                  )}`
+                                                : undefined
+                                    },
+                                    ...(propose
+                                        ? [
+                                              {
+                                                  label: counterpart.translate(
+                                                      "transfer.by"
+                                                  ),
+                                                  value: currentAccount
+                                                      ? String(currentAccount)
+                                                      : undefined
+                                              }
+                                          ]
+                                        : []),
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.from"
+                                        ),
+                                        value: from_name || undefined
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.to"
+                                        ),
+                                        value: recipient
+                                            ? recipient.get("name")
+                                            : undefined,
+                                        detail: recipient
+                                            ? recipient.get("id")
+                                            : undefined
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.fee"
+                                        ),
+                                        value: feeText
+                                    },
+                                    {
+                                        label: counterpart.translate(
+                                            "transfer.memo"
+                                        ),
+                                        value: memo ? String(memo) : undefined
+                                    }
+                                ]}
+                                notes={
+                                    state.error ? (
+                                        <Alert
+                                            type="error"
+                                            message={state.error}
+                                        />
+                                    ) : (
+                                        undefined
+                                    )
+                                }
+                                primary={{
+                                    label: sendLabel,
+                                    onClick: () =>
+                                        submit &&
+                                        submit({
+                                            preventDefault: () => undefined
+                                        }),
+                                    disabled: !!isSubmitNotValid
+                                }}
+                                secondary={{
+                                    label: counterpart.translate(
+                                        "transfer.cancel"
+                                    ),
+                                    onClick: () => onClose()
+                                }}
+                                blocker={blocker}
+                            />
+                        }
+                    >
+                        <PaymentCard
+                            step={1}
+                            title={t("step_parties")}
+                            done={
+                                !!from_account &&
+                                !!recipient &&
+                                !propose_incomplete
+                            }
+                        >
+                            {/* Send or Propose decides who pays: it is the first thing of the first card, so that the card
+                                starts where the summary beside it does */}
+                            <div className={styles.mode}>{modeTabs}</div>
+                            <Form className={styles.fields} layout="vertical">
+                                {proposerField}
+                                {fromField}
+                                {toField}
+                                {recipientHelper}
+                            </Form>
+                        </PaymentCard>
+                        <PaymentCard
+                            step={2}
+                            title={t("step_what")}
+                            done={!!isAmountValid && !!asset && !balanceError}
+                        >
+                            <Form className={styles.fields} layout="vertical">
+                                {amountField}
+                                <Picks
+                                    disabled={!canPick}
+                                    items={[25, 50, 75, 100].map(percent => ({
+                                        key: String(percent),
+                                        label:
+                                            percent === 100
+                                                ? t("max")
+                                                : `${percent}%`
+                                    }))}
+                                    onPick={key => pickAmount(Number(key))}
+                                />
+                                {memoField}
+                            </Form>
+                        </PaymentCard>
+                        <PaymentCard
+                            step={3}
+                            title={t("step_fee")}
+                            done={!!feeText}
+                        >
+                            <Form className={styles.fields} layout="vertical">
+                                {feeField}
+                            </Form>
+                        </PaymentCard>
+                    </PaymentPage>
+                </div>
+            );
+        }
+
+        return !state.open ? null : (
+            <div
+                id="send_modal_wrapper"
+                className={hidden || !state.open ? "hide" : ""}
+            >
+                <Modal
+                    visible={state.isModalVisible}
+                    onCancel={hideModal}
+                    footer={[
+                        <Button
+                            key={"send"}
+                            disabled={isSubmitNotValid}
+                            onClick={submit}
+                        >
+                            {sendLabel}
+                        </Button>,
+                        <Button
+                            key="Cancel"
+                            tabIndex={cancelTabIndex}
+                            onClick={() => onClose()}
+                        >
+                            <Translate
+                                component="span"
+                                content="transfer.cancel"
+                            />
+                        </Button>
+                    ]}
+                >
+                    <div className="grid-block vertical no-overflow">
+                        <div className="content-block">{modeTabs}</div>
+                        <div className="content-block">{subheader}</div>
+                        {state.open ? (
+                            <Form className="full-width" layout="vertical">
+                                {!!propose && (
+                                    <React.Fragment>
+                                        {proposerField}
+                                        <div className="modal-separator" />
+                                    </React.Fragment>
+                                )}
+                                {fromField}
+                                {toField}
+                                {recipientHelper}
+                                {amountField}
+                                {memoField}
+                                {feeField}
+                            </Form>
+                        ) : null}
+                    </div>
+                </Modal>
+            </div>
+        );
+    }
+);
+
+SendModal.displayName = "SendModal";
+
+export default function SendModalRefBridge({
+    refCallback,
+    ...props
+}: SendModalProps & {refCallback?: (ref: {show: () => void} | null) => void}) {
+    return <SendModal {...props} ref={refCallback as any} />;
+}

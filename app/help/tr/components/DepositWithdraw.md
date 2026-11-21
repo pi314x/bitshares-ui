@@ -1,7 +1,8 @@
 [# receive]
-### Kullanıcı adınız
-Bitshares hesabınıza bir başkasından ya da bir borsadan BTS gönderimi için, göndericiye kullanıcı adınızı vermeniz yeterlidir. BTS'ler doğrudan kullanıcı adı belirtilerek gönderilir:
+### BTS alma
+Başka bir kişiden veya bir borsadan BTS almak için onlara hesap adınızı vermeniz yeterlidir: **{account}**
 
 [# deposit-short]
-### Kripto para yatır/çek
-Başka blokzincirlerinden Bitshares hesabınıza (ör. BTC gibi) "coin" aktarmak için ya da TL, dolar gibi fiat para birimleriyle Bitshares'de işlem yapabilmek için lütfen aşağıdan bir transfer hizmet sağlayıcısı seçin.
+### Coin yatırma veya çekme
+Fiat para olarak ya da diğer blokzincirlerinden fon yatırmak veya çekmek istiyorsanız bunun için bir [köprü](introduction/bridges_gateways) veya [gateway](introduction/bridges_gateways) hizmeti kullanabilirsiniz.
+

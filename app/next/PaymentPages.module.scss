@@ -1,0 +1,186 @@
+// The Payments pages (Send, Deposit, Withdraw, Timed transfer) are one design:
+// a column of 760px at the page's inset, a short line of what the page does,
+// then the form as a card (title, fields one under the other at a 16px rhythm,
+// the actions in the footer). The dialogs' markup is the legacy one, so its
+// pieces are reached by their class names, under `body[class][class]` to
+// outrank the old sheet.
+.page {
+    width: 100%;
+    max-width: 760px;
+    min-width: 0;
+}
+
+.intro {
+    margin: 0 0 16px;
+    max-width: 68ch;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+// ----- the fields: one rhythm, one label style
+body[class][class] .page :global(.modal__body) {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0;
+}
+
+body[class][class] .page :global(.modal__body) > * {
+    margin: 0;
+    min-width: 0;
+}
+
+body[class][class] .page label,
+body[class][class] .page :global(.amount-selector-field--label) {
+    display: block;
+    margin: 0 0 6px;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+// "Amount ... Available: 2,047.52 BTS": the label and what is left, one line
+body[class][class] .page :global(.amount-selector-field--label) {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body[class][class] .page :global(.amount-selector-field--balance) {
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+// a gateway's block: no margin of its own, the column's gap spaces it
+body[class][class] .page :global(.block-list),
+body[class][class] .page :global(.no-margin) {
+    margin: 0;
+    padding: 0;
+}
+
+// the address: the field and the camera, side by side and centred on each other
+body[class][class] .page :global(.inline-label) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body[class][class] .page :global(.inline-label) > :global(.input-wrapper),
+body[class][class] .page :global(.inline-label) > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// the fee rows (withdraw): the network fee and the gateway fee are two fields
+// of one width, one under the other
+body[class][class] .page :global(.withdraw-fee-selector) {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body[class][class] .page :global(.withdraw-fee-selector) :global(.grid-block) {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+body[class][class] .page :global(.grid-block.wrap.shrink) {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: none;
+}
+
+// the fields themselves fill their column (the design system's inputs stop at
+// 480px, which in a 720px column left a field two thirds wide)
+body[class][class] .page input[type="text"],
+body[class][class] .page input[type="number"],
+body[class][class] .page input:not([type]),
+body[class][class] .page textarea {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+// ----- the top of the send page: what it is, left-aligned like the rest
+body[class][class] .page :global(.grid-block.vertical) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+}
+
+body[class][class] .page :global(.content-block) {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+body[class][class] .page :global(.content-block) > div > div {
+    display: inline-flex;
+    gap: 8px;
+}
+
+body[class][class] .page :global(.content-block) + :global(.content-block) {
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 68ch;
+}
+
+// a field row that holds an input and its asset select (amount, fee): the
+// input takes what the select leaves
+body[class][class] .page :global(.amount-selector-field) {
+    margin: 0;
+    width: 100%;
+}
+
+body[class][class] .page :global(.amount-selector-field) > div,
+body[class][class] .page :global(.amount-selector-field) > div > div {
+    width: 100%;
+}
+
+body[class][class] .page :global(.amount-selector-field) > div > div {
+    display: flex;
+    align-items: stretch;
+}
+
+body[class][class] .page :global(.amount-selector-field) input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+body[class][class] .page :global(.asset-select) {
+    flex: 0 0 150px;
+}
+
+// ----- the explanation under the form (Timed transfer)
+.steps {
+    margin: 0 0 16px;
+    padding: 0 0 0 20px;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.steps li {
+    padding-left: 4px;
+}
+
+.note {
+    margin: 16px 0 0;
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.links {
+    margin-top: 12px;
+    font-size: 14px;
+}

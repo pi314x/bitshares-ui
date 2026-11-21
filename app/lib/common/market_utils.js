@@ -75,13 +75,19 @@ const MarketUtils = {
         }
     },
 
+    /**
+     * `allowIdle`: also take the price of a market that has had no trade in the
+     * last 24 hours (its last price). Without it such a market has no price, as
+     * before; `getFinalPriceOrIdle` is the usual way to ask for both.
+     */
     getFinalPrice(
         coreAsset,
         fromAsset,
         toAsset,
         marketStats,
         real = false,
-        forceRefresh = false
+        forceRefresh = false,
+        allowIdle = false
     ) {
         if (toAsset.get("id") === fromAsset.get("id")) {
             return 1;
@@ -103,16 +109,23 @@ const MarketUtils = {
             }, priceCacheTTL);
         }
 
-        if (priceCache[directMarket] && !forceRefresh) {
+        // (an idle price is kept apart: a strict question must not be answered
+        // with a price that has no trade behind it)
+        const cacheKey = allowIdle ? directMarket + "#idle" : directMarket;
+        if (priceCache[cacheKey] && !forceRefresh) {
             if (real)
-                return priceCache[directMarket].toReal(
-                    toAsset.get("id") !== priceCache[directMarket].base.asset_id
+                return priceCache[cacheKey].toReal(
+                    toAsset.get("id") !== priceCache[cacheKey].base.asset_id
                 );
-            return priceCache[directMarket];
+            return priceCache[cacheKey];
         }
 
         const directStats = marketStats.get(directMarket);
-        if (directStats && directStats.price && directStats.volumeBase !== 0) {
+        if (
+            directStats &&
+            directStats.price &&
+            (allowIdle || directStats.volumeBase !== 0)
+        ) {
             if (real)
                 return directStats.price.toReal(
                     toAsset.get("id") !== directStats.price.base.asset_id
@@ -124,7 +137,11 @@ const MarketUtils = {
 
         const fromStats = marketStats.get(fromMarket);
         if (fromStats && fromStats.price) {
-            if (fromStats.volumeBase === 0 && fromStats.volumeQuote === 0)
+            if (
+                !allowIdle &&
+                fromStats.volumeBase === 0 &&
+                fromStats.volumeQuote === 0
+            )
                 return null;
             fromPrice = fromStats.price.clone();
         }
@@ -152,8 +169,10 @@ const MarketUtils = {
             return null;
         }
 
-        priceCache[directMarket] = finalPrice;
-        cacheClearTimer();
+        priceCache[cacheKey] = finalPrice;
+        // (the timer was started without the market's name, so a price stayed
+        // in the cache for the whole session)
+        cacheClearTimer(cacheKey);
         if (real)
             return finalPrice.toReal(
                 toAsset.get("id") !== finalPrice.base.asset_id
@@ -167,7 +186,8 @@ const MarketUtils = {
         fromAsset,
         marketStats,
         coreAsset,
-        fullPrecision = true
+        fullPrecision = true,
+        allowIdle = false
     ) {
         let fromAmount = !fullPrecision
             ? new Asset({
@@ -188,7 +208,9 @@ const MarketUtils = {
             fromAsset,
             toAsset,
             marketStats,
-            false
+            false,
+            false,
+            allowIdle
         );
 
         if (price === 1) return fromAmount.getAmount({real: !fullPrecision});
@@ -197,6 +219,68 @@ const MarketUtils = {
                 ? fromAmount.times(price).getAmount({real: !fullPrecision})
                 : null;
         return eqValue;
+    },
+
+    /**
+     * The price from the market's trades of the last day when there is one,
+     * otherwise its last price: a holding in a market that did not trade today
+     * still has a worth, and without it the same holding was "no price" on one
+     * screen and a figure on another (depending on what had been looked at
+     * first).
+     */
+    getFinalPriceOrIdle(
+        coreAsset,
+        fromAsset,
+        toAsset,
+        marketStats,
+        real = false
+    ) {
+        const price = this.getFinalPrice(
+            coreAsset,
+            fromAsset,
+            toAsset,
+            marketStats,
+            real
+        );
+        if (price !== null && price !== undefined) return price;
+        return this.getFinalPrice(
+            coreAsset,
+            fromAsset,
+            toAsset,
+            marketStats,
+            real,
+            false,
+            true
+        );
+    },
+
+    /** `convertValue`, with the last price of an idle market as the fallback. */
+    convertValueOrIdle(
+        amount,
+        toAsset,
+        fromAsset,
+        marketStats,
+        coreAsset,
+        fullPrecision = true
+    ) {
+        const value = this.convertValue(
+            amount,
+            toAsset,
+            fromAsset,
+            marketStats,
+            coreAsset,
+            fullPrecision
+        );
+        if (value !== null && value !== undefined) return value;
+        return this.convertValue(
+            amount,
+            toAsset,
+            fromAsset,
+            marketStats,
+            coreAsset,
+            fullPrecision,
+            true
+        );
     },
 
     parseOrder(order, base, quote, invert = false) {
@@ -208,14 +292,6 @@ const MarketUtils = {
         let basePrecision = utils.get_asset_precision(
             base.toJS ? base.get("precision") : base.precision
         );
-        let pricePrecision = order.call_price
-            ? quote.toJS
-                ? quote.get("precision")
-                : quote.precision
-            : base.toJS
-                ? base.get("precision")
-                : base.precision;
-
         let buy, sell;
         let callPrice;
         if (order.sell_price) {
@@ -390,6 +466,8 @@ const MarketUtils = {
     //     return orderBookArray;
     // }
 
+    // `precision` is unused but the markets slice still passes it, and TypeScript checks that call
+    // eslint-disable-next-line no-unused-vars
     flatten_orderbookchart_highcharts(array, sumBoolean, inverse, precision) {
         inverse = inverse === undefined ? false : inverse;
         let orderBookArray = [];

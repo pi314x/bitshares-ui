@@ -6,7 +6,6 @@ let locales = require("./locales.js");
 let localeObjects = {};
 
 function checkAndRemove(object, template) {
-    let templateKeys = Object.keys(template);
     let objectKeys = Object.keys(object);
 
     objectKeys.forEach(key => {

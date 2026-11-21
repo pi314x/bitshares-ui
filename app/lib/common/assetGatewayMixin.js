@@ -3,7 +3,8 @@ import Translate from "react-translate-component";
 import counterpart from "counterpart";
 import {getGatewayStatusByAsset} from "common/gatewayUtils";
 import {Link} from "react-router-dom";
-import {Select, Icon} from "bitshares-ui-style-guide";
+import {Select} from "../../design-system/Select";
+import {Icon} from "../../design-system/Icon";
 import utils from "common/utils";
 
 function _getCoinToGatewayMapping(boolCheck = "depositAllowed") {
@@ -175,12 +176,10 @@ function gatewaySelector(args) {
     let gateways = [];
     Object.keys(gatewayStatus).map(key => {
         gateways.push(gatewayStatus[key]);
-
-        // Set to full name to work with <Select>
-        if (gatewayStatus[key].id == selectedGateway) {
-            selectedGateway = gatewayStatus[key].name;
-        }
     });
+    // The select's options are the gateways' ids, so the chosen one is held by
+    // id too. (It used to be swapped for the gateway's name here, which matched
+    // no option: the select kept showing its placeholder after a choice.)
 
     gateways.sort((a, b) => {
         if (a.name > b.name) return 1;
@@ -224,7 +223,6 @@ function gatewaySelector(args) {
 
                     <div className="inline-label input-wrapper">
                         <Select
-                            optionLabelProp={"value"}
                             onChange={onGatewayChanged}
                             placeholder={counterpart.translate(
                                 "modal.deposit_withdraw.select_gateway"
@@ -238,6 +236,7 @@ function gatewaySelector(args) {
                                         <Select.Option
                                             key={g.name}
                                             value={g.id}
+                                            triggerLabel={g.name}
                                         >
                                             {g.name}
                                             {balancesByAssetAndGateway &&

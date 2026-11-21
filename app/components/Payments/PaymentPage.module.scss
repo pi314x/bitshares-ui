@@ -1,0 +1,304 @@
+// The Payments pages (Send, Deposit, Withdraw, Timed transfer) are one design: the head of the page, then the
+// form as numbered cards in a column, and beside it - on a desktop - a summary that follows the page down and holds
+// the one button. On a phone it is one column: the cards, the summary under them.
+.page {
+    width: 100%;
+    max-width: 1040px;
+    min-width: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 24px;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.aside {
+    position: sticky;
+    top: 16px;
+    min-width: 0;
+}
+
+// (the legacy sheet makes an `aside` a block: `body[class][class]` outranks it)
+body[class][class] .aside {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (max-width: 960px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .aside {
+        position: static;
+    }
+}
+
+// ---------------------------------------------------------------- a card of the form
+
+.card {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+
+.cardHead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.step {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.done .step {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+body[class][class] .cardTitle {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+}
+
+// the fields: one label style, one help style, one error style
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.hint {
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+.help {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.error {
+    color: var(--down);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.ok {
+    color: var(--up);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+// a row of small buttons that fill a field (25 %, 50 %, Max; 1 week, 1 month)
+.picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+// an input and the select of its asset, side by side
+.amountRow {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+}
+
+.amountRow > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.amountRow > :last-child {
+    flex: 0 0 170px;
+}
+
+@media (max-width: 480px) {
+    .amountRow {
+        flex-direction: column;
+    }
+
+    .amountRow > :last-child {
+        flex: none;
+    }
+}
+
+// ---------------------------------------------------------------- the summary
+
+.summaryHead {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 16px;
+}
+
+.row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    min-width: 0;
+}
+
+// (the legacy sheet pads every `dd` and sizes a notice at 16px: `body[class][class]` outranks it)
+body[class][class] .row dt,
+body[class][class] .row dd {
+    margin: 0;
+    padding: 0;
+}
+
+body[class][class] .notes > div {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.row dt {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.row dd {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.row dd.big {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.row dd.empty {
+    color: var(--faint);
+}
+
+.row dd small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.empty {
+    margin: 0;
+    padding: 16px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.notes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px 16px;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border-top: 1px solid var(--line-soft);
+}
+
+.actions button {
+    width: 100%;
+}
+
+.blocker {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+// what the page is, in short steps (under the summary, or under the cards on a phone)
+.how {
+    padding: 16px;
+}
+
+body[class][class] .how .cardTitle {
+    margin: 0 0 8px;
+}
+
+.how ol {
+    margin: 0;
+    padding: 0 0 0 20px;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.how li {
+    padding-left: 4px;
+}
+
+.links {
+    margin: 12px 0 0;
+    font-size: 13.5px;
+}

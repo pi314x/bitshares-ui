@@ -1,0 +1,121 @@
+// Registration: the two ways to hold an account as two cards side by side
+// (stacked on a phone), left-aligned at the page's inset like the other
+// onboarding pages. Tokens only.
+.page {
+    width: 100%;
+    max-width: 760px;
+    min-width: 0;
+}
+
+.page .title {
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-align: left;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.page .name {
+    margin: 0 0 2px;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.kind {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.badge {
+    flex: none;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.rows {
+    margin: 0;
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line-soft);
+    font-size: 14px;
+}
+
+.row dt {
+    margin: 0;
+    color: var(--muted);
+}
+
+.row dd {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 500;
+    text-align: right;
+}
+
+.row dd.good {
+    color: var(--up);
+}
+
+.row dd.fair {
+    color: var(--warn);
+}
+
+.row dd.none {
+    color: var(--down);
+}
+
+.foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.helpLabel {
+    color: var(--muted);
+    font-size: 13px;
+    border-bottom: 1px dotted var(--faint);
+    cursor: help;
+}

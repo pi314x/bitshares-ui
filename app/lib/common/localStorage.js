@@ -54,6 +54,7 @@ class AbstractLocalStorage {
      * @param key
      * @private
      */
+    // eslint-disable-next-line no-unused-vars
     _get(key) {
         throw Error("Needs implementation");
     }
@@ -74,6 +75,7 @@ class AbstractLocalStorage {
      * @param key
      * @private
      */
+    // eslint-disable-next-line no-unused-vars
     _set(key) {
         throw Error("Needs implementation");
     }
@@ -101,6 +103,7 @@ class AbstractLocalStorage {
      * @param key
      * @private
      */
+    // eslint-disable-next-line no-unused-vars
     _remove(key) {
         throw Error("Needs implementation");
     }
@@ -111,6 +114,7 @@ class AbstractLocalStorage {
      * @param key
      * @private
      */
+    // eslint-disable-next-line no-unused-vars
     _has(key) {
         throw Error("Needs implementation");
     }

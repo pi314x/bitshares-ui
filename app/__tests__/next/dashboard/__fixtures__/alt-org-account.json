@@ -1,0 +1,1810 @@
+{
+  "accountId": "1.2.1813080",
+  "accountName": "alt-org",
+  "orderIds": [
+    "1.7.567510157",
+    "1.7.567510165",
+    "1.7.567510169",
+    "1.7.567579716",
+    "1.7.567667877",
+    "1.7.567667881",
+    "1.7.567667922",
+    "1.7.567731596",
+    "1.7.567731598",
+    "1.7.567731612",
+    "1.7.567731617",
+    "1.7.567731623"
+  ],
+  "callOrderIds": [
+    "1.8.134772",
+    "1.8.134530"
+  ],
+  "balanceEntries": [
+    {
+      "asset_type": "1.3.0",
+      "balanceId": "2.5.3345025"
+    },
+    {
+      "asset_type": "1.3.113",
+      "balanceId": "2.5.3345743"
+    },
+    {
+      "asset_type": "1.3.118",
+      "balanceId": "2.5.3346443"
+    },
+    {
+      "asset_type": "1.3.119",
+      "balanceId": "2.5.3346517"
+    },
+    {
+      "asset_type": "1.3.120",
+      "balanceId": "2.5.3345564"
+    },
+    {
+      "asset_type": "1.3.121",
+      "balanceId": "2.5.3347789"
+    },
+    {
+      "asset_type": "1.3.1325",
+      "balanceId": "2.5.3345346"
+    },
+    {
+      "asset_type": "1.3.2512",
+      "balanceId": "2.5.3345002"
+    },
+    {
+      "asset_type": "1.3.2635",
+      "balanceId": "2.5.3347229"
+    },
+    {
+      "asset_type": "1.3.3198",
+      "balanceId": "2.5.3367456"
+    },
+    {
+      "asset_type": "1.3.4099",
+      "balanceId": "2.5.3345962"
+    },
+    {
+      "asset_type": "1.3.4156",
+      "balanceId": "2.5.3396532"
+    },
+    {
+      "asset_type": "1.3.4157",
+      "balanceId": "2.5.3345710"
+    },
+    {
+      "asset_type": "1.3.4176",
+      "balanceId": "2.5.3381875"
+    },
+    {
+      "asset_type": "1.3.5537",
+      "balanceId": "2.5.3377374"
+    },
+    {
+      "asset_type": "1.3.5589",
+      "balanceId": "2.5.3345645"
+    },
+    {
+      "asset_type": "1.3.5840",
+      "balanceId": "2.5.3346183"
+    },
+    {
+      "asset_type": "1.3.6013",
+      "balanceId": "2.5.3373713"
+    },
+    {
+      "asset_type": "1.3.6187",
+      "balanceId": "2.5.3345610"
+    },
+    {
+      "asset_type": "1.3.6189",
+      "balanceId": "2.5.3345567"
+    },
+    {
+      "asset_type": "1.3.6190",
+      "balanceId": "2.5.3345418"
+    },
+    {
+      "asset_type": "1.3.6191",
+      "balanceId": "2.5.3345416"
+    },
+    {
+      "asset_type": "1.3.6301",
+      "balanceId": "2.5.3350957"
+    },
+    {
+      "asset_type": "1.3.6535",
+      "balanceId": "2.5.3358131"
+    },
+    {
+      "asset_type": "1.3.6554",
+      "balanceId": "2.5.3364810"
+    }
+  ],
+  "objects": {
+    "1.7.567510157": {
+      "id": "1.7.567510157",
+      "expiration": "2026-09-26T03:21:35",
+      "seller": "1.2.1813080",
+      "for_sale": 30000,
+      "sell_price": {
+        "base": {
+          "amount": 30000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 150000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567510165": {
+      "id": "1.7.567510165",
+      "expiration": "2026-09-26T03:21:57",
+      "seller": "1.2.1813080",
+      "for_sale": 30000,
+      "sell_price": {
+        "base": {
+          "amount": 30000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 135000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567510169": {
+      "id": "1.7.567510169",
+      "expiration": "2026-09-26T03:22:14",
+      "seller": "1.2.1813080",
+      "for_sale": 30000,
+      "sell_price": {
+        "base": {
+          "amount": 30000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 129000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567579716": {
+      "id": "1.7.567579716",
+      "expiration": "2026-09-29T05:52:35",
+      "seller": "1.2.1813080",
+      "for_sale": 20000,
+      "sell_price": {
+        "base": {
+          "amount": 20000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 84000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567667877": {
+      "id": "1.7.567667877",
+      "expiration": "2026-10-03T07:04:47",
+      "seller": "1.2.1813080",
+      "for_sale": 20000,
+      "sell_price": {
+        "base": {
+          "amount": 20000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 82000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567667881": {
+      "id": "1.7.567667881",
+      "expiration": "2026-10-03T07:05:09",
+      "seller": "1.2.1813080",
+      "for_sale": 20000,
+      "sell_price": {
+        "base": {
+          "amount": 20000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 80000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567667922": {
+      "id": "1.7.567667922",
+      "expiration": "2026-10-03T07:05:37",
+      "seller": "1.2.1813080",
+      "for_sale": 16901,
+      "sell_price": {
+        "base": {
+          "amount": 20000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 79000,
+          "asset_id": "1.3.6191"
+        }
+      },
+      "filled_amount": "3099",
+      "deferred_fee": 0,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567731596": {
+      "id": "1.7.567731596",
+      "expiration": "2026-10-06T12:40:06",
+      "seller": "1.2.1813080",
+      "for_sale": 10000,
+      "sell_price": {
+        "base": {
+          "amount": 10000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1800000000,
+          "asset_id": "1.3.3291"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567731598": {
+      "id": "1.7.567731598",
+      "expiration": "2026-10-06T12:40:49",
+      "seller": "1.2.1813080",
+      "for_sale": 10000,
+      "sell_price": {
+        "base": {
+          "amount": 10000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1750000000,
+          "asset_id": "1.3.3291"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567731612": {
+      "id": "1.7.567731612",
+      "expiration": "2026-10-06T12:41:51",
+      "seller": "1.2.1813080",
+      "for_sale": 10000,
+      "sell_price": {
+        "base": {
+          "amount": 10000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1700000000,
+          "asset_id": "1.3.3291"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567731617": {
+      "id": "1.7.567731617",
+      "expiration": "2026-10-06T12:42:12",
+      "seller": "1.2.1813080",
+      "for_sale": 10000,
+      "sell_price": {
+        "base": {
+          "amount": 10000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1600000000,
+          "asset_id": "1.3.3291"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.7.567731623": {
+      "id": "1.7.567731623",
+      "expiration": "2026-10-06T12:42:38",
+      "seller": "1.2.1813080",
+      "for_sale": 10000,
+      "sell_price": {
+        "base": {
+          "amount": 10000,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1500000000,
+          "asset_id": "1.3.3291"
+        }
+      },
+      "filled_amount": "0",
+      "deferred_fee": 48260,
+      "deferred_paid_fee": {
+        "amount": 0,
+        "asset_id": "1.3.0"
+      },
+      "is_settled_debt": false,
+      "on_fill": []
+    },
+    "1.8.134772": {
+      "id": "1.8.134772",
+      "borrower": "1.2.1813080",
+      "collateral": 145454545,
+      "debt": 2000000,
+      "call_price": {
+        "base": {
+          "amount": 1,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1,
+          "asset_id": "1.3.6187"
+        }
+      }
+    },
+    "1.8.134530": {
+      "id": "1.8.134530",
+      "borrower": "1.2.1813080",
+      "collateral": 499983953,
+      "debt": 142798788,
+      "call_price": {
+        "base": {
+          "amount": 1,
+          "asset_id": "1.3.2512"
+        },
+        "quote": {
+          "amount": 1,
+          "asset_id": "1.3.6191"
+        }
+      }
+    },
+    "2.5.3345025": {
+      "id": "2.5.3345025",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.0",
+      "balance": 38583558,
+      "maintenance_flag": false
+    },
+    "2.5.3345743": {
+      "id": "2.5.3345743",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.113",
+      "balance": 2156,
+      "maintenance_flag": false
+    },
+    "2.5.3346443": {
+      "id": "2.5.3346443",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.118",
+      "balance": 23,
+      "maintenance_flag": false
+    },
+    "2.5.3346517": {
+      "id": "2.5.3346517",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.119",
+      "balance": 1,
+      "maintenance_flag": false
+    },
+    "2.5.3345564": {
+      "id": "2.5.3345564",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.120",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3347789": {
+      "id": "2.5.3347789",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.121",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3345346": {
+      "id": "2.5.3345346",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.1325",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3345002": {
+      "id": "2.5.3345002",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.2512",
+      "balance": "3799010076",
+      "maintenance_flag": false
+    },
+    "2.5.3347229": {
+      "id": "2.5.3347229",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.2635",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3367456": {
+      "id": "2.5.3367456",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.3198",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3345962": {
+      "id": "2.5.3345962",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.4099",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3396532": {
+      "id": "2.5.3396532",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.4156",
+      "balance": 228041,
+      "maintenance_flag": false
+    },
+    "2.5.3345710": {
+      "id": "2.5.3345710",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.4157",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3381875": {
+      "id": "2.5.3381875",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.4176",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3377374": {
+      "id": "2.5.3377374",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.5537",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3345645": {
+      "id": "2.5.3345645",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.5589",
+      "balance": 1038709,
+      "maintenance_flag": false
+    },
+    "2.5.3346183": {
+      "id": "2.5.3346183",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.5840",
+      "balance": 19,
+      "maintenance_flag": false
+    },
+    "2.5.3373713": {
+      "id": "2.5.3373713",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6013",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3345610": {
+      "id": "2.5.3345610",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6187",
+      "balance": 5252784,
+      "maintenance_flag": false
+    },
+    "2.5.3345567": {
+      "id": "2.5.3345567",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6189",
+      "balance": 16463873,
+      "maintenance_flag": false
+    },
+    "2.5.3345418": {
+      "id": "2.5.3345418",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6190",
+      "balance": 761137,
+      "maintenance_flag": false
+    },
+    "2.5.3345416": {
+      "id": "2.5.3345416",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6191",
+      "balance": 135425692,
+      "maintenance_flag": false
+    },
+    "2.5.3350957": {
+      "id": "2.5.3350957",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6301",
+      "balance": 0,
+      "maintenance_flag": false
+    },
+    "2.5.3358131": {
+      "id": "2.5.3358131",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6535",
+      "balance": 21993878,
+      "maintenance_flag": false
+    },
+    "2.5.3364810": {
+      "id": "2.5.3364810",
+      "owner": "1.2.1813080",
+      "asset_type": "1.3.6554",
+      "balance": 754747864,
+      "maintenance_flag": false
+    },
+    "1.3.2512": {
+      "id": "1.3.2512",
+      "symbol": "EVRAZ",
+      "precision": 4,
+      "issuer": "1.2.1677406",
+      "options": {
+        "max_supply": "2000000000000",
+        "market_fee_percent": 5,
+        "max_market_fee": 1000000000,
+        "issuer_permissions": 1,
+        "flags": 0,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 100000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 10000,
+            "asset_id": "1.3.2512"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"Token for a network of digital currency: https://www.evrazcoin.org/\",\"short_name\":\"evraz\",\"market\":\"\"}",
+        "extensions": {}
+      },
+      "dynamic_asset_data_id": "2.3.2512",
+      "creation_block_num": 22351872,
+      "creation_time": "2017-12-04T08:07:33",
+      "total_in_collateral": "7507126163"
+    },
+    "1.3.6191": {
+      "id": "1.3.6191",
+      "symbol": "ALTIN.TRY",
+      "precision": 4,
+      "issuer": "1.2.1700976",
+      "options": {
+        "max_supply": "1000000000000",
+        "market_fee_percent": 2,
+        "max_market_fee": 0,
+        "issuer_permissions": 499,
+        "flags": 16,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 63,
+            "asset_id": "1.3.6191"
+          },
+          "quote": {
+            "amount": 1000,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"ALTIN.TRY is a stablecoin that is pegged to Turkish Lira on 1:1 basis and backed by collateral  which held at the blockchain in a smart contract.\",\"market\":\"\",\"short_name\":\"Digital Turkish Lira\"}",
+        "extensions": {
+          "reward_percent": 0,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6191",
+      "bitasset_data_id": "2.4.397",
+      "creation_block_num": 68957143,
+      "creation_time": "2022-05-17T10:45:45",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 799983953
+    },
+    "1.3.3291": {
+      "id": "1.3.3291",
+      "symbol": "TWENTIX",
+      "precision": 5,
+      "issuer": "1.2.1014025",
+      "options": {
+        "max_supply": "100000000000000",
+        "market_fee_percent": 0,
+        "max_market_fee": "10000000000000",
+        "issuer_permissions": 507,
+        "flags": 129,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1,
+            "asset_id": "1.3.3291"
+          },
+          "quote": {
+            "amount": 400,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"TWENTIX, the digital asset index fund.\\nA smart way to invest in the powerful economic growth of cryptocurrencies.\\nTWENTIX represent precisely 1/100000th of a BTWTY (Bit20).\\nMore information at www.btwty.com\",\"short_name\":\"TWENTIX\",\"market\":\"\"}",
+        "extensions": {
+          "taker_fee_percent": 20
+        }
+      },
+      "dynamic_asset_data_id": "2.3.3291",
+      "bitasset_data_id": "2.4.177",
+      "creation_block_num": 24504633,
+      "creation_time": "2018-02-17T12:52:57",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 0
+    },
+    "1.3.6187": {
+      "id": "1.3.6187",
+      "symbol": "USDIGI",
+      "precision": 4,
+      "issuer": "1.2.471894",
+      "options": {
+        "max_supply": "100000000000",
+        "market_fee_percent": 0,
+        "max_market_fee": 0,
+        "issuer_permissions": 385,
+        "flags": 0,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 7,
+            "asset_id": "1.3.6187"
+          },
+          "quote": {
+            "amount": 50000,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"USDIGI  is a digital USD smartcoin (stablecoin) that is pegged to the US dollar on a 1:1 basis. It is backed by collateral  held at the blockchain in a smart contract.\",\"short_name\":\"USDIGI\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 0,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6187",
+      "bitasset_data_id": "2.4.394",
+      "creation_block_num": 68870763,
+      "creation_time": "2022-05-14T10:35:18",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 1187041119
+    },
+    "1.3.0": {
+      "id": "1.3.0",
+      "symbol": "BTS",
+      "precision": 5,
+      "issuer": "1.2.3",
+      "options": {
+        "max_supply": "360057050210207",
+        "market_fee_percent": 0,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 0,
+        "flags": 0,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 1,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "",
+        "extensions": {}
+      },
+      "dynamic_asset_data_id": "2.3.0",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": "9457367403859"
+    },
+    "1.3.113": {
+      "id": "1.3.113",
+      "symbol": "CNY",
+      "precision": 4,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 511,
+        "flags": 1031,
+        "core_exchange_rate": {
+          "base": {
+            "amount": "117597910634",
+            "asset_id": "1.3.113"
+          },
+          "quote": {
+            "amount": "17986995830481",
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420",
+          "1.2.1829787"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"1 Chinese Yuan, 1元人民币\",\"short_name\":\"Yuan\",\"market\":\"BTS\"}",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.113",
+      "bitasset_data_id": "2.4.13",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": 102871,
+      "total_backing_collateral": "58005683310"
+    },
+    "1.3.118": {
+      "id": "1.3.118",
+      "symbol": "GBP",
+      "precision": 4,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 511,
+        "flags": 131,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1991,
+            "asset_id": "1.3.118"
+          },
+          "quote": {
+            "amount": 15736508,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "1 pound sterling",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.118",
+      "bitasset_data_id": "2.4.18",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": 0,
+      "total_backing_collateral": "182693412439"
+    },
+    "1.3.119": {
+      "id": "1.3.119",
+      "symbol": "JPY",
+      "precision": 2,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 511,
+        "flags": 131,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 15725,
+            "asset_id": "1.3.119"
+          },
+          "quote": {
+            "amount": 59047995,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "1 Japanese yen",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.119",
+      "bitasset_data_id": "2.4.19",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": 0,
+      "total_backing_collateral": "318446488641"
+    },
+    "1.3.120": {
+      "id": "1.3.120",
+      "symbol": "EUR",
+      "precision": 4,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 511,
+        "flags": 131,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 11285,
+            "asset_id": "1.3.120"
+          },
+          "quote": {
+            "amount": 76475034,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"1 Euro\",\"short_name\":\"Euro\",\"market\":\"BTS\"}",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.120",
+      "bitasset_data_id": "2.4.20",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": 0,
+      "total_backing_collateral": "6238254758289"
+    },
+    "1.3.121": {
+      "id": "1.3.121",
+      "symbol": "USD",
+      "precision": 4,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 511,
+        "flags": 32775,
+        "core_exchange_rate": {
+          "base": {
+            "amount": "16624912587",
+            "asset_id": "1.3.121"
+          },
+          "quote": {
+            "amount": "3456322783222",
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"1 United States dollar\",\"short_name\":\"United States dollar\",\"market\":\"BTS\"}",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.121",
+      "bitasset_data_id": "2.4.21",
+      "creation_block_num": 0,
+      "creation_time": "2015-10-13T13:00:00",
+      "total_in_collateral": 12857520,
+      "total_backing_collateral": 0
+    },
+    "1.3.1325": {
+      "id": "1.3.1325",
+      "symbol": "RUBLE",
+      "precision": 5,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "10000000000",
+        "issuer_permissions": 511,
+        "flags": 131,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 8634739,
+            "asset_id": "1.3.1325"
+          },
+          "quote": {
+            "amount": 60992719,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"1 Российского Рубля\",\"short_name\":\"Russian Ruble\",\"market\":\"BTS\"}",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.1325",
+      "bitasset_data_id": "2.4.83",
+      "creation_block_num": 15322865,
+      "creation_time": "2017-04-02T03:30:12",
+      "total_in_collateral": 0,
+      "total_backing_collateral": "2161133218482"
+    },
+    "1.3.2635": {
+      "id": "1.3.2635",
+      "symbol": "GDEX.EOS",
+      "precision": 6,
+      "issuer": "1.2.442525",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 6,
+        "max_market_fee": "1000000000000",
+        "issuer_permissions": 79,
+        "flags": 3,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1500000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 1000000,
+            "asset_id": "1.3.2635"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.149047",
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"GDEX issued EOS ERC20 token backed asset, will be replaced by EOS mainnet token  after release. \",\"short_name\":\"GDEX.EOS\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 2000,
+          "taker_fee_percent": 14
+        }
+      },
+      "dynamic_asset_data_id": "2.3.2635",
+      "creation_block_num": 22816561,
+      "creation_time": "2017-12-20T14:45:57",
+      "total_in_collateral": 0
+    },
+    "1.3.3198": {
+      "id": "1.3.3198",
+      "symbol": "ILICOIN",
+      "precision": 8,
+      "issuer": "1.2.366568",
+      "options": {
+        "max_supply": "1000000000000",
+        "market_fee_percent": 1,
+        "max_market_fee": 10000000,
+        "issuer_permissions": 5,
+        "flags": 1,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 122200000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 100000000,
+            "asset_id": "1.3.3198"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"ИлИ - Альтернатива есть всегда!\\nТокен ILICOIN в блокчейне BTS имеет предел выпуска 10000 единицами, с точностью до 8 знаков после запятой.\\nКаждый иметированный токен [тут](https://blocksights.info/#/assets/1.3.3198), соответствует настоящей монете [ili](https://github.com/IlICoin/ili.git)\\n\\nili - There is always an alternative!\\nThe ILICOIN token on the BTS blockchain has an issuance limit of 10,000 units, accurate to 8 decimal places.\\nEach imitated token [here](https://blocksights.info/#/assets/1.3.3198) corresponds to a real coin [ili](https://github.com/IlICoin/ili.git)\",\"short_name\":\"ili\",\"market\":\"\"}",
+        "extensions": {}
+      },
+      "dynamic_asset_data_id": "2.3.3198",
+      "creation_block_num": 24157597,
+      "creation_time": "2018-02-05T10:44:06",
+      "total_in_collateral": 0
+    },
+    "1.3.4099": {
+      "id": "1.3.4099",
+      "symbol": "XBTSX.STH",
+      "precision": 6,
+      "issuer": "1.2.1003283",
+      "options": {
+        "max_supply": "246000000000000",
+        "market_fee_percent": 10,
+        "max_market_fee": "100000000000000",
+        "issuer_permissions": 1,
+        "flags": 1,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 100000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 1000000,
+            "asset_id": "1.3.4099"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [
+          "1.3.4589",
+          "1.3.5055",
+          "1.3.5078",
+          "1.3.5253",
+          "1.3.5710"
+        ],
+        "description": "{\"main\":\"Asset is backed 1:1 by the real STH coin on SmartHoldem blockchain https://smartholdem.io and can be deposited or withdrawn using gateway https://xbts.io\\n\\n\\n- Decentralized Gaming Platform https://dexgames.net \\n\\n\\n- Core asset XBTS exchange https://xbts.io/smart-holder\\n\\n\\n- Vote asset https://vote.xbts.io\",\"short_name\":\"STH\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 0
+        }
+      },
+      "dynamic_asset_data_id": "2.3.4099",
+      "creation_block_num": 28047590,
+      "creation_time": "2018-06-21T03:24:51",
+      "total_in_collateral": 0
+    },
+    "1.3.4156": {
+      "id": "1.3.4156",
+      "symbol": "XBTSX.DOGE",
+      "precision": 5,
+      "issuer": "1.2.1014725",
+      "options": {
+        "max_supply": "50000000000000",
+        "market_fee_percent": 10,
+        "max_market_fee": "10000000000000",
+        "issuer_permissions": 79,
+        "flags": 7,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 35000000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 100000,
+            "asset_id": "1.3.4156"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"XBTSX.DOGE asset is backed 1:1 by the real DOGE on DogeCoin blockchain https://dogecoin.com and can be deposited or withdrawn using gateway operated by XBTS https://xbts.io\",\"short_name\":\"DOGE\",\"market\":\"XBTSX.USDT\"}",
+        "extensions": {
+          "reward_percent": 0
+        }
+      },
+      "dynamic_asset_data_id": "2.3.4156",
+      "creation_block_num": 28397223,
+      "creation_time": "2018-07-03T08:15:42",
+      "total_in_collateral": 0
+    },
+    "1.3.4157": {
+      "id": "1.3.4157",
+      "symbol": "XBTSX.BTC",
+      "precision": 8,
+      "issuer": "1.2.1014725",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 71,
+        "flags": 7,
+        "core_exchange_rate": {
+          "base": {
+            "amount": "4000000000000",
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 100000000,
+            "asset_id": "1.3.4157"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [
+          "1.3.0",
+          "1.3.105",
+          "1.3.106",
+          "1.3.113",
+          "1.3.121",
+          "1.3.958",
+          "1.3.1093",
+          "1.3.1325",
+          "1.3.2241",
+          "1.3.2512",
+          "1.3.2598",
+          "1.3.2635",
+          "1.3.3291",
+          "1.3.4098",
+          "1.3.4099",
+          "1.3.4156",
+          "1.3.4159",
+          "1.3.4176",
+          "1.3.4274",
+          "1.3.4275",
+          "1.3.4373",
+          "1.3.4485",
+          "1.3.4517",
+          "1.3.4565",
+          "1.3.4631",
+          "1.3.4760",
+          "1.3.4889",
+          "1.3.4890",
+          "1.3.5152",
+          "1.3.5153",
+          "1.3.5176",
+          "1.3.5259",
+          "1.3.5537",
+          "1.3.5541",
+          "1.3.5581",
+          "1.3.5589",
+          "1.3.5597",
+          "1.3.5640",
+          "1.3.5649",
+          "1.3.5650",
+          "1.3.5761",
+          "1.3.5768",
+          "1.3.5769",
+          "1.3.5870",
+          "1.3.5877",
+          "1.3.5882",
+          "1.3.5887",
+          "1.3.5888",
+          "1.3.5889",
+          "1.3.5894",
+          "1.3.5899",
+          "1.3.5902",
+          "1.3.5920",
+          "1.3.5925",
+          "1.3.6007",
+          "1.3.6013",
+          "1.3.6038",
+          "1.3.6041",
+          "1.3.6053",
+          "1.3.6110",
+          "1.3.6115",
+          "1.3.6117",
+          "1.3.6124",
+          "1.3.6137",
+          "1.3.6139",
+          "1.3.6166",
+          "1.3.6181",
+          "1.3.6183",
+          "1.3.6196",
+          "1.3.6199",
+          "1.3.6206",
+          "1.3.6212",
+          "1.3.6238",
+          "1.3.6241",
+          "1.3.6259",
+          "1.3.6260",
+          "1.3.6266",
+          "1.3.6267",
+          "1.3.6268",
+          "1.3.6274",
+          "1.3.6276",
+          "1.3.6290",
+          "1.3.6301",
+          "1.3.6440",
+          "1.3.6501",
+          "1.3.6527",
+          "1.3.6529",
+          "1.3.6573",
+          "1.3.6574",
+          "1.3.6579",
+          "1.3.6588",
+          "1.3.6601",
+          "1.3.6620",
+          "1.3.6624"
+        ],
+        "blacklist_markets": [
+          "1.3.5531"
+        ],
+        "description": "{\"main\":\"Asset is backed 1:1 by the real BTC on Bitcoin blockchain http://bitcoin.org and can be deposited or withdrawn using gateway operated by XBTS https://xbts.io\",\"short_name\":\"BTC\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 500
+        }
+      },
+      "dynamic_asset_data_id": "2.3.4157",
+      "creation_block_num": 28398545,
+      "creation_time": "2018-07-03T09:23:21",
+      "total_in_collateral": 0
+    },
+    "1.3.4176": {
+      "id": "1.3.4176",
+      "symbol": "XBTSX.DASH",
+      "precision": 8,
+      "issuer": "1.2.1014725",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 10,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 79,
+        "flags": 7,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1600000000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 100000000,
+            "asset_id": "1.3.4176"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"XBTSX.DASH asset is backed 1:1 by the real DASH onDashCoin blockchain https://dash.org and can be deposited or withdrawn using gateway operated by XBTS https://xbts.io\",\"short_name\":\"DASH\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 0
+        }
+      },
+      "dynamic_asset_data_id": "2.3.4176",
+      "creation_block_num": 28541928,
+      "creation_time": "2018-07-08T09:57:33",
+      "total_in_collateral": 0
+    },
+    "1.3.5537": {
+      "id": "1.3.5537",
+      "symbol": "IOB.XRP",
+      "precision": 4,
+      "issuer": "1.2.1787259",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 0,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 79,
+        "flags": 7,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 5000000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 10000,
+            "asset_id": "1.3.5537"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"1:1 IOB.XRP/XRP ioxbank gateway for XRP blockchain. XRP blockchain connects banks, payment providers, digital asset exchanges and corporate globally. learn more about XRP: https://xrpl.org\",\"market\":\"\"}",
+        "extensions": {}
+      },
+      "dynamic_asset_data_id": "2.3.5537",
+      "creation_block_num": 41745771,
+      "creation_time": "2019-10-11T22:52:06",
+      "total_in_collateral": 0
+    },
+    "1.3.5589": {
+      "id": "1.3.5589",
+      "symbol": "XBTSX.USDT",
+      "precision": 6,
+      "issuer": "1.2.1067172",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "10000000000000",
+        "issuer_permissions": 79,
+        "flags": 71,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 80000000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 1000000,
+            "asset_id": "1.3.5589"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [
+          "1.3.0",
+          "1.3.102",
+          "1.3.103",
+          "1.3.105",
+          "1.3.106",
+          "1.3.113",
+          "1.3.117",
+          "1.3.119",
+          "1.3.120",
+          "1.3.121",
+          "1.3.958",
+          "1.3.1093",
+          "1.3.1325",
+          "1.3.2512",
+          "1.3.2567",
+          "1.3.3291",
+          "1.3.4098",
+          "1.3.4099",
+          "1.3.4156",
+          "1.3.4157",
+          "1.3.4159",
+          "1.3.4176",
+          "1.3.4274",
+          "1.3.4275",
+          "1.3.4373",
+          "1.3.4485",
+          "1.3.4517",
+          "1.3.4565",
+          "1.3.4631",
+          "1.3.4760",
+          "1.3.4889",
+          "1.3.4890",
+          "1.3.5152",
+          "1.3.5153",
+          "1.3.5176",
+          "1.3.5259",
+          "1.3.5286",
+          "1.3.5537",
+          "1.3.5541",
+          "1.3.5550",
+          "1.3.5581",
+          "1.3.5587",
+          "1.3.5597",
+          "1.3.5640",
+          "1.3.5649",
+          "1.3.5761",
+          "1.3.5768",
+          "1.3.5769",
+          "1.3.5870",
+          "1.3.5877",
+          "1.3.5882",
+          "1.3.5887",
+          "1.3.5888",
+          "1.3.5889",
+          "1.3.5894",
+          "1.3.5899",
+          "1.3.5902",
+          "1.3.5905",
+          "1.3.5910",
+          "1.3.5920",
+          "1.3.5925",
+          "1.3.5969",
+          "1.3.6007",
+          "1.3.6013",
+          "1.3.6038",
+          "1.3.6041",
+          "1.3.6053",
+          "1.3.6060",
+          "1.3.6110",
+          "1.3.6115",
+          "1.3.6117",
+          "1.3.6124",
+          "1.3.6137",
+          "1.3.6139",
+          "1.3.6166",
+          "1.3.6181",
+          "1.3.6183",
+          "1.3.6196",
+          "1.3.6199",
+          "1.3.6206",
+          "1.3.6212",
+          "1.3.6213",
+          "1.3.6238",
+          "1.3.6241",
+          "1.3.6249",
+          "1.3.6259",
+          "1.3.6260",
+          "1.3.6266",
+          "1.3.6267",
+          "1.3.6268",
+          "1.3.6274",
+          "1.3.6276",
+          "1.3.6279",
+          "1.3.6281",
+          "1.3.6289",
+          "1.3.6301",
+          "1.3.6440",
+          "1.3.6501",
+          "1.3.6527",
+          "1.3.6529",
+          "1.3.6533",
+          "1.3.6573",
+          "1.3.6574",
+          "1.3.6588",
+          "1.3.6601",
+          "1.3.6620",
+          "1.3.6624",
+          "1.3.6627",
+          "1.3.6630",
+          "1.3.6631",
+          "1.3.6632",
+          "1.3.6633",
+          "1.3.6640"
+        ],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"Asset is backed 1:1 by the real USDT Tether USD https://tether.to on Ethereum and BEP2 blockchain, can be deposited and withdrawn using gateway operated by  https://xbts.io\\n\",\"short_name\":\"USDT\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 500,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.5589",
+      "creation_block_num": 43331222,
+      "creation_time": "2019-12-06T05:25:21",
+      "total_in_collateral": 803786
+    },
+    "1.3.5840": {
+      "id": "1.3.5840",
+      "symbol": "USD1.0",
+      "precision": 4,
+      "issuer": "1.2.0",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 8,
+        "max_market_fee": "1000000000000000",
+        "issuer_permissions": 16323,
+        "flags": 515,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 13,
+            "asset_id": "1.3.5840"
+          },
+          "quote": {
+            "amount": 46845,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "USD1.0 is bitUSD reloaded with the original parameters. The objective of this asset is to be pegged to the U.S. dollar.",
+        "extensions": {
+          "reward_percent": 4000,
+          "taker_fee_percent": 12
+        }
+      },
+      "dynamic_asset_data_id": "2.3.5840",
+      "bitasset_data_id": "2.4.371",
+      "creation_block_num": 51895129,
+      "creation_time": "2020-09-29T22:15:00",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 0
+    },
+    "1.3.6013": {
+      "id": "1.3.6013",
+      "symbol": "XBTSX.HIVE",
+      "precision": 6,
+      "issuer": "1.2.1803149",
+      "options": {
+        "max_supply": "399000000000000",
+        "market_fee_percent": 10,
+        "max_market_fee": "1000000000000",
+        "issuer_permissions": 79,
+        "flags": 7,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 12800000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 1000000,
+            "asset_id": "1.3.6013"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [
+          "1.2.1793420"
+        ],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"XBTSX.HIVE asset is backed 1:1 by the real HIVE on Hive blockchain https://hive.io and can be deposited or withdrawn using gateway operated by https://xbts.io\",\"market\":\"\",\"short_name\":\"HIVE\"}",
+        "extensions": {
+          "reward_percent": 2000,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6013",
+      "creation_block_num": 58381194,
+      "creation_time": "2021-05-13T23:49:39",
+      "total_in_collateral": 0
+    },
+    "1.3.6189": {
+      "id": "1.3.6189",
+      "symbol": "EUROLUX",
+      "precision": 4,
+      "issuer": "1.2.471894",
+      "options": {
+        "max_supply": "100000000000",
+        "market_fee_percent": 2,
+        "max_market_fee": 0,
+        "issuer_permissions": 417,
+        "flags": 0,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 1,
+            "asset_id": "1.3.6189"
+          },
+          "quote": {
+            "amount": 8000,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"EUROLUX is a digital EUR smartcoin (stablecoin) that is pegged to EURO on a 1:1 basis and is backed by collateral  which held at the blockchain in a smart contract.\",\"short_name\":\"EUROLUX\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 0,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6189",
+      "bitasset_data_id": "2.4.395",
+      "creation_block_num": 68929736,
+      "creation_time": "2022-05-16T11:51:42",
+      "total_in_collateral": 0,
+      "total_backing_collateral": "3571428570"
+    },
+    "1.3.6190": {
+      "id": "1.3.6190",
+      "symbol": "ALTIN",
+      "precision": 7,
+      "issuer": "1.2.1700976",
+      "options": {
+        "max_supply": "10000000000000",
+        "market_fee_percent": 2,
+        "max_market_fee": 0,
+        "issuer_permissions": 433,
+        "flags": 16,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 100,
+            "asset_id": "1.3.6190"
+          },
+          "quote": {
+            "amount": 1000000,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"ALTIN is a digital stablecoin pegged to GOLD on 1:1 basis in ounces and backed by collateral  which held at the blockchain in a smart contract.\",\"short_name\":\"ALTIN\",\"market\":\"\"}",
+        "extensions": {
+          "reward_percent": 0,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6190",
+      "bitasset_data_id": "2.4.396",
+      "creation_block_num": 68951386,
+      "creation_time": "2022-05-17T05:57:03",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 838018076
+    },
+    "1.3.6301": {
+      "id": "1.3.6301",
+      "symbol": "HONEST.MONEY",
+      "precision": 8,
+      "issuer": "1.2.1808389",
+      "options": {
+        "max_supply": "1000000000000000",
+        "market_fee_percent": 0,
+        "max_market_fee": "99999900000000",
+        "issuer_permissions": 1,
+        "flags": 1,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 100000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 100000000,
+            "asset_id": "1.3.6301"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"Honest Money describes currency or other financial instruments that have a stable value and are not subject to manipulation or control by a central authority. The idea of honest money is based on the concept of sound money, which is money that maintains its value over time and is not easily debased or diluted.\\n\\nThere are several characteristics that are often associated with honest money, such as:\\n\\n    Stability: Honest money should have a stable value and not be subject to significant fluctuations in value over short periods of time.\\n\\n    Limited supply: Honest money should have a limited supply, so that it cannot be easily diluted or debased by the issuance of additional units.\\n\\n    Decentralization: Honest money should not be controlled by a central authority or subject to manipulation by a single entity.\\n\\n    Transparency: Honest money should be transparent and open to scrutiny, so that users can understand its value and how it is being used.\\n\\nSome examples of honest money include gold, silver, and other precious metals, which have been used as currency for centuries due to their inherent value and limited supply. In recent years, there has been increasing interest in the use of cryptocurrencies, such as Bitcoin, as a form of honest money due to their decentralized nature and fixed supply.\\n\\n\\nDISTRIBUTION:\\n\\n90% Baked into BitShares Smart Contract Dec, 31st 2022 midnight UTC\\n\\n10% Distributed in 11 Tranches to active users:\\n\\n\\nHONEST OWNERS AND PUBLISHERS\\n================================\\n\\n\\n1       \\\"1.2.581357\\\"   # user85                    @litepresence        litepresence.com\\n1       \\\"1.2.1798534\\\"  # squidkid-deluxe256\\n1       \\\"1.2.1790240\\\"  # piga-mifupa               @christophersanborn  bitshares-core\\n1       \\\"1.2.1691170\\\"  # bitshares-robot           @AmmarYousef         iobanker.com\\n0.75    \\\"1.2.20638\\\"    # datasecuritynode          @JBahai              peerplays.com\\n0.25    \\\"1.2.420263\\\"   # gabrielv0                 @Don_Gabriel         dexbot.info\\n\\n\\nKIBANA SEARCHES FOR TOP USERS\\n================================\\n\\n1   any user that locked collateral for any MPA in the past year\\n\\n    kibana: operation_history.op_object.delta_debt.asset_id: *\\n\\n1   any user that locked collateral for an HONEST MPA in the past year\\n\\n    kibana: operation_history.op_object.delta_debt.asset_id: 1.3.5650 \\n    OR operation_history.op_object.delta_debt.asset_id: 1.3.5649\\n\\n1   any user that performed a swap operation in the past year\\n\\n    kibana: operation_history.op_object.pool : *\\n\\n1   any user that performed a swap operation in an HONEST pool in the past year\\n\\n    kibana: operation_history.op_object.pool : 1.19.43  \\n    OR operation_history.op_object.pool : \\\"1.19.66\\\"  \\n    OR operation_history.op_object.pool : \\\"1.19.65\\\" \\n\\n1   top 1000 users that performed any dex swap on books or in pools in the past year\\n\\n    kibana: amount_to_sell\\n\\nKIBANA SEARCH FOR BTSMG STAKES\\n================================\\n\\n1   weighted split among those that transferred BTS to BTSMG\\n\\n    kibana: operation_history.op_object.to: 1.2.1803999\",\"short_name\":\"Honest Money\",\"market\":\"BTS\"}",
+        "extensions": {
+          "whitelist_market_fee_sharing": [],
+          "taker_fee_percent": 10
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6301",
+      "creation_block_num": 75312114,
+      "creation_time": "2022-12-24T23:05:03",
+      "total_in_collateral": 0
+    },
+    "1.3.6535": {
+      "id": "1.3.6535",
+      "symbol": "ALTIN.RUB",
+      "precision": 4,
+      "issuer": "1.2.1700976",
+      "options": {
+        "max_supply": "1000000000000",
+        "market_fee_percent": 0,
+        "max_market_fee": 0,
+        "issuer_permissions": 433,
+        "flags": 0,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 9,
+            "asset_id": "1.3.6535"
+          },
+          "quote": {
+            "amount": 500,
+            "asset_id": "1.3.0"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"ALTIN.RUB (Golden Ruble)  is a stablecoin that is pegged to Russian Ruble on a 1:1 basis and is backed by collateral held at the blockchain in a smart contract.\",\"market\":\"\",\"short_name\":\"Altin Russian Ruble\"}",
+        "extensions": {
+          "reward_percent": 0,
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6535",
+      "bitasset_data_id": "2.4.436",
+      "creation_block_num": 80348026,
+      "creation_time": "2023-06-18T07:54:33",
+      "total_in_collateral": 0,
+      "total_backing_collateral": 1110654445
+    },
+    "1.3.6554": {
+      "id": "1.3.6554",
+      "symbol": "LEPTA",
+      "precision": 4,
+      "issuer": "1.2.1830903",
+      "options": {
+        "max_supply": "10000000000",
+        "market_fee_percent": 2,
+        "max_market_fee": 0,
+        "issuer_permissions": 1,
+        "flags": 1,
+        "core_exchange_rate": {
+          "base": {
+            "amount": 100000,
+            "asset_id": "1.3.0"
+          },
+          "quote": {
+            "amount": 10000,
+            "asset_id": "1.3.6554"
+          }
+        },
+        "whitelist_authorities": [],
+        "blacklist_authorities": [],
+        "whitelist_markets": [],
+        "blacklist_markets": [],
+        "description": "{\"main\":\"Библейская монета для верующих\",\"short_name\":\"LPT\",\"market\":\"\"}",
+        "extensions": {
+          "whitelist_market_fee_sharing": []
+        }
+      },
+      "dynamic_asset_data_id": "2.3.6554",
+      "creation_block_num": 86639349,
+      "creation_time": "2024-01-23T13:42:45",
+      "total_in_collateral": 0
+    }
+  }
+}

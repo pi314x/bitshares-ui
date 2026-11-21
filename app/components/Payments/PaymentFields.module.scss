@@ -1,0 +1,40 @@
+// The cards of the Deposit, Withdraw and Instant trade pages hold the dialogs' own blocks (asset and gateway selectors,
+// the amount, the address, the fee), which are legacy markup: one rhythm for them, and none of the dialogs' own
+// margins between them.
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+}
+
+.fields > * {
+    margin-top: 0;
+    margin-bottom: 0;
+    min-width: 0;
+}
+
+// a block that carried its own spacing as an inline style (the dialogs' `marginBottom: 1em`)
+body[class][class] .fields > div[style*="margin-bottom"] {
+    margin-bottom: 0 !important;
+}
+
+body[class][class] .fields textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 92px;
+}
+
+body[class][class] .fields span:has(> textarea) {
+    display: block;
+    width: 100%;
+}
+
+.hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}

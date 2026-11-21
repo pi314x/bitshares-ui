@@ -1,0 +1,168 @@
+// The start-up screen. Same ring, with the BitShares mark in it, as every page-level
+// loader (LoadingIndicator.LogoRing) and as the splash in index.hbs, so the
+// hand-over between the three is not a change of shape.
+.screen {
+    position: fixed;
+    inset: 0;
+    // above the app's own loaders and dialogs: while this screen is up (it
+    // stays until the app has its data) nothing else may show through
+    z-index: 10000;
+    // The group - ring, title, steps, the two detail lines - is centred across and
+    // down: it is the middle row, between two equal ones. What may come under it
+    // (the node list) is in the row below and overflows it, so it never moves the
+    // group. The static splash (index.hbs) puts its ring where this group's ring
+    // is (its spacer is the group's height under the ring), so nothing moves when
+    // this screen takes over. On a window lower than the group, the rows are 0 and
+    // the screen scrolls from the top.
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    // one column as wide as the window: a long line in the group (a node's address)
+    // is cut with an ellipsis, it does not widen the column and push the ring aside
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding: 24px;
+    overflow-y: auto;
+    background: var(--ground);
+    color: var(--ink);
+}
+
+// Every height in the group is fixed (the splash's spacer is their sum): 56 ring,
+// 24 title, 7 steps of 20 with 10 between, two lines of 18, and 18 between the blocks.
+.group {
+    grid-row: 2;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.extra {
+    grid-row: 3;
+    align-self: start;
+    margin-top: 18px;
+}
+
+.leaving {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .leaving {
+        transition: none;
+    }
+}
+
+// a flex box, so that the ring's line box adds nothing under it (it is 56 high, not 80)
+.ringWrap {
+    display: flex;
+}
+
+// `.screen .group .title`: the legacy sheet gives every h1 `margin: 24px 0` and
+// `line-height: 1` (`body.darkTheme h1`), and a plain class would lose to it
+.screen .group .title {
+    margin: 0;
+    height: 24px;
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+// `.screen .group .steps`: the legacy sheet gives every ol a bottom margin
+.screen .group .steps {
+    align-self: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: min(320px, 86vw);
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    min-height: 20px;
+    line-height: 20px;
+    gap: 10px;
+    color: var(--faint);
+    font-size: 14px;
+}
+
+.mark {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--faint);
+    box-sizing: border-box;
+}
+
+.done {
+    color: var(--muted);
+}
+
+.done .mark {
+    border-color: var(--accent);
+    background: var(--accent);
+    // a check mark cut out of the disc
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.5 9.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+    border: none;
+}
+
+.active {
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.active .mark {
+    border-color: var(--accent);
+    border-top-color: transparent;
+    animation: spin 0.9s linear infinite;
+}
+
+.detail {
+    margin: 0;
+    height: 18px;
+    max-width: min(460px, 90vw);
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 18px;
+    // one line each, so that the group's height does not change (the whole text is
+    // in the title); long node URLs end in an ellipsis
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detail strong {
+    color: var(--ink-2);
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .active .mark {
+        animation-duration: 3s;
+    }
+}
+
+// a step that could not be read
+.failed {
+    color: var(--down);
+}
+
+.failed .mark {
+    border-color: var(--down);
+}
