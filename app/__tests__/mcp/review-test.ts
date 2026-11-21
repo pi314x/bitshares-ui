@@ -214,6 +214,7 @@ describe("the menu and the flags", () => {
             "Advanced",
             "AI assistants",
             "Lifetime membership",
+            "Wallet extension",
             "Settings",
             "Help"
         ]);

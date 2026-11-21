@@ -121,6 +121,12 @@ export const NAV_GROUPS: RailNavGroup[] = [
                 icon: "membership",
                 to: "/membership"
             },
+            // how to sign with the BitShares wallet browser extension
+            {
+                label: "Wallet extension",
+                icon: "extension",
+                to: "/extension"
+            },
             {
                 label: "Settings",
                 icon: "settings",
@@ -209,6 +215,7 @@ const CRUMB_TITLES: Record<string, string> = {
     "samet-funds": "SameT funds",
     advanced: "Advanced",
     membership: "Lifetime membership",
+    extension: "Wallet extension",
     mcp: "AI assistants",
     "timed-transfer": "Timed transfer",
     send: "Send",

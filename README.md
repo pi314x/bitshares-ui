@@ -21,7 +21,7 @@ This is the reference wallet of the BitShares blockchain. It is a browser wallet
 - **Lending**: credit offers and **SameT funds** (flash loans: borrowed and repaid inside one transaction).
 - **Network**: an explorer for blocks, assets, accounts, witnesses, committee and fees.
 - **More**: the Spotlight hub (barter, HTLC, direct debit, paper wallet, borrowing), **Advanced operations** (the chain's operations that have no screen of their own), **Lifetime membership** (what a membership costs, after how many trades it pays for itself, and what your own account has paid in fees), settings and help.
-- **Signing** with the local wallet, or with the [BitShares wallet browser extension](https://github.com/pi314x/bitshares-wallet-browser-extension) (opt-in, Settings → Signing).
+- **Signing** with the local wallet, or with the [BitShares wallet browser extension](https://github.com/pi314x/bitshares-wallet-browser-extension) (opt-in, Settings → Signing; **More → Wallet extension** explains how to install, connect and sign with it).
 - **Ten languages** (English, German, French, Spanish, Italian, Russian, Japanese, Korean, Turkish, Chinese), a light and a dark theme.
 - **AI assistants** can read the chain through an optional MCP server, and, if you switch it on, *prepare* an order that you review and sign yourself (off by default, see [docs/MCP.md](docs/MCP.md)).
 

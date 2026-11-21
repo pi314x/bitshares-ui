@@ -130,6 +130,10 @@ const PATHS: {[name: string]: React.ReactNode} = {
             <path d="m8.8 13.4-1.3 7 4.5-2.4 4.5 2.4-1.3-7" />
         </>
     ),
+    // a puzzle piece: the wallet browser extension
+    extension: (
+        <path d="M10 4.5a1.8 1.8 0 0 1 3.6 0V6.5H18a1.5 1.5 0 0 1 1.5 1.5v3.4h-1.4a1.9 1.9 0 1 0 0 3.8h1.4V18A1.5 1.5 0 0 1 18 19.5h-3.4v-1.4a1.9 1.9 0 1 0-3.8 0v1.4H6A1.5 1.5 0 0 1 4.5 18v-3.8h1.4a1.9 1.9 0 1 0 0-3.8H4.5V8A1.5 1.5 0 0 1 6 6.5h4V4.5Z" />
+    ),
     // the bell of the top bar (NotificationBell draws the same), for a price alert
     bell: (
         <>

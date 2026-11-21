@@ -36,6 +36,7 @@ describe("left navigation rail", () => {
             "Spotlight",
             "Advanced",
             "Lifetime membership",
+            "Wallet extension",
             "Settings",
             "Help"
         ]);
@@ -240,6 +241,18 @@ describe("withLastMarket", () => {
                 .filter(item => item.label !== "Trade")
                 .map(item => item.to);
         expect(others(groups)).toEqual(others(NAV_GROUPS));
+    });
+
+    it("has a Wallet extension page under More, before Settings, with its own title", () => {
+        const more = NAV_GROUPS.find(g => g.label === "More")!;
+        const labels = more.items.map(i => i.label);
+        const item = more.items.find(i => i.label === "Wallet extension")!;
+        expect(item.to).toBe("/extension");
+        expect(item.icon).toBe("extension");
+        expect(labels.indexOf("Wallet extension")).toBe(
+            labels.indexOf("Settings") - 1
+        );
+        expect(crumbFromPath("/extension")).toBe("Wallet extension");
     });
 
     it("has a Lifetime membership page under More, with its own title", () => {

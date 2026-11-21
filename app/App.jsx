@@ -280,6 +280,14 @@ const AddressBookPage = Loadable({
     loading: LoadingIndicator
 });
 
+const ExtensionGuide = Loadable({
+    loader: () =>
+        import(
+            /* webpackChunkName: "extension" */ "./components/Extension/ExtensionGuide"
+        ),
+    loading: LoadingIndicator
+});
+
 const LifetimeBreakEven = Loadable({
     loader: () =>
         import(
@@ -898,6 +906,10 @@ class App extends React.Component {
                                     <Route
                                         path="/membership"
                                         element={<LifetimeBreakEven />}
+                                    />
+                                    <Route
+                                        path="/extension"
+                                        element={<ExtensionGuide />}
                                     />
                                     <Route path="*" element={<Page404 />} />
                                 </Routes>
