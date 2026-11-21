@@ -81,7 +81,7 @@ You need **Node.js 20** (the container image builds with it; `package.json` allo
 ```
 nvm install 20 && nvm use 20            # or any Node 20 you have
 
-git clone --branch claude/bitshares-ui-migration-pu5y14 https://github.com/pi314x/bitshares-ui.git
+git clone --branch pi314x/bitshares-ui-migration-pu5y14 https://github.com/pi314x/bitshares-ui.git
 cd bitshares-ui
 
 yarn install                            # a few minutes
