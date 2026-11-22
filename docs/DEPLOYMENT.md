@@ -75,7 +75,11 @@ docker compose -f docker-compose.tls.yml up --build   # https, with ./certs
   2. **The network** (`ETIMEDOUT`, `ESOCKETTIMEDOUT`, `getaddrinfo`, `Could not resolve host`) while the packages
      are fetched: the registry (`registry.yarnpkg.com`) and `github.com` must be reachable from the build.
      Each request waits up to 10 minutes before it counts as failed.
-  3. **Memory**: the build of the app (`yarn build`) needs about 2 GB free; an exit code 137 or `Killed`
+  3. **Disk space** (`ENOSPC: no space left on device`): the build needs about 5 GB free on the build host
+     (yarn's download cache about 1 GB, `node_modules` about 1 GB, then the build and the base images). Free it with
+     `docker builder prune -af` and `docker image prune -af` (or `docker system prune -af`), or give the
+     Docker data folder a bigger disk. This was the cause of the first Dockhand failure.
+  4. **Memory**: the build of the app (`yarn build`) needs about 2 GB free; an exit code 137 or `Killed`
      is the system stopping it.
 - Three packages are fetched from GitHub at build time, each pinned by its commit in `yarn.lock`
   (`bitshares-report`, `jdenticon`, `perfect-scrollbar`), so the build needs `git` (the build stage

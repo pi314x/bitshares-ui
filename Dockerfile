@@ -24,7 +24,8 @@ COPY charting_library/ ./charting_library/
 # host; its md5 is still checked). Empty = the default. docs/DEPLOYMENT.md, "If the image does not build".
 ARG CHARTING_LIBRARY_URL=
 # a slow link to the registry or to GitHub is not an error: wait up to 10 minutes per request
-RUN yarn install --frozen-lockfile --network-concurrency 1 --network-timeout 600000
+# (the yarn cache is emptied in the same step: it is a copy of what is installed, about 1 GB the layer need not keep)
+RUN yarn install --frozen-lockfile --network-concurrency 1 --network-timeout 600000 && yarn cache clean
 
 # the build reads no .git folder (it is not in the context): the revision is told to it
 ARG BRANCH=container
