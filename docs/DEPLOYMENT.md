@@ -78,10 +78,12 @@ nothing (no push, no tag, no registry):
 4. `scripts/check-container.sh` against it (headers, policy, user, read-only file system, caching,
    no source maps, the TLS variant, `nginx -t`);
 5. a look into what the image ships: no script source maps, no private key block. The MCP pages
-   are compile-time flags (`MCP_ENABLED`, `MCP_TRADING_ENABLED`) that the Dockerfile does not set:
-   in the image `/mcp` and `/mcp/review` are a 404 page and the rail has no "AI assistants" entry
-   (run against the shipped files). Their code is still in the bundle, as a chunk nothing loads;
-   a public site must not set the flags;
+   are compile-time flags (`MCP_ENABLED`, `MCP_TRADING_ENABLED`) that the Dockerfile does not set;
+   the read tools are on by default for a development build, but a production build (`yarn build`, so
+   the image) has no MCP page unless it is built with `MCP_ENABLED=true`: in the image `/mcp` and
+   `/mcp/review` are a 404 page and the rail has no "AI assistants" entry (run against the shipped
+   files). Their code is still in the bundle, as a chunk nothing loads; a public or shared site must
+   not set the flags, and the write tools (`MCP_TRADING_ENABLED`) are never for a shared environment;
 6. `build/release/bitshares-desk-<tag>.tar.gz` and its `.sha256`, for the server.
 
 On the server (Docker, the repository's `docker-compose.yml` and, for TLS of its own,

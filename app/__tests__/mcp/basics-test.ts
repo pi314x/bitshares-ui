@@ -1,4 +1,6 @@
 /** @jest-environment node */
+import fs from "fs";
+import path from "path";
 import {ChainTypes} from "bitsharesjs";
 import {
     UserError,
@@ -12,6 +14,7 @@ import {
 import {validate} from "../../../mcp/src/schema";
 import {
     ConfigError,
+    buildFlags,
     parseEnvFile,
     readConfig,
     tradeLimits
@@ -144,9 +147,11 @@ describe("settings", () => {
         });
     });
 
-    it("is off, read-only and local by default", () => {
+    it("reads by default, never trades by itself, and is local", () => {
         const c = readConfig({});
-        expect(c.enabled).toBe(false);
+        // the read tools are on unless MCP_ENABLED says false; the trading tools are off unless MCP_TRADING_ENABLED says true
+        expect(c.enabled).toBe(true);
+        expect(readConfig({MCP_ENABLED: "false"}).enabled).toBe(false);
         expect(c.transport).toBe("stdio");
         expect(c.trading.enabled).toBe(false);
         expect(c.http.host).toBe("127.0.0.1");
@@ -205,7 +210,67 @@ describe("settings", () => {
             })
         ).toThrow(/MCP_TRADE_LIMITS/);
         // a server that is off is not checked for what it would need
-        expect(readConfig({MCP_TRADING_ENABLED: "true"}).enabled).toBe(false);
+        expect(
+            readConfig({MCP_ENABLED: "false", MCP_TRADING_ENABLED: "true"})
+                .enabled
+        ).toBe(false);
+        // ... and one that reads by default cannot be made to trade without the accounts and the limits
+        expect(() => readConfig({MCP_TRADING_ENABLED: "true"})).toThrow(
+            /MCP_TRADING_ACCOUNTS/
+        );
+    });
+
+    describe("what the web build is told (buildFlags)", () => {
+        it("has the MCP page in a development build unless MCP_ENABLED says false", () => {
+            expect(buildFlags({})).toEqual({enabled: true, trading: false});
+            expect(buildFlags({}, {production: false})).toEqual({
+                enabled: true,
+                trading: false
+            });
+            expect(buildFlags({MCP_ENABLED: "false"})).toEqual({
+                enabled: false,
+                trading: false
+            });
+        });
+
+        it("has no MCP page in a production build (a shared or public place) unless MCP_ENABLED says true", () => {
+            expect(buildFlags({}, {production: true})).toEqual({
+                enabled: false,
+                trading: false
+            });
+            expect(
+                buildFlags({MCP_ENABLED: "true"}, {production: true})
+            ).toEqual({enabled: true, trading: false});
+            expect(
+                buildFlags({MCP_ENABLED: "false"}, {production: true}).enabled
+            ).toBe(false);
+        });
+
+        it("has the review of prepared orders only when asked for, and only with the page", () => {
+            const on = {MCP_TRADING_ENABLED: "true"};
+            // never by default, in either kind of build
+            expect(buildFlags({}).trading).toBe(false);
+            expect(buildFlags({}, {production: true}).trading).toBe(false);
+            expect(buildFlags(on).trading).toBe(true);
+            expect(buildFlags(on, {production: true}).trading).toBe(false);
+            expect(
+                buildFlags({...on, MCP_ENABLED: "true"}, {production: true})
+                    .trading
+            ).toBe(true);
+            expect(buildFlags({...on, MCP_ENABLED: "false"}).trading).toBe(
+                false
+            );
+        });
+
+        it("is told by the webpack config which kind of build it is", () => {
+            const source = fs.readFileSync(
+                path.join(__dirname, "../../../webpack.config.js"),
+                "utf8"
+            );
+            expect(source).toContain(
+                "buildFlags(process.env, {production: !!env.prod})"
+            );
+        });
     });
 
     it("reads the trade limits", () => {

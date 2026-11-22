@@ -23,7 +23,7 @@ This is the reference wallet of the BitShares blockchain. It is a browser wallet
 - **More**: the Spotlight hub (barter, HTLC, direct debit, paper wallet, borrowing), **Advanced operations** (the chain's operations that have no screen of their own), **Lifetime membership** (what a membership costs, after how many trades it pays for itself, and what your own account has paid in fees), settings and help.
 - **Signing** with the local wallet, or with the [BitShares wallet browser extension](https://github.com/pi314x/bitshares-wallet-browser-extension) (opt-in, Settings → Signing; **More → Wallet extension** explains how to install, connect and sign with it).
 - **Ten languages** (English, German, French, Spanish, Italian, Russian, Japanese, Korean, Turkish, Chinese), a light and a dark theme.
-- **AI assistants** can read the chain through an optional MCP server, and, if you switch it on, *prepare* an order that you review and sign yourself (off by default, see [docs/MCP.md](docs/MCP.md)).
+- **AI assistants** (MCP tools): an optional MCP server reads the chain for an assistant, and, if you switch the write tools on, *prepares* an order that you review and sign yourself. See [AI assistants (MCP tools)](#ai-assistants-mcp-tools) below.
 
 <table>
   <tr>
@@ -89,6 +89,17 @@ yarn start                              # http://localhost:8080
 ```
 
 The first start compiles for a few minutes; after that the page reloads as you edit. `yarn start --host 0.0.0.0` makes it reachable from a phone on the same network. It connects to the BitShares mainnet by default (Settings → Nodes switches to the testnet).
+
+### AI assistants (MCP tools)
+
+An optional **MCP server** (`mcp/`, `node mcp/server.js`) gives an AI assistant (Claude, opencode, Codex, ...) tools for BitShares. It has no key and cannot sign or send. The tools are listed, with their arguments, on the app's **AI assistants** page (the menu under *More*, `/mcp`), and they are switched on and off by the environment (or a `.env` file; copy `.env.example`):
+
+| | Default | Switch |
+|---|---|---|
+| **Read tools**: the chain (accounts, balances, assets, markets and order books, pools, margin positions, vesting, fees, proposals), the network (blocks, witnesses, committee, workers, an account's votes) and lending (an account's credit offers and loans, the open offers, SameT funds) | **on** | `MCP_ENABLED=false` turns them off |
+| **Write tools**: they only *prepare* an order (or its cancellation) as a link, which you review in the app and sign with your own wallet | **off** | `MCP_TRADING_ENABLED=true`, with `MCP_TRADING_ACCOUNTS` and `MCP_TRADE_LIMITS` |
+
+A production build (`yarn build`, the container image) has no MCP page unless it is built with `MCP_ENABLED=true`. **Never switch the tools on in a shared environment, and above all not the write tools**: not on a server others use, not in a public deployment, not on a computer others log into, not in a CI job. See [docs/MCP.md](docs/MCP.md).
 
 ### With Docker
 

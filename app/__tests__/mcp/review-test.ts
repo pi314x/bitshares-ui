@@ -300,13 +300,14 @@ describe("the settings table", () => {
         );
     });
 
-    it("the example file is a safe start: it turns everything off and puts no secret in", () => {
+    it("the example file is a safe start: the read tools on, trading off, and no secret in it", () => {
         const values: Record<string, string> = {};
         example.split("\n").forEach(line => {
             const m = /^([A-Z][A-Z0-9_]*)=(.*)$/.exec(line);
             if (m) values[m[1]] = m[2];
         });
-        expect(values.MCP_ENABLED).toBe("false");
+        // the read tools are on by default; trading (the write tools) is never on until the person turns it on
+        expect(values.MCP_ENABLED).toBe("true");
         expect(values.MCP_TRADING_ENABLED).toBe("false");
         expect(values.MCP_AUTH_TOKEN).toBe("");
         // the file as it is must pass the server's own checks

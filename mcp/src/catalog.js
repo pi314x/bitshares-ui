@@ -419,6 +419,185 @@ const TOOLS = [
         }
     },
     {
+        name: "bitshares_get_block",
+        title: "Block",
+        group: "read",
+        description:
+            "A block of the chain by number (default: the newest): its time, the witness account that produced it, how many transactions and operations it holds, the operations counted by type, and the first transactions with the names of their operations. Operation fields are not shown: use bitshares_get_account_history for an account's own operations.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                block: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 4294967295,
+                    description: "The block number (default: the newest block)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_get_witnesses",
+        title: "Witnesses",
+        group: "read",
+        description:
+            "The witnesses, who produce the blocks, ranked by the votes behind them: name, id, whether they hold one of the active seats, votes (BTS stake), the blocks they missed, their last confirmed block and the page they gave. The votes are what the chain counts; the url is text the witness wrote.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 100,
+                    description: "How many to return (default 30)."
+                },
+                active_only: {
+                    type: "boolean",
+                    description:
+                        "Only the witnesses that hold an active seat now (default false)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_get_committee_members",
+        title: "Committee members",
+        group: "read",
+        description:
+            "The committee members, who set the chain's parameters and fees, ranked by the votes behind them: name, id, whether they hold an active seat, votes (BTS stake) and the page they gave. The url is text the member wrote.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 100,
+                    description: "How many to return (default 30)."
+                },
+                active_only: {
+                    type: "boolean",
+                    description:
+                        "Only the members that hold an active seat now (default false)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_get_workers",
+        title: "Workers",
+        group: "read",
+        description:
+            "The workers (proposals paid out of the chain's reserve) that are running or waiting to start, the best supported first: name, who is paid, the kind (refund, vesting or burn), the daily pay in BTS, the votes for and against, the dates and the page. The name and url are text the worker wrote.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                    description: "How many to return (default 30)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_get_account_votes",
+        title: "Account votes",
+        group: "read",
+        description:
+            "How an account voted: the proxy it named (if any, and then the proxy's votes are the ones that count), the witnesses, the committee members and the workers it votes for (or against), and how many witnesses and committee members it wants. Votes carry the account's BTS stake.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {account: ACCOUNT},
+            required: ["account"],
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_get_account_credit",
+        title: "Account credit offers and loans",
+        group: "read",
+        description:
+            "The credit offers an account has made (the asset it lends, what is left, the fee, the longest time, the collateral it accepts and at what price) and the loans it is in, as the borrower and as the lender (the debt, the collateral held, the fee, when it must be repaid and whether that has passed). A loan not repaid in time can be taken by the lender: the collateral is kept.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                account: ACCOUNT,
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                    description: "How many entries to return (default 20)."
+                }
+            },
+            required: ["account"],
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_list_credit_offers",
+        title: "Open credit offers",
+        group: "read",
+        description:
+            "The credit offers anyone can borrow from now (on, with something left, not past their stop time), cheapest fee first: who offers, the asset, how much is left, the fee, the longest time, the smallest loan and the collateral accepted with its price. Filter by the asset to borrow, or by an asset you hold as collateral. A credit offer needs collateral held beforehand; it is not a flash loan.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                asset: Object.assign({}, ASSET, {
+                    description:
+                        "Only offers that lend this asset (a symbol such as BTS, or an id such as 1.3.0)."
+                }),
+                collateral: Object.assign({}, ASSET, {
+                    description:
+                        "Only offers that accept this asset as collateral."
+                }),
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                    description: "How many entries to return (default 20)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
+        name: "bitshares_samet_funds",
+        title: "SameT flash-loan funds",
+        group: "read",
+        description:
+            "Lists the SameT funds, which lend an asset for the length of one transaction (a flash loan: borrowed first, repaid with the fee by the last operation, or nothing happens; no collateral). For each: the asset, how much it can lend now and its fee rate, and, if you give an amount, the fee a loan of that amount would cost and whether the fund can lend it.",
+        annotations: READ,
+        inputSchema: {
+            type: "object",
+            properties: {
+                asset: ASSET,
+                amount: Object.assign({}, AMOUNT, {
+                    description:
+                        "Optional, needs the asset: the amount to borrow, in whole units, to price the fee of."
+                }),
+                limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                    description: "How many funds to return (default 20)."
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    {
         name: "bitshares_trading_policy",
         title: "Trading limits",
         group: "trade",

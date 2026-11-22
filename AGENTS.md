@@ -59,8 +59,11 @@ keep `isActive()` false until the user connects the extension.
 **MCP** (`mcp/`, `docs/MCP.md`): a dependency-free Node server that lets an AI assistant read the
 chain and, if `MCP_TRADING_ENABLED`, *prepare* an order that a person reviews on `/mcp/review` and
 signs with their own wallet. It never holds a key and has no tool that signs or sends; keep it so.
-It is off unless `MCP_ENABLED` is true in the environment or in a `.env` file (see `.env.example`;
-`.env` is git-ignored, and agents are denied access to it). The web build reads the same two flags
+The read tools are ON by default (`MCP_ENABLED=false` in the environment or in a `.env` file turns them
+off; see `.env.example`; `.env` is git-ignored, and agents are denied access to it); the write tools are
+off unless `MCP_TRADING_ENABLED`, and never for a shared environment. A production build (`--env prod`)
+has no MCP page unless it is built with `MCP_ENABLED=true` (`buildFlags` in `mcp/src/env.js`; the
+development build has it). The web build reads the same two flags
 once, when webpack starts (`__MCP_ENABLED__`, `__MCP_TRADING__`; read them only through
 `lib/common/mcpFlags.ts`, a bare global throws in a bundle that lacks it, e.g. a dev server started
 before the flag existed). The files the bundle imports from `mcp/src/` (`catalog`, `settings`,

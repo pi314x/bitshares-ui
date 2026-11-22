@@ -3,7 +3,8 @@
 BitShares Desk ships a small **MCP server** (`mcp/`). MCP, the Model Context Protocol, is the
 way an AI assistant (Claude, opencode, Codex, or any client that speaks it) calls tools. The
 server gives the assistant tools to **read the BitShares chain** and, if you switch it on, to
-**prepare an order that you review and sign yourself**. It is off by default, and it has no key.
+**prepare an order that you review and sign yourself**. The read tools are on by default, the write
+tools are off until you switch them on, and the server has no key.
 
 - The tools, their arguments and their annotations are listed on the application's page
   **AI assistants** (`/mcp`, in the menu under *More*), which reads them from the server's own
@@ -11,20 +12,28 @@ server gives the assistant tools to **read the BitShares chain** and, if you swi
 - Nothing here changes how the application signs. Signing is still the local wallet or the
   browser extension, after a person pressed a button.
 
-## Switching it on
+## What is on, and how to change it
 
 Everything is set in the environment, or in a file called `.env` in the project's root (copy
 `.env.example`; `.env` is git-ignored and kept out of the container image). A value in the real
 environment wins over the file.
 
-```
-MCP_ENABLED=true
-```
+| | Default | Switch |
+|---|---|---|
+| The **read tools** (`node mcp/server.js`) and, in a development build (`yarn start`), the **AI assistants** page | **on** | `MCP_ENABLED=false` turns them off |
+| The **write tools** (they only *prepare* an order for you to sign) and the page that reviews what was prepared | **off** | `MCP_TRADING_ENABLED=true`, with `MCP_TRADING_ACCOUNTS` and `MCP_TRADE_LIMITS` (the server refuses to start without them) |
 
-That is the whole switch for the read tools. The web build reads `MCP_ENABLED` and
-`MCP_TRADING_ENABLED` as well: **a build made without them has no MCP page, no review page and no
-menu entry**, and the code for them is not reachable. After changing them, restart the dev server
-(`yarn start`) or rebuild (`yarn build`): webpack reads them once, when it starts.
+A **production build** (`yarn build`: the container image, the installable apps, a deployment) is the
+other way round: it has **no MCP page, no review page and no menu entry** unless it is built with
+`MCP_ENABLED=true`, and the code for them is not reachable. After changing a setting, restart the dev
+server (`yarn start`) or rebuild (`yarn build`): webpack reads them once, when it starts.
+
+**Never switch the tools on in a shared environment, and above all not the write tools.** A shared
+environment is a server other people use, a public deployment (the container image behind a domain), a
+computer others log into, a CI job. The tools act for whoever can reach the server (the AI client on
+stdio, anyone with the token on http), and the write tools prepare orders for the accounts in your
+settings. On such a machine set `MCP_ENABLED=false` (or leave a production build as it is), and never
+put `MCP_TRADING_ENABLED=true` or a `.env` with your accounts there.
 
 The server itself is a separate program (Node.js 18 or later, no dependencies to install):
 
@@ -147,6 +156,14 @@ Any other client that speaks MCP over stdio or streamable HTTP connects the same
 | `bitshares_get_fees` | read | the chain's fee for named operations, in BTS |
 | `bitshares_search_accounts` | read | account names by prefix (to compare an exact name) |
 | `bitshares_get_proposals` | read | proposals waiting for an account's approval, and who is missing |
+| `bitshares_get_block` | read | a block (default: the newest): its time, the witness account that made it, its transactions and operations counted by type, and the first transactions with the names of their operations |
+| `bitshares_get_witnesses` | read | the witnesses ranked by votes: the active seats, the stake behind each in BTS, the blocks missed, the last confirmed block |
+| `bitshares_get_committee_members` | read | the committee members ranked by votes, with their seats |
+| `bitshares_get_workers` | read | the workers that run or wait to start, by net votes: the pay, the kind (refund, vesting, burn), the votes for and against |
+| `bitshares_get_account_votes` | read | how an account voted: its proxy (whose votes then count), the witnesses, committee members and workers, by name |
+| `bitshares_get_account_credit` | read | an account's credit offers and its loans, as the borrower and as the lender, with what is due when |
+| `bitshares_list_credit_offers` | read | the credit offers anyone can borrow from now, cheapest fee first, filtered by the asset to borrow or the collateral |
+| `bitshares_samet_funds` | read | the SameT (flash-loan) funds: asset, what each can lend, its fee, and the fee of a loan of an amount |
 | `bitshares_trading_policy` | trade | the limits the person set (answers from the settings) |
 | `bitshares_prepare_limit_order` | trade | **prepares** an order: a summary, a reference code and a link |
 | `bitshares_prepare_cancel_order` | trade | **prepares** cancelling one open order |

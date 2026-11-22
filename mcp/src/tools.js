@@ -1249,7 +1249,35 @@ const trading = {
     }
 };
 
-const HANDLERS = Object.assign({}, reads, trading);
+// what the Explorer and Voting pages show (blocks, witnesses, the committee, workers, an account's votes)
+const networkReads = require("./networkTools").createNetworkHandlers({
+    db,
+    getAsset,
+    getAccount
+});
+
+// what the Credit offers page shows (an account's offers and loans, the open offers)
+const lendingReads = require("./lendingTools").createLendingHandlers({
+    db,
+    getAssets,
+    getAccount
+});
+
+// what the SameT funds page shows
+const sametReads = require("./sametTools").createSametHandlers({
+    db,
+    getAsset,
+    getAssets
+});
+
+const HANDLERS = Object.assign(
+    {},
+    reads,
+    networkReads,
+    lendingReads,
+    sametReads,
+    trading
+);
 
 /** The tool definitions that are on, in the form tools/list gives them. */
 function listTools(config) {

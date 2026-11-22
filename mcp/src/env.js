@@ -138,7 +138,8 @@ function tradeLimits(text) {
 
 /** The settings, checked. `env` is an object like process.env. Throws ConfigError. */
 function readConfig(env) {
-    const enabled = flag(env, "MCP_ENABLED", false);
+    // the read tools are on unless MCP_ENABLED says otherwise; the trading tools are off unless MCP_TRADING_ENABLED says so
+    const enabled = flag(env, "MCP_ENABLED", true);
     const transport = String(env.MCP_TRANSPORT || "stdio")
         .trim()
         .toLowerCase();
@@ -216,9 +217,15 @@ function readConfig(env) {
  * What the web build needs to know: whether the application has the MCP page, and whether
  * it has the review of transactions an assistant prepared. Only these two switches: the
  * rest of the settings belong to the server. Trading needs MCP on as well.
+ *
+ * The page is on by default in a build for development (`yarn start`), and off by default in a
+ * production build (`yarn build`: the container image, the installable apps, a deployment), which
+ * is a shared or public place unless the person who builds it says it is not: there it takes
+ * MCP_ENABLED=true. The trading review is never on by default.
  */
-function buildFlags(env) {
-    const enabled = flag(env, "MCP_ENABLED", false);
+function buildFlags(env, options) {
+    const production = !!(options && options.production);
+    const enabled = flag(env, "MCP_ENABLED", !production);
     return {
         enabled,
         trading: enabled && flag(env, "MCP_TRADING_ENABLED", false)

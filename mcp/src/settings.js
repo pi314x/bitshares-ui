@@ -7,9 +7,9 @@ const SETTINGS = [
     {
         name: "MCP_ENABLED",
         group: "server",
-        default: "false",
+        default: "true",
         text:
-            "Master switch: the server does not start, and the app has no MCP page, unless this is true."
+            "The read tools: on by default for the server and a development build; a production build (yarn build, the container image) has no MCP page unless this is true. Set false to switch it all off, and on any shared or public environment."
     },
     {
         name: "MCP_TRANSPORT",

@@ -8,12 +8,12 @@ var locales = require("./app/assets/locales");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 var fs = require("fs");
 // MCP (docs/MCP.md): whether the application has the MCP page and the review of
-// transactions an AI assistant prepared. Off unless MCP_ENABLED (and MCP_TRADING_ENABLED
-// for the review) is true in the environment or in the local settings file of the project's
-// root (see the example file there).
+// transactions an AI assistant prepared. The page is on in a development build and off in a
+// production build unless MCP_ENABLED is true; the review is off unless MCP_TRADING_ENABLED is
+// true as well. Both are read from the environment or from the local settings file of the
+// project's root (see the example file there), and decided in the config function below.
 const {loadEnvFile, buildFlags} = require("./mcp/src/env");
 loadEnvFile(path.join(__dirname, ".env"), process.env, /^MCP_/);
-const MCP = buildFlags(process.env);
 
 /*
  * For staging builds, set the version to the latest commit hash, for
@@ -54,6 +54,8 @@ var __VERSION__ =
 var root_dir = path.resolve(__dirname);
 
 module.exports = function(env) {
+    // on in a development build by default, off in a production build unless MCP_ENABLED=true (mcp/src/env.js)
+    const MCP = buildFlags(process.env, {production: !!env.prod});
     // STYLE LOADERS
     var cssLoaders = [
         {
