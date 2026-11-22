@@ -81,6 +81,6 @@ Ready: $IMAGE
     docker tag $IMAGE bitshares-desk:local
     docker compose up -d --no-build          # plain http on :8080, behind your TLS proxy
     # or with TLS of its own (certificate chain and key in ./certs):
-    docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --no-build
+    docker compose -f docker-compose.tls.yml up -d --no-build
 Nothing was pushed or tagged. See docs/DEPLOYMENT.md.
 EOF

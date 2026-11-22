@@ -107,7 +107,7 @@ A production build (`yarn build`, the container image) has no MCP page unless it
 docker compose up --build               # http://localhost:8080
 ```
 
-The image is built from this source (Node, `yarn build`) and served by nginx as an unprivileged user, with the security headers of [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). It speaks plain HTTP: for a wallet put it behind HTTPS, with a reverse proxy in front or with `docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build` and a certificate in `./certs`.
+The image is built from this source (Node, `yarn build`) and served by nginx as an unprivileged user, with the security headers of [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). It speaks plain HTTP: for a wallet put it behind HTTPS, with a reverse proxy in front or with `docker compose -f docker-compose.tls.yml up --build` and a certificate in `./certs`.
 
 ### A production build
 

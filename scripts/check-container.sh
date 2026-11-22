@@ -51,6 +51,23 @@ expect_header() { # headers name substring
     esac
 }
 
+# ---- the compose files --------------------------------------------------------------------
+# Each file has to be a complete project on its own (a tool that takes one file, such as Dockhand
+# or Portainer, gets exactly that), and the TLS one on top of the plain one has to mean the same as
+# the TLS one alone. `config` only reads the files: it needs no daemon.
+compose_config() { # files...
+    local args=() f
+    for f in "$@"; do args+=(-f "$ROOT/$f"); done
+    docker compose "${args[@]}" config 2>"$TMP/compose.err" || { cat "$TMP/compose.err" >&2; return 1; }
+}
+compose_config docker-compose.yml >"$TMP/compose.plain" || fail "docker-compose.yml is not a valid compose project on its own"
+compose_config docker-compose.tls.yml >"$TMP/compose.tls" || fail "docker-compose.tls.yml is not a valid compose project on its own"
+compose_config docker-compose.yml docker-compose.tls.yml >"$TMP/compose.both" \
+    || fail "docker-compose.yml with docker-compose.tls.yml is not a valid compose project"
+diff -u "$TMP/compose.tls" "$TMP/compose.both" >&2 \
+    || fail "docker-compose.tls.yml alone and on top of docker-compose.yml mean different things; keep the two files in step"
+ok "compose files: each valid on its own, the TLS file the same alone and on top of the plain one"
+
 # ---- the nginx files ----------------------------------------------------------------------
 # A certificate for the TLS ones (readable by the unprivileged user of the image).
 openssl req -x509 -newkey rsa:2048 -nodes -keyout "$TMP/privkey.pem" -out "$TMP/fullchain.pem" \

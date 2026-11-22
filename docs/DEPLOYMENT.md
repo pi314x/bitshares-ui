@@ -36,8 +36,17 @@ only the built files and the configuration (no Node, no sources).
 
 ```
 docker compose up --build            # http://localhost:8080
-docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build   # https, with ./certs
+docker compose -f docker-compose.tls.yml up --build   # https, with ./certs
 ```
+
+- Each compose file is complete on its own: `docker-compose.yml` is plain HTTP, `docker-compose.tls.yml`
+  is the same service with TLS. A tool that takes one compose file per stack (Dockhand, Portainer, ...)
+  gets one of them; give it `docker-compose.yml`, or `docker-compose.tls.yml` for TLS of its own. They need
+  the repository as build context, or the image already loaded as `bitshares-desk:local` (see the release
+  steps below). The two-file form `-f docker-compose.yml -f docker-compose.tls.yml` still works and means
+  the same as the TLS file alone; `scripts/check-container.sh` checks both. (Until this was fixed the TLS
+  file was an overlay that Compose refused on its own: `service "desk" has neither an image nor a build
+  context specified`.)
 
 - The image listens on 8080 (and 8443 with TLS), and sends the headers of
   `conf/headers.common.conf` and the policy of `conf/headers.csp.conf` (the same as the example).
@@ -86,7 +95,7 @@ nothing (no push, no tag, no registry):
    not set the flags, and the write tools (`MCP_TRADING_ENABLED`) are never for a shared environment;
 6. `build/release/bitshares-desk-<tag>.tar.gz` and its `.sha256`, for the server.
 
-On the server (Docker, the repository's `docker-compose.yml` and, for TLS of its own,
+On the server (Docker, the repository's `docker-compose.yml` or, for TLS of its own,
 `docker-compose.tls.yml` next to it):
 
 ```
@@ -96,7 +105,7 @@ docker tag bitshares-desk:<tag> bitshares-desk:local
 docker compose up -d --no-build
 # TLS of its own: certificate chain and key in ./certs (fullchain.pem, privkey.pem; the key readable
 # by user 101), then
-docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --no-build
+docker compose -f docker-compose.tls.yml up -d --no-build
 ```
 
 Before it is public:
