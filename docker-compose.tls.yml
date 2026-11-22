@@ -22,6 +22,8 @@ services:
             args:
                 BRANCH: ${BRANCH:-container}
                 GIT_REV: ${GIT_REV:-unknown}
+                # a mirror of the charting library archive, if the default address is not reachable from the build host
+                CHARTING_LIBRARY_URL: ${CHARTING_LIBRARY_URL:-}
         image: bitshares-desk:local
         command:
             ["nginx", "-c", "/etc/nginx/nginx.tls.conf", "-g", "daemon off;"]

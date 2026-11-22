@@ -20,7 +20,11 @@ RUN apt-get update \
 
 COPY package.json yarn.lock ./
 COPY charting_library/ ./charting_library/
-RUN yarn install --frozen-lockfile --network-concurrency 1
+# Where the charting library archive is downloaded from, if not from the default address (a mirror you
+# host; its md5 is still checked). Empty = the default. docs/DEPLOYMENT.md, "If the image does not build".
+ARG CHARTING_LIBRARY_URL=
+# a slow link to the registry or to GitHub is not an error: wait up to 10 minutes per request
+RUN yarn install --frozen-lockfile --network-concurrency 1 --network-timeout 600000
 
 # the build reads no .git folder (it is not in the context): the revision is told to it
 ARG BRANCH=container

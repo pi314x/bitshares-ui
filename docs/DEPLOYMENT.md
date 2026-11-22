@@ -61,6 +61,22 @@ docker compose -f docker-compose.tls.yml up --build   # https, with ./certs
   tells it the branch and the commit, and `docker compose` passes `BRANCH` and `GIT_REV` from the
   shell when they are set: `BRANCH=$(git branch --show-current) GIT_REV=$(git rev-parse --short HEAD)
   docker compose up -d --build`. A build that is not told them shows the version alone.
+- **If the image does not build.** Dockhand and similar tools show only the last line of a failed
+  build (`failed to solve: process "/bin/sh -c yarn install ..." exit code: 1`), not the reason. The reason is
+  in the lines above it in the full build log, or on the server with
+  `docker compose -f docker-compose.tls.yml build --progress=plain --no-cache 2>&1 | tail -80`. The usual
+  causes, in the order to look:
+  1. **The charting library download** (`yarn install` ends with `install-charting-library`): the build host
+     cannot reach `blocksights.info`, or a proxy or firewall answers with a page. The message now says
+     which (`HTTP 403 from ...`, `getaddrinfo ENOTFOUND ...`, or an md5 mismatch). Host the archive
+     `charting_library.29.4.0.zip` (md5 in `charting_library/*.md5`) yourself, for example as a release asset,
+     and set `CHARTING_LIBRARY_URL` to its address: an environment variable of the stack, or
+     `--build-arg CHARTING_LIBRARY_URL=...`. The md5 is still checked.
+  2. **The network** (`ETIMEDOUT`, `ESOCKETTIMEDOUT`, `getaddrinfo`, `Could not resolve host`) while the packages
+     are fetched: the registry (`registry.yarnpkg.com`) and `github.com` must be reachable from the build.
+     Each request waits up to 10 minutes before it counts as failed.
+  3. **Memory**: the build of the app (`yarn build`) needs about 2 GB free; an exit code 137 or `Killed`
+     is the system stopping it.
 - Three packages are fetched from GitHub at build time, each pinned by its commit in `yarn.lock`
   (`bitshares-report`, `jdenticon`, `perfect-scrollbar`), so the build needs `git` (the build stage
   has it) and the network.
