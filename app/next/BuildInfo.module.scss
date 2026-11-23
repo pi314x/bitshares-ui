@@ -1,5 +1,5 @@
-// The build line of the left menu's footer: muted, mono, the version and commit on one line, the branch under it (two lines at
-// most, broken anywhere: a branch name has no spaces).
+// The build line of the left menu's footer: muted, mono, the commit on one line, the branch under it (two lines at most, broken
+// anywhere: a branch name has no spaces).
 .info {
     display: flex;
     flex-direction: column;

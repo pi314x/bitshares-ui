@@ -1,29 +1,23 @@
-// What a build says about itself: read from the constants webpack defines, and cut down to what is worth showing - a number
-// becomes "v1.0.0", the commit is its first 7 characters, and what the build could not find out is not said at all.
+// What a build says about itself: read from the constants webpack defines, and cut down to what is worth showing - the commit is
+// its first 7 characters, what the build could not find out is not said at all, and the version is not part of it.
 import {buildInfo, buildInfoParts} from "../../lib/common/buildInfo";
 
 describe("buildInfo", () => {
-    it("reads the three constants of the build", () => {
+    it("reads the two constants of the build, and not the version", () => {
         // jest defines them as "test" (package.json)
-        expect(buildInfo()).toEqual({
-            version: "test",
-            branch: "test",
-            commit: "test"
-        });
+        expect(buildInfo()).toEqual({branch: "test", commit: "test"});
     });
 });
 
 describe("buildInfoParts", () => {
     const real = {
-        version: "1.0.0",
-        branch: "claude/bitshares-ui-migration-pu5y14",
+        branch: "pi314x/bitshares-ui-migration-pu5y14",
         commit: "fc05acf2f"
     };
 
-    it("shows a version number with a v, the commit's first 7 characters and the branch as it is", () => {
+    it("shows the commit's first 7 characters and the branch as it is", () => {
         expect(buildInfoParts(real)).toEqual({
-            version: "v1.0.0",
-            branch: "claude/bitshares-ui-migration-pu5y14",
+            branch: "pi314x/bitshares-ui-migration-pu5y14",
             commit: "fc05acf"
         });
     });
@@ -34,39 +28,24 @@ describe("buildInfoParts", () => {
     });
 
     it("says nothing for what the build could not find out or was not told", () => {
-        expect(
-            buildInfoParts({version: "", branch: "unknown", commit: "unknown"})
-        ).toEqual({version: "", branch: "", commit: ""});
+        expect(buildInfoParts({branch: "unknown", commit: "unknown"})).toEqual({
+            branch: "",
+            commit: ""
+        });
+        expect(buildInfoParts({branch: "", commit: ""})).toEqual({
+            branch: "",
+            commit: ""
+        });
         // the Dockerfile's branch name for a build without one
         expect(buildInfoParts({...real, branch: "container"}).branch).toBe("");
         expect(buildInfoParts({...real, commit: "unknown"}).commit).toBe("");
     });
 
-    it("says the commit once when the version is the commit (a `develop` build)", () => {
-        expect(
-            buildInfoParts({
-                version: "3418709",
-                branch: "develop",
-                commit: "3418709"
-            })
-        ).toEqual({version: "", branch: "develop", commit: "3418709"});
-        expect(
-            buildInfoParts({
-                version: "3418709a0",
-                branch: "develop",
-                commit: "3418709"
-            }).version
-        ).toBe("");
-    });
-
-    it("shows a version that is not a number as it is, and keeps a version when the commit is another", () => {
-        expect(buildInfoParts({...real, version: "next"}).version).toBe("next");
-        expect(
-            buildInfoParts({
-                version: "1.0.0",
-                branch: "main",
-                commit: "abcdef1"
-            }).version
-        ).toBe("v1.0.0");
+    it("never returns a version, even when the build object carries one", () => {
+        const withVersion = {...real, version: "1.0.0"};
+        expect(Object.keys(buildInfoParts(withVersion)).sort()).toEqual([
+            "branch",
+            "commit"
+        ]);
     });
 });

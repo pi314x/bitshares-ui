@@ -1,32 +1,40 @@
-// The build line of the left menu's footer: the version and the commit on one line, the git branch under it, the whole of it as the
-// title, and nothing at all for a build that knows nothing about itself.
+// The build line of the left menu's footer: the commit on one line, the git branch under it, the whole of it as the title, no
+// version, and nothing at all for a build that knows nothing about itself.
 import * as React from "react";
 import {render} from "@testing-library/react";
 import BuildInfo from "../../next/BuildInfo";
 
 const real = {
-    version: "1.0.0",
-    branch: "claude/bitshares-ui-migration-pu5y14",
+    branch: "pi314x/bitshares-ui-migration-pu5y14",
     commit: "fc05acf2f"
 };
 
 describe("BuildInfo", () => {
-    it("shows the version, the commit and the branch", () => {
+    it("shows the commit and the branch", () => {
         const view = render(<BuildInfo info={real} />);
         const box = view.getByTestId("build-info");
         expect(box.textContent).toBe(
-            "v1.0.0 · fc05acfclaude/bitshares-ui-migration-pu5y14"
+            "fc05acfpi314x/bitshares-ui-migration-pu5y14"
         );
-        expect(view.getByText("v1.0.0 · fc05acf")).toBeTruthy();
+        expect(view.getByText("fc05acf")).toBeTruthy();
         expect(
-            view.getByText("claude/bitshares-ui-migration-pu5y14")
+            view.getByText("pi314x/bitshares-ui-migration-pu5y14")
         ).toBeTruthy();
+    });
+
+    it("does not show a version, not even one the build carries", () => {
+        const withVersion = {...real, version: "1.0.0"};
+        const view = render(<BuildInfo info={withVersion} />);
+        expect(view.getByTestId("build-info").textContent).not.toContain(
+            "1.0.0"
+        );
+        expect(view.queryByText(/v1\.0\.0/)).toBeNull();
     });
 
     it("carries the whole of it as the title, for a branch name the line cuts short", () => {
         const view = render(<BuildInfo info={real} />);
         expect(view.getByTestId("build-info").getAttribute("title")).toBe(
-            "v1.0.0 · fc05acf · claude/bitshares-ui-migration-pu5y14"
+            "fc05acf · pi314x/bitshares-ui-migration-pu5y14"
         );
     });
 
@@ -34,20 +42,18 @@ describe("BuildInfo", () => {
         const view = render(
             <BuildInfo info={{...real, branch: "container"}} />
         );
-        expect(view.getByTestId("build-info").textContent).toBe(
-            "v1.0.0 · fc05acf"
-        );
+        expect(view.getByTestId("build-info").textContent).toBe("fc05acf");
     });
 
     it("shows what is known when the rest is not", () => {
-        const view = render(
-            <BuildInfo
-                info={{version: "1.0.0", branch: "unknown", commit: "unknown"}}
-            />
+        const onlyCommit = render(
+            <BuildInfo info={{branch: "unknown", commit: "fc05acf2f"}} />
         );
-        expect(view.getByTestId("build-info").textContent).toBe("v1.0.0");
+        expect(onlyCommit.getByTestId("build-info").textContent).toBe(
+            "fc05acf"
+        );
         const onlyBranch = render(
-            <BuildInfo info={{version: "", branch: "main", commit: ""}} />
+            <BuildInfo info={{branch: "main", commit: ""}} />
         );
         expect(onlyBranch.getAllByTestId("build-info")[1].textContent).toBe(
             "main"
@@ -56,16 +62,14 @@ describe("BuildInfo", () => {
 
     it("shows nothing for a build that knows nothing about itself", () => {
         const view = render(
-            <BuildInfo
-                info={{version: "", branch: "unknown", commit: "unknown"}}
-            />
+            <BuildInfo info={{branch: "unknown", commit: "unknown"}} />
         );
         expect(view.queryByTestId("build-info")).toBeNull();
         expect(view.container.firstChild).toBeNull();
     });
 
     it("reads the build's own constants when it is given nothing", () => {
-        // jest defines all three as "test": the version is the commit, so it is said once, and the branch under it
+        // jest defines both as "test"
         const view = render(<BuildInfo />);
         expect(view.getByTestId("build-info").textContent).toBe("testtest");
     });

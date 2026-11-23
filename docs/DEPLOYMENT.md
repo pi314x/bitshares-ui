@@ -63,11 +63,11 @@ docker compose -f docker-compose.tls.yml up --build   # https, with ./certs
   `./certs` (`fullchain.pem`, `privkey.pem`) and use the TLS variant. The server runs as user 101,
   so the key file must be readable by it (`chown 101 certs/privkey.pem` and `chmod 600`, or a
   group). Never put the key in an image or in the repository.
-- The footer of the left menu shows the version, the commit and the git branch of the build, so a
+- The footer of the left menu shows the commit and the git branch of the build (not the version), so a
   running site can say which code it is. A container build has no `.git` folder: `scripts/prepare-release.sh`
   tells it the branch and the commit, and `docker compose` passes `BRANCH` and `GIT_REV` from the
   shell when they are set: `BRANCH=$(git branch --show-current) GIT_REV=$(git rev-parse --short HEAD)
-  docker compose up -d --build`. A build that is not told them shows the version alone.
+  docker compose up -d --build`. A build that is not told them shows nothing there.
 - **If the image does not build.** Dockhand and similar tools show only the last line of a failed
   build (`failed to solve: process "/bin/sh -c yarn install ..." exit code: 1`), not the reason. The reason is
   in the lines above it in the full build log, or on the server with

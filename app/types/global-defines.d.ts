@@ -12,9 +12,9 @@ declare const __CHART_ENGINE__: "auto" | "tradingview" | "lightweight";
 // unless MCP_ENABLED / MCP_TRADING_ENABLED are true when the app is built.
 declare const __MCP_ENABLED__: boolean;
 declare const __MCP_TRADING__: boolean;
-// What the build is, for the footer of the left menu (lib/common/buildInfo.ts): the version of package.json (on `develop` the
-// commit's short hash), the git branch and the commit. A container build has no .git folder and takes the branch and the
-// commit from its BRANCH and GIT_REV build arguments.
+// What the build is, for the footer of the left menu (lib/common/buildInfo.ts): the git branch and the commit (the footer does
+// not show the version, APP_VERSION: package.json's number, on `develop` the commit's short hash). A container build has no .git
+// folder and takes the branch and the commit from its BRANCH and GIT_REV build arguments.
 declare const APP_VERSION: string;
 declare const __GIT_BRANCH__: string;
 declare const __GIT_REV__: string;
