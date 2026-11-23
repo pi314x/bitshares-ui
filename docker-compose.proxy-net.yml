@@ -1,0 +1,50 @@
+# BitShares Desk behind the Traefik of this server (Traefik holds the Let's Encrypt certificates), with the
+# values of that server written in, for a deployment tool that cannot pass variables (Dockhand):
+#
+#   host name           bitshares-desk.builden.dev   (a DNS A record must point at the server)
+#   Traefik network     proxy_net                    (the network the web services share with Traefik)
+#   entry point         websecure
+#   certificate resolver myresolver
+#
+# Nothing is published on the host: only Traefik reaches the container, over proxy_net. The generic
+# version, with these as variables, is docker-compose.traefik.yml (docs/DEPLOYMENT.md). To use another
+# host name change the Host(...) rule below.
+services:
+    desk:
+        build:
+            context: .
+            # shown in the footer of the left menu; a build that is not told them shows neither (docs/DEPLOYMENT.md)
+            args:
+                BRANCH: ${BRANCH:-container}
+                GIT_REV: ${GIT_REV:-unknown}
+                # a mirror of the charting library archive, if the default address is not reachable from the build host
+                CHARTING_LIBRARY_URL: ${CHARTING_LIBRARY_URL:-}
+        image: bitshares-desk:local
+        restart: unless-stopped
+        # a static file server needs nothing else
+        read_only: true
+        tmpfs:
+            - /tmp
+        cap_drop:
+            - ALL
+        security_opt:
+            - no-new-privileges:true
+        networks:
+            - traefik
+        labels:
+            - traefik.enable=true
+            # the network Traefik reaches the container on (a container on several networks needs it named)
+            - traefik.docker.network=proxy_net
+            - traefik.http.routers.desk.rule=Host(`bitshares-desk.builden.dev`)
+            - traefik.http.routers.desk.entrypoints=websecure
+            - traefik.http.routers.desk.tls=true
+            - traefik.http.routers.desk.tls.certresolver=myresolver
+            - traefik.http.services.desk.loadbalancer.server.port=8080
+            - traefik.http.routers.desk.middlewares=desk-hsts
+            - traefik.http.middlewares.desk-hsts.headers.stsseconds=31536000
+            - traefik.http.middlewares.desk-hsts.headers.stsincludesubdomains=false
+
+networks:
+    traefik:
+        name: proxy_net
+        external: true
