@@ -146,7 +146,7 @@ SCSS-to-CSS-Modules work reaches them. See `docs/UI_MIGRATION_PLAN.md`
   real app too.
 - Container: `docker compose up --build` (http://localhost:8080; multi-stage `Dockerfile`, nginx as an
   unprivileged user; TLS variant `docker-compose.tls.yml`, a complete file like `docker-compose.yml` so a
-  one-file tool such as Dockhand can run either; `scripts/check-container.sh` keeps the two in step). The page's security policy is the `<meta>`
+  one-file tool such as Dockhand can run either; `docker-compose.traefik.yml` is the one for a Traefik that holds the certificates; `scripts/check-container.sh` keeps the two in step). The page's security policy is the `<meta>`
   tag in `app/assets/index.hbs`; `conf/headers.*.conf` and `conf/nginx.https.conf.example` carry the same
   policy as a header and `app/__tests__/security/headers-test.ts` keeps them in step - change them
   together. No third-party script on the page (password strength is bundled, not a CDN). See

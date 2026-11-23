@@ -48,6 +48,13 @@ docker compose -f docker-compose.tls.yml up --build   # https, with ./certs
   file was an overlay that Compose refused on its own: `service "desk" has neither an image nor a build
   context specified`.)
 
+- **Behind a Traefik you already run** (it holds the certificates): use `docker-compose.traefik.yml`, a complete
+  file that publishes no port and only carries Traefik labels. Set `DESK_HOST` (the host name, with a DNS record)
+  and `TRAEFIK_NETWORK` (the Docker network Traefik is on: `docker inspect traefik --format
+  '{{json .NetworkSettings.Networks}}'`); `TRAEFIK_ENTRYPOINT` (default `websecure`) and `TRAEFIK_CERTRESOLVER`
+  (default `myresolver`) only if yours are named differently. Do not use `docker-compose.tls.yml` there: it makes
+  the container do its own TLS and, without `./certs/fullchain.pem` and `privkey.pem`, nginx stops with
+  `cannot load certificate "/certs/fullchain.pem"` and restarts in a loop.
 - The image listens on 8080 (and 8443 with TLS), and sends the headers of
   `conf/headers.common.conf` and the policy of `conf/headers.csp.conf` (the same as the example).
 - It runs with a read-only file system, no added capabilities and `no-new-privileges` (see

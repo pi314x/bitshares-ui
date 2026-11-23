@@ -1,0 +1,58 @@
+# BitShares Desk behind a Traefik you already run: Traefik terminates TLS (Let's Encrypt) and
+# sends plain HTTP to the container, so there is no certificate to mount (compare
+# docker-compose.tls.yml, which makes the container do its own TLS).
+#
+#   DESK_HOST=desk.example.org TRAEFIK_NETWORK=<network of traefik> docker compose -f docker-compose.traefik.yml up -d --build
+#
+# Like the other compose files this one is complete on its own, for tools that take one file
+# (Dockhand, Portainer): set the variables as the stack's environment. Nothing is published on the
+# host: only Traefik reaches the container, over the network it shares with it.
+#
+#   DESK_HOST            the host name (a DNS record must point at the server, or the certificate
+#                        cannot be issued)
+#   TRAEFIK_NETWORK      the Docker network Traefik is on:
+#                        docker inspect traefik --format '{{json .NetworkSettings.Networks}}'
+#   TRAEFIK_ENTRYPOINT   the https entry point of Traefik          (default websecure)
+#   TRAEFIK_CERTRESOLVER the certificate resolver of Traefik       (default myresolver)
+#
+# Traefik adds the Strict-Transport-Security header here (the container's own nginx adds it only in
+# the TLS variant). The other security headers come from the container (docs/DEPLOYMENT.md).
+services:
+    desk:
+        build:
+            context: .
+            # shown in the footer of the left menu; a build that is not told them shows neither (docs/DEPLOYMENT.md)
+            args:
+                BRANCH: ${BRANCH:-container}
+                GIT_REV: ${GIT_REV:-unknown}
+                # a mirror of the charting library archive, if the default address is not reachable from the build host
+                CHARTING_LIBRARY_URL: ${CHARTING_LIBRARY_URL:-}
+        image: bitshares-desk:local
+        restart: unless-stopped
+        # a static file server needs nothing else
+        read_only: true
+        tmpfs:
+            - /tmp
+        cap_drop:
+            - ALL
+        security_opt:
+            - no-new-privileges:true
+        networks:
+            - traefik
+        labels:
+            - traefik.enable=true
+            # the network Traefik reaches the container on (a container on several networks needs it named)
+            - traefik.docker.network=${TRAEFIK_NETWORK:?set TRAEFIK_NETWORK to the Docker network Traefik is on}
+            - traefik.http.routers.desk.rule=Host(`${DESK_HOST:?set DESK_HOST to the host name of the site}`)
+            - traefik.http.routers.desk.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+            - traefik.http.routers.desk.tls=true
+            - traefik.http.routers.desk.tls.certresolver=${TRAEFIK_CERTRESOLVER:-myresolver}
+            - traefik.http.services.desk.loadbalancer.server.port=8080
+            - traefik.http.routers.desk.middlewares=desk-hsts
+            - traefik.http.middlewares.desk-hsts.headers.stsseconds=31536000
+            - traefik.http.middlewares.desk-hsts.headers.stsincludesubdomains=false
+
+networks:
+    traefik:
+        name: ${TRAEFIK_NETWORK:?set TRAEFIK_NETWORK to the Docker network Traefik is on}
+        external: true

@@ -64,6 +64,8 @@ compose_config docker-compose.yml >"$TMP/compose.plain" || fail "docker-compose.
 compose_config docker-compose.tls.yml >"$TMP/compose.tls" || fail "docker-compose.tls.yml is not a valid compose project on its own"
 compose_config docker-compose.yml docker-compose.tls.yml >"$TMP/compose.both" \
     || fail "docker-compose.yml with docker-compose.tls.yml is not a valid compose project"
+DESK_HOST=desk.example.org TRAEFIK_NETWORK=proxy compose_config docker-compose.traefik.yml >/dev/null \
+    || fail "docker-compose.traefik.yml is not a valid compose project on its own"
 diff -u "$TMP/compose.tls" "$TMP/compose.both" >&2 \
     || fail "docker-compose.tls.yml alone and on top of docker-compose.yml mean different things; keep the two files in step"
 ok "compose files: each valid on its own, the TLS file the same alone and on top of the plain one"
