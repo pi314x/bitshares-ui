@@ -27,7 +27,8 @@ ARG CHARTING_LIBRARY_URL=
 # (the yarn cache is emptied in the same step: it is a copy of what is installed, about 1 GB the layer need not keep)
 RUN yarn install --frozen-lockfile --network-concurrency 1 --network-timeout 600000 && yarn cache clean
 
-# the build reads no .git folder (it is not in the context): the revision is told to it
+# the footer names the branch and the commit: a build argument wins; else buildRevision.js reads them from the few .git files
+# the context keeps (.dockerignore); "container" and "unknown" mean not told
 ARG BRANCH=container
 ARG GIT_REV=unknown
 ENV BRANCH=$BRANCH GIT_REV=$GIT_REV

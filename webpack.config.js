@@ -19,34 +19,22 @@ loadEnvFile(path.join(__dirname, ".env"), process.env, /^MCP_/);
  * For staging builds, set the version to the latest commit hash, for
  * production set it to the package version
  */
-// A build without a .git folder (a container build) takes what it is told (BRANCH, GIT_REV).
-const fromGit = (read, fallback) => {
-    try {
-        return read();
-    } catch (e) {
-        return fallback;
-    }
-};
-let branch = !!process.env.BRANCH
-    ? process.env.BRANCH
-    : fromGit(() => git.branch(), "unknown");
-// the commit the build is of: shown in the footer of the left menu (__GIT_REV__), and the version of a `develop` build.
-// git-rev-sync cannot read it in a git worktree (its `.git` is a pointer file): git itself is asked then.
-const rev =
-    process.env.GIT_REV ||
-    fromGit(() => {
-        try {
-            return git.short();
-        } catch (e) {
-            return require("child_process")
-                .execFileSync("git", ["rev-parse", "--short", "HEAD"], {
-                    cwd: __dirname,
-                    stdio: ["ignore", "pipe", "ignore"]
-                })
-                .toString()
-                .trim();
-        }
-    }, "unknown");
+// The branch and the commit the build is of: shown in the footer of the left menu (__GIT_BRANCH__, __GIT_REV__), and the version
+// of a `develop` build. What a build is told (BRANCH, GIT_REV) wins; else they are read from the .git files, which a container
+// build's context keeps (.dockerignore); git itself is asked only for the commit in a git worktree (buildRevision.js).
+const {branch, commit: rev} = require("./buildRevision").buildRevision({
+    env: process.env,
+    git,
+    root: __dirname,
+    run: dir =>
+        require("child_process")
+            .execFileSync("git", ["rev-parse", "--short", "HEAD"], {
+                cwd: dir,
+                stdio: ["ignore", "pipe", "ignore"]
+            })
+            .toString()
+            .trim()
+});
 var __VERSION__ =
     branch === "develop" ? rev : require("./package.json").version;
 

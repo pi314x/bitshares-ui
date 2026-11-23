@@ -1,5 +1,10 @@
 # What the image build does not need (and must not take from a working copy).
 .git
+# ...except the three things that say which branch and commit this is (buildRevision.js): no .git/config (a clone's
+# remote address can carry a token), no objects
+!.git/HEAD
+!.git/packed-refs
+!.git/refs/heads
 .github
 node_modules
 build
