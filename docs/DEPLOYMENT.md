@@ -209,7 +209,7 @@ or newer (it is in OpenSSL 3.5's default group list, first).
 | `Content-Security-Policy` | see below; sent on the page, and the same policy is in the page's `<meta>` tag |
 | `X-Content-Type-Options: nosniff` | a file is what its type says |
 | `Referrer-Policy: no-referrer` | the page address holds account names; it is not sent to other sites |
-| `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'` | no other site frames the wallet (clickjacking) |
+| `X-Frame-Options: SAMEORIGIN` and CSP `frame-ancestors 'self'` | no other site frames the wallet (clickjacking); the page's own frame, the price chart, still loads |
 | `Permissions-Policy` | only the camera (for the QR scanner), nothing else of the device |
 | `Cross-Origin-Opener-Policy` | the page does not share a window group with sites it opens |
 | `Cache-Control` | the page is never cached; files with a hash in their name for a year |
@@ -221,7 +221,7 @@ default-src 'self' blob:; worker-src 'self' blob:;
 script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';
 connect-src 'self' wss: https: ws://127.0.0.1:* ws://localhost:*;
 font-src 'self' data:; img-src 'self' data:;
-object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
 ```
 
 - Scripts come from the app's own origin only. There is no third-party script: the password
@@ -230,6 +230,11 @@ object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   trade page's chart included).
 - `'unsafe-inline'` for scripts remains: the page has three small inline scripts (the saved
   theme before first paint, the browser check, the splash). Moving them out would let it go.
+- `frame-ancestors 'self'`, not `'none'`: only this origin may frame the page. The price chart's
+  library draws the chart in an iframe whose source is a `blob:` URL, and Safari checks the page's
+  `frame-ancestors` for that frame too: with `'none'` the chart was a blank white box on an iPhone
+  (the console says "Refused to load blob:... because it does not appear in the frame-ancestors
+  directive"). `'self'` keeps every other site from framing the wallet, which is what the header is for.
 - `connect-src` allows `wss:` and `https:` (a node can be any secure host: the node list, nodes
   a user adds, gateways, faucets, price services), the local node on `127.0.0.1`/`localhost`,
   and nothing in clear text. To pin it to hosts you trust, list them instead of `wss:`/`https:`

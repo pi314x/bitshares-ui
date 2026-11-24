@@ -121,11 +121,11 @@ expect_header "$page" Cache-Control "no-cache"
 expect_header "$page" Strict-Transport-Security "max-age=31536000"
 expect_header "$page" X-Content-Type-Options "nosniff"
 expect_header "$page" Referrer-Policy "no-referrer"
-expect_header "$page" X-Frame-Options "DENY"
+expect_header "$page" X-Frame-Options "SAMEORIGIN"
 expect_header "$page" Permissions-Policy "camera=(self)"
 expect_header "$page" Cross-Origin-Opener-Policy "same-origin-allow-popups"
 csp="$(has_header "$page" Content-Security-Policy)"
-case "$csp" in *"frame-ancestors 'none'"*) ;; *) fail "the policy has no frame-ancestors 'none'" ;; esac
+case "$csp" in *"frame-ancestors 'self'"*) ;; *) fail "the policy has no frame-ancestors 'self'" ;; esac
 case "$csp" in *"unsafe-eval"*) fail "the policy allows unsafe-eval" ;; esac
 case "$csp" in *"cdnjs"*|*"alicdn"*) fail "the policy names a CDN" ;; esac
 ok "the page's headers and policy"
@@ -160,7 +160,7 @@ redirect="$(header "http://127.0.0.1:$TLS_HTTP_PORT/some/page")"
 expect_header "$redirect" Location "https://"
 tls="$(header "https://127.0.0.1:$TLS_PORT/" -k)"
 expect_header "$tls" Strict-Transport-Security "max-age=31536000"
-expect_header "$tls" Content-Security-Policy "frame-ancestors 'none'"
+expect_header "$tls" Content-Security-Policy "frame-ancestors 'self'"
 ok "TLS variant: http redirects, https sends the headers"
 
 echo "all checks passed"

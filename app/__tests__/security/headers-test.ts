@@ -66,13 +66,13 @@ describe("the nginx examples", () => {
         return directives(match[1]);
     };
 
-    it("send the page's policy as a header, and add that a page cannot be framed", () => {
+    it("send the page's policy as a header, and add that only this origin can frame it", () => {
         const header = headerPolicy();
         const meta = directives(metaPolicy());
         Object.keys(meta).forEach(name =>
             expect(header[name]).toEqual(meta[name])
         );
-        expect(header["frame-ancestors"]).toEqual(["'none'"]);
+        expect(header["frame-ancestors"]).toEqual(["'self'"]);
         // nothing in the header that the page's own policy does not have, but that
         expect(Object.keys(header).filter(name => !(name in meta))).toEqual([
             "frame-ancestors"
@@ -147,7 +147,26 @@ describe("the container image", () => {
         expect(Object.keys(header).filter(name => !(name in meta))).toEqual([
             "frame-ancestors"
         ]);
-        expect(header["frame-ancestors"]).toEqual(["'none'"]);
+        expect(header["frame-ancestors"]).toEqual(["'self'"]);
+    });
+
+    it("lets the page frame itself: the price chart is a blob: document of this origin", () => {
+        // The TradingView library puts its chart in an iframe whose source is a blob: URL. A blob
+        // document is given the page's policy, and Safari (WebKit) then checks the page against the
+        // `frame-ancestors` of that policy: with 'none' it refused the chart ("Refused to load blob:...
+        // because it does not appear in the frame-ancestors directive"), a white box on an iPhone.
+        // 'self' keeps every other site out and lets the page's own frame load.
+        [
+            "conf/headers.csp.conf",
+            "conf/headers.common.conf",
+            "conf/nginx.conf",
+            "conf/nginx.https.conf.example",
+            "scripts/check-container.sh"
+        ].forEach(file => {
+            expect(read(file)).not.toContain("frame-ancestors 'none'");
+            expect(read(file)).not.toContain('X-Frame-Options "DENY"');
+        });
+        expect(common).toContain('X-Frame-Options "SAMEORIGIN"');
     });
 
     it("has the headers of the HTTPS example in the shared snippet", () => {

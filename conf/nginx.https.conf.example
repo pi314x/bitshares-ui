@@ -3,7 +3,7 @@
 # (the folder `yarn build` made), and test it with `nginx -t`.
 #
 # What each header is for is in docs/DEPLOYMENT.md. The Content-Security-Policy below is the
-# policy of the page's own <meta> tag (app/assets/index.hbs) plus `frame-ancestors 'none'`,
+# policy of the page's own <meta> tag (app/assets/index.hbs) plus `frame-ancestors 'self'`,
 # which a <meta> tag cannot carry; app/__tests__/security/headers-test.ts keeps the two in step.
 #
 # Do not host anything else on this origin: the wallet's keys are stored per origin, and a
@@ -64,8 +64,9 @@ http {
         add_header X-Content-Type-Options "nosniff" always;
         # No page address (it holds account names) is sent to another site.
         add_header Referrer-Policy "no-referrer" always;
-        # No other site frames the wallet (clickjacking). CSP's frame-ancestors says it too.
-        add_header X-Frame-Options "DENY" always;
+        # No other site frames the wallet (clickjacking); CSP's frame-ancestors says it too. Not DENY / 'none':
+        # the price chart is a frame of this very page (a blob: document) and Safari refuses it then.
+        add_header X-Frame-Options "SAMEORIGIN" always;
         # The camera is for the QR scanner; nothing else of the device is asked for.
         add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=()" always;
         add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
@@ -78,10 +79,10 @@ http {
             add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "no-referrer" always;
-            add_header X-Frame-Options "DENY" always;
+            add_header X-Frame-Options "SAMEORIGIN" always;
             add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=()" always;
             add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
-            add_header Content-Security-Policy "default-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https: ws://127.0.0.1:* ws://localhost:*; font-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+            add_header Content-Security-Policy "default-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https: ws://127.0.0.1:* ws://localhost:*; font-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
         }
 
         # Files with a hash in their name never change: kept for a year.
