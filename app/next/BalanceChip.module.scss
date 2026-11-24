@@ -21,6 +21,16 @@
     font-variant-numeric: tabular-nums;
 }
 
+// While the amount is loading the chip takes the room an amount needs (16ch is the width of "172,098.52263 BTS" to
+// within a few pixels: 164px loading against 159px loaded, measured). The top bar decides from the chip's width whether
+// it has room at all; with only a "…" in it the answer was yes, so on a phone the chip (and its eye) stood in the bar for
+// as long as the chain took to load and went when the amount arrived and did not fit. Now that is known at once, and on
+// a desktop the amount does not push the account menu aside when it arrives.
+.chip[data-balance="loading"] .amount {
+    display: inline-block;
+    min-width: 16ch;
+}
+
 .symbol {
     color: var(--muted);
 }

@@ -96,6 +96,7 @@ import {Carousel} from "../../design-system/Carousel";
 import SettingsActions from "actions/SettingsActions";
 import {hash} from "bitsharesjs";
 import {getNotifications} from "../../lib/chain/onChainConfig";
+import {useMediaQuery} from "../../next/hooks/useMediaQuery";
 import {useReduxState} from "../../next/hooks/useReduxState";
 import {selectSettingsState} from "../../store/slices/settingsSlice";
 
@@ -227,8 +228,19 @@ function NewsHeadlineCore(props: {hiddenNewsHeadline: any}) {
     );
 }
 
+/**
+ * A phone: the shell's phone layout (up to 860px wide, the same split as `DESKTOP_QUERY`) or a screen so short
+ * that it is a phone held sideways. `useMediaQuery` is false where `matchMedia` does not exist (tests), so this is
+ * not the negation of the desktop query: a test would count as a phone.
+ */
+export const PHONE_QUERY = "(max-width: 860px), (max-height: 500px)";
+
 export default function NewsHeadline(props: NewsHeadlineProps) {
     const settingsState = useReduxState<any>(selectSettingsState);
+    // Not on a phone: the notice is three or four lines of a small screen (about 160px before the page starts),
+    // so it is not drawn, and the news is not even asked for.
+    const phone = useMediaQuery(PHONE_QUERY);
+    if (phone) return null;
 
     return (
         <NewsHeadlineCore
